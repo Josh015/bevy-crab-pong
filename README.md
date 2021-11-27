@@ -15,8 +15,8 @@ cargo run --release
 - [x] Set up a basic Bevy engine project.
 - [x] White box the scene with tinted quads & cubes.
 - [x] Add repeating slow swaying motion on camera.
+- [x] Add config files for all game settings.
 - [ ] Port the core game logic to the white box.
-- [ ] Add config files for all game settings.
 - [ ] Add 3D text instructions and scores (eg. [Bevy Text Mesh](https://github.com/blaind/bevy_text_mesh)).
 - [ ] After a ball passes a goal fade it out and reset it while decrementing that goal's score.
 - [ ] Fade out crabs, remove them, and add barrier on their side when their score reaches zero.

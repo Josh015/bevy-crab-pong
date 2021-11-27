@@ -1,4 +1,12 @@
+mod files;
+
 use bevy::{prelude::*, render::camera::Camera};
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
+struct GameConfig {
+    camera_sway_speed: f32,
+}
 
 #[derive(Default)]
 struct Game {
@@ -6,10 +14,14 @@ struct Game {
 }
 
 fn main() {
+    let config: GameConfig =
+        files::load_config_from_file("assets/config/game.ron");
+
     App::new()
         .insert_resource(ClearColor(Color::rgb(0.7, 0.9, 1.0)))
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
+        .insert_resource(config)
         .init_resource::<Game>()
         .add_startup_system(setup)
         .add_system(sway_camera.system())
@@ -324,15 +336,15 @@ fn setup(
 }
 
 fn sway_camera(
+    config: Res<GameConfig>,
     mut game: ResMut<Game>,
     time: Res<Time>,
     mut query: Query<(&mut Transform, &Camera)>,
 ) {
     // Slowly sway the camera back and forth
     let (mut transform, _) = query.single_mut();
-    let camera_sway_speed = 0.2;
 
-    game.camera_angle += camera_sway_speed * time.delta_seconds();
+    game.camera_angle += config.camera_sway_speed * time.delta_seconds();
     game.camera_angle %= std::f32::consts::TAU;
     *transform = Transform::from_xyz(0.5 * game.camera_angle.sin(), 2.5, 5.0)
         .looking_at(Vec3::new(0.5, 0.0, 0.5), Vec3::Y);
