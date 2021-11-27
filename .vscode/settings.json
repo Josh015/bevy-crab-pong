@@ -1,0 +1,19 @@
+{
+  "editor.defaultFormatter": "matklad.rust-analyzer",
+  "editor.formatOnSave": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "cSpell.words": [
+    "consts",
+    "fira",
+    "icosphere",
+    "lerp",
+    "msaa",
+    "pixmap",
+    "randomizer",
+    "rrggbb",
+    "voxel",
+    "voxels",
+    "xyzw"
+  ]
+}

@@ -12,7 +12,7 @@ cargo run --release
 
 ## TODO
 
-- [ ] Populate the basic Bevy engine project code setup.
+- [x] Set up a basic Bevy engine project.
 - [ ] Stub out and white box the scene with color tints.
 - [ ] Port the core game logic to the white box.
 - [ ] Add config files for all game settings.
