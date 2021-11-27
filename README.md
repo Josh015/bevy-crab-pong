@@ -14,6 +14,7 @@ cargo run --release
 
 - [x] Set up a basic Bevy engine project.
 - [x] White box the scene with tinted quads & cubes.
+- [x] Add repeating slow swaying motion on camera.
 - [ ] Port the core game logic to the white box.
 - [ ] Add config files for all game settings.
 - [ ] Add 3D text instructions and scores (eg. [Bevy Text Mesh](https://github.com/blaind/bevy_text_mesh)).
@@ -24,7 +25,6 @@ cargo run --release
 - [ ] Adjust model textures to support color tinting.
 - [ ] Add "reflections" in the water via mirrored and blended geometry.
 - [ ] Add water texture scrolling.
-- [ ] Add camera swaying.
 - [ ] Use updated textures rather than the originals?
 - [ ] Use a Rust gear logo texture?
 - [ ] Add shadowed directional light for the sun?
