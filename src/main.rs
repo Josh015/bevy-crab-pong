@@ -5,6 +5,9 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 struct GameConfig {
+    title: String,
+    width: u32,
+    height: u32,
     camera_sway_speed: f32,
 }
 
@@ -18,8 +21,14 @@ fn main() {
         files::load_config_from_file("assets/config/game.ron");
 
     App::new()
-        .insert_resource(ClearColor(Color::rgb(0.7, 0.9, 1.0)))
+        .insert_resource(WindowDescriptor {
+            title: config.title.clone(),
+            width: config.width as f32,
+            height: config.height as f32,
+            ..Default::default()
+        })
         .insert_resource(Msaa { samples: 4 })
+        .insert_resource(ClearColor(Color::rgb(0.7, 0.9, 1.0)))
         .add_plugins(DefaultPlugins)
         .insert_resource(config)
         .init_resource::<Game>()
