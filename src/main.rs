@@ -343,9 +343,11 @@ fn sway_camera(
 ) {
     // Slowly sway the camera back and forth
     let (mut transform, _) = query.single_mut();
+    let x = 0.25 + (0.75 - 0.25) * game.camera_angle.sin();
 
     game.camera_angle += config.camera_sway_speed * time.delta_seconds();
     game.camera_angle %= std::f32::consts::TAU;
-    *transform = Transform::from_xyz(0.5 * game.camera_angle.sin(), 2.5, 5.0)
+
+    *transform = Transform::from_xyz(x, 2.0, 3.0)
         .looking_at(Vec3::new(0.5, 0.0, 0.5), Vec3::Y);
 }
