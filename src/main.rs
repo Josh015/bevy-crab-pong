@@ -34,7 +34,7 @@ fn main() {
         .init_resource::<Game>()
         .add_startup_system(setup_level)
         .add_startup_system(setup_playable_entities)
-        .add_system(sway_camera.system())
+        .add_system(sway_camera)
         .run();
 }
 

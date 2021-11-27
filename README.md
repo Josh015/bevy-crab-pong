@@ -16,8 +16,8 @@ cargo run --release
 - [x] White box the scene with tinted quads & cubes.
 - [x] Add repeating slow swaying motion on camera.
 - [x] Add config files for all game settings.
+- [ ] Add 2D UI elements for now.
 - [ ] Port the core game logic to the white box.
-- [ ] Add 3D text instructions and scores (eg. [Bevy Text Mesh](https://github.com/blaind/bevy_text_mesh)).
 - [ ] After a ball passes a goal fade it out and reset it while decrementing that goal's score.
 - [ ] Fade out crabs, remove them, and add barrier on their side when their score reaches zero.
 - [ ] Handle Game Over state, and resetting game.
@@ -28,3 +28,4 @@ cargo run --release
 - [ ] Use updated textures rather than the originals?
 - [ ] Use a Rust gear logo texture?
 - [ ] Add shadowed directional light for the sun?
+- [ ] Add 3D text instructions and scores? (eg. [Bevy Text Mesh](https://github.com/blaind/bevy_text_mesh))
