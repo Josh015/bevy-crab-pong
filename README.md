@@ -13,7 +13,7 @@ cargo run --release
 ## TODO
 
 - [x] Set up a basic Bevy engine project.
-- [ ] Stub out and white box the scene with color tints.
+- [x] White box the scene with tinted quads & cubes.
 - [ ] Port the core game logic to the white box.
 - [ ] Add config files for all game settings.
 - [ ] Add 3D text instructions and scores (eg. [Bevy Text Mesh](https://github.com/blaind/bevy_text_mesh)).
