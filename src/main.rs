@@ -32,13 +32,13 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .insert_resource(config)
         .init_resource::<Game>()
-        .add_startup_system(setup)
+        .add_startup_system(setup_level)
+        .add_startup_system(setup_playable_entities)
         .add_system(sway_camera.system())
         .run();
 }
 
-/// set up a simple 3D scene
-fn setup(
+fn setup_level(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -179,7 +179,84 @@ fn setup(
         ..Default::default()
     });
 
+    // Scores
+    let score_height = 0.0;
+    let score_scale = Vec3::splat(0.25);
+    let score_material = materials.add(Color::rgb(1.0, 0.0, 0.0).into());
+
+    commands.spawn_bundle(PbrBundle {
+        mesh: unit_plane.clone(),
+        material: score_material.clone(),
+        transform: Transform::from_matrix(
+            Mat4::from_scale_rotation_translation(
+                score_scale,
+                Quat::IDENTITY,
+                Vec3::new(0.5, score_height, -0.5),
+            ),
+        ),
+        ..Default::default()
+    });
+
+    commands.spawn_bundle(PbrBundle {
+        mesh: unit_plane.clone(),
+        material: score_material.clone(),
+        transform: Transform::from_matrix(
+            Mat4::from_scale_rotation_translation(
+                score_scale,
+                Quat::IDENTITY,
+                Vec3::new(1.5, score_height, 0.5),
+            ),
+        ),
+        ..Default::default()
+    });
+
+    commands.spawn_bundle(PbrBundle {
+        mesh: unit_plane.clone(),
+        material: score_material.clone(),
+        transform: Transform::from_matrix(
+            Mat4::from_scale_rotation_translation(
+                score_scale,
+                Quat::IDENTITY,
+                Vec3::new(0.5, score_height, 1.5),
+            ),
+        ),
+        ..Default::default()
+    });
+
+    commands.spawn_bundle(PbrBundle {
+        mesh: unit_plane.clone(),
+        material: score_material.clone(),
+        transform: Transform::from_matrix(
+            Mat4::from_scale_rotation_translation(
+                score_scale,
+                Quat::IDENTITY,
+                Vec3::new(-0.5, score_height, 0.5),
+            ),
+        ),
+        ..Default::default()
+    });
+
+    // light
+    commands.spawn_bundle(PointLightBundle {
+        transform: Transform::from_xyz(4.0, 8.0, 4.0),
+        ..Default::default()
+    });
+
+    // camera
+    commands.spawn_bundle(PerspectiveCameraBundle {
+        transform: Transform::from_xyz(0.5, 2.5, 5.0)
+            .looking_at(Vec3::new(0.5, 0.0, 0.5), Vec3::Y),
+        ..Default::default()
+    });
+}
+
+fn setup_playable_entities(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
     // Crabs
+    let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
     let crab_scale = Vec3::splat(0.1);
     let crab_height = 0.05;
 
@@ -239,63 +316,6 @@ fn setup(
         ..Default::default()
     });
 
-    // Scores
-    let score_height = 0.0;
-    let score_scale = Vec3::splat(0.25);
-    let score_material = materials.add(Color::rgb(1.0, 0.0, 0.0).into());
-
-    commands.spawn_bundle(PbrBundle {
-        mesh: unit_plane.clone(),
-        material: score_material.clone(),
-        transform: Transform::from_matrix(
-            Mat4::from_scale_rotation_translation(
-                score_scale,
-                Quat::IDENTITY,
-                Vec3::new(0.5, score_height, -0.5),
-            ),
-        ),
-        ..Default::default()
-    });
-
-    commands.spawn_bundle(PbrBundle {
-        mesh: unit_plane.clone(),
-        material: score_material.clone(),
-        transform: Transform::from_matrix(
-            Mat4::from_scale_rotation_translation(
-                score_scale,
-                Quat::IDENTITY,
-                Vec3::new(1.5, score_height, 0.5),
-            ),
-        ),
-        ..Default::default()
-    });
-
-    commands.spawn_bundle(PbrBundle {
-        mesh: unit_plane.clone(),
-        material: score_material.clone(),
-        transform: Transform::from_matrix(
-            Mat4::from_scale_rotation_translation(
-                score_scale,
-                Quat::IDENTITY,
-                Vec3::new(0.5, score_height, 1.5),
-            ),
-        ),
-        ..Default::default()
-    });
-
-    commands.spawn_bundle(PbrBundle {
-        mesh: unit_plane.clone(),
-        material: score_material.clone(),
-        transform: Transform::from_matrix(
-            Mat4::from_scale_rotation_translation(
-                score_scale,
-                Quat::IDENTITY,
-                Vec3::new(-0.5, score_height, 0.5),
-            ),
-        ),
-        ..Default::default()
-    });
-
     // Balls
     let unit_sphere = meshes.add(Mesh::from(shape::Icosphere {
         radius: 0.5,
@@ -327,19 +347,6 @@ fn setup(
                 Vec3::new(0.5, ball_height, 0.5),
             ),
         ),
-        ..Default::default()
-    });
-
-    // light
-    commands.spawn_bundle(PointLightBundle {
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
-        ..Default::default()
-    });
-
-    // camera
-    commands.spawn_bundle(PerspectiveCameraBundle {
-        transform: Transform::from_xyz(0.5, 2.5, 5.0)
-            .looking_at(Vec3::new(0.5, 0.0, 0.5), Vec3::Y),
         ..Default::default()
     });
 }
