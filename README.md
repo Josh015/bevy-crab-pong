@@ -15,7 +15,11 @@ cargo run --release
 - [ ] Populate the basic Bevy engine project code setup.
 - [ ] Stub out and white box the scene with color tints.
 - [ ] Port the core game logic to the white box.
+- [ ] Add config files for all game settings.
 - [ ] Add 3D text instructions and scores (eg. [Bevy Text Mesh](https://github.com/blaind/bevy_text_mesh)).
+- [ ] After a ball passes a goal fade it out and reset it while decrementing that goal's score.
+- [ ] Fade out crabs, remove them, and add barrier on their side when their score reaches zero.
+- [ ] Handle Game Over state, and resetting game.
 - [ ] Add a Ferris model (eg. [Ferris the Crab](https://cults3d.com/en/3d-model/art/ferris-the-crab))
 - [ ] Adjust model textures to support color tinting.
 - [ ] Add "reflections" in the water via mirrored and blended geometry.
