@@ -17,7 +17,7 @@ cargo run --release
 - [x] Add repeating slow swaying motion on camera.
 - [x] Add config files for all game settings.
 - [x] Add 2D UI elements for now.
-- [ ] Get bounded crab movement working.
+- [ ] Get bounded crab walking working.
 - [ ] Get balls bouncing around inside 4 barriers and poles without crabs.
 - [ ] Get balls bouncing off each other.
 - [ ] Get player crab control and bouncing working.

@@ -19,8 +19,8 @@ enum GoalLocation {
     Left,
 }
 
-enum CrabMovementDirection {
-    Stop,
+enum CrabWalking {
+    Stopped,
     Left,
     Right,
 }
@@ -43,7 +43,7 @@ struct AnimatedWater {
 // #[derive(Component)]
 struct Crab {
     goal_location: GoalLocation,
-    direction: CrabMovementDirection,
+    walking: CrabWalking,
     /* TODO: Maybe store a Vec2 'mask' for handling ball collision axis in a
      * generic way? TODO: How to handle zero score shrinking effect? */
 }
@@ -117,7 +117,7 @@ fn main() {
         .add_system(swaying_camera_system)
         .add_system(animated_water_system)
         .add_system(crab_score_system)
-        .add_system(crab_movement_system)
+        .add_system(crab_walking_system)
         .add_system(player_crab_control_system)
         .add_system(ai_crab_control_system)
         .add_system(ball_collision_system)
@@ -464,7 +464,7 @@ fn setup_playable_entities(
         })
         .insert(Crab {
             goal_location: GoalLocation::Top,
-            direction: CrabMovementDirection::Stop,
+            walking: CrabWalking::Stopped,
         })
         .insert(Movable {})
         .insert(Collider::Crab);
@@ -485,7 +485,7 @@ fn setup_playable_entities(
         })
         .insert(Crab {
             goal_location: GoalLocation::Right,
-            direction: CrabMovementDirection::Stop,
+            walking: CrabWalking::Stopped,
         })
         .insert(Movable {})
         .insert(Collider::Crab);
@@ -506,7 +506,7 @@ fn setup_playable_entities(
         })
         .insert(Crab {
             goal_location: GoalLocation::Bottom,
-            direction: CrabMovementDirection::Stop,
+            walking: CrabWalking::Stopped,
         })
         .insert(Movable {})
         .insert(Collider::Crab);
@@ -527,7 +527,7 @@ fn setup_playable_entities(
         })
         .insert(Crab {
             goal_location: GoalLocation::Left,
-            direction: CrabMovementDirection::Stop,
+            walking: CrabWalking::Stopped,
         })
         .insert(Movable {})
         .insert(Collider::Crab);
@@ -614,7 +614,7 @@ fn crab_score_system(game: Res<Game>, mut query: Query<(&mut Text, &Score)>) {
     }
 }
 
-fn crab_movement_system(
+fn crab_walking_system(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &Crab)>,
 ) {
@@ -625,10 +625,10 @@ fn crab_movement_system(
             GoalLocation::Bottom => Vec3::new(-1.0, 0.0, 0.0),
             GoalLocation::Left => Vec3::new(0.0, 0.0, -1.0),
         };
-        let sign = match crab.direction {
-            CrabMovementDirection::Left => 1.0,
-            CrabMovementDirection::Right => -1.0,
-            _ => 0.0,
+        let sign = match crab.walking {
+            CrabWalking::Stopped => 0.0,
+            CrabWalking::Left => 1.0,
+            CrabWalking::Right => -1.0,
         };
 
         transform.translation += sign * left_direction * time.delta_seconds();
@@ -643,11 +643,11 @@ fn player_crab_control_system(
     for (_, mut crab) in query.iter_mut() {
         if crab.goal_location == game.player_goal_location {
             if keyboard_input.pressed(KeyCode::Left) {
-                crab.direction = CrabMovementDirection::Left;
+                crab.walking = CrabWalking::Left;
             } else if keyboard_input.pressed(KeyCode::Right) {
-                crab.direction = CrabMovementDirection::Right;
+                crab.walking = CrabWalking::Right;
             } else {
-                crab.direction = CrabMovementDirection::Stop;
+                crab.walking = CrabWalking::Stopped;
             }
         }
     }
@@ -660,11 +660,11 @@ fn ai_crab_control_system(
     // for (_, mut crab) in query.iter_mut() {
     //     if crab.goal_location != game.player_goal_location {
     //         if keyboard_input.pressed(KeyCode::Left) {
-    //             crab.direction = CrabMovementDirection::Left;
+    //             crab.direction = CrabWalking::Left;
     //         } else if keyboard_input.pressed(KeyCode::Right) {
-    //             crab.direction = CrabMovementDirection::Right;
+    //             crab.direction = CrabWalking::Right;
     //         } else {
-    //             crab.direction = CrabMovementDirection::Idle;
+    //             crab.direction = CrabWalking::Stopped;
     //         }
     //     }
     // }
