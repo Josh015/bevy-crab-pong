@@ -1,10 +1,23 @@
 mod files;
 
 use bevy::{
+    ecs::prelude::*,
     prelude::*,
     render::camera::{Camera, PerspectiveProjection},
 };
 use serde::Deserialize;
+
+enum CrabId {
+    Orange,
+    Blue,
+    Red,
+    Purple,
+}
+
+// #[derive(Component)]
+struct Score {
+    crab_id: CrabId,
+}
 
 #[derive(Debug, Deserialize)]
 struct GameConfig {
@@ -200,113 +213,129 @@ fn setup_level(
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
 
     commands.spawn_bundle(UiCameraBundle::default());
-    commands.spawn_bundle(TextBundle {
-        style: Style {
-            align_self: AlignSelf::FlexEnd,
-            position_type: PositionType::Absolute,
-            justify_content: JustifyContent::Center,
-            position: Rect {
-                top: Val::Px(5.0),
-                right: Val::Px(5.0),
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                position: Rect {
+                    top: Val::Px(5.0),
+                    right: Val::Px(5.0),
+                    ..Default::default()
+                },
                 ..Default::default()
             },
+            text: Text::with_section(
+                "20",
+                TextStyle {
+                    font: font.clone(),
+                    font_size: 50.0,
+                    color: Color::RED,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    vertical: VerticalAlign::Center,
+                },
+            ),
             ..Default::default()
-        },
-        text: Text::with_section(
-            "20",
-            TextStyle {
-                font: font.clone(),
-                font_size: 50.0,
-                color: Color::RED,
-            },
-            TextAlignment {
-                horizontal: HorizontalAlign::Center,
-                vertical: VerticalAlign::Center,
-            },
-        ),
-        ..Default::default()
-    });
+        })
+        .insert(Score {
+            crab_id: CrabId::Blue,
+        });
 
-    commands.spawn_bundle(TextBundle {
-        style: Style {
-            align_self: AlignSelf::FlexEnd,
-            position_type: PositionType::Absolute,
-            justify_content: JustifyContent::Center,
-            position: Rect {
-                bottom: Val::Px(5.0),
-                right: Val::Px(5.0),
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                position: Rect {
+                    bottom: Val::Px(5.0),
+                    right: Val::Px(5.0),
+                    ..Default::default()
+                },
                 ..Default::default()
             },
+            text: Text::with_section(
+                "20",
+                TextStyle {
+                    font: font.clone(),
+                    font_size: 50.0,
+                    color: Color::RED,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    vertical: VerticalAlign::Center,
+                },
+            ),
             ..Default::default()
-        },
-        text: Text::with_section(
-            "20",
-            TextStyle {
-                font: font.clone(),
-                font_size: 50.0,
-                color: Color::RED,
-            },
-            TextAlignment {
-                horizontal: HorizontalAlign::Center,
-                vertical: VerticalAlign::Center,
-            },
-        ),
-        ..Default::default()
-    });
+        })
+        .insert(Score {
+            crab_id: CrabId::Red,
+        });
 
-    commands.spawn_bundle(TextBundle {
-        style: Style {
-            align_self: AlignSelf::FlexEnd,
-            position_type: PositionType::Absolute,
-            justify_content: JustifyContent::Center,
-            position: Rect {
-                bottom: Val::Px(5.0),
-                left: Val::Px(5.0),
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                position: Rect {
+                    bottom: Val::Px(5.0),
+                    left: Val::Px(5.0),
+                    ..Default::default()
+                },
                 ..Default::default()
             },
+            text: Text::with_section(
+                "20",
+                TextStyle {
+                    font: font.clone(),
+                    font_size: 50.0,
+                    color: Color::RED,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    vertical: VerticalAlign::Center,
+                },
+            ),
             ..Default::default()
-        },
-        text: Text::with_section(
-            "20",
-            TextStyle {
-                font: font.clone(),
-                font_size: 50.0,
-                color: Color::RED,
-            },
-            TextAlignment {
-                horizontal: HorizontalAlign::Center,
-                vertical: VerticalAlign::Center,
-            },
-        ),
-        ..Default::default()
-    });
+        })
+        .insert(Score {
+            crab_id: CrabId::Purple,
+        });
 
-    commands.spawn_bundle(TextBundle {
-        style: Style {
-            align_self: AlignSelf::FlexEnd,
-            position_type: PositionType::Absolute,
-            justify_content: JustifyContent::Center,
-            position: Rect {
-                top: Val::Px(5.0),
-                left: Val::Px(5.0),
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                position: Rect {
+                    top: Val::Px(5.0),
+                    left: Val::Px(5.0),
+                    ..Default::default()
+                },
                 ..Default::default()
             },
+            text: Text::with_section(
+                "20",
+                TextStyle {
+                    font: font.clone(),
+                    font_size: 50.0,
+                    color: Color::RED,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    vertical: VerticalAlign::Center,
+                },
+            ),
             ..Default::default()
-        },
-        text: Text::with_section(
-            "20",
-            TextStyle {
-                font: font.clone(),
-                font_size: 50.0,
-                color: Color::RED,
-            },
-            TextAlignment {
-                horizontal: HorizontalAlign::Center,
-                vertical: VerticalAlign::Center,
-            },
-        ),
-        ..Default::default()
-    });
+        })
+        .insert(Score {
+            crab_id: CrabId::Orange,
+        });
 
     // let score_height = 0.0;
     // let score_scale = Vec3::splat(0.25);

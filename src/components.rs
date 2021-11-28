@@ -11,13 +11,6 @@ struct GameConfig {
     ballSpeed: f32,    // ??
 }
 
-enum CrabId {
-    Orange,
-    Blue,
-    Red,
-    Purple,
-}
-
 enum GameScreen {
     Won,
     GameOver,
@@ -43,10 +36,6 @@ struct Crab {
     direction: CrabMovementDirection,
     /* TODO: Maybe store a Vec2 'mask' for handling ball collision axis in a
      * generic way? TODO: How to handle zero score shrinking effect? */
-}
-
-struct Score {
-    crab_id: CrabId,
 }
 
 struct Ball {
