@@ -516,7 +516,7 @@ fn sway_camera(
 ) {
     // Slowly sway the camera back and forth
     let (mut transform, _, _) = query.single_mut();
-    let x = 0.25 + (0.75 - 0.25) * game.camera_angle.sin();
+    let x = (game.camera_angle.sin() + 0.5) * 0.5;
 
     game.camera_angle += config.camera_sway_speed * time.delta_seconds();
     game.camera_angle %= std::f32::consts::TAU;
