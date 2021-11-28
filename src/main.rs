@@ -81,8 +81,8 @@ fn setup_level(
 
     // camera
     commands.spawn_bundle(PerspectiveCameraBundle {
-        transform: Transform::from_xyz(0.5, 2.5, 5.0)
-            .looking_at(Vec3::new(0.5, 0.0, 0.5), Vec3::Y),
+        transform: Transform::from_xyz(0.0, 2.5, 5.0)
+            .looking_at(Vec3::ZERO, Vec3::Y),
         ..Default::default()
     });
 
@@ -92,7 +92,7 @@ fn setup_level(
     commands.spawn_bundle(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Plane { size: 100.0 })),
         material: materials.add(Color::hex("257AFF").unwrap().into()),
-        transform: Transform::from_xyz(0.5, -0.01, 0.5),
+        transform: Transform::from_xyz(0.0, -0.01, 0.0),
         ..Default::default()
     });
 
@@ -100,7 +100,7 @@ fn setup_level(
     commands.spawn_bundle(PbrBundle {
         mesh: unit_plane.clone(),
         material: materials.add(Color::hex("C4BD99").unwrap().into()),
-        transform: Transform::from_xyz(0.5, 0.0, 0.5),
+        transform: Transform::from_xyz(0.0, 0.0, 0.0),
         ..Default::default()
     });
 
@@ -118,7 +118,7 @@ fn setup_level(
             Mat4::from_scale_rotation_translation(
                 barrier_scale,
                 Quat::IDENTITY,
-                Vec3::new(0.0, barrier_height, 0.0),
+                Vec3::new(-0.5, barrier_height, -0.5),
             ),
         ),
         ..Default::default()
@@ -131,7 +131,7 @@ fn setup_level(
             Mat4::from_scale_rotation_translation(
                 barrier_scale,
                 Quat::IDENTITY,
-                Vec3::new(1.0, barrier_height, 0.0),
+                Vec3::new(0.5, barrier_height, -0.5),
             ),
         ),
         ..Default::default()
@@ -144,7 +144,7 @@ fn setup_level(
             Mat4::from_scale_rotation_translation(
                 barrier_scale,
                 Quat::IDENTITY,
-                Vec3::new(1.0, barrier_height, 1.0),
+                Vec3::new(0.5, barrier_height, 0.5),
             ),
         ),
         ..Default::default()
@@ -157,7 +157,7 @@ fn setup_level(
             Mat4::from_scale_rotation_translation(
                 barrier_scale,
                 Quat::IDENTITY,
-                Vec3::new(0.0, barrier_height, 1.0),
+                Vec3::new(-0.5, barrier_height, 0.5),
             ),
         ),
         ..Default::default()
@@ -177,7 +177,7 @@ fn setup_level(
             Mat4::from_scale_rotation_translation(
                 pole_scale_x,
                 Quat::IDENTITY,
-                Vec3::new(0.5, pole_height, 0.0),
+                Vec3::new(0.0, pole_height, -0.5),
             ),
         ),
         ..Default::default()
@@ -190,7 +190,7 @@ fn setup_level(
             Mat4::from_scale_rotation_translation(
                 pole_scale_z,
                 Quat::IDENTITY,
-                Vec3::new(1.0, pole_height, 0.5),
+                Vec3::new(0.5, pole_height, 0.0),
             ),
         ),
         ..Default::default()
@@ -203,7 +203,7 @@ fn setup_level(
             Mat4::from_scale_rotation_translation(
                 pole_scale_x,
                 Quat::IDENTITY,
-                Vec3::new(0.5, pole_height, 1.0),
+                Vec3::new(0.0, pole_height, 0.5),
             ),
         ),
         ..Default::default()
@@ -216,7 +216,7 @@ fn setup_level(
             Mat4::from_scale_rotation_translation(
                 pole_scale_z,
                 Quat::IDENTITY,
-                Vec3::new(0.0, pole_height, 0.5),
+                Vec3::new(-0.5, pole_height, 0.0),
             ),
         ),
         ..Default::default()
@@ -361,7 +361,7 @@ fn setup_level(
     //         Mat4::from_scale_rotation_translation(
     //             score_scale,
     //             Quat::IDENTITY,
-    //             Vec3::new(0.5, score_height, -0.5),
+    //             Vec3::new(0.0, score_height, 0.0),
     //         ),
     //     ),
     //     ..Default::default()
@@ -400,7 +400,7 @@ fn setup_level(
     //         Mat4::from_scale_rotation_translation(
     //             score_scale,
     //             Quat::IDENTITY,
-    //             Vec3::new(-0.5, score_height, 0.5),
+    //             Vec3::new(0.0, score_height, 0.0),
     //         ),
     //     ),
     //     ..Default::default()
@@ -420,7 +420,21 @@ fn setup_playable_entities(
     // Orange Crab
     commands.spawn_bundle(PbrBundle {
         mesh: unit_cube.clone(),
-        material: materials.add(Color::rgb(1.0, 0.5, 0.0).into()),
+        material: materials.add(Color::ORANGE.into()),
+        transform: Transform::from_matrix(
+            Mat4::from_scale_rotation_translation(
+                crab_scale,
+                Quat::IDENTITY,
+                Vec3::new(0.0, crab_height, -0.5),
+            ),
+        ),
+        ..Default::default()
+    });
+
+    // Blue Crab
+    commands.spawn_bundle(PbrBundle {
+        mesh: unit_cube.clone(),
+        material: materials.add(Color::BLUE.into()),
         transform: Transform::from_matrix(
             Mat4::from_scale_rotation_translation(
                 crab_scale,
@@ -431,38 +445,10 @@ fn setup_playable_entities(
         ..Default::default()
     });
 
-    // Blue Crab
-    commands.spawn_bundle(PbrBundle {
-        mesh: unit_cube.clone(),
-        material: materials.add(Color::rgb(0.0, 0.0, 1.0).into()),
-        transform: Transform::from_matrix(
-            Mat4::from_scale_rotation_translation(
-                crab_scale,
-                Quat::IDENTITY,
-                Vec3::new(1.0, crab_height, 0.5),
-            ),
-        ),
-        ..Default::default()
-    });
-
     // Red Crab
     commands.spawn_bundle(PbrBundle {
         mesh: unit_cube.clone(),
-        material: materials.add(Color::rgb(1.0, 0.0, 0.0).into()),
-        transform: Transform::from_matrix(
-            Mat4::from_scale_rotation_translation(
-                crab_scale,
-                Quat::IDENTITY,
-                Vec3::new(0.5, crab_height, 1.0),
-            ),
-        ),
-        ..Default::default()
-    });
-
-    // Purple Crab
-    commands.spawn_bundle(PbrBundle {
-        mesh: unit_cube.clone(),
-        material: materials.add(Color::rgb(1.0, 0.0, 1.0).into()),
+        material: materials.add(Color::RED.into()),
         transform: Transform::from_matrix(
             Mat4::from_scale_rotation_translation(
                 crab_scale,
@@ -473,9 +459,23 @@ fn setup_playable_entities(
         ..Default::default()
     });
 
+    // Purple Crab
+    commands.spawn_bundle(PbrBundle {
+        mesh: unit_cube.clone(),
+        material: materials.add(Color::PURPLE.into()),
+        transform: Transform::from_matrix(
+            Mat4::from_scale_rotation_translation(
+                crab_scale,
+                Quat::IDENTITY,
+                Vec3::new(-0.5, crab_height, 0.0),
+            ),
+        ),
+        ..Default::default()
+    });
+
     // Balls
     let unit_sphere = meshes.add(Mesh::from(shape::Icosphere {
-        radius: 0.5,
+        radius: 1.5,
         subdivisions: 2,
     }));
     let ball_scale = Vec3::splat(0.05);
@@ -488,7 +488,7 @@ fn setup_playable_entities(
             Mat4::from_scale_rotation_translation(
                 ball_scale,
                 Quat::IDENTITY,
-                Vec3::new(0.5, ball_height, 0.5),
+                Vec3::new(0.0, ball_height, 0.0),
             ),
         ),
         ..Default::default()
@@ -501,7 +501,7 @@ fn setup_playable_entities(
             Mat4::from_scale_rotation_translation(
                 ball_scale,
                 Quat::IDENTITY,
-                Vec3::new(0.5, ball_height, 0.5),
+                Vec3::new(0.0, ball_height, 0.0),
             ),
         ),
         ..Default::default()
@@ -516,13 +516,13 @@ fn sway_camera(
 ) {
     // Slowly sway the camera back and forth
     let (mut transform, _, _) = query.single_mut();
-    let x = (game.camera_angle.sin() + 0.5) * 0.5;
+    let x = game.camera_angle.sin() * 0.5;
 
     game.camera_angle += config.camera_sway_speed * time.delta_seconds();
     game.camera_angle %= std::f32::consts::TAU;
 
-    *transform = Transform::from_xyz(x, 2.0, 3.0)
-        .looking_at(Vec3::new(0.5, 0.0, 0.5), Vec3::Y);
+    *transform =
+        Transform::from_xyz(x, 2.0, 3.0).looking_at(Vec3::ZERO, Vec3::Y);
 }
 
 // TODO: Should this be event-based, since the scores only updates on goals or
