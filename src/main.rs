@@ -617,56 +617,19 @@ fn crab_movement_system(
     mut query: Query<(&mut Transform, &Crab)>,
 ) {
     for (mut transform, crab) in query.iter_mut() {
-        match crab {
-            // Top
-            Crab {
-                goal_location: GoalLocation::Top,
-                direction: CrabMovementDirection::Left,
-                ..
-            } => transform.translation.x += time.delta_seconds(),
-            Crab {
-                goal_location: GoalLocation::Top,
-                direction: CrabMovementDirection::Right,
-                ..
-            } => transform.translation.x -= time.delta_seconds(),
+        let left_direction = match crab.goal_location {
+            GoalLocation::Top => Vec3::new(1.0, 0.0, 0.0),
+            GoalLocation::Right => Vec3::new(0.0, 0.0, 1.0),
+            GoalLocation::Bottom => Vec3::new(-1.0, 0.0, 0.0),
+            GoalLocation::Left => Vec3::new(0.0, 0.0, -1.0),
+        };
+        let sign = match crab.direction {
+            CrabMovementDirection::Left => 1.0,
+            CrabMovementDirection::Right => -1.0,
+            _ => 0.0,
+        };
 
-            // Right
-            Crab {
-                goal_location: GoalLocation::Right,
-                direction: CrabMovementDirection::Left,
-                ..
-            } => transform.translation.z += time.delta_seconds(),
-            Crab {
-                goal_location: GoalLocation::Right,
-                direction: CrabMovementDirection::Right,
-                ..
-            } => transform.translation.z -= time.delta_seconds(),
-
-            // Bottom
-            Crab {
-                goal_location: GoalLocation::Bottom,
-                direction: CrabMovementDirection::Left,
-                ..
-            } => transform.translation.x -= time.delta_seconds(),
-            Crab {
-                goal_location: GoalLocation::Bottom,
-                direction: CrabMovementDirection::Right,
-                ..
-            } => transform.translation.x += time.delta_seconds(),
-
-            // Left
-            Crab {
-                goal_location: GoalLocation::Left,
-                direction: CrabMovementDirection::Left,
-                ..
-            } => transform.translation.z -= time.delta_seconds(),
-            Crab {
-                goal_location: GoalLocation::Left,
-                direction: CrabMovementDirection::Right,
-                ..
-            } => transform.translation.z += time.delta_seconds(),
-            _ => {},
-        }
+        transform.translation += sign * left_direction * time.delta_seconds();
     }
 }
 
