@@ -1,6 +1,9 @@
 mod files;
 
-use bevy::{prelude::*, render::camera::Camera};
+use bevy::{
+    prelude::*,
+    render::camera::{Camera, PerspectiveProjection},
+};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -40,9 +43,23 @@ fn main() {
 
 fn setup_level(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    // light
+    commands.spawn_bundle(PointLightBundle {
+        transform: Transform::from_xyz(4.0, 8.0, 4.0),
+        ..Default::default()
+    });
+
+    // camera
+    commands.spawn_bundle(PerspectiveCameraBundle {
+        transform: Transform::from_xyz(0.5, 2.5, 5.0)
+            .looking_at(Vec3::new(0.5, 0.0, 0.5), Vec3::Y),
+        ..Default::default()
+    });
+
     let unit_plane = meshes.add(Mesh::from(shape::Plane { size: 1.0 }));
 
     // Ocean
@@ -180,74 +197,172 @@ fn setup_level(
     });
 
     // Scores
-    let score_height = 0.0;
-    let score_scale = Vec3::splat(0.25);
-    let score_material = materials.add(Color::rgb(1.0, 0.0, 0.0).into());
+    let font = asset_server.load("fonts/FiraSans-Bold.ttf");
 
-    commands.spawn_bundle(PbrBundle {
-        mesh: unit_plane.clone(),
-        material: score_material.clone(),
-        transform: Transform::from_matrix(
-            Mat4::from_scale_rotation_translation(
-                score_scale,
-                Quat::IDENTITY,
-                Vec3::new(0.5, score_height, -0.5),
-            ),
+    commands.spawn_bundle(UiCameraBundle::default());
+    commands.spawn_bundle(TextBundle {
+        style: Style {
+            align_self: AlignSelf::FlexEnd,
+            position_type: PositionType::Absolute,
+            justify_content: JustifyContent::Center,
+            position: Rect {
+                top: Val::Px(5.0),
+                right: Val::Px(5.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+        text: Text::with_section(
+            "20",
+            TextStyle {
+                font: font.clone(),
+                font_size: 50.0,
+                color: Color::RED,
+            },
+            TextAlignment {
+                horizontal: HorizontalAlign::Center,
+                vertical: VerticalAlign::Center,
+            },
         ),
         ..Default::default()
     });
 
-    commands.spawn_bundle(PbrBundle {
-        mesh: unit_plane.clone(),
-        material: score_material.clone(),
-        transform: Transform::from_matrix(
-            Mat4::from_scale_rotation_translation(
-                score_scale,
-                Quat::IDENTITY,
-                Vec3::new(1.5, score_height, 0.5),
-            ),
+    commands.spawn_bundle(TextBundle {
+        style: Style {
+            align_self: AlignSelf::FlexEnd,
+            position_type: PositionType::Absolute,
+            justify_content: JustifyContent::Center,
+            position: Rect {
+                bottom: Val::Px(5.0),
+                right: Val::Px(5.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+        text: Text::with_section(
+            "20",
+            TextStyle {
+                font: font.clone(),
+                font_size: 50.0,
+                color: Color::RED,
+            },
+            TextAlignment {
+                horizontal: HorizontalAlign::Center,
+                vertical: VerticalAlign::Center,
+            },
         ),
         ..Default::default()
     });
 
-    commands.spawn_bundle(PbrBundle {
-        mesh: unit_plane.clone(),
-        material: score_material.clone(),
-        transform: Transform::from_matrix(
-            Mat4::from_scale_rotation_translation(
-                score_scale,
-                Quat::IDENTITY,
-                Vec3::new(0.5, score_height, 1.5),
-            ),
+    commands.spawn_bundle(TextBundle {
+        style: Style {
+            align_self: AlignSelf::FlexEnd,
+            position_type: PositionType::Absolute,
+            justify_content: JustifyContent::Center,
+            position: Rect {
+                bottom: Val::Px(5.0),
+                left: Val::Px(5.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+        text: Text::with_section(
+            "20",
+            TextStyle {
+                font: font.clone(),
+                font_size: 50.0,
+                color: Color::RED,
+            },
+            TextAlignment {
+                horizontal: HorizontalAlign::Center,
+                vertical: VerticalAlign::Center,
+            },
         ),
         ..Default::default()
     });
 
-    commands.spawn_bundle(PbrBundle {
-        mesh: unit_plane.clone(),
-        material: score_material.clone(),
-        transform: Transform::from_matrix(
-            Mat4::from_scale_rotation_translation(
-                score_scale,
-                Quat::IDENTITY,
-                Vec3::new(-0.5, score_height, 0.5),
-            ),
+    commands.spawn_bundle(TextBundle {
+        style: Style {
+            align_self: AlignSelf::FlexEnd,
+            position_type: PositionType::Absolute,
+            justify_content: JustifyContent::Center,
+            position: Rect {
+                top: Val::Px(5.0),
+                left: Val::Px(5.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+        text: Text::with_section(
+            "20",
+            TextStyle {
+                font: font.clone(),
+                font_size: 50.0,
+                color: Color::RED,
+            },
+            TextAlignment {
+                horizontal: HorizontalAlign::Center,
+                vertical: VerticalAlign::Center,
+            },
         ),
         ..Default::default()
     });
 
-    // light
-    commands.spawn_bundle(PointLightBundle {
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
-        ..Default::default()
-    });
+    // let score_height = 0.0;
+    // let score_scale = Vec3::splat(0.25);
+    // let score_material = materials.add(Color::rgb(1.0, 0.0, 0.0).into());
 
-    // camera
-    commands.spawn_bundle(PerspectiveCameraBundle {
-        transform: Transform::from_xyz(0.5, 2.5, 5.0)
-            .looking_at(Vec3::new(0.5, 0.0, 0.5), Vec3::Y),
-        ..Default::default()
-    });
+    // commands.spawn_bundle(PbrBundle {
+    //     mesh: unit_plane.clone(),
+    //     material: score_material.clone(),
+    //     transform: Transform::from_matrix(
+    //         Mat4::from_scale_rotation_translation(
+    //             score_scale,
+    //             Quat::IDENTITY,
+    //             Vec3::new(0.5, score_height, -0.5),
+    //         ),
+    //     ),
+    //     ..Default::default()
+    // });
+
+    // commands.spawn_bundle(PbrBundle {
+    //     mesh: unit_plane.clone(),
+    //     material: score_material.clone(),
+    //     transform: Transform::from_matrix(
+    //         Mat4::from_scale_rotation_translation(
+    //             score_scale,
+    //             Quat::IDENTITY,
+    //             Vec3::new(1.5, score_height, 0.5),
+    //         ),
+    //     ),
+    //     ..Default::default()
+    // });
+
+    // commands.spawn_bundle(PbrBundle {
+    //     mesh: unit_plane.clone(),
+    //     material: score_material.clone(),
+    //     transform: Transform::from_matrix(
+    //         Mat4::from_scale_rotation_translation(
+    //             score_scale,
+    //             Quat::IDENTITY,
+    //             Vec3::new(0.5, score_height, 1.5),
+    //         ),
+    //     ),
+    //     ..Default::default()
+    // });
+
+    // commands.spawn_bundle(PbrBundle {
+    //     mesh: unit_plane.clone(),
+    //     material: score_material.clone(),
+    //     transform: Transform::from_matrix(
+    //         Mat4::from_scale_rotation_translation(
+    //             score_scale,
+    //             Quat::IDENTITY,
+    //             Vec3::new(-0.5, score_height, 0.5),
+    //         ),
+    //     ),
+    //     ..Default::default()
+    // });
 }
 
 fn setup_playable_entities(
@@ -355,10 +470,10 @@ fn sway_camera(
     config: Res<GameConfig>,
     mut game: ResMut<Game>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &Camera)>,
+    mut query: Query<(&mut Transform, &Camera, &PerspectiveProjection)>,
 ) {
     // Slowly sway the camera back and forth
-    let (mut transform, _) = query.single_mut();
+    let (mut transform, _, _) = query.single_mut();
     let x = 0.25 + (0.75 - 0.25) * game.camera_angle.sin();
 
     game.camera_angle += config.camera_sway_speed * time.delta_seconds();
