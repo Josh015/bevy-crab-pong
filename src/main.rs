@@ -1,5 +1,7 @@
 mod files;
 
+use std::collections::HashMap;
+
 use bevy::{
     ecs::prelude::*,
     prelude::*,
@@ -7,6 +9,7 @@ use bevy::{
 };
 use serde::Deserialize;
 
+#[derive(Eq, Hash, PartialEq)]
 enum CrabId {
     Orange,
     Blue,
@@ -29,6 +32,7 @@ struct GameConfig {
 
 #[derive(Default)]
 struct Game {
+    scores: HashMap<CrabId, u32>,
     camera_angle: f32,
 }
 
@@ -47,10 +51,19 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.7, 0.9, 1.0)))
         .add_plugins(DefaultPlugins)
         .insert_resource(config)
-        .init_resource::<Game>()
+        .insert_resource(Game {
+            scores: HashMap::from([
+                (CrabId::Orange, 20),
+                (CrabId::Blue, 20),
+                (CrabId::Red, 20),
+                (CrabId::Purple, 20),
+            ]),
+            ..Default::default()
+        })
         .add_startup_system(setup_level)
         .add_startup_system(setup_playable_entities)
         .add_system(sway_camera)
+        .add_system(display_scores)
         .run();
 }
 
@@ -227,7 +240,7 @@ fn setup_level(
                 ..Default::default()
             },
             text: Text::with_section(
-                "20",
+                "",
                 TextStyle {
                     font: font.clone(),
                     font_size: 50.0,
@@ -258,7 +271,7 @@ fn setup_level(
                 ..Default::default()
             },
             text: Text::with_section(
-                "20",
+                "",
                 TextStyle {
                     font: font.clone(),
                     font_size: 50.0,
@@ -289,7 +302,7 @@ fn setup_level(
                 ..Default::default()
             },
             text: Text::with_section(
-                "20",
+                "",
                 TextStyle {
                     font: font.clone(),
                     font_size: 50.0,
@@ -320,7 +333,7 @@ fn setup_level(
                 ..Default::default()
             },
             text: Text::with_section(
-                "20",
+                "",
                 TextStyle {
                     font: font.clone(),
                     font_size: 50.0,
@@ -510,4 +523,11 @@ fn sway_camera(
 
     *transform = Transform::from_xyz(x, 2.0, 3.0)
         .looking_at(Vec3::new(0.5, 0.0, 0.5), Vec3::Y);
+}
+
+fn display_scores(game: Res<Game>, mut query: Query<(&mut Text, &Score)>) {
+    for (mut text, score) in query.iter_mut() {
+        let score_value = game.scores[&score.crab_id];
+        text.sections[0].value = score_value.to_string();
+    }
 }
