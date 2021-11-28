@@ -27,7 +27,7 @@ enum CrabMovementDirection {
 
 #[derive(/* Component, */ Default)]
 struct SwayingCamera {
-    camera_angle: f32,
+    angle: f32,
 }
 
 // #[derive(Component)]
@@ -77,6 +77,7 @@ struct GameConfig {
     width: u32,
     height: u32,
     swaying_camera_speed: f32,
+    animated_water_speed: f32,
     /* startingScore: u8, //20,
      * crabSpeed: f32,    // 2.2,
      * ballSpeed: f32,    // ?? */
@@ -582,24 +583,28 @@ fn swaying_camera_system(
 ) {
     // Slowly sway the camera back and forth
     let (mut transform, mut swaying_camera) = query.single_mut();
-    let x = swaying_camera.camera_angle.sin() * 0.5;
+    let x = swaying_camera.angle.sin() * 0.5;
 
     *transform =
         Transform::from_xyz(x, 2.0, 2.0).looking_at(Vec3::ZERO, Vec3::Y);
 
-    swaying_camera.camera_angle +=
-        config.swaying_camera_speed * time.delta_seconds();
-    swaying_camera.camera_angle %= std::f32::consts::TAU;
+    swaying_camera.angle += config.swaying_camera_speed * time.delta_seconds();
+    swaying_camera.angle %= std::f32::consts::TAU;
 }
 
 fn animated_water_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &AnimatedWater)>,
+    mut query: Query<(&mut Transform, &mut AnimatedWater)>,
 ) {
-    // TODO: Translate the plane on the Z-axis, since we currently can't animate
-    // the texture coordinates.
-    let (mut transform, animated_water) = query.single_mut();
+    // Translate the plane on the Z-axis, since we currently can't animate the
+    // texture coordinates.
+    let (mut transform, mut animated_water) = query.single_mut();
+
+    *transform = Transform::from_xyz(0.0, -0.01, animated_water.scroll);
+
+    animated_water.scroll += config.animated_water_speed * time.delta_seconds();
+    animated_water.scroll %= 1.0;
 }
 
 fn crab_score_system(game: Res<Game>, mut query: Query<(&mut Text, &Score)>) {

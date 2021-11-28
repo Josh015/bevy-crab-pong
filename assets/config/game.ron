@@ -3,4 +3,5 @@
   width: 800,
   height: 800,
   swaying_camera_speed: 0.2,
+  animated_water_speed: 0.01,
 )
