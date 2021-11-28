@@ -10,11 +10,17 @@ use bevy::{
 use serde::Deserialize;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
-enum CrabColor {
-    Orange,
-    Blue,
-    Red,
-    Purple,
+enum GameState {
+    Playing,
+    GameOver,
+}
+
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+enum GoalLocation {
+    Top,
+    Right,
+    Bottom,
+    Left,
 }
 
 enum CrabMovementDirection {
@@ -23,15 +29,9 @@ enum CrabMovementDirection {
     Right,
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Hash)]
-enum GameState {
-    Playing,
-    GameOver,
-}
-
 // #[derive(Component)]
 struct Score {
-    crab_color: CrabColor,
+    goal_location: GoalLocation,
 }
 
 // #[derive(Component)]
@@ -41,7 +41,7 @@ struct Water {
 
 // #[derive(Component)]
 struct Crab {
-    color: CrabColor,
+    goal_location: GoalLocation,
     direction: CrabMovementDirection,
     /* TODO: Maybe store a Vec2 'mask' for handling ball collision axis in a
      * generic way? TODO: How to handle zero score shrinking effect? */
@@ -55,7 +55,7 @@ struct Ball {
 
 // #[derive(Component)]
 struct Pole {
-    crab_color: CrabColor,
+    goal_location: GoalLocation,
     // is_active: bool,
 }
 
@@ -63,7 +63,12 @@ struct Pole {
 struct Movable {}
 
 // #[derive(Component)]
-struct Collider {}
+enum Collider {
+    Crab,
+    Ball,
+    Pole,
+    Barrier,
+}
 
 #[derive(Debug, Deserialize)]
 struct GameConfig {
@@ -77,9 +82,9 @@ struct GameConfig {
 }
 
 struct Game {
-    scores: HashMap<CrabColor, u32>,
+    scores: HashMap<GoalLocation, u32>,
     camera_angle: f32,
-    player_crab_color: CrabColor,
+    player_goal_location: GoalLocation,
 }
 
 fn main() {
@@ -99,19 +104,24 @@ fn main() {
         .insert_resource(config)
         .insert_resource(Game {
             scores: HashMap::from([
-                (CrabColor::Orange, 20),
-                (CrabColor::Blue, 20),
-                (CrabColor::Red, 20),
-                (CrabColor::Purple, 20),
+                (GoalLocation::Top, 20),
+                (GoalLocation::Right, 20),
+                (GoalLocation::Bottom, 20),
+                (GoalLocation::Left, 20),
             ]),
-            player_crab_color: CrabColor::Red,
+            player_goal_location: GoalLocation::Bottom,
             camera_angle: 0.0,
         })
         .add_startup_system(setup_level)
         .add_startup_system(setup_playable_entities)
-        .add_system(animate_water)
-        .add_system(sway_camera)
-        .add_system(display_scores)
+        .add_system(animate_water_system)
+        .add_system(sway_camera_system)
+        .add_system(crab_score_system)
+        .add_system(crab_movement_system)
+        .add_system(player_crab_control_system)
+        .add_system(ai_crab_control_system)
+        .add_system(ball_collision_system)
+        .add_system(ball_movement_system)
         .add_system(bevy::input::system::exit_on_esc_system)
         .run();
 }
@@ -175,7 +185,7 @@ fn setup_level(
             ),
             ..Default::default()
         })
-        .insert(Collider {});
+        .insert(Collider::Barrier);
 
     commands
         .spawn_bundle(PbrBundle {
@@ -190,7 +200,7 @@ fn setup_level(
             ),
             ..Default::default()
         })
-        .insert(Collider {});
+        .insert(Collider::Barrier);
 
     commands
         .spawn_bundle(PbrBundle {
@@ -205,7 +215,7 @@ fn setup_level(
             ),
             ..Default::default()
         })
-        .insert(Collider {});
+        .insert(Collider::Barrier);
 
     commands
         .spawn_bundle(PbrBundle {
@@ -220,7 +230,7 @@ fn setup_level(
             ),
             ..Default::default()
         })
-        .insert(Collider {});
+        .insert(Collider::Barrier);
 
     // Poles
     let pole_material = materials.add(Color::hex("00A400").unwrap().into());
@@ -243,9 +253,9 @@ fn setup_level(
             ..Default::default()
         })
         .insert(Pole {
-            crab_color: CrabColor::Orange,
+            goal_location: GoalLocation::Top,
         })
-        .insert(Collider {});
+        .insert(Collider::Pole);
 
     commands
         .spawn_bundle(PbrBundle {
@@ -261,9 +271,9 @@ fn setup_level(
             ..Default::default()
         })
         .insert(Pole {
-            crab_color: CrabColor::Blue,
+            goal_location: GoalLocation::Right,
         })
-        .insert(Collider {});
+        .insert(Collider::Pole);
 
     commands
         .spawn_bundle(PbrBundle {
@@ -279,9 +289,9 @@ fn setup_level(
             ..Default::default()
         })
         .insert(Pole {
-            crab_color: CrabColor::Red,
+            goal_location: GoalLocation::Bottom,
         })
-        .insert(Collider {});
+        .insert(Collider::Pole);
 
     commands
         .spawn_bundle(PbrBundle {
@@ -297,9 +307,9 @@ fn setup_level(
             ..Default::default()
         })
         .insert(Pole {
-            crab_color: CrabColor::Purple,
+            goal_location: GoalLocation::Left,
         })
-        .insert(Collider {});
+        .insert(Collider::Pole);
 
     // Scores
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
@@ -333,7 +343,7 @@ fn setup_level(
             ..Default::default()
         })
         .insert(Score {
-            crab_color: CrabColor::Blue,
+            goal_location: GoalLocation::Right,
         });
 
     commands
@@ -364,7 +374,7 @@ fn setup_level(
             ..Default::default()
         })
         .insert(Score {
-            crab_color: CrabColor::Red,
+            goal_location: GoalLocation::Bottom,
         });
 
     commands
@@ -395,7 +405,7 @@ fn setup_level(
             ..Default::default()
         })
         .insert(Score {
-            crab_color: CrabColor::Purple,
+            goal_location: GoalLocation::Left,
         });
 
     commands
@@ -426,7 +436,7 @@ fn setup_level(
             ..Default::default()
         })
         .insert(Score {
-            crab_color: CrabColor::Orange,
+            goal_location: GoalLocation::Top,
         });
 }
 
@@ -455,11 +465,11 @@ fn setup_playable_entities(
             ..Default::default()
         })
         .insert(Crab {
-            color: CrabColor::Orange,
+            goal_location: GoalLocation::Top,
             direction: CrabMovementDirection::Idle,
         })
         .insert(Movable {})
-        .insert(Collider {});
+        .insert(Collider::Crab);
 
     // Blue Crab
     commands
@@ -476,11 +486,11 @@ fn setup_playable_entities(
             ..Default::default()
         })
         .insert(Crab {
-            color: CrabColor::Blue,
+            goal_location: GoalLocation::Right,
             direction: CrabMovementDirection::Idle,
         })
         .insert(Movable {})
-        .insert(Collider {});
+        .insert(Collider::Crab);
 
     // Red Crab
     commands
@@ -497,11 +507,11 @@ fn setup_playable_entities(
             ..Default::default()
         })
         .insert(Crab {
-            color: CrabColor::Red,
+            goal_location: GoalLocation::Bottom,
             direction: CrabMovementDirection::Idle,
         })
         .insert(Movable {})
-        .insert(Collider {});
+        .insert(Collider::Crab);
 
     // Purple Crab
     commands
@@ -518,11 +528,11 @@ fn setup_playable_entities(
             ..Default::default()
         })
         .insert(Crab {
-            color: CrabColor::Purple,
+            goal_location: GoalLocation::Left,
             direction: CrabMovementDirection::Idle,
         })
         .insert(Movable {})
-        .insert(Collider {});
+        .insert(Collider::Crab);
 
     // Balls
     let unit_sphere = meshes.add(Mesh::from(shape::Icosphere {
@@ -548,7 +558,7 @@ fn setup_playable_entities(
         })
         .insert(Ball {})
         .insert(Movable {})
-        .insert(Collider {});
+        .insert(Collider::Ball);
 
     commands
         .spawn_bundle(PbrBundle {
@@ -565,10 +575,10 @@ fn setup_playable_entities(
         })
         .insert(Ball {})
         .insert(Movable {})
-        .insert(Collider {});
+        .insert(Collider::Ball);
 }
 
-fn sway_camera(
+fn sway_camera_system(
     config: Res<GameConfig>,
     mut game: ResMut<Game>,
     time: Res<Time>,
@@ -585,35 +595,29 @@ fn sway_camera(
         Transform::from_xyz(x, 2.0, 3.0).looking_at(Vec3::ZERO, Vec3::Y);
 }
 
-fn animate_water(
+fn animate_water_system(
     config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<(&mut Transform, &Water)>,
 ) {
-    // TODO: Animate water texture coordinates in the +Y direction.
-    // TODO: .single_mut()
+    // TODO: Translate the plane on the Z-axis, since we currently can't animate
+    // the texture coordinates.
+    let (mut transform, water) = query.single_mut();
 }
 
-// TODO: Should this be event-based, since the scores only updates on goals or
-// game over?
-fn display_scores(game: Res<Game>, mut query: Query<(&mut Text, &Score)>) {
+fn crab_score_system(game: Res<Game>, mut query: Query<(&mut Text, &Score)>) {
     for (mut text, score) in query.iter_mut() {
-        let score_value = game.scores[&score.crab_color];
+        let score_value = game.scores[&score.goal_location];
         text.sections[0].value = score_value.to_string();
     }
 }
 
-// --Systems--
-// One update function for all crabs? Skip for player_crab_color.
-// * load_initial_scene()
-// * load_game_over_scene()
-// * load_new_game_scene() Delay before spawning balls?
-// * update_scores() Crab whose score hits zero needs to have direction set to
-//   Idle and speed set to zero immediately!
-// * player_input()
-// * enemy_ai() May need to work on a fixed timestep.
-// * move_balls() // Handles ball resets as well?
+fn crab_movement_system() {}
 
-// -- General --
-// Instead of mirroring, have reflections be child entities and just move one
-// entity?      What about if we want to add animation in the future?
+fn player_crab_control_system() {}
+
+fn ai_crab_control_system() {}
+
+fn ball_collision_system() {}
+
+fn ball_movement_system() {}
