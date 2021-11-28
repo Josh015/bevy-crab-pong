@@ -592,7 +592,7 @@ fn sway_camera_system(
     game.camera_angle %= std::f32::consts::TAU;
 
     *transform =
-        Transform::from_xyz(x, 2.0, 3.0).looking_at(Vec3::ZERO, Vec3::Y);
+        Transform::from_xyz(x, 2.0, 2.0).looking_at(Vec3::ZERO, Vec3::Y);
 }
 
 fn animate_water_system(
@@ -612,11 +612,101 @@ fn crab_score_system(game: Res<Game>, mut query: Query<(&mut Text, &Score)>) {
     }
 }
 
-fn crab_movement_system() {}
+fn crab_movement_system(
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &Crab)>,
+) {
+    for (mut transform, crab) in query.iter_mut() {
+        match crab {
+            // Top
+            Crab {
+                goal_location: GoalLocation::Top,
+                direction: CrabMovementDirection::Left,
+                ..
+            } => transform.translation.x += time.delta_seconds(),
+            Crab {
+                goal_location: GoalLocation::Top,
+                direction: CrabMovementDirection::Right,
+                ..
+            } => transform.translation.x -= time.delta_seconds(),
 
-fn player_crab_control_system() {}
+            // Right
+            Crab {
+                goal_location: GoalLocation::Right,
+                direction: CrabMovementDirection::Left,
+                ..
+            } => transform.translation.z += time.delta_seconds(),
+            Crab {
+                goal_location: GoalLocation::Right,
+                direction: CrabMovementDirection::Right,
+                ..
+            } => transform.translation.z -= time.delta_seconds(),
 
-fn ai_crab_control_system() {}
+            // Bottom
+            Crab {
+                goal_location: GoalLocation::Bottom,
+                direction: CrabMovementDirection::Left,
+                ..
+            } => transform.translation.x -= time.delta_seconds(),
+            Crab {
+                goal_location: GoalLocation::Bottom,
+                direction: CrabMovementDirection::Right,
+                ..
+            } => transform.translation.x += time.delta_seconds(),
+
+            // Left
+            Crab {
+                goal_location: GoalLocation::Left,
+                direction: CrabMovementDirection::Left,
+                ..
+            } => transform.translation.z -= time.delta_seconds(),
+            Crab {
+                goal_location: GoalLocation::Left,
+                direction: CrabMovementDirection::Right,
+                ..
+            } => transform.translation.z += time.delta_seconds(),
+            _ => {},
+        }
+    }
+}
+
+fn player_crab_control_system(
+    game: Res<Game>,
+    keyboard_input: Res<Input<KeyCode>>,
+    mut query: Query<(&Transform, &mut Crab)>,
+) {
+    for (_, mut crab) in query.iter_mut() {
+        if crab.goal_location == game.player_goal_location {
+            if keyboard_input.pressed(KeyCode::Left) {
+                crab.direction = CrabMovementDirection::Left;
+            } else if keyboard_input.pressed(KeyCode::Right) {
+                crab.direction = CrabMovementDirection::Right;
+            } else {
+                crab.direction = CrabMovementDirection::Idle;
+            }
+        }
+    }
+}
+
+fn ai_crab_control_system(
+    game: Res<Game>,
+    mut query: Query<(&Transform, &mut Crab)>,
+) {
+    // for (_, mut crab) in query.iter_mut() {
+    //     if crab.goal_location != game.player_goal_location {
+    //         if keyboard_input.pressed(KeyCode::Left) {
+    //             crab.direction = CrabMovementDirection::Left;
+    //         } else if keyboard_input.pressed(KeyCode::Right) {
+    //             crab.direction = CrabMovementDirection::Right;
+    //         } else {
+    //             crab.direction = CrabMovementDirection::Idle;
+    //         }
+    //     }
+    // }
+
+    // TODO: Start with test code that randomly picks spots where it will think
+    // the ball is approaching and then have them move towards that spot.
+}
 
 fn ball_collision_system() {}
 
