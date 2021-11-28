@@ -2,5 +2,5 @@
   title: "Bevy Crab Pong",
   width: 800,
   height: 800,
-  camera_sway_speed: 0.2,
+  swaying_camera_speed: 0.2,
 )

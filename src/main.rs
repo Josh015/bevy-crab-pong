@@ -2,11 +2,7 @@ mod files;
 
 use std::collections::HashMap;
 
-use bevy::{
-    ecs::prelude::*,
-    prelude::*,
-    render::camera::{Camera, PerspectiveProjection},
-};
+use bevy::{ecs::prelude::*, prelude::*};
 use serde::Deserialize;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
@@ -24,9 +20,14 @@ enum GoalLocation {
 }
 
 enum CrabMovementDirection {
-    Idle,
+    Stop,
     Left,
     Right,
+}
+
+#[derive(/* Component, */ Default)]
+struct SwayingCamera {
+    camera_angle: f32,
 }
 
 // #[derive(Component)]
@@ -34,8 +35,8 @@ struct Score {
     goal_location: GoalLocation,
 }
 
-// #[derive(Component)]
-struct Water {
+#[derive(/* Component, */ Default)]
+struct AnimatedWater {
     scroll: f32,
 }
 
@@ -75,7 +76,7 @@ struct GameConfig {
     title: String,
     width: u32,
     height: u32,
-    camera_sway_speed: f32,
+    swaying_camera_speed: f32,
     /* startingScore: u8, //20,
      * crabSpeed: f32,    // 2.2,
      * ballSpeed: f32,    // ?? */
@@ -83,7 +84,6 @@ struct GameConfig {
 
 struct Game {
     scores: HashMap<GoalLocation, u32>,
-    camera_angle: f32,
     player_goal_location: GoalLocation,
 }
 
@@ -110,12 +110,11 @@ fn main() {
                 (GoalLocation::Left, 20),
             ]),
             player_goal_location: GoalLocation::Bottom,
-            camera_angle: 0.0,
         })
         .add_startup_system(setup_level)
         .add_startup_system(setup_playable_entities)
-        .add_system(animate_water_system)
-        .add_system(sway_camera_system)
+        .add_system(swaying_camera_system)
+        .add_system(animated_water_system)
         .add_system(crab_score_system)
         .add_system(crab_movement_system)
         .add_system(player_crab_control_system)
@@ -138,12 +137,10 @@ fn setup_level(
         ..Default::default()
     });
 
-    // camera
-    commands.spawn_bundle(PerspectiveCameraBundle {
-        transform: Transform::from_xyz(0.0, 2.5, 5.0)
-            .looking_at(Vec3::ZERO, Vec3::Y),
-        ..Default::default()
-    });
+    // Camera
+    commands
+        .spawn_bundle(PerspectiveCameraBundle::default())
+        .insert(SwayingCamera::default());
 
     let unit_plane = meshes.add(Mesh::from(shape::Plane { size: 1.0 }));
 
@@ -155,7 +152,7 @@ fn setup_level(
             transform: Transform::from_xyz(0.0, -0.01, 0.0),
             ..Default::default()
         })
-        .insert(Water { scroll: 0.0 });
+        .insert(AnimatedWater::default());
 
     // Sand
     commands.spawn_bundle(PbrBundle {
@@ -466,7 +463,7 @@ fn setup_playable_entities(
         })
         .insert(Crab {
             goal_location: GoalLocation::Top,
-            direction: CrabMovementDirection::Idle,
+            direction: CrabMovementDirection::Stop,
         })
         .insert(Movable {})
         .insert(Collider::Crab);
@@ -487,7 +484,7 @@ fn setup_playable_entities(
         })
         .insert(Crab {
             goal_location: GoalLocation::Right,
-            direction: CrabMovementDirection::Idle,
+            direction: CrabMovementDirection::Stop,
         })
         .insert(Movable {})
         .insert(Collider::Crab);
@@ -508,7 +505,7 @@ fn setup_playable_entities(
         })
         .insert(Crab {
             goal_location: GoalLocation::Bottom,
-            direction: CrabMovementDirection::Idle,
+            direction: CrabMovementDirection::Stop,
         })
         .insert(Movable {})
         .insert(Collider::Crab);
@@ -529,7 +526,7 @@ fn setup_playable_entities(
         })
         .insert(Crab {
             goal_location: GoalLocation::Left,
-            direction: CrabMovementDirection::Idle,
+            direction: CrabMovementDirection::Stop,
         })
         .insert(Movable {})
         .insert(Collider::Crab);
@@ -578,31 +575,31 @@ fn setup_playable_entities(
         .insert(Collider::Ball);
 }
 
-fn sway_camera_system(
+fn swaying_camera_system(
     config: Res<GameConfig>,
-    mut game: ResMut<Game>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &Camera, &PerspectiveProjection)>,
+    mut query: Query<(&mut Transform, &mut SwayingCamera)>,
 ) {
     // Slowly sway the camera back and forth
-    let (mut transform, _, _) = query.single_mut();
-    let x = game.camera_angle.sin() * 0.5;
-
-    game.camera_angle += config.camera_sway_speed * time.delta_seconds();
-    game.camera_angle %= std::f32::consts::TAU;
+    let (mut transform, mut swaying_camera) = query.single_mut();
+    let x = swaying_camera.camera_angle.sin() * 0.5;
 
     *transform =
         Transform::from_xyz(x, 2.0, 2.0).looking_at(Vec3::ZERO, Vec3::Y);
+
+    swaying_camera.camera_angle +=
+        config.swaying_camera_speed * time.delta_seconds();
+    swaying_camera.camera_angle %= std::f32::consts::TAU;
 }
 
-fn animate_water_system(
+fn animated_water_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &Water)>,
+    mut query: Query<(&mut Transform, &AnimatedWater)>,
 ) {
     // TODO: Translate the plane on the Z-axis, since we currently can't animate
     // the texture coordinates.
-    let (mut transform, water) = query.single_mut();
+    let (mut transform, animated_water) = query.single_mut();
 }
 
 fn crab_score_system(game: Res<Game>, mut query: Query<(&mut Text, &Score)>) {
@@ -645,7 +642,7 @@ fn player_crab_control_system(
             } else if keyboard_input.pressed(KeyCode::Right) {
                 crab.direction = CrabMovementDirection::Right;
             } else {
-                crab.direction = CrabMovementDirection::Idle;
+                crab.direction = CrabMovementDirection::Stop;
             }
         }
     }
