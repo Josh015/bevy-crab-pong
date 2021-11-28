@@ -525,6 +525,8 @@ fn sway_camera(
         .looking_at(Vec3::new(0.5, 0.0, 0.5), Vec3::Y);
 }
 
+// TODO: Should this be event-based, since the scores only updates on goals or
+// game over?
 fn display_scores(game: Res<Game>, mut query: Query<(&mut Text, &Score)>) {
     for (mut text, score) in query.iter_mut() {
         let score_value = game.scores[&score.crab_id];

@@ -17,7 +17,14 @@ cargo run --release
 - [x] Add repeating slow swaying motion on camera.
 - [x] Add config files for all game settings.
 - [x] Add 2D UI elements for now.
-- [ ] Port the core game logic to the white box.
+- [ ] Get balls bouncing around inside 4 barriers and poles without crabs.
+- [ ] Get balls bouncing off each other.
+- [ ] Get player crab control and bouncing working.
+- [ ] Get ball return working.
+- [ ] Get score decrementing on goal working.
+- [ ] Get game over state working.
+- [ ] Get AI crabs working.
+- [ ] Get win condition working.
 - [ ] After a ball passes a goal fade it out and reset it while decrementing that goal's score.
 - [ ] Fade out crabs, remove them, and add barrier on their side when their score reaches zero.
 - [ ] Handle Game Over state, and resetting game.
