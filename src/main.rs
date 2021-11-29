@@ -174,9 +174,9 @@ fn main() {
         .insert_resource(config)
         .insert_resource(Game::default())
         .add_startup_system(setup)
+        .add_system(display_scores_system)
         .add_system(swaying_camera_system)
         .add_system(animated_water_system)
-        .add_system(display_scores_system)
         .add_system(visibility_lifecycle_system)
         .add_system(crab_visibility_system)
         .add_system(pole_visibility_system)
@@ -203,69 +203,6 @@ fn main() {
         )
         .add_system(bevy::input::system::exit_on_esc_system)
         .run();
-}
-
-fn setup_game_over(
-    game: Res<Game>,
-    mut queries: QuerySet<(
-        QueryState<&mut Visibility, With<Ball>>,
-        QueryState<&Crab, With<Player>>,
-    )>,
-) {
-    // TODO: Should this be different on game start?
-    // Hide balls
-    for mut visibility in queries.q0().iter_mut() {
-        *visibility = Visibility::FadingOut(0.0);
-    }
-
-    // Show win/lose text if there's a player and at least one non-zero score
-    if game.scores.iter().any(|score| score.1 > &0) {
-        for crab in queries.q1().iter() {
-            if game.scores[&crab.goal_location] > 0 {
-                // If player score is non-zero, show win text
-                // TODO: Add win text
-            } else {
-                // If player score is zero, show lose text
-                // TODO: Add loss text
-            }
-        }
-    }
-
-    // Show instructions for new game
-    // TODO: new game text visible
-}
-
-fn setup_new_game(
-    mut game: ResMut<Game>,
-    mut queries: QuerySet<(
-        QueryState<(&mut Transform, &mut Visibility), With<Crab>>,
-        QueryState<&mut Visibility, With<Ball>>,
-        QueryState<&mut Visibility, With<Pole>>,
-    )>,
-) {
-    // TODO: Hide message text
-
-    // Reset crabs
-    for (mut transform, mut visibility) in queries.q0().iter_mut() {
-        *visibility = Visibility::FadingIn(0.0);
-        // TODO: Need to reset crabs to starting positions. Will be easier if we
-        // make their positions relative.
-    }
-
-    // Reset balls
-    for mut visibility in queries.q1().iter_mut() {
-        *visibility = Visibility::Invisible;
-    }
-
-    // Reset poles
-    for mut visibility in queries.q2().iter_mut() {
-        *visibility = Visibility::Invisible;
-    }
-
-    // Reset scores
-    for (_, score) in game.scores.iter_mut() {
-        *score = 20;
-    }
 }
 
 fn setup(
@@ -745,6 +682,16 @@ fn setup(
         .insert(Collider::Circle { radius: 0.0 });
 }
 
+fn display_scores_system(
+    game: Res<Game>,
+    mut query: Query<(&mut Text, &Score)>,
+) {
+    for (mut text, score) in query.iter_mut() {
+        let score_value = game.scores[&score.goal_location];
+        text.sections[0].value = score_value.to_string();
+    }
+}
+
 fn swaying_camera_system(
     config: Res<GameConfig>,
     time: Res<Time>,
@@ -776,13 +723,155 @@ fn animated_water_system(
     animated_water.scroll %= 1.0;
 }
 
-fn display_scores_system(
-    game: Res<Game>,
-    mut query: Query<(&mut Text, &Score)>,
+fn visibility_lifecycle_system(
+    config: Res<GameConfig>,
+    time: Res<Time>,
+    mut query: Query<&mut Visibility>,
 ) {
-    for (mut text, score) in query.iter_mut() {
-        let score_value = game.scores[&score.goal_location];
-        text.sections[0].value = score_value.to_string();
+    let step = config.fading_speed * time.delta_seconds();
+
+    for mut visibility in query.iter_mut() {
+        *visibility = match *visibility {
+            Visibility::Visible => Visibility::Visible,
+            Visibility::Invisible => Visibility::Invisible,
+            Visibility::FadingIn(weight) => {
+                if weight >= 1.0 {
+                    Visibility::Visible
+                } else {
+                    Visibility::FadingIn(weight + step)
+                }
+            },
+            Visibility::FadingOut(weight) => {
+                if weight >= 1.0 {
+                    Visibility::Invisible
+                } else {
+                    Visibility::FadingOut(weight + step)
+                }
+            },
+        }
+    }
+}
+
+fn crab_visibility_system(
+    config: Res<GameConfig>,
+    mut query: Query<(&mut Transform, &Visibility), With<Crab>>,
+) {
+    // Grow/Shrink crabs to show/hide them
+    for (mut transform, visibility) in query.iter_mut() {
+        transform.scale =
+            Vec3::splat(visibility.opacity() * config.crab_max_scale);
+    }
+}
+
+fn pole_visibility_system(
+    config: Res<GameConfig>,
+    mut query: Query<(&mut Transform, &Visibility), With<Pole>>,
+) {
+    // TODO: Grow along YZ, but have X at maximum width so it starts thin and
+    // gets thicker.
+
+    //// Grow/Shrink poles to show/hide them
+    // for (mut transform, visibility) in query.iter_mut() {
+    //     transform.scale =
+    //         Vec3::splat(visibility.opacity() * config.crab_max_scale);
+    // }
+}
+
+fn ball_visibility_system(
+    config: Res<GameConfig>,
+    asset_server: Res<AssetServer>,
+    mut query: Query<
+        (&mut Handle<StandardMaterial>, &mut Visibility),
+        With<Ball>,
+    >,
+) {
+    // Increase/Decrease balls' opacity to show/hide them
+    let mut is_prior_fading = false;
+
+    for (mut material, mut visibility) in query.iter_mut() {
+        let is_current_fading = matches!(*visibility, Visibility::FadingIn(_));
+
+        // Force current ball to wait if other is also fading in
+        if is_prior_fading && is_current_fading {
+            *visibility = Visibility::FadingIn(0.0);
+        } else {
+            is_prior_fading = is_current_fading;
+            // TODO: Reduce ball opacity
+            // asset_server.get_mut(&material).unwrap();
+            // material.base_color.a = visibility.opacity();
+        }
+    }
+}
+
+fn setup_game_over(
+    game: Res<Game>,
+    mut queries: QuerySet<(
+        QueryState<&mut Visibility, With<Ball>>,
+        QueryState<&Crab, With<Player>>,
+    )>,
+) {
+    // TODO: Should this be different on game start?
+    // Hide balls
+    for mut visibility in queries.q0().iter_mut() {
+        *visibility = Visibility::FadingOut(0.0);
+    }
+
+    // Show win/lose text if there's a player and at least one non-zero score
+    if game.scores.iter().any(|score| score.1 > &0) {
+        for crab in queries.q1().iter() {
+            if game.scores[&crab.goal_location] > 0 {
+                // If player score is non-zero, show win text
+                // TODO: Add win text
+            } else {
+                // If player score is zero, show lose text
+                // TODO: Add loss text
+            }
+        }
+    }
+
+    // Show instructions for new game
+    // TODO: new game text visible
+}
+
+fn gameover_keyboard_system(
+    mut state: ResMut<State<GameState>>,
+    keyboard_input: Res<Input<KeyCode>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::Return) {
+        state.set(GameState::Playing).unwrap();
+    }
+}
+
+fn setup_new_game(
+    mut game: ResMut<Game>,
+    mut queries: QuerySet<(
+        QueryState<(&mut Transform, &mut Visibility), With<Crab>>,
+        QueryState<&mut Visibility, With<Ball>>,
+        QueryState<&mut Visibility, With<Pole>>,
+    )>,
+) {
+    // TODO: Hide message text
+
+    // Reset crabs
+    for (mut transform, mut visibility) in queries.q0().iter_mut() {
+        *visibility = Visibility::FadingIn(0.0);
+        // TODO: Need to reset crabs to starting positions. Will be easier if we
+        // make their positions relative.
+    }
+
+    // Reset balls
+    for mut visibility in queries.q1().iter_mut() {
+        *visibility = Visibility::Invisible;
+    }
+
+    // Reset poles
+    for mut visibility in queries.q2().iter_mut() {
+        *visibility = Visibility::Invisible;
+    }
+
+    // Reset scores
+    for (_, score) in game.scores.iter_mut() {
+        *score = 20;
     }
 }
 
@@ -879,7 +968,7 @@ fn ai_crab_control_system(
 ) {
     for (crab_transform, mut crab, visibility) in crab_query.iter_mut() {
         if *visibility == Visibility::Visible {
-            // Pick which ball is closest to this crab's goal.
+            // Pick which ball is closest to this crab's goal
             for ball_transform in balls_query.iter() {
                 // TODO:
                 // Project ball center onto goal line.
@@ -892,7 +981,7 @@ fn ai_crab_control_system(
                 // between the two points.
             }
 
-            // Predict the crab's stop position if it begins decelerating.
+            // Predict the crab's stop position if it begins decelerating
             let stop_position = 0.0;
 
             // Begin decelerating if the ball will land over 70% of the crab's
@@ -905,86 +994,6 @@ fn ai_crab_control_system(
             } else {
                 crab.walking = CrabWalking::Right;
             }
-        }
-    }
-}
-
-fn visibility_lifecycle_system(
-    config: Res<GameConfig>,
-    time: Res<Time>,
-    mut query: Query<&mut Visibility>,
-) {
-    let step = config.fading_speed * time.delta_seconds();
-
-    for mut visibility in query.iter_mut() {
-        *visibility = match *visibility {
-            Visibility::Visible => Visibility::Visible,
-            Visibility::Invisible => Visibility::Invisible,
-            Visibility::FadingIn(weight) => {
-                if weight >= 1.0 {
-                    Visibility::Visible
-                } else {
-                    Visibility::FadingIn(weight + step)
-                }
-            },
-            Visibility::FadingOut(weight) => {
-                if weight >= 1.0 {
-                    Visibility::Invisible
-                } else {
-                    Visibility::FadingOut(weight + step)
-                }
-            },
-        }
-    }
-}
-
-fn crab_visibility_system(
-    config: Res<GameConfig>,
-    mut query: Query<(&mut Transform, &Visibility), With<Crab>>,
-) {
-    // Grow/Shrink crabs to show/hide them
-    for (mut transform, visibility) in query.iter_mut() {
-        transform.scale =
-            Vec3::splat(visibility.opacity() * config.crab_max_scale);
-    }
-}
-
-fn pole_visibility_system(
-    config: Res<GameConfig>,
-    mut query: Query<(&mut Transform, &Visibility), With<Pole>>,
-) {
-    // TODO: Grow along YZ, but have X at maximum width so it starts thin and
-    // gets thicker.
-
-    //// Grow/Shrink poles to show/hide them
-    // for (mut transform, visibility) in query.iter_mut() {
-    //     transform.scale =
-    //         Vec3::splat(visibility.opacity() * config.crab_max_scale);
-    // }
-}
-
-fn ball_visibility_system(
-    config: Res<GameConfig>,
-    asset_server: Res<AssetServer>,
-    mut query: Query<
-        (&mut Handle<StandardMaterial>, &mut Visibility),
-        With<Ball>,
-    >,
-) {
-    // Increase/Decrease balls' opacity to show/hide them
-    let mut is_prior_fading = false;
-
-    for (mut material, mut visibility) in query.iter_mut() {
-        let is_current_fading = matches!(*visibility, Visibility::FadingIn(_));
-
-        // Force current ball to wait if other is also fading in
-        if is_prior_fading && is_current_fading {
-            *visibility = Visibility::FadingIn(0.0);
-        } else {
-            is_prior_fading = is_current_fading;
-            // TODO: Reduce ball opacity
-            // asset_server.get_mut(&material).unwrap();
-            // material.base_color.a = visibility.opacity();
         }
     }
 }
@@ -1036,15 +1045,5 @@ fn ball_movement_system(
             },
             _ => {},
         };
-    }
-}
-
-// TODO: Run for NewGame, Win, and Gameover
-fn gameover_keyboard_system(
-    mut state: ResMut<State<GameState>>,
-    keyboard_input: Res<Input<KeyCode>>,
-) {
-    if keyboard_input.just_pressed(KeyCode::Return) {
-        state.set(GameState::Playing).unwrap();
     }
 }
