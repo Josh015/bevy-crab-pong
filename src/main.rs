@@ -789,9 +789,9 @@ fn crab_walking_system(
 
 fn player_crab_control_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Crab, &Player)>,
+    mut query: Query<&mut Crab, With<Player>>,
 ) {
-    for (mut crab, _) in query.iter_mut() {
+    for mut crab in query.iter_mut() {
         if crab.visibility == Visibility::Visible {
             if keyboard_input.pressed(KeyCode::Left) {
                 crab.walking = CrabWalking::Left;
@@ -805,13 +805,13 @@ fn player_crab_control_system(
 }
 
 fn ai_crab_control_system(
-    balls_query: Query<(&GlobalTransform, &Ball)>,
-    mut crab_query: Query<(&GlobalTransform, &mut Crab, &Opponent)>,
+    balls_query: Query<&GlobalTransform, With<Ball>>,
+    mut crab_query: Query<(&GlobalTransform, &mut Crab), With<Opponent>>,
 ) {
-    for (crab_transform, mut crab, _) in crab_query.iter_mut() {
+    for (crab_transform, mut crab) in crab_query.iter_mut() {
         if crab.visibility == Visibility::Visible {
             // Pick which ball is closest to this crab's goal.
-            for (ball_transform, _) in balls_query.iter() {
+            for ball_transform in balls_query.iter() {
                 // TODO:
                 // Project ball center onto goal line.
                 // Get normalized vector between ball center and projected
@@ -925,14 +925,14 @@ fn ball_movement_system(
     }
 }
 
-fn display_gameover_screen(game: Res<Game>, query: Query<(&Crab, &Player)>) {
+fn display_gameover_screen(game: Res<Game>, query: Query<&Crab, With<Player>>) {
     // TODO: Gameover screen: Fade out balls. Fade out the last crab that
     // lost. Preserve crab(s) that didn't lose. Preserve scores. Disable AI,
     // collisions, ball return, etc.
 
     // Show win/lose text if there's a player and at least one non-zero score.
     if game.scores.iter().any(|score| score.1 > &0) {
-        for (crab, _) in query.iter() {
+        for crab in query.iter() {
             if game.scores[&crab.goal_location] > 0 {
                 // If player score is non-zero, show win text.
             } else {
