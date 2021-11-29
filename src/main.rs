@@ -62,6 +62,31 @@ enum Visibility {
     FadingIn(f32),
 }
 
+impl Visibility {
+    fn step_fading(&self, step: f32) -> (f32, Self) {
+        match self {
+            Visibility::Visible => (1.0, Visibility::Visible),
+            Visibility::Invisible => (0.0, Visibility::Invisible),
+            Visibility::FadingIn(weight) => (
+                *weight,
+                if *weight >= 1.0 {
+                    Visibility::Visible
+                } else {
+                    Visibility::FadingIn(weight + step)
+                },
+            ),
+            Visibility::FadingOut(weight) => (
+                1.0 - *weight,
+                if *weight >= 1.0 {
+                    Visibility::Invisible
+                } else {
+                    Visibility::FadingOut(weight + step)
+                },
+            ),
+        }
+    }
+}
+
 enum CrabWalking {
     Stopped,
     Left,
@@ -98,7 +123,7 @@ impl Default for Crab {
             goal_location: GoalLocation::Bottom,
             walking: CrabWalking::Stopped,
             // visibility: Visibility::Hidden,
-            visibility: Visibility::Visible,
+            visibility: Visibility::FadingIn(0.0),
         }
     }
 }
@@ -820,72 +845,40 @@ fn crab_visibility_system(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut Crab)>,
 ) {
-    let fading_offset = config.fading_speed * time.delta_seconds();
+    let step = config.fading_speed * time.delta_seconds();
 
     for (mut transform, mut crab) in query.iter_mut() {
-        match crab.visibility {
-            Visibility::FadingOut(fading) => {
-                transform.scale = Vec3::splat(fading * config.crab_max_scale);
-
-                if fading <= 0.0 {
-                    crab.visibility = Visibility::Invisible;
-                } else {
-                    crab.visibility =
-                        Visibility::FadingOut(fading - fading_offset);
-                }
-            },
-            Visibility::FadingIn(fading) => {
-                transform.scale = Vec3::splat(fading * config.crab_max_scale);
-
-                if fading >= 1.0 {
-                    crab.visibility = Visibility::Visible;
-                } else {
-                    crab.visibility =
-                        Visibility::FadingIn(fading + fading_offset);
-                }
-            },
-            _ => {},
-        };
+        // Grow/Shrink crab to make it visible/invisible.
+        let (scale, new_visibility) = crab.visibility.step_fading(step);
+        transform.scale = Vec3::splat(scale * config.crab_max_scale);
+        crab.visibility = new_visibility;
     }
 }
 
-// TODO: Figure out correct way to retrieve material.
 fn ball_visibility_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Ball)>,
+    asset_server: Res<AssetServer>,
+    mut query: Query<(&mut Handle<StandardMaterial>, &mut Ball)>,
 ) {
     // TODO: Might cause visual issues if second ball is already resetting when
     // first ball starts.
-    let mut is_previous_ball_resetting = false;
-    let fading_offset = config.fading_speed * time.delta_seconds();
+    let mut is_prior_resetting = false;
+    let step = config.fading_speed * time.delta_seconds();
 
     for (mut material, mut ball) in query.iter_mut() {
-        match ball.visibility {
-            Visibility::FadingOut(fading) => {
-                // TODO: Reduce ball opacity
+        let is_resetting = matches!(ball.visibility, Visibility::FadingIn(_));
 
-                if fading <= 0.0 {
-                    ball.visibility = Visibility::Invisible;
-                } else {
-                    ball.visibility =
-                        Visibility::FadingOut(fading - fading_offset);
-                }
-            },
-            Visibility::FadingIn(fading) if !is_previous_ball_resetting => {
-                is_previous_ball_resetting = true;
+        if !is_prior_resetting || !is_resetting {
+            // Increase/Decrease ball opacity to make it visible/invisible.
+            let (opacity, new_visibility) = ball.visibility.step_fading(step);
 
-                // TODO: Increase ball opacity
-
-                if fading >= 1.0 {
-                    ball.visibility = Visibility::Visible;
-                } else {
-                    ball.visibility =
-                        Visibility::FadingIn(fading + fading_offset);
-                }
-            },
-            _ => {},
-        };
+            // TODO: Reduce ball opacity
+            // asset_server.get_mut(&material).unwrap();
+            // material.base_color.a = opacity;
+            ball.visibility = new_visibility;
+            is_prior_resetting = is_resetting;
+        }
     }
 }
 
@@ -897,7 +890,7 @@ fn ball_collision_system(mut query: Query<(&Transform, &mut Ball)>) {
             // Begin fading out ball when it scores
             if false {
                 // TODO: Run scoring logic
-                ball.visibility = Visibility::FadingOut(1.0);
+                ball.visibility = Visibility::FadingOut(0.0);
             }
         }
     }
