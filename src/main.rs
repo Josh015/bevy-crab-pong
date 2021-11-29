@@ -147,7 +147,8 @@ struct GameConfig {
     height: u32,
     swaying_camera_speed: f32,
     animated_water_speed: f32,
-    crab_maximum_speed: f32,
+    crab_max_scale: f32,
+    crab_max_speed: f32,
     ball_speed: f32,
     fading_speed: f32,
     /* startingScore: u8, //20,
@@ -192,6 +193,7 @@ fn main() {
         .add_system(swaying_camera_system)
         .add_system(animated_water_system)
         .add_system(display_scores_system)
+        .add_system(crab_visibility_system)
         .add_system(crab_walking_system)
         .add_system(player_crab_control_system)
         .add_system(ai_crab_control_system)
@@ -516,13 +518,14 @@ fn setup_level(
 }
 
 fn setup_playable_entities(
+    config: Res<GameConfig>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // Crabs
     let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
-    let crab_scale = Vec3::splat(0.1);
+    let crab_scale = Vec3::splat(config.crab_max_scale);
     let crab_height = 0.05;
 
     // Orange Crab
@@ -727,7 +730,7 @@ fn crab_walking_system(
             // const BARRIER_SIZE: f32 = 0.12;
 
             // // TODO: This is used by multiple functions, but is not
-            // crab-specific. let acceleration = config.crab_maximum_speed /
+            // crab-specific. let acceleration = config.crab_max_speed /
             // TIME_TO_MAXIMUM_SPEED;
 
             // let ds = CRAB_STEP_TIME * acceleration;
@@ -736,8 +739,8 @@ fn crab_walking_system(
             //     crab.speed0 = crab
             //         .speed0
             //         .add(sign * ds)
-            //         .clamp(-config.crab_maximum_speed,
-            // config.crab_maximum_speed); } else {
+            //         .clamp(-config.crab_max_speed,
+            // config.crab_max_speed); } else {
             //     let s = crab.speed0.abs().sub(ds).min(0.0);
             //     crab.speed0 = crab.speed0.min(-s).max(s); // Can't use
             // clamp() here. }
@@ -822,7 +825,7 @@ fn crab_visibility_system(
     for (mut transform, mut crab) in query.iter_mut() {
         match crab.visibility {
             Visibility::FadingOut(fading) => {
-                // TODO: Reduce crab size
+                transform.scale = Vec3::splat(fading * config.crab_max_scale);
 
                 if fading <= 0.0 {
                     crab.visibility = Visibility::Invisible;
@@ -832,7 +835,7 @@ fn crab_visibility_system(
                 }
             },
             Visibility::FadingIn(fading) => {
-                // TODO: Increase crab size
+                transform.scale = Vec3::splat(fading * config.crab_max_scale);
 
                 if fading >= 1.0 {
                     crab.visibility = Visibility::Visible;

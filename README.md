@@ -13,11 +13,12 @@ cargo run --release
 ## TODO
 
 - [x] Set up a basic Bevy engine project.
+- [x] Add config files for all game settings.
 - [x] White box the scene with tinted quads & cubes.
 - [x] Add repeating slow swaying motion on camera.
-- [x] Add config files for all game settings.
-- [x] Add 2D UI elements for now.
-- [x] Get two balls to launch in random directions in succession.
+- [x] Add placeholder 2D UI elements.
+- [x] Add two balls that launch in random directions in succession.
+- [ ] Add ball visibility system to fade them into/from view.
 - [ ] Get ball return working.
 - [ ] Get bounded crab walking working.
 - [ ] Get balls bouncing around inside 4 barriers and poles without crabs.
@@ -25,6 +26,7 @@ cargo run --release
 - [ ] Get player crab control and bouncing working.
 - [ ] Get score decrementing on goal working.
 - [ ] Get game over state working.
+- [x] Add crab visibility system to grow/shrink them into/from view.
 - [ ] Get AI crabs working.
 - [ ] Get win condition working.
 - [ ] Switch to Bevy's entity IDs instead of custom solution?
