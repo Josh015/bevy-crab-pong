@@ -54,7 +54,7 @@ enum GoalLocation {
     Left,
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, /* Component, */ PartialEq, Debug)]
 enum Visibility {
     Visible,
     FadingOut(f32),
@@ -864,7 +864,7 @@ fn crab_visibility_system(
     config: Res<GameConfig>,
     mut query: Query<(&mut Transform, &Visibility), With<Crab>>,
 ) {
-    // Grow/Shrink crabs to make them visible/invisible.
+    // Grow/Shrink crabs to show/hide them
     for (mut transform, visibility) in query.iter_mut() {
         transform.scale =
             Vec3::splat(visibility.opacity() * config.crab_max_scale);
@@ -874,13 +874,26 @@ fn crab_visibility_system(
 fn ball_visibility_system(
     config: Res<GameConfig>,
     asset_server: Res<AssetServer>,
-    mut query: Query<(&mut Handle<StandardMaterial>, &Visibility), With<Ball>>,
+    mut query: Query<
+        (&mut Handle<StandardMaterial>, &mut Visibility),
+        With<Ball>,
+    >,
 ) {
-    // Increase/Decrease ball opacity to make it visible/invisible.
-    for (mut material, visibility) in query.iter_mut() {
-        // TODO: Reduce ball opacity
-        // asset_server.get_mut(&material).unwrap();
-        // material.base_color.a = visibility.opacity();
+    // Increase/Decrease balls' opacity to show/hide them
+    let mut is_prior_fading = false;
+
+    for (mut material, mut visibility) in query.iter_mut() {
+        let is_current_fading = matches!(*visibility, Visibility::FadingIn(_));
+
+        // Force current ball to wait if other is also fading in
+        if is_prior_fading && is_current_fading {
+            *visibility = Visibility::FadingIn(0.0);
+        } else {
+            is_prior_fading = is_current_fading;
+            // TODO: Reduce ball opacity
+            // asset_server.get_mut(&material).unwrap();
+            // material.base_color.a = visibility.opacity();
+        }
     }
 }
 
