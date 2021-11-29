@@ -119,15 +119,13 @@ struct Opponent;
 
 // #[derive(Component)]
 struct Ball {
-    direction: Vec3,
-    radius: f32,
+    velocity: Vec3,
 }
 
 impl Default for Ball {
     fn default() -> Self {
         Self {
-            direction: Vec3::ZERO,
-            radius: 0.0,
+            velocity: Vec3::ZERO,
         }
     }
 }
@@ -140,8 +138,8 @@ struct Pole {
 
 // #[derive(Component)]
 enum Collider {
-    Rectangle,
-    Circle,
+    Rectangle { width: f32, height: f32 },
+    Circle { radius: f32 },
 }
 
 #[derive(Debug, Deserialize)]
@@ -268,7 +266,7 @@ fn setup_level(
             ),
             ..Default::default()
         })
-        .insert(Collider::Circle);
+        .insert(Collider::Circle { radius: 0.0 });
 
     commands
         .spawn_bundle(PbrBundle {
@@ -283,7 +281,7 @@ fn setup_level(
             ),
             ..Default::default()
         })
-        .insert(Collider::Circle);
+        .insert(Collider::Circle { radius: 0.0 });
 
     commands
         .spawn_bundle(PbrBundle {
@@ -298,7 +296,7 @@ fn setup_level(
             ),
             ..Default::default()
         })
-        .insert(Collider::Circle);
+        .insert(Collider::Circle { radius: 0.0 });
 
     commands
         .spawn_bundle(PbrBundle {
@@ -313,7 +311,7 @@ fn setup_level(
             ),
             ..Default::default()
         })
-        .insert(Collider::Circle);
+        .insert(Collider::Circle { radius: 0.0 });
 
     // Poles
     let pole_material = materials.add(Color::hex("00A400").unwrap().into());
@@ -339,7 +337,10 @@ fn setup_level(
             goal_location: GoalLocation::Top,
         })
         .insert(Visibility::Visible)
-        .insert(Collider::Rectangle);
+        .insert(Collider::Rectangle {
+            width: 0.0,
+            height: 0.0,
+        });
 
     commands
         .spawn_bundle(PbrBundle {
@@ -358,7 +359,10 @@ fn setup_level(
             goal_location: GoalLocation::Right,
         })
         .insert(Visibility::Visible)
-        .insert(Collider::Rectangle);
+        .insert(Collider::Rectangle {
+            width: 0.0,
+            height: 0.0,
+        });
 
     commands
         .spawn_bundle(PbrBundle {
@@ -377,7 +381,10 @@ fn setup_level(
             goal_location: GoalLocation::Bottom,
         })
         .insert(Visibility::Visible)
-        .insert(Collider::Rectangle);
+        .insert(Collider::Rectangle {
+            width: 0.0,
+            height: 0.0,
+        });
 
     commands
         .spawn_bundle(PbrBundle {
@@ -396,7 +403,10 @@ fn setup_level(
             goal_location: GoalLocation::Left,
         })
         .insert(Visibility::Visible)
-        .insert(Collider::Rectangle);
+        .insert(Collider::Rectangle {
+            width: 0.0,
+            height: 0.0,
+        });
 
     // Scores
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
@@ -558,7 +568,10 @@ fn setup_playable_entities(
         })
         .insert(Visibility::FadingIn(0.0))
         .insert(Opponent)
-        .insert(Collider::Rectangle);
+        .insert(Collider::Rectangle {
+            width: 0.0,
+            height: 0.0,
+        });
 
     // Blue Crab
     commands
@@ -580,7 +593,10 @@ fn setup_playable_entities(
         })
         .insert(Visibility::FadingIn(0.0))
         .insert(Opponent)
-        .insert(Collider::Rectangle);
+        .insert(Collider::Rectangle {
+            width: 0.0,
+            height: 0.0,
+        });
 
     // Red Crab
     commands
@@ -602,7 +618,10 @@ fn setup_playable_entities(
         })
         .insert(Visibility::FadingIn(0.0))
         .insert(Player)
-        .insert(Collider::Rectangle);
+        .insert(Collider::Rectangle {
+            width: 0.0,
+            height: 0.0,
+        });
 
     // Purple Crab
     commands
@@ -624,7 +643,10 @@ fn setup_playable_entities(
         })
         .insert(Visibility::FadingIn(0.0))
         .insert(Opponent)
-        .insert(Collider::Rectangle);
+        .insert(Collider::Rectangle {
+            width: 0.0,
+            height: 0.0,
+        });
 
     // Balls
     let unit_sphere = meshes.add(Mesh::from(shape::Icosphere {
@@ -650,7 +672,7 @@ fn setup_playable_entities(
         })
         .insert(Ball::default())
         .insert(Visibility::Invisible)
-        .insert(Collider::Circle);
+        .insert(Collider::Circle { radius: 0.0 });
 
     commands
         .spawn_bundle(PbrBundle {
@@ -667,7 +689,7 @@ fn setup_playable_entities(
         })
         .insert(Ball::default())
         .insert(Visibility::Invisible)
-        .insert(Collider::Circle);
+        .insert(Collider::Circle { radius: 0.0 });
 }
 
 fn swaying_camera_system(
@@ -948,7 +970,7 @@ fn ball_movement_system(
         match *visibility {
             Visibility::Visible | Visibility::FadingOut(_) => {
                 transform.translation +=
-                    ball.direction * config.ball_speed * time.delta_seconds();
+                    ball.velocity * config.ball_speed * time.delta_seconds();
             },
             Visibility::Invisible => {
                 // Move ball back to center, then start fading it into view
@@ -957,9 +979,9 @@ fn ball_movement_system(
 
                 // Give the ball a random direction vector
                 let angle = rng.gen_range(0.0..std::f32::consts::TAU);
-                ball.direction.x = angle.cos();
-                // ball.direction.y = 0.0;
-                ball.direction.z = angle.sin();
+                ball.velocity.x = angle.cos();
+                // ball.velocity.y = 0.0;
+                ball.velocity.z = angle.sin();
             },
             _ => {},
         };
