@@ -140,10 +140,8 @@ struct Pole {
 
 // #[derive(Component)]
 enum Collider {
-    Crab,
-    Ball,
-    Pole,
-    Barrier,
+    Rectangle,
+    Circle,
 }
 
 #[derive(Debug, Deserialize)]
@@ -270,7 +268,7 @@ fn setup_level(
             ),
             ..Default::default()
         })
-        .insert(Collider::Barrier);
+        .insert(Collider::Circle);
 
     commands
         .spawn_bundle(PbrBundle {
@@ -285,7 +283,7 @@ fn setup_level(
             ),
             ..Default::default()
         })
-        .insert(Collider::Barrier);
+        .insert(Collider::Circle);
 
     commands
         .spawn_bundle(PbrBundle {
@@ -300,7 +298,7 @@ fn setup_level(
             ),
             ..Default::default()
         })
-        .insert(Collider::Barrier);
+        .insert(Collider::Circle);
 
     commands
         .spawn_bundle(PbrBundle {
@@ -315,7 +313,7 @@ fn setup_level(
             ),
             ..Default::default()
         })
-        .insert(Collider::Barrier);
+        .insert(Collider::Circle);
 
     // Poles
     let pole_material = materials.add(Color::hex("00A400").unwrap().into());
@@ -341,7 +339,7 @@ fn setup_level(
             goal_location: GoalLocation::Top,
         })
         .insert(Visibility::Visible)
-        .insert(Collider::Pole);
+        .insert(Collider::Rectangle);
 
     commands
         .spawn_bundle(PbrBundle {
@@ -360,7 +358,7 @@ fn setup_level(
             goal_location: GoalLocation::Right,
         })
         .insert(Visibility::Visible)
-        .insert(Collider::Pole);
+        .insert(Collider::Rectangle);
 
     commands
         .spawn_bundle(PbrBundle {
@@ -379,7 +377,7 @@ fn setup_level(
             goal_location: GoalLocation::Bottom,
         })
         .insert(Visibility::Visible)
-        .insert(Collider::Pole);
+        .insert(Collider::Rectangle);
 
     commands
         .spawn_bundle(PbrBundle {
@@ -398,7 +396,7 @@ fn setup_level(
             goal_location: GoalLocation::Left,
         })
         .insert(Visibility::Visible)
-        .insert(Collider::Pole);
+        .insert(Collider::Rectangle);
 
     // Scores
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
@@ -560,7 +558,7 @@ fn setup_playable_entities(
         })
         .insert(Visibility::FadingIn(0.0))
         .insert(Opponent)
-        .insert(Collider::Crab);
+        .insert(Collider::Rectangle);
 
     // Blue Crab
     commands
@@ -582,7 +580,7 @@ fn setup_playable_entities(
         })
         .insert(Visibility::FadingIn(0.0))
         .insert(Opponent)
-        .insert(Collider::Crab);
+        .insert(Collider::Rectangle);
 
     // Red Crab
     commands
@@ -604,7 +602,7 @@ fn setup_playable_entities(
         })
         .insert(Visibility::FadingIn(0.0))
         .insert(Player)
-        .insert(Collider::Crab);
+        .insert(Collider::Rectangle);
 
     // Purple Crab
     commands
@@ -626,7 +624,7 @@ fn setup_playable_entities(
         })
         .insert(Visibility::FadingIn(0.0))
         .insert(Opponent)
-        .insert(Collider::Crab);
+        .insert(Collider::Rectangle);
 
     // Balls
     let unit_sphere = meshes.add(Mesh::from(shape::Icosphere {
@@ -652,7 +650,7 @@ fn setup_playable_entities(
         })
         .insert(Ball::default())
         .insert(Visibility::Invisible)
-        .insert(Collider::Ball);
+        .insert(Collider::Circle);
 
     commands
         .spawn_bundle(PbrBundle {
@@ -669,7 +667,7 @@ fn setup_playable_entities(
         })
         .insert(Ball::default())
         .insert(Visibility::Invisible)
-        .insert(Collider::Ball);
+        .insert(Collider::Circle);
 }
 
 fn swaying_camera_system(
@@ -878,7 +876,7 @@ fn crab_visibility_system(
 
 fn pole_visibility_system(
     config: Res<GameConfig>,
-    mut query: Query<(&mut Transform, &mut Visibility), With<Pole>>,
+    mut query: Query<(&mut Transform, &Visibility), With<Pole>>,
 ) {
     // TODO: Grow along YZ, but have X at maximum width so it starts thin and
     // gets thicker.
