@@ -1,6 +1,41 @@
+// TODO: New game screen: Scores visible and set to 0, barriers up, crabs
+// hidden, balls hidden, new game text visible.
+
+// TODO: Debug option to make all crabs driven by AI? Will need to revise player
+// system to handle no players.
+
+// TODO: Debug option to directly control single ball's exact position with
+// keyboard and see how crabs respond. Can go in goals, triggering a score and
+// ball return?
+
+// TODO: Debug option to add small cubes at the projected points on goals with
+// debug lines to the nearest ball. Also add a line from the crab to a flat but
+// wide cube (to allow both to be visible if they overlap) that matches the
+// crab's hit box dimensions and is positioned where the crab predicts it will
+// stop. One of each per goal so we can spawn them in advance.
+
+/*
+Instead of handling different crabs individually, build Goal with child Barrier, Pole, and Crab together and have crab move on relative transform?
+
+Don't de-spawn anything, just show/hide it based on the mode?
+
+Need to have a flag and a float to handle fading/shrinking.
+
+For crab, need to immediately set to inactive, halt AI, set walking to Stopped, and set fading to zero.
+
+For ball, keep on trajectory until fully faded. Switching to active ball can't start moving until fully faded in.
+
+Start with ball launch and return since we can just pick random directions, check if it's out of bounds, and then run return logic and keep re-launching it!
+
+Need to trigger hide animations of remaining crabs and balls on win/lose event. Disable ball return as well.
+*/
+
 mod files;
 
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    ops::{Add, Sub},
+};
 
 use bevy::{ecs::prelude::*, prelude::*};
 use serde::Deserialize;
@@ -44,9 +79,27 @@ struct AnimatedWater {
 struct Crab {
     goal_location: GoalLocation,
     walking: CrabWalking,
-    /* TODO: Maybe store a Vec2 'mask' for handling ball collision axis in a
-     * generic way? TODO: How to handle zero score shrinking effect? */
+    /* speed0: f32,
+     * pos0: f32, */
 }
+// TODO: How to handle zero score shrinking effect?
+
+impl Default for Crab {
+    fn default() -> Self {
+        Self {
+            goal_location: GoalLocation::Bottom,
+            walking: CrabWalking::Stopped,
+            /* speed0: 0.0,
+             * pos0: 0.0, */
+        }
+    }
+}
+
+// #[derive(Component)]
+struct Player;
+
+// #[derive(Component)]
+struct Opponent;
 
 // #[derive(Component)]
 struct Ball {
@@ -78,14 +131,26 @@ struct GameConfig {
     height: u32,
     swaying_camera_speed: f32,
     animated_water_speed: f32,
+    crab_maximum_speed: f32,
     /* startingScore: u8, //20,
-     * crabSpeed: f32,    // 2.2,
      * ballSpeed: f32,    // ?? */
 }
 
 struct Game {
     scores: HashMap<GoalLocation, u32>,
-    player_goal_location: GoalLocation,
+}
+
+impl Default for Game {
+    fn default() -> Self {
+        Self {
+            scores: HashMap::from([
+                (GoalLocation::Top, 0),
+                (GoalLocation::Right, 0),
+                (GoalLocation::Bottom, 0),
+                (GoalLocation::Left, 0),
+            ]),
+        }
+    }
 }
 
 fn main() {
@@ -103,15 +168,7 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.7, 0.9, 1.0)))
         .add_plugins(DefaultPlugins)
         .insert_resource(config)
-        .insert_resource(Game {
-            scores: HashMap::from([
-                (GoalLocation::Top, 20),
-                (GoalLocation::Right, 20),
-                (GoalLocation::Bottom, 20),
-                (GoalLocation::Left, 20),
-            ]),
-            player_goal_location: GoalLocation::Bottom,
-        })
+        .insert_resource(Game::default())
         .add_startup_system(setup_level)
         .add_startup_system(setup_playable_entities)
         .add_system(swaying_camera_system)
@@ -122,6 +179,7 @@ fn main() {
         .add_system(ai_crab_control_system)
         .add_system(ball_collision_system)
         .add_system(ball_movement_system)
+        .add_system(gameover_keyboard_system)
         .add_system(bevy::input::system::exit_on_esc_system)
         .run();
 }
@@ -464,8 +522,9 @@ fn setup_playable_entities(
         })
         .insert(Crab {
             goal_location: GoalLocation::Top,
-            walking: CrabWalking::Stopped,
+            ..Default::default()
         })
+        .insert(Opponent)
         .insert(Movable {})
         .insert(Collider::Crab);
 
@@ -485,8 +544,9 @@ fn setup_playable_entities(
         })
         .insert(Crab {
             goal_location: GoalLocation::Right,
-            walking: CrabWalking::Stopped,
+            ..Default::default()
         })
+        .insert(Opponent)
         .insert(Movable {})
         .insert(Collider::Crab);
 
@@ -506,8 +566,9 @@ fn setup_playable_entities(
         })
         .insert(Crab {
             goal_location: GoalLocation::Bottom,
-            walking: CrabWalking::Stopped,
+            ..Default::default()
         })
+        .insert(Player)
         .insert(Movable {})
         .insert(Collider::Crab);
 
@@ -527,8 +588,9 @@ fn setup_playable_entities(
         })
         .insert(Crab {
             goal_location: GoalLocation::Left,
-            walking: CrabWalking::Stopped,
+            ..Default::default()
         })
+        .insert(Opponent)
         .insert(Movable {})
         .insert(Collider::Crab);
 
@@ -586,7 +648,7 @@ fn swaying_camera_system(
     let x = swaying_camera.angle.sin() * 0.5;
 
     *transform =
-        Transform::from_xyz(x, 2.0, 2.0).looking_at(Vec3::ZERO, Vec3::Y);
+        Transform::from_xyz(x, 2.25, 2.0).looking_at(Vec3::ZERO, Vec3::Y);
 
     swaying_camera.angle += config.swaying_camera_speed * time.delta_seconds();
     swaying_camera.angle %= std::f32::consts::TAU;
@@ -615,10 +677,13 @@ fn crab_score_system(game: Res<Game>, mut query: Query<(&mut Text, &Score)>) {
 }
 
 fn crab_walking_system(
+    config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &Crab)>,
+    mut query: Query<(&mut Transform, &mut Crab)>,
 ) {
-    for (mut transform, crab) in query.iter_mut() {
+    for (mut transform, mut crab) in query.iter_mut() {
+        // TODO: This direction remapping can go away if we parent the crabs and
+        // make it all relative!
         let left_direction = match crab.goal_location {
             GoalLocation::Top => Vec3::new(1.0, 0.0, 0.0),
             GoalLocation::Right => Vec3::new(0.0, 0.0, 1.0),
@@ -632,47 +697,123 @@ fn crab_walking_system(
         };
 
         transform.translation += sign * left_direction * time.delta_seconds();
+
+        // TODO: speed0 is used for predicting stop position is AI.
+        // TODO: pos0
+
+        // // Accelerate the crab
+        // const CRAB_STEP_TIME: f32 = 0.01;
+        // const TIME_TO_MAXIMUM_SPEED: f32 = 0.18;
+        // const CRAB_LENGTH: f32 = 0.2;
+        // //The radius of the four barriers positioned at the corners
+        // const BARRIER_SIZE: f32 = 0.12;
+
+        // // TODO: This is used by multiple functions, but is not
+        // crab-specific. let acceleration = config.crab_maximum_speed /
+        // TIME_TO_MAXIMUM_SPEED;
+
+        // let ds = CRAB_STEP_TIME * acceleration;
+
+        // if sign != 0.0 {
+        //     crab.speed0 = crab
+        //         .speed0
+        //         .add(sign * ds)
+        //         .clamp(-config.crab_maximum_speed,
+        // config.crab_maximum_speed); } else {
+        //     let s = crab.speed0.abs().sub(ds).min(0.0);
+        //     crab.speed0 = crab.speed0.min(-s).max(s); // Can't use clamp()
+        // here. }
+
+        // // Move the crab
+        // crab.pos0 += CRAB_STEP_TIME * crab.speed0;
+
+        // if crab.pos0 < BARRIER_SIZE + CRAB_LENGTH / 2.0 {
+        //     crab.pos0 = BARRIER_SIZE + CRAB_LENGTH / 2.0;
+        //     crab.speed0 = 0.0;
+        // } else if crab.pos0 > 1.0 - BARRIER_SIZE - CRAB_LENGTH / 2.0 {
+        //     crab.pos0 = 1.0 - BARRIER_SIZE - CRAB_LENGTH / 2.0;
+        //     crab.speed0 = 0.0;
+        // }
+
+        // transform.translation =
+        //     crab.pos0 * sign * left_direction * time.delta_seconds();
     }
 }
 
 fn player_crab_control_system(
-    game: Res<Game>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&Transform, &mut Crab)>,
+    mut query: Query<(&mut Crab, &Player)>,
 ) {
-    for (_, mut crab) in query.iter_mut() {
-        if crab.goal_location == game.player_goal_location {
-            if keyboard_input.pressed(KeyCode::Left) {
-                crab.walking = CrabWalking::Left;
-            } else if keyboard_input.pressed(KeyCode::Right) {
-                crab.walking = CrabWalking::Right;
-            } else {
-                crab.walking = CrabWalking::Stopped;
-            }
+    for (mut crab, _) in query.iter_mut() {
+        if keyboard_input.pressed(KeyCode::Left) {
+            crab.walking = CrabWalking::Left;
+        } else if keyboard_input.pressed(KeyCode::Right) {
+            crab.walking = CrabWalking::Right;
+        } else {
+            crab.walking = CrabWalking::Stopped;
         }
     }
 }
 
 fn ai_crab_control_system(
-    game: Res<Game>,
-    mut query: Query<(&Transform, &mut Crab)>,
+    balls_query: Query<(&GlobalTransform, &Ball)>,
+    mut crab_query: Query<(&GlobalTransform, &mut Crab, &Opponent)>,
 ) {
-    // for (_, mut crab) in query.iter_mut() {
-    //     if crab.goal_location != game.player_goal_location {
-    //         if keyboard_input.pressed(KeyCode::Left) {
-    //             crab.direction = CrabWalking::Left;
-    //         } else if keyboard_input.pressed(KeyCode::Right) {
-    //             crab.direction = CrabWalking::Right;
-    //         } else {
-    //             crab.direction = CrabWalking::Stopped;
-    //         }
-    //     }
-    // }
+    for (crab_transform, mut crab, _) in crab_query.iter_mut() {
+        // Pick which ball is closest to this crab's goal.
+        for (ball_transform, _) in balls_query.iter() {
+            // TODO:
+            // Project ball center onto goal line.
+            // Get normalized vector between ball center and projected point.
+            // Multiply normal by radius, and offset from ball center.
+            // Get `ball_distance` between offset point and projected point.
+            // Get `target_position` by figuring out which extent it is closer
+            // to to find sign and make a weight between the two
+            // points.
+        }
 
-    // TODO: Start with test code that randomly picks spots where it will think
-    // the ball is approaching and then have them move towards that spot.
+        // Predict the crab's stop position if it begins decelerating.
+        let stop_position = 0.0;
+
+        // Begin decelerating if the ball will land over 70% of the crab's
+        // middle at its predicted stop position. Otherwise go left/right
+        // depending on which side of the crab it's approaching.
+        if true {
+            crab.walking = CrabWalking::Stopped;
+        } else if false {
+            crab.walking = CrabWalking::Left;
+        } else {
+            crab.walking = CrabWalking::Right;
+        }
+    }
 }
 
 fn ball_collision_system() {}
 
 fn ball_movement_system() {}
+
+fn display_gameover_screen(game: Res<Game>, query: Query<(&Crab, &Player)>) {
+    // TODO: Gameover screen: Fade out balls. Fade out the last crab that
+    // lost. Preserve crab(s) that didn't lose. Preserve scores. Disable AI,
+    // collisions, ball return, etc.
+
+    // Show win/lose text if there's a player and at least one non-zero score.
+    if game.scores.iter().any(|score| score.1 > &0) {
+        for (crab, _) in query.iter() {
+            if game.scores[&crab.goal_location] > 0 {
+                // If player score is non-zero, show win text.
+            } else {
+                // If player score is zero, show lose text.
+            }
+        }
+    }
+
+    // Show instructions for new game.
+}
+
+// TODO: Run for NewGame, Win, and Gameover
+fn gameover_keyboard_system(keyboard_input: Res<Input<KeyCode>>) {
+    if keyboard_input.just_pressed(KeyCode::Return) {
+        // TODO: ENTER starts new game.
+    }
+}
