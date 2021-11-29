@@ -33,7 +33,7 @@ enum GameState {
     GameOver,
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+#[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
 enum GoalLocation {
     Top,
     Right,
@@ -98,11 +98,11 @@ impl Default for Crab {
     }
 }
 
-// #[derive(Component)]
-struct Player;
-
-// #[derive(Component)]
-struct Opponent;
+#[derive(Clone, /* Component, */ Copy, Eq, PartialEq, Debug, Hash)]
+enum Pilot {
+    Player,
+    Ai,
+}
 
 // #[derive(Component)]
 struct Ball {
@@ -212,6 +212,9 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let unit_plane = meshes.add(Mesh::from(shape::Plane { size: 1.0 }));
+    let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
+
     // light
     commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
@@ -222,8 +225,6 @@ fn setup(
     commands
         .spawn_bundle(PerspectiveCameraBundle::default())
         .insert(SwayingCamera::default());
-
-    let unit_plane = meshes.add(Mesh::from(shape::Plane { size: 1.0 }));
 
     // Ocean
     commands
@@ -243,167 +244,106 @@ fn setup(
         ..Default::default()
     });
 
-    let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
-
-    // Barriers
-    let barrier_material = materials.add(Color::hex("750000").unwrap().into());
-    let barrier_height = 0.1;
-    let barrier_scale = Vec3::splat(0.20);
-
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_cube.clone(),
-            material: barrier_material.clone(),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    barrier_scale,
-                    Quat::IDENTITY,
-                    Vec3::new(-0.5, barrier_height, -0.5),
-                ),
-            ),
-            ..Default::default()
-        })
-        .insert(Collider::Circle { radius: 0.0 });
-
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_cube.clone(),
-            material: barrier_material.clone(),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    barrier_scale,
-                    Quat::IDENTITY,
-                    Vec3::new(0.5, barrier_height, -0.5),
-                ),
-            ),
-            ..Default::default()
-        })
-        .insert(Collider::Circle { radius: 0.0 });
-
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_cube.clone(),
-            material: barrier_material.clone(),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    barrier_scale,
-                    Quat::IDENTITY,
-                    Vec3::new(0.5, barrier_height, 0.5),
-                ),
-            ),
-            ..Default::default()
-        })
-        .insert(Collider::Circle { radius: 0.0 });
-
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_cube.clone(),
-            material: barrier_material.clone(),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    barrier_scale,
-                    Quat::IDENTITY,
-                    Vec3::new(-0.5, barrier_height, 0.5),
-                ),
-            ),
-            ..Default::default()
-        })
-        .insert(Collider::Circle { radius: 0.0 });
+    // Crabs
+    let crab_scale = Vec3::splat(config.crab_max_scale);
+    let crab_height = 0.05;
 
     // Poles
     let pole_material = materials.add(Color::hex("00A400").unwrap().into());
     let pole_height = 0.1;
     let pole_radius = 0.05;
     let pole_scale_x = Vec3::new(1.0, pole_radius, pole_radius);
-    let pole_scale_z = Vec3::new(pole_radius, pole_radius, 1.0);
 
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_cube.clone(),
-            material: pole_material.clone(),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    pole_scale_x,
-                    Quat::IDENTITY,
-                    Vec3::new(0.0, pole_height, -0.5),
-                ),
-            ),
-            ..Default::default()
-        })
-        .insert(Pole {
-            goal_location: GoalLocation::Top,
-        })
-        .insert(Visibility::Visible)
-        .insert(Collider::Rectangle {
-            width: 0.0,
-            height: 0.0,
-        });
+    // Barriers
+    let barrier_material = materials.add(Color::hex("750000").unwrap().into());
+    let barrier_height = 0.1;
+    let barrier_scale = Vec3::splat(0.20);
 
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_cube.clone(),
-            material: pole_material.clone(),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    pole_scale_z,
-                    Quat::IDENTITY,
-                    Vec3::new(0.5, pole_height, 0.0),
-                ),
-            ),
-            ..Default::default()
-        })
-        .insert(Pole {
-            goal_location: GoalLocation::Right,
-        })
-        .insert(Visibility::Visible)
-        .insert(Collider::Rectangle {
-            width: 0.0,
-            height: 0.0,
-        });
+    // Goals
+    let configs = [
+        (Pilot::Player, Color::RED, GoalLocation::Bottom),
+        (Pilot::Ai, Color::PURPLE, GoalLocation::Left),
+        (Pilot::Ai, Color::ORANGE, GoalLocation::Top),
+        (Pilot::Ai, Color::BLUE, GoalLocation::Right),
+    ];
 
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_cube.clone(),
-            material: pole_material.clone(),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    pole_scale_x,
-                    Quat::IDENTITY,
-                    Vec3::new(0.0, pole_height, 0.5),
-                ),
-            ),
-            ..Default::default()
-        })
-        .insert(Pole {
-            goal_location: GoalLocation::Bottom,
-        })
-        .insert(Visibility::Visible)
-        .insert(Collider::Rectangle {
-            width: 0.0,
-            height: 0.0,
-        });
+    for (i, (controller, color, goal_location)) in configs.iter().enumerate() {
+        commands
+            .spawn_bundle(PbrBundle {
+                transform: Transform::from_rotation(Quat::from_axis_angle(
+                    Vec3::Y,
+                    (i as f32 / configs.len() as f32) * std::f32::consts::TAU,
+                ))
+                .mul_transform(Transform::from_xyz(0.0, 0.0, 0.5)),
+                ..Default::default()
+            })
+            .with_children(|parent| {
+                // Crab
+                // NOTE: Treat it as the center of the goal
+                parent
+                    .spawn_bundle(PbrBundle {
+                        mesh: unit_cube.clone(),
+                        material: materials.add(color.clone().into()),
+                        transform: Transform::from_matrix(
+                            Mat4::from_scale_rotation_translation(
+                                crab_scale,
+                                Quat::IDENTITY,
+                                Vec3::new(0.0, crab_height, 0.0),
+                            ),
+                        ),
+                        ..Default::default()
+                    })
+                    .insert(Crab {
+                        goal_location: *goal_location,
+                        ..Default::default()
+                    })
+                    .insert(Visibility::Invisible)
+                    .insert(controller.clone())
+                    .insert(Collider::Rectangle {
+                        width: 0.0,
+                        height: 0.0,
+                    });
 
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_cube.clone(),
-            material: pole_material.clone(),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    pole_scale_z,
-                    Quat::IDENTITY,
-                    Vec3::new(-0.5, pole_height, 0.0),
-                ),
-            ),
-            ..Default::default()
-        })
-        .insert(Pole {
-            goal_location: GoalLocation::Left,
-        })
-        .insert(Visibility::Visible)
-        .insert(Collider::Rectangle {
-            width: 0.0,
-            height: 0.0,
-        });
+                // Pole
+                parent
+                    .spawn_bundle(PbrBundle {
+                        mesh: unit_cube.clone(),
+                        material: pole_material.clone(),
+                        transform: Transform::from_matrix(
+                            Mat4::from_scale_rotation_translation(
+                                pole_scale_x,
+                                Quat::IDENTITY,
+                                Vec3::new(0.0, pole_height, 0.0),
+                            ),
+                        ),
+                        ..Default::default()
+                    })
+                    .insert(Pole {
+                        goal_location: *goal_location,
+                    })
+                    .insert(Visibility::Visible)
+                    .insert(Collider::Rectangle {
+                        width: 0.0,
+                        height: 0.0,
+                    });
+
+                // Barrier
+                parent
+                    .spawn_bundle(PbrBundle {
+                        mesh: unit_cube.clone(),
+                        material: barrier_material.clone(),
+                        transform: Transform::from_matrix(
+                            Mat4::from_scale_rotation_translation(
+                                barrier_scale,
+                                Quat::IDENTITY,
+                                Vec3::new(0.5, barrier_height, 0.0),
+                            ),
+                        ),
+                        ..Default::default()
+                    })
+                    .insert(Collider::Circle { radius: 0.0 });
+            });
+    }
 
     // Scores
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
@@ -531,111 +471,6 @@ fn setup(
         })
         .insert(Score {
             goal_location: GoalLocation::Top,
-        });
-
-    // Crabs
-    let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
-    let crab_scale = Vec3::splat(config.crab_max_scale);
-    let crab_height = 0.05;
-
-    // Orange Crab
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_cube.clone(),
-            material: materials.add(Color::ORANGE.into()),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    crab_scale,
-                    Quat::IDENTITY,
-                    Vec3::new(0.0, crab_height, -0.5),
-                ),
-            ),
-            ..Default::default()
-        })
-        .insert(Crab {
-            goal_location: GoalLocation::Top,
-            ..Default::default()
-        })
-        .insert(Visibility::Invisible)
-        .insert(Opponent)
-        .insert(Collider::Rectangle {
-            width: 0.0,
-            height: 0.0,
-        });
-
-    // Blue Crab
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_cube.clone(),
-            material: materials.add(Color::BLUE.into()),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    crab_scale,
-                    Quat::IDENTITY,
-                    Vec3::new(0.5, crab_height, 0.0),
-                ),
-            ),
-            ..Default::default()
-        })
-        .insert(Crab {
-            goal_location: GoalLocation::Right,
-            ..Default::default()
-        })
-        .insert(Visibility::Invisible)
-        .insert(Opponent)
-        .insert(Collider::Rectangle {
-            width: 0.0,
-            height: 0.0,
-        });
-
-    // Red Crab
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_cube.clone(),
-            material: materials.add(Color::RED.into()),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    crab_scale,
-                    Quat::IDENTITY,
-                    Vec3::new(0.0, crab_height, 0.5),
-                ),
-            ),
-            ..Default::default()
-        })
-        .insert(Crab {
-            goal_location: GoalLocation::Bottom,
-            ..Default::default()
-        })
-        .insert(Visibility::Invisible)
-        .insert(Player)
-        .insert(Collider::Rectangle {
-            width: 0.0,
-            height: 0.0,
-        });
-
-    // Purple Crab
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_cube.clone(),
-            material: materials.add(Color::PURPLE.into()),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    crab_scale,
-                    Quat::IDENTITY,
-                    Vec3::new(-0.5, crab_height, 0.0),
-                ),
-            ),
-            ..Default::default()
-        })
-        .insert(Crab {
-            goal_location: GoalLocation::Left,
-            ..Default::default()
-        })
-        .insert(Visibility::Invisible)
-        .insert(Opponent)
-        .insert(Collider::Rectangle {
-            width: 0.0,
-            height: 0.0,
         });
 
     // Balls
@@ -807,7 +642,7 @@ fn setup_game_over(
     game: Res<Game>,
     mut queries: QuerySet<(
         QueryState<&mut Visibility, With<Ball>>,
-        QueryState<&Crab, With<Player>>,
+        QueryState<(&Crab, &Pilot)>,
     )>,
 ) {
     // TODO: Should this be different on game start?
@@ -818,13 +653,15 @@ fn setup_game_over(
 
     // Show win/lose text if there's a player and at least one non-zero score
     if game.scores.iter().any(|score| score.1 > &0) {
-        for crab in queries.q1().iter() {
-            if game.scores[&crab.goal_location] > 0 {
-                // If player score is non-zero, show win text
-                // TODO: Add win text
-            } else {
-                // If player score is zero, show lose text
-                // TODO: Add loss text
+        for (crab, controller) in queries.q1().iter() {
+            if *controller == Pilot::Player {
+                if game.scores[&crab.goal_location] > 0 {
+                    // If player score is non-zero, show win text
+                    // TODO: Add win text
+                } else {
+                    // If player score is zero, show lose text
+                    // TODO: Add loss text
+                }
             }
         }
     }
@@ -880,16 +717,10 @@ fn crab_walking_system(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut Crab, &Visibility)>,
 ) {
+    let left_direction = Vec3::new(-1.0, 0.0, 0.0);
+
     for (mut transform, mut crab, visibility) in query.iter_mut() {
         if *visibility == Visibility::Visible {
-            // TODO: This direction remapping can go away if we parent the crabs
-            // and make it all relative!
-            let left_direction = match crab.goal_location {
-                GoalLocation::Top => Vec3::new(1.0, 0.0, 0.0),
-                GoalLocation::Right => Vec3::new(0.0, 0.0, 1.0),
-                GoalLocation::Bottom => Vec3::new(-1.0, 0.0, 0.0),
-                GoalLocation::Left => Vec3::new(0.0, 0.0, -1.0),
-            };
             let sign = match crab.walking {
                 CrabWalking::Stopped => 0.0,
                 CrabWalking::Left => 1.0,
@@ -944,10 +775,10 @@ fn crab_walking_system(
 
 fn player_crab_control_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Crab, &Visibility), With<Player>>,
+    mut query: Query<(&mut Crab, &Visibility, &Pilot)>,
 ) {
-    for (mut crab, visibility) in query.iter_mut() {
-        if *visibility == Visibility::Visible {
+    for (mut crab, visibility, controller) in query.iter_mut() {
+        if *visibility == Visibility::Visible && *controller == Pilot::Player {
             if keyboard_input.pressed(KeyCode::Left) {
                 crab.walking = CrabWalking::Left;
             } else if keyboard_input.pressed(KeyCode::Right) {
@@ -961,13 +792,12 @@ fn player_crab_control_system(
 
 fn ai_crab_control_system(
     balls_query: Query<&GlobalTransform, With<Ball>>,
-    mut crab_query: Query<
-        (&GlobalTransform, &mut Crab, &Visibility),
-        With<Opponent>,
-    >,
+    mut crab_query: Query<(&GlobalTransform, &mut Crab, &Visibility, &Pilot)>,
 ) {
-    for (crab_transform, mut crab, visibility) in crab_query.iter_mut() {
-        if *visibility == Visibility::Visible {
+    for (crab_transform, mut crab, visibility, controller) in
+        crab_query.iter_mut()
+    {
+        if *visibility == Visibility::Visible && *controller == Pilot::Ai {
             // Pick which ball is closest to this crab's goal
             for ball_transform in balls_query.iter() {
                 // TODO:
