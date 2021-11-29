@@ -969,8 +969,7 @@ fn ball_movement_system(
     for (mut transform, mut ball, mut visibility) in query.iter_mut() {
         match *visibility {
             Visibility::Visible | Visibility::FadingOut(_) => {
-                transform.translation +=
-                    ball.velocity * config.ball_speed * time.delta_seconds();
+                transform.translation += ball.velocity * time.delta_seconds();
             },
             Visibility::Invisible => {
                 // Move ball back to center, then start fading it into view
@@ -979,9 +978,8 @@ fn ball_movement_system(
 
                 // Give the ball a random direction vector
                 let angle = rng.gen_range(0.0..std::f32::consts::TAU);
-                ball.velocity.x = angle.cos();
-                // ball.velocity.y = 0.0;
-                ball.velocity.z = angle.sin();
+                ball.velocity = config.ball_speed
+                    * Vec3::new(angle.cos(), 0.0, angle.sin());
             },
             _ => {},
         };

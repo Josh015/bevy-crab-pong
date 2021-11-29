@@ -23,11 +23,10 @@ cargo run --release
 - [ ] Get bounded crab walking working.
 - [ ] Get balls bouncing around inside 4 barriers and poles without crabs.
 - [ ] Get balls bouncing off each other.
-- [ ] Get player crab control and bouncing working.
 - [ ] Get score decrementing on goal working.
 - [ ] Get game over state working.
 - [x] Add crab visibility system to grow/shrink them into/from view.
-- [ ] Get AI crabs working.
+- [ ] Add crabs AI.
 - [ ] Get win condition working.
 - [ ] Switch to Bevy's entity IDs instead of custom solution?
 - [ ] After a ball passes a goal fade it out and reset it while decrementing that goal's score.
