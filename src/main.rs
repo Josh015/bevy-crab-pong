@@ -1,6 +1,3 @@
-// TODO: New game screen: Scores visible and set to 0, barriers up, crabs
-// hidden, balls hidden, new game text visible.
-
 // TODO: Debug option to make all crabs driven by AI? Will need to revise player
 // system to handle no players.
 
@@ -14,21 +11,11 @@
 // crab's hit box dimensions and is positioned where the crab predicts it will
 // stop. One of each per goal so we can spawn them in advance.
 
-/*
-Instead of handling different crabs individually, build Goal with child Barrier, Pole, and Crab together and have crab move on relative transform?
+// TODO: Instead of handling different crabs individually, build Goal with child
+// Barrier, Pole, and Crab together and have crab move on relative transform?
 
-Don't de-spawn anything, just show/hide it based on the mode?
-
-Need to have a flag and a float to handle fading/shrinking.
-
-For crab, need to immediately set to inactive, halt AI, set walking to Stopped, and set fading to zero.
-
-For ball, keep on trajectory until fully faded. Switching to active ball can't start moving until fully faded in.
-
-Start with ball launch and return since we can just pick random directions, check if it's out of bounds, and then run return logic and keep re-launching it!
-
-Need to trigger hide animations of remaining crabs and balls on win/lose event. Disable ball return as well.
-*/
+// TODO: For crab, need to immediately set to inactive, halt AI, set walking to
+// Stopped, and set fading to zero.
 
 mod files;
 
@@ -186,26 +173,103 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .insert_resource(config)
         .insert_resource(Game::default())
-        .add_startup_system(setup_level)
-        .add_startup_system(setup_playable_entities)
+        .add_startup_system(setup)
         .add_system(swaying_camera_system)
         .add_system(animated_water_system)
         .add_system(display_scores_system)
         .add_system(visibility_lifecycle_system)
         .add_system(crab_visibility_system)
-        .add_system(crab_walking_system)
-        .add_system(player_crab_control_system)
-        .add_system(ai_crab_control_system)
         .add_system(pole_visibility_system)
         .add_system(ball_visibility_system)
-        .add_system(ball_collision_system)
-        .add_system(ball_movement_system)
-        .add_system(gameover_keyboard_system)
+        .add_state(GameState::GameOver)
+        .add_system_set(
+            SystemSet::on_enter(GameState::Playing)
+                .with_system(setup_game_over),
+        )
+        .add_system_set(
+            SystemSet::on_update(GameState::GameOver)
+                .with_system(gameover_keyboard_system),
+        )
+        .add_system_set(
+            SystemSet::on_enter(GameState::Playing).with_system(setup_new_game),
+        )
+        .add_system_set(
+            SystemSet::on_update(GameState::Playing)
+                .with_system(crab_walking_system)
+                .with_system(player_crab_control_system)
+                .with_system(ai_crab_control_system)
+                .with_system(ball_collision_system)
+                .with_system(ball_movement_system),
+        )
         .add_system(bevy::input::system::exit_on_esc_system)
         .run();
 }
 
-fn setup_level(
+fn setup_game_over(
+    game: Res<Game>,
+    mut queries: QuerySet<(
+        QueryState<&mut Visibility, With<Ball>>,
+        QueryState<&Crab, With<Player>>,
+    )>,
+) {
+    // TODO: Should this be different on game start?
+    // Hide balls
+    for mut visibility in queries.q0().iter_mut() {
+        *visibility = Visibility::FadingOut(0.0);
+    }
+
+    // Show win/lose text if there's a player and at least one non-zero score
+    if game.scores.iter().any(|score| score.1 > &0) {
+        for crab in queries.q1().iter() {
+            if game.scores[&crab.goal_location] > 0 {
+                // If player score is non-zero, show win text
+                // TODO: Add win text
+            } else {
+                // If player score is zero, show lose text
+                // TODO: Add loss text
+            }
+        }
+    }
+
+    // Show instructions for new game
+    // TODO: new game text visible
+}
+
+fn setup_new_game(
+    mut game: ResMut<Game>,
+    mut queries: QuerySet<(
+        QueryState<(&mut Transform, &mut Visibility), With<Crab>>,
+        QueryState<&mut Visibility, With<Ball>>,
+        QueryState<&mut Visibility, With<Pole>>,
+    )>,
+) {
+    // TODO: Hide message text
+
+    // Reset crabs
+    for (mut transform, mut visibility) in queries.q0().iter_mut() {
+        *visibility = Visibility::FadingIn(0.0);
+        // TODO: Need to reset crabs to starting positions. Will be easier if we
+        // make their positions relative.
+    }
+
+    // Reset balls
+    for mut visibility in queries.q1().iter_mut() {
+        *visibility = Visibility::Invisible;
+    }
+
+    // Reset poles
+    for mut visibility in queries.q2().iter_mut() {
+        *visibility = Visibility::Invisible;
+    }
+
+    // Reset scores
+    for (_, score) in game.scores.iter_mut() {
+        *score = 20;
+    }
+}
+
+fn setup(
+    config: Res<GameConfig>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -531,14 +595,7 @@ fn setup_level(
         .insert(Score {
             goal_location: GoalLocation::Top,
         });
-}
 
-fn setup_playable_entities(
-    config: Res<GameConfig>,
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
     // Crabs
     let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
     let crab_scale = Vec3::splat(config.crab_max_scale);
@@ -562,7 +619,7 @@ fn setup_playable_entities(
             goal_location: GoalLocation::Top,
             ..Default::default()
         })
-        .insert(Visibility::FadingIn(0.0))
+        .insert(Visibility::Invisible)
         .insert(Opponent)
         .insert(Collider::Rectangle {
             width: 0.0,
@@ -587,7 +644,7 @@ fn setup_playable_entities(
             goal_location: GoalLocation::Right,
             ..Default::default()
         })
-        .insert(Visibility::FadingIn(0.0))
+        .insert(Visibility::Invisible)
         .insert(Opponent)
         .insert(Collider::Rectangle {
             width: 0.0,
@@ -612,7 +669,7 @@ fn setup_playable_entities(
             goal_location: GoalLocation::Bottom,
             ..Default::default()
         })
-        .insert(Visibility::FadingIn(0.0))
+        .insert(Visibility::Invisible)
         .insert(Player)
         .insert(Collider::Rectangle {
             width: 0.0,
@@ -637,7 +694,7 @@ fn setup_playable_entities(
             goal_location: GoalLocation::Left,
             ..Default::default()
         })
-        .insert(Visibility::FadingIn(0.0))
+        .insert(Visibility::Invisible)
         .insert(Opponent)
         .insert(Collider::Rectangle {
             width: 0.0,
@@ -982,28 +1039,12 @@ fn ball_movement_system(
     }
 }
 
-fn display_gameover_screen(game: Res<Game>, query: Query<&Crab, With<Player>>) {
-    // TODO: Gameover screen: Fade out balls. Fade out the last crab that
-    // lost. Preserve crab(s) that didn't lose. Preserve scores. Disable AI,
-    // collisions, ball return, etc.
-
-    // Show win/lose text if there's a player and at least one non-zero score.
-    if game.scores.iter().any(|score| score.1 > &0) {
-        for crab in query.iter() {
-            if game.scores[&crab.goal_location] > 0 {
-                // If player score is non-zero, show win text.
-            } else {
-                // If player score is zero, show lose text.
-            }
-        }
-    }
-
-    // Show instructions for new game.
-}
-
 // TODO: Run for NewGame, Win, and Gameover
-fn gameover_keyboard_system(keyboard_input: Res<Input<KeyCode>>) {
+fn gameover_keyboard_system(
+    mut state: ResMut<State<GameState>>,
+    keyboard_input: Res<Input<KeyCode>>,
+) {
     if keyboard_input.just_pressed(KeyCode::Return) {
-        // TODO: ENTER starts new game.
+        state.set(GameState::Playing).unwrap();
     }
 }
