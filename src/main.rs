@@ -215,16 +215,21 @@ fn setup(
     let unit_plane = meshes.add(Mesh::from(shape::Plane { size: 1.0 }));
     let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
 
+    // Camera
+    commands
+        .spawn_bundle(PerspectiveCameraBundle::default())
+        .insert(SwayingCamera::default());
+
+    // Scores
+    let font = asset_server.load("fonts/FiraSans-Bold.ttf");
+
+    commands.spawn_bundle(UiCameraBundle::default());
+
     // light
     commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
     });
-
-    // Camera
-    commands
-        .spawn_bundle(PerspectiveCameraBundle::default())
-        .insert(SwayingCamera::default());
 
     // Ocean
     commands
@@ -261,13 +266,51 @@ fn setup(
 
     // Goals
     let configs = [
-        (Pilot::Player, Color::RED, GoalLocation::Bottom),
-        (Pilot::Ai, Color::PURPLE, GoalLocation::Left),
-        (Pilot::Ai, Color::ORANGE, GoalLocation::Top),
-        (Pilot::Ai, Color::BLUE, GoalLocation::Right),
+        (
+            Pilot::Player,
+            Color::RED,
+            GoalLocation::Bottom,
+            Rect {
+                bottom: Val::Px(5.0),
+                right: Val::Px(5.0),
+                ..Default::default()
+            },
+        ),
+        (
+            Pilot::Ai,
+            Color::PURPLE,
+            GoalLocation::Left,
+            Rect {
+                bottom: Val::Px(5.0),
+                left: Val::Px(5.0),
+                ..Default::default()
+            },
+        ),
+        (
+            Pilot::Ai,
+            Color::ORANGE,
+            GoalLocation::Top,
+            Rect {
+                top: Val::Px(5.0),
+                left: Val::Px(5.0),
+                ..Default::default()
+            },
+        ),
+        (
+            Pilot::Ai,
+            Color::BLUE,
+            GoalLocation::Right,
+            Rect {
+                top: Val::Px(5.0),
+                right: Val::Px(5.0),
+                ..Default::default()
+            },
+        ),
     ];
 
-    for (i, (controller, color, goal_location)) in configs.iter().enumerate() {
+    for (i, (controller, color, goal_location, rect)) in
+        configs.iter().enumerate()
+    {
         commands
             .spawn_bundle(PbrBundle {
                 transform: Transform::from_rotation(Quat::from_axis_angle(
@@ -343,135 +386,35 @@ fn setup(
                     })
                     .insert(Collider::Circle { radius: 0.0 });
             });
+
+        // Score
+        commands
+            .spawn_bundle(TextBundle {
+                style: Style {
+                    align_self: AlignSelf::FlexEnd,
+                    position_type: PositionType::Absolute,
+                    justify_content: JustifyContent::Center,
+                    position: *rect,
+                    ..Default::default()
+                },
+                text: Text::with_section(
+                    "",
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: 50.0,
+                        color: Color::RED,
+                    },
+                    TextAlignment {
+                        horizontal: HorizontalAlign::Center,
+                        vertical: VerticalAlign::Center,
+                    },
+                ),
+                ..Default::default()
+            })
+            .insert(Score {
+                goal_location: *goal_location,
+            });
     }
-
-    // Scores
-    let font = asset_server.load("fonts/FiraSans-Bold.ttf");
-
-    commands.spawn_bundle(UiCameraBundle::default());
-    commands
-        .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                justify_content: JustifyContent::Center,
-                position: Rect {
-                    top: Val::Px(5.0),
-                    right: Val::Px(5.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            text: Text::with_section(
-                "",
-                TextStyle {
-                    font: font.clone(),
-                    font_size: 50.0,
-                    color: Color::RED,
-                },
-                TextAlignment {
-                    horizontal: HorizontalAlign::Center,
-                    vertical: VerticalAlign::Center,
-                },
-            ),
-            ..Default::default()
-        })
-        .insert(Score {
-            goal_location: GoalLocation::Right,
-        });
-
-    commands
-        .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                justify_content: JustifyContent::Center,
-                position: Rect {
-                    bottom: Val::Px(5.0),
-                    right: Val::Px(5.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            text: Text::with_section(
-                "",
-                TextStyle {
-                    font: font.clone(),
-                    font_size: 50.0,
-                    color: Color::RED,
-                },
-                TextAlignment {
-                    horizontal: HorizontalAlign::Center,
-                    vertical: VerticalAlign::Center,
-                },
-            ),
-            ..Default::default()
-        })
-        .insert(Score {
-            goal_location: GoalLocation::Bottom,
-        });
-
-    commands
-        .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                justify_content: JustifyContent::Center,
-                position: Rect {
-                    bottom: Val::Px(5.0),
-                    left: Val::Px(5.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            text: Text::with_section(
-                "",
-                TextStyle {
-                    font: font.clone(),
-                    font_size: 50.0,
-                    color: Color::RED,
-                },
-                TextAlignment {
-                    horizontal: HorizontalAlign::Center,
-                    vertical: VerticalAlign::Center,
-                },
-            ),
-            ..Default::default()
-        })
-        .insert(Score {
-            goal_location: GoalLocation::Left,
-        });
-
-    commands
-        .spawn_bundle(TextBundle {
-            style: Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                justify_content: JustifyContent::Center,
-                position: Rect {
-                    top: Val::Px(5.0),
-                    left: Val::Px(5.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            text: Text::with_section(
-                "",
-                TextStyle {
-                    font: font.clone(),
-                    font_size: 50.0,
-                    color: Color::RED,
-                },
-                TextAlignment {
-                    horizontal: HorizontalAlign::Center,
-                    vertical: VerticalAlign::Center,
-                },
-            ),
-            ..Default::default()
-        })
-        .insert(Score {
-            goal_location: GoalLocation::Top,
-        });
 
     // Balls
     let unit_sphere = meshes.add(Mesh::from(shape::Icosphere {
