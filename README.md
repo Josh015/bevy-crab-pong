@@ -28,7 +28,6 @@ cargo run --release
 - [x] Add crab visibility system to grow/shrink them into/from view.
 - [ ] Add crabs AI.
 - [ ] Get win condition working.
-- [ ] Switch to Bevy's entity IDs instead of custom solution?
 - [ ] After a ball passes a goal fade it out and reset it while decrementing that goal's score.
 - [ ] Fade out crabs, remove them, and add barrier on their side when their score reaches zero.
 - [ ] Add new game and game over messages UI.

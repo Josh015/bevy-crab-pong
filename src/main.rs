@@ -33,14 +33,6 @@ enum GameState {
     GameOver,
 }
 
-#[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
-enum GoalLocation {
-    Top,
-    Right,
-    Bottom,
-    Left,
-}
-
 #[derive(Clone, /* Component, */ PartialEq, Debug)]
 enum Visibility {
     Visible,
@@ -72,9 +64,7 @@ struct SwayingCamera {
 }
 
 // #[derive(Component)]
-struct Score {
-    goal_location: GoalLocation,
-}
+struct Score;
 
 #[derive(/* Component, */ Default)]
 struct AnimatedWater {
@@ -83,7 +73,6 @@ struct AnimatedWater {
 
 // #[derive(Component)]
 struct Crab {
-    goal_location: GoalLocation,
     walking: CrabWalking,
     /* speed0: f32,
      * pos0: f32, */
@@ -92,10 +81,17 @@ struct Crab {
 impl Default for Crab {
     fn default() -> Self {
         Self {
-            goal_location: GoalLocation::Bottom,
             walking: CrabWalking::Stopped,
         }
     }
+}
+
+#[derive(Clone, /* Component, */ Copy, Eq, PartialEq, Debug, Hash)]
+enum GoalLocation {
+    Top,
+    Right,
+    Bottom,
+    Left,
 }
 
 #[derive(Clone, /* Component, */ Copy, Eq, PartialEq, Debug, Hash)]
@@ -114,10 +110,7 @@ impl Default for Ball {
 }
 
 // #[derive(Component)]
-struct Pole {
-    goal_location: GoalLocation,
-    // is_active: bool,
-}
+struct Pole;
 
 // #[derive(Component)]
 enum Collider {
@@ -140,21 +133,9 @@ struct GameConfig {
      * ballSpeed: f32,    // ?? */
 }
 
+#[derive(Default)]
 struct Game {
     scores: HashMap<GoalLocation, u32>,
-}
-
-impl Default for Game {
-    fn default() -> Self {
-        Self {
-            scores: HashMap::from([
-                (GoalLocation::Top, 0),
-                (GoalLocation::Right, 0),
-                (GoalLocation::Bottom, 0),
-                (GoalLocation::Left, 0),
-            ]),
-        }
-    }
 }
 
 fn main() {
@@ -206,6 +187,7 @@ fn main() {
 }
 
 fn setup(
+    mut game: ResMut<Game>,
     config: Res<GameConfig>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -336,16 +318,14 @@ fn setup(
                         ),
                         ..Default::default()
                     })
-                    .insert(Crab {
-                        goal_location: *goal_location,
-                        ..Default::default()
-                    })
+                    .insert(Crab::default())
                     .insert(Visibility::Invisible)
                     .insert(controller.clone())
                     .insert(Collider::Rectangle {
                         width: 0.0,
                         height: 0.0,
-                    });
+                    })
+                    .insert(goal_location.clone());
 
                 // Pole
                 parent
@@ -361,9 +341,8 @@ fn setup(
                         ),
                         ..Default::default()
                     })
-                    .insert(Pole {
-                        goal_location: *goal_location,
-                    })
+                    .insert(Pole)
+                    .insert(goal_location.clone())
                     .insert(Visibility::Visible)
                     .insert(Collider::Rectangle {
                         width: 0.0,
@@ -411,9 +390,10 @@ fn setup(
                 ),
                 ..Default::default()
             })
-            .insert(Score {
-                goal_location: *goal_location,
-            });
+            .insert(Score)
+            .insert(goal_location.clone());
+
+        game.scores.insert(goal_location.clone(), 0);
     }
 
     // Balls
@@ -462,10 +442,10 @@ fn setup(
 
 fn display_scores_system(
     game: Res<Game>,
-    mut query: Query<(&mut Text, &Score)>,
+    mut query: Query<(&mut Text, &GoalLocation), With<Score>>,
 ) {
-    for (mut text, score) in query.iter_mut() {
-        let score_value = game.scores[&score.goal_location];
+    for (mut text, goal_location) in query.iter_mut() {
+        let score_value = game.scores[&goal_location];
         text.sections[0].value = score_value.to_string();
     }
 }
@@ -585,7 +565,7 @@ fn setup_game_over(
     game: Res<Game>,
     mut queries: QuerySet<(
         QueryState<&mut Visibility, With<Ball>>,
-        QueryState<(&Crab, &Pilot)>,
+        QueryState<(&Pilot, &GoalLocation), With<Crab>>,
     )>,
 ) {
     // TODO: Should this be different on game start?
@@ -596,9 +576,9 @@ fn setup_game_over(
 
     // Show win/lose text if there's a player and at least one non-zero score
     if game.scores.iter().any(|score| score.1 > &0) {
-        for (crab, controller) in queries.q1().iter() {
-            if *controller == Pilot::Player {
-                if game.scores[&crab.goal_location] > 0 {
+        for (pilot, goal_location) in queries.q1().iter() {
+            if *pilot == Pilot::Player {
+                if game.scores[&goal_location] > 0 {
                     // If player score is non-zero, show win text
                     // TODO: Add win text
                 } else {
