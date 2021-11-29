@@ -204,6 +204,7 @@ fn main() {
         .add_system(crab_walking_system)
         .add_system(player_crab_control_system)
         .add_system(ai_crab_control_system)
+        .add_system(pole_visibility_system)
         .add_system(ball_visibility_system)
         .add_system(ball_collision_system)
         .add_system(ball_movement_system)
@@ -339,6 +340,7 @@ fn setup_level(
         .insert(Pole {
             goal_location: GoalLocation::Top,
         })
+        .insert(Visibility::Visible)
         .insert(Collider::Pole);
 
     commands
@@ -357,6 +359,7 @@ fn setup_level(
         .insert(Pole {
             goal_location: GoalLocation::Right,
         })
+        .insert(Visibility::Visible)
         .insert(Collider::Pole);
 
     commands
@@ -375,6 +378,7 @@ fn setup_level(
         .insert(Pole {
             goal_location: GoalLocation::Bottom,
         })
+        .insert(Visibility::Visible)
         .insert(Collider::Pole);
 
     commands
@@ -393,6 +397,7 @@ fn setup_level(
         .insert(Pole {
             goal_location: GoalLocation::Left,
         })
+        .insert(Visibility::Visible)
         .insert(Collider::Pole);
 
     // Scores
@@ -871,6 +876,20 @@ fn crab_visibility_system(
     }
 }
 
+fn pole_visibility_system(
+    config: Res<GameConfig>,
+    mut query: Query<(&mut Transform, &mut Visibility), With<Pole>>,
+) {
+    // TODO: Grow along YZ, but have X at maximum width so it starts thin and
+    // gets thicker.
+
+    //// Grow/Shrink poles to show/hide them
+    // for (mut transform, visibility) in query.iter_mut() {
+    //     transform.scale =
+    //         Vec3::splat(visibility.opacity() * config.crab_max_scale);
+    // }
+}
+
 fn ball_visibility_system(
     config: Res<GameConfig>,
     asset_server: Res<AssetServer>,
@@ -907,6 +926,13 @@ fn ball_collision_system(
             // Begin fading out ball when it scores
             if false {
                 // TODO: Run scoring logic
+                *visibility = Visibility::FadingOut(0.0);
+            }
+
+            // TODO: Poles can be collided if they are FadingIn or Visible.
+
+            // FIXME: Temporary ball return code.
+            if Vec3::ZERO.distance(transform.translation) >= 1.0 {
                 *visibility = Visibility::FadingOut(0.0);
             }
         }
