@@ -32,13 +32,13 @@ Need to trigger hide animations of remaining crabs and balls on win/lose event. 
 
 mod files;
 
+use bevy::{ecs::prelude::*, prelude::*};
+use rand::prelude::*;
+use serde::Deserialize;
 use std::{
     collections::HashMap,
     ops::{Add, Sub},
 };
-
-use bevy::{ecs::prelude::*, prelude::*};
-use serde::Deserialize;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
@@ -52,6 +52,14 @@ enum GoalLocation {
     Right,
     Bottom,
     Left,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+enum Visibility {
+    Visible,
+    FadingOut(f32),
+    Invisible,
+    FadingIn(f32),
 }
 
 enum CrabWalking {
@@ -79,18 +87,18 @@ struct AnimatedWater {
 struct Crab {
     goal_location: GoalLocation,
     walking: CrabWalking,
+    visibility: Visibility,
     /* speed0: f32,
      * pos0: f32, */
 }
-// TODO: How to handle zero score shrinking effect?
 
 impl Default for Crab {
     fn default() -> Self {
         Self {
             goal_location: GoalLocation::Bottom,
             walking: CrabWalking::Stopped,
-            /* speed0: 0.0,
-             * pos0: 0.0, */
+            // visibility: Visibility::Hidden,
+            visibility: Visibility::Visible,
         }
     }
 }
@@ -103,8 +111,19 @@ struct Opponent;
 
 // #[derive(Component)]
 struct Ball {
-    // active: bool,
-// opacity: f32,
+    direction: Vec3,
+    radius: f32,
+    visibility: Visibility,
+}
+
+impl Default for Ball {
+    fn default() -> Self {
+        Self {
+            direction: Vec3::ZERO,
+            radius: 0.0,
+            visibility: Visibility::Invisible,
+        }
+    }
 }
 
 // #[derive(Component)]
@@ -112,9 +131,6 @@ struct Pole {
     goal_location: GoalLocation,
     // is_active: bool,
 }
-
-// #[derive(Component)]
-struct Movable {}
 
 // #[derive(Component)]
 enum Collider {
@@ -132,6 +148,8 @@ struct GameConfig {
     swaying_camera_speed: f32,
     animated_water_speed: f32,
     crab_maximum_speed: f32,
+    ball_speed: f32,
+    fading_speed: f32,
     /* startingScore: u8, //20,
      * ballSpeed: f32,    // ?? */
 }
@@ -173,10 +191,11 @@ fn main() {
         .add_startup_system(setup_playable_entities)
         .add_system(swaying_camera_system)
         .add_system(animated_water_system)
-        .add_system(crab_score_system)
+        .add_system(display_scores_system)
         .add_system(crab_walking_system)
         .add_system(player_crab_control_system)
         .add_system(ai_crab_control_system)
+        .add_system(ball_visibility_system)
         .add_system(ball_collision_system)
         .add_system(ball_movement_system)
         .add_system(gameover_keyboard_system)
@@ -525,7 +544,6 @@ fn setup_playable_entities(
             ..Default::default()
         })
         .insert(Opponent)
-        .insert(Movable {})
         .insert(Collider::Crab);
 
     // Blue Crab
@@ -547,7 +565,6 @@ fn setup_playable_entities(
             ..Default::default()
         })
         .insert(Opponent)
-        .insert(Movable {})
         .insert(Collider::Crab);
 
     // Red Crab
@@ -569,7 +586,6 @@ fn setup_playable_entities(
             ..Default::default()
         })
         .insert(Player)
-        .insert(Movable {})
         .insert(Collider::Crab);
 
     // Purple Crab
@@ -591,7 +607,6 @@ fn setup_playable_entities(
             ..Default::default()
         })
         .insert(Opponent)
-        .insert(Movable {})
         .insert(Collider::Crab);
 
     // Balls
@@ -616,8 +631,7 @@ fn setup_playable_entities(
             ),
             ..Default::default()
         })
-        .insert(Ball {})
-        .insert(Movable {})
+        .insert(Ball::default())
         .insert(Collider::Ball);
 
     commands
@@ -633,8 +647,7 @@ fn setup_playable_entities(
             ),
             ..Default::default()
         })
-        .insert(Ball {})
-        .insert(Movable {})
+        .insert(Ball::default())
         .insert(Collider::Ball);
 }
 
@@ -669,7 +682,10 @@ fn animated_water_system(
     animated_water.scroll %= 1.0;
 }
 
-fn crab_score_system(game: Res<Game>, mut query: Query<(&mut Text, &Score)>) {
+fn display_scores_system(
+    game: Res<Game>,
+    mut query: Query<(&mut Text, &Score)>,
+) {
     for (mut text, score) in query.iter_mut() {
         let score_value = game.scores[&score.goal_location];
         text.sections[0].value = score_value.to_string();
@@ -682,61 +698,64 @@ fn crab_walking_system(
     mut query: Query<(&mut Transform, &mut Crab)>,
 ) {
     for (mut transform, mut crab) in query.iter_mut() {
-        // TODO: This direction remapping can go away if we parent the crabs and
-        // make it all relative!
-        let left_direction = match crab.goal_location {
-            GoalLocation::Top => Vec3::new(1.0, 0.0, 0.0),
-            GoalLocation::Right => Vec3::new(0.0, 0.0, 1.0),
-            GoalLocation::Bottom => Vec3::new(-1.0, 0.0, 0.0),
-            GoalLocation::Left => Vec3::new(0.0, 0.0, -1.0),
-        };
-        let sign = match crab.walking {
-            CrabWalking::Stopped => 0.0,
-            CrabWalking::Left => 1.0,
-            CrabWalking::Right => -1.0,
-        };
+        if crab.visibility == Visibility::Visible {
+            // TODO: This direction remapping can go away if we parent the crabs
+            // and make it all relative!
+            let left_direction = match crab.goal_location {
+                GoalLocation::Top => Vec3::new(1.0, 0.0, 0.0),
+                GoalLocation::Right => Vec3::new(0.0, 0.0, 1.0),
+                GoalLocation::Bottom => Vec3::new(-1.0, 0.0, 0.0),
+                GoalLocation::Left => Vec3::new(0.0, 0.0, -1.0),
+            };
+            let sign = match crab.walking {
+                CrabWalking::Stopped => 0.0,
+                CrabWalking::Left => 1.0,
+                CrabWalking::Right => -1.0,
+            };
 
-        transform.translation += sign * left_direction * time.delta_seconds();
+            transform.translation +=
+                sign * left_direction * time.delta_seconds();
 
-        // TODO: speed0 is used for predicting stop position is AI.
-        // TODO: pos0
+            // TODO: speed0 is used for predicting stop position is AI.
+            // TODO: pos0
 
-        // // Accelerate the crab
-        // const CRAB_STEP_TIME: f32 = 0.01;
-        // const TIME_TO_MAXIMUM_SPEED: f32 = 0.18;
-        // const CRAB_LENGTH: f32 = 0.2;
-        // //The radius of the four barriers positioned at the corners
-        // const BARRIER_SIZE: f32 = 0.12;
+            // // Accelerate the crab
+            // const CRAB_STEP_TIME: f32 = 0.01;
+            // const TIME_TO_MAXIMUM_SPEED: f32 = 0.18;
+            // const CRAB_LENGTH: f32 = 0.2;
+            // //The radius of the four barriers positioned at the corners
+            // const BARRIER_SIZE: f32 = 0.12;
 
-        // // TODO: This is used by multiple functions, but is not
-        // crab-specific. let acceleration = config.crab_maximum_speed /
-        // TIME_TO_MAXIMUM_SPEED;
+            // // TODO: This is used by multiple functions, but is not
+            // crab-specific. let acceleration = config.crab_maximum_speed /
+            // TIME_TO_MAXIMUM_SPEED;
 
-        // let ds = CRAB_STEP_TIME * acceleration;
+            // let ds = CRAB_STEP_TIME * acceleration;
 
-        // if sign != 0.0 {
-        //     crab.speed0 = crab
-        //         .speed0
-        //         .add(sign * ds)
-        //         .clamp(-config.crab_maximum_speed,
-        // config.crab_maximum_speed); } else {
-        //     let s = crab.speed0.abs().sub(ds).min(0.0);
-        //     crab.speed0 = crab.speed0.min(-s).max(s); // Can't use clamp()
-        // here. }
+            // if sign != 0.0 {
+            //     crab.speed0 = crab
+            //         .speed0
+            //         .add(sign * ds)
+            //         .clamp(-config.crab_maximum_speed,
+            // config.crab_maximum_speed); } else {
+            //     let s = crab.speed0.abs().sub(ds).min(0.0);
+            //     crab.speed0 = crab.speed0.min(-s).max(s); // Can't use
+            // clamp() here. }
 
-        // // Move the crab
-        // crab.pos0 += CRAB_STEP_TIME * crab.speed0;
+            // // Move the crab
+            // crab.pos0 += CRAB_STEP_TIME * crab.speed0;
 
-        // if crab.pos0 < BARRIER_SIZE + CRAB_LENGTH / 2.0 {
-        //     crab.pos0 = BARRIER_SIZE + CRAB_LENGTH / 2.0;
-        //     crab.speed0 = 0.0;
-        // } else if crab.pos0 > 1.0 - BARRIER_SIZE - CRAB_LENGTH / 2.0 {
-        //     crab.pos0 = 1.0 - BARRIER_SIZE - CRAB_LENGTH / 2.0;
-        //     crab.speed0 = 0.0;
-        // }
+            // if crab.pos0 < BARRIER_SIZE + CRAB_LENGTH / 2.0 {
+            //     crab.pos0 = BARRIER_SIZE + CRAB_LENGTH / 2.0;
+            //     crab.speed0 = 0.0;
+            // } else if crab.pos0 > 1.0 - BARRIER_SIZE - CRAB_LENGTH / 2.0 {
+            //     crab.pos0 = 1.0 - BARRIER_SIZE - CRAB_LENGTH / 2.0;
+            //     crab.speed0 = 0.0;
+            // }
 
-        // transform.translation =
-        //     crab.pos0 * sign * left_direction * time.delta_seconds();
+            // transform.translation =
+            //     crab.pos0 * sign * left_direction * time.delta_seconds();
+        }
     }
 }
 
@@ -745,12 +764,14 @@ fn player_crab_control_system(
     mut query: Query<(&mut Crab, &Player)>,
 ) {
     for (mut crab, _) in query.iter_mut() {
-        if keyboard_input.pressed(KeyCode::Left) {
-            crab.walking = CrabWalking::Left;
-        } else if keyboard_input.pressed(KeyCode::Right) {
-            crab.walking = CrabWalking::Right;
-        } else {
-            crab.walking = CrabWalking::Stopped;
+        if crab.visibility == Visibility::Visible {
+            if keyboard_input.pressed(KeyCode::Left) {
+                crab.walking = CrabWalking::Left;
+            } else if keyboard_input.pressed(KeyCode::Right) {
+                crab.walking = CrabWalking::Right;
+            } else {
+                crab.walking = CrabWalking::Stopped;
+            }
         }
     }
 }
@@ -760,37 +781,153 @@ fn ai_crab_control_system(
     mut crab_query: Query<(&GlobalTransform, &mut Crab, &Opponent)>,
 ) {
     for (crab_transform, mut crab, _) in crab_query.iter_mut() {
-        // Pick which ball is closest to this crab's goal.
-        for (ball_transform, _) in balls_query.iter() {
-            // TODO:
-            // Project ball center onto goal line.
-            // Get normalized vector between ball center and projected point.
-            // Multiply normal by radius, and offset from ball center.
-            // Get `ball_distance` between offset point and projected point.
-            // Get `target_position` by figuring out which extent it is closer
-            // to to find sign and make a weight between the two
-            // points.
-        }
+        if crab.visibility == Visibility::Visible {
+            // Pick which ball is closest to this crab's goal.
+            for (ball_transform, _) in balls_query.iter() {
+                // TODO:
+                // Project ball center onto goal line.
+                // Get normalized vector between ball center and projected
+                // point. Multiply normal by radius, and offset
+                // from ball center. Get `ball_distance` between
+                // offset point and projected point.
+                // Get `target_position` by figuring out which extent it is
+                // closer to to find sign and make a weight
+                // between the two points.
+            }
 
-        // Predict the crab's stop position if it begins decelerating.
-        let stop_position = 0.0;
+            // Predict the crab's stop position if it begins decelerating.
+            let stop_position = 0.0;
 
-        // Begin decelerating if the ball will land over 70% of the crab's
-        // middle at its predicted stop position. Otherwise go left/right
-        // depending on which side of the crab it's approaching.
-        if true {
-            crab.walking = CrabWalking::Stopped;
-        } else if false {
-            crab.walking = CrabWalking::Left;
-        } else {
-            crab.walking = CrabWalking::Right;
+            // Begin decelerating if the ball will land over 70% of the crab's
+            // middle at its predicted stop position. Otherwise go left/right
+            // depending on which side of the crab it's approaching.
+            if true {
+                crab.walking = CrabWalking::Stopped;
+            } else if false {
+                crab.walking = CrabWalking::Left;
+            } else {
+                crab.walking = CrabWalking::Right;
+            }
         }
     }
 }
 
-fn ball_collision_system() {}
+fn crab_visibility_system(
+    config: Res<GameConfig>,
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &mut Crab)>,
+) {
+    let fading_offset = config.fading_speed * time.delta_seconds();
 
-fn ball_movement_system() {}
+    for (mut transform, mut crab) in query.iter_mut() {
+        match crab.visibility {
+            Visibility::FadingOut(fading) => {
+                // TODO: Reduce crab size
+
+                if fading <= 0.0 {
+                    crab.visibility = Visibility::Invisible;
+                } else {
+                    crab.visibility =
+                        Visibility::FadingOut(fading - fading_offset);
+                }
+            },
+            Visibility::FadingIn(fading) => {
+                // TODO: Increase crab size
+
+                if fading >= 1.0 {
+                    crab.visibility = Visibility::Visible;
+                } else {
+                    crab.visibility =
+                        Visibility::FadingIn(fading + fading_offset);
+                }
+            },
+            _ => {},
+        };
+    }
+}
+
+// TODO: Figure out correct way to retrieve material.
+fn ball_visibility_system(
+    config: Res<GameConfig>,
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &mut Ball)>,
+) {
+    // TODO: Might cause visual issues if second ball is already resetting when
+    // first ball starts.
+    let mut is_previous_ball_resetting = false;
+    let fading_offset = config.fading_speed * time.delta_seconds();
+
+    for (mut material, mut ball) in query.iter_mut() {
+        match ball.visibility {
+            Visibility::FadingOut(fading) => {
+                // TODO: Reduce ball opacity
+
+                if fading <= 0.0 {
+                    ball.visibility = Visibility::Invisible;
+                } else {
+                    ball.visibility =
+                        Visibility::FadingOut(fading - fading_offset);
+                }
+            },
+            Visibility::FadingIn(fading) if !is_previous_ball_resetting => {
+                is_previous_ball_resetting = true;
+
+                // TODO: Increase ball opacity
+
+                if fading >= 1.0 {
+                    ball.visibility = Visibility::Visible;
+                } else {
+                    ball.visibility =
+                        Visibility::FadingIn(fading + fading_offset);
+                }
+            },
+            _ => {},
+        };
+    }
+}
+
+fn ball_collision_system(mut query: Query<(&Transform, &mut Ball)>) {
+    for (transform, mut ball) in query.iter_mut() {
+        if ball.visibility == Visibility::Visible {
+            // TODO: Run collision logic
+
+            // Begin fading out ball when it scores
+            if false {
+                // TODO: Run scoring logic
+                ball.visibility = Visibility::FadingOut(1.0);
+            }
+        }
+    }
+}
+
+fn ball_movement_system(
+    config: Res<GameConfig>,
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &mut Ball)>,
+) {
+    let mut rng = rand::thread_rng();
+
+    for (mut transform, mut ball) in query.iter_mut() {
+        match ball.visibility {
+            Visibility::Visible | Visibility::FadingOut(_) => {
+                transform.translation +=
+                    ball.direction * config.ball_speed * time.delta_seconds();
+            },
+            Visibility::Invisible => {
+                // Move ball back to center, then start fading it into view
+                ball.visibility = Visibility::FadingIn(0.0);
+                transform.translation = Vec3::ZERO;
+
+                // Give the ball a random direction vector
+                let angle = rng.gen_range(0.0..std::f32::consts::TAU);
+                ball.direction.x = angle.cos();
+                // ball.direction.y = 0.0;
+                ball.direction.z = angle.sin();
+            },
+            _ => {},
+        };
+    }
+}
 
 fn display_gameover_screen(game: Res<Game>, query: Query<(&Crab, &Player)>) {
     // TODO: Gameover screen: Fade out balls. Fade out the last crab that
