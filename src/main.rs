@@ -119,15 +119,11 @@ struct Opponent;
 
 // #[derive(Component)]
 struct Ball {
-    velocity: Vec3,
+    direction: Vec3,
 }
 
 impl Default for Ball {
-    fn default() -> Self {
-        Self {
-            velocity: Vec3::ZERO,
-        }
-    }
+    fn default() -> Self { Self { direction: Vec3::X } }
 }
 
 // #[derive(Component)]
@@ -969,7 +965,8 @@ fn ball_movement_system(
     for (mut transform, mut ball, mut visibility) in query.iter_mut() {
         match *visibility {
             Visibility::Visible | Visibility::FadingOut(_) => {
-                transform.translation += ball.velocity * time.delta_seconds();
+                transform.translation +=
+                    ball.direction * (config.ball_speed * time.delta_seconds());
             },
             Visibility::Invisible => {
                 // Move ball back to center, then start fading it into view
@@ -978,8 +975,7 @@ fn ball_movement_system(
 
                 // Give the ball a random direction vector
                 let angle = rng.gen_range(0.0..std::f32::consts::TAU);
-                ball.velocity = config.ball_speed
-                    * Vec3::new(angle.cos(), 0.0, angle.sin());
+                ball.direction = Vec3::new(angle.cos(), 0.0, angle.sin());
             },
             _ => {},
         };
