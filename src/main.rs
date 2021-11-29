@@ -63,26 +63,12 @@ enum Visibility {
 }
 
 impl Visibility {
-    fn step_fading(&self, step: f32) -> (f32, Self) {
+    fn opacity(&self) -> f32 {
         match self {
-            Visibility::Visible => (1.0, Visibility::Visible),
-            Visibility::Invisible => (0.0, Visibility::Invisible),
-            Visibility::FadingIn(weight) => (
-                *weight,
-                if *weight >= 1.0 {
-                    Visibility::Visible
-                } else {
-                    Visibility::FadingIn(weight + step)
-                },
-            ),
-            Visibility::FadingOut(weight) => (
-                1.0 - *weight,
-                if *weight >= 1.0 {
-                    Visibility::Invisible
-                } else {
-                    Visibility::FadingOut(weight + step)
-                },
-            ),
+            Visibility::Visible => 1.0,
+            Visibility::Invisible => 0.0,
+            Visibility::FadingIn(weight) => *weight,
+            Visibility::FadingOut(weight) => 1.0 - weight,
         }
     }
 }
@@ -112,7 +98,6 @@ struct AnimatedWater {
 struct Crab {
     goal_location: GoalLocation,
     walking: CrabWalking,
-    visibility: Visibility,
     /* speed0: f32,
      * pos0: f32, */
 }
@@ -122,8 +107,6 @@ impl Default for Crab {
         Self {
             goal_location: GoalLocation::Bottom,
             walking: CrabWalking::Stopped,
-            // visibility: Visibility::Hidden,
-            visibility: Visibility::FadingIn(0.0),
         }
     }
 }
@@ -138,7 +121,6 @@ struct Opponent;
 struct Ball {
     direction: Vec3,
     radius: f32,
-    visibility: Visibility,
 }
 
 impl Default for Ball {
@@ -146,7 +128,6 @@ impl Default for Ball {
         Self {
             direction: Vec3::ZERO,
             radius: 0.0,
-            visibility: Visibility::Invisible,
         }
     }
 }
@@ -218,6 +199,7 @@ fn main() {
         .add_system(swaying_camera_system)
         .add_system(animated_water_system)
         .add_system(display_scores_system)
+        .add_system(visibility_lifecycle_system)
         .add_system(crab_visibility_system)
         .add_system(crab_walking_system)
         .add_system(player_crab_control_system)
@@ -571,6 +553,7 @@ fn setup_playable_entities(
             goal_location: GoalLocation::Top,
             ..Default::default()
         })
+        .insert(Visibility::FadingIn(0.0))
         .insert(Opponent)
         .insert(Collider::Crab);
 
@@ -592,6 +575,7 @@ fn setup_playable_entities(
             goal_location: GoalLocation::Right,
             ..Default::default()
         })
+        .insert(Visibility::FadingIn(0.0))
         .insert(Opponent)
         .insert(Collider::Crab);
 
@@ -613,6 +597,7 @@ fn setup_playable_entities(
             goal_location: GoalLocation::Bottom,
             ..Default::default()
         })
+        .insert(Visibility::FadingIn(0.0))
         .insert(Player)
         .insert(Collider::Crab);
 
@@ -634,6 +619,7 @@ fn setup_playable_entities(
             goal_location: GoalLocation::Left,
             ..Default::default()
         })
+        .insert(Visibility::FadingIn(0.0))
         .insert(Opponent)
         .insert(Collider::Crab);
 
@@ -660,6 +646,7 @@ fn setup_playable_entities(
             ..Default::default()
         })
         .insert(Ball::default())
+        .insert(Visibility::Invisible)
         .insert(Collider::Ball);
 
     commands
@@ -676,6 +663,7 @@ fn setup_playable_entities(
             ..Default::default()
         })
         .insert(Ball::default())
+        .insert(Visibility::Invisible)
         .insert(Collider::Ball);
 }
 
@@ -723,10 +711,10 @@ fn display_scores_system(
 fn crab_walking_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Crab)>,
+    mut query: Query<(&mut Transform, &mut Crab, &Visibility)>,
 ) {
-    for (mut transform, mut crab) in query.iter_mut() {
-        if crab.visibility == Visibility::Visible {
+    for (mut transform, mut crab, visibility) in query.iter_mut() {
+        if *visibility == Visibility::Visible {
             // TODO: This direction remapping can go away if we parent the crabs
             // and make it all relative!
             let left_direction = match crab.goal_location {
@@ -789,10 +777,10 @@ fn crab_walking_system(
 
 fn player_crab_control_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Crab, With<Player>>,
+    mut query: Query<(&mut Crab, &Visibility), With<Player>>,
 ) {
-    for mut crab in query.iter_mut() {
-        if crab.visibility == Visibility::Visible {
+    for (mut crab, visibility) in query.iter_mut() {
+        if *visibility == Visibility::Visible {
             if keyboard_input.pressed(KeyCode::Left) {
                 crab.walking = CrabWalking::Left;
             } else if keyboard_input.pressed(KeyCode::Right) {
@@ -806,10 +794,13 @@ fn player_crab_control_system(
 
 fn ai_crab_control_system(
     balls_query: Query<&GlobalTransform, With<Ball>>,
-    mut crab_query: Query<(&GlobalTransform, &mut Crab), With<Opponent>>,
+    mut crab_query: Query<
+        (&GlobalTransform, &mut Crab, &Visibility),
+        With<Opponent>,
+    >,
 ) {
-    for (crab_transform, mut crab) in crab_query.iter_mut() {
-        if crab.visibility == Visibility::Visible {
+    for (crab_transform, mut crab, visibility) in crab_query.iter_mut() {
+        if *visibility == Visibility::Visible {
             // Pick which ball is closest to this crab's goal.
             for ball_transform in balls_query.iter() {
                 // TODO:
@@ -840,57 +831,70 @@ fn ai_crab_control_system(
     }
 }
 
-fn crab_visibility_system(
+fn visibility_lifecycle_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Crab)>,
+    mut query: Query<&mut Visibility>,
 ) {
     let step = config.fading_speed * time.delta_seconds();
 
-    for (mut transform, mut crab) in query.iter_mut() {
-        // Grow/Shrink crab to make it visible/invisible.
-        let (scale, new_visibility) = crab.visibility.step_fading(step);
-        transform.scale = Vec3::splat(scale * config.crab_max_scale);
-        crab.visibility = new_visibility;
+    for mut visibility in query.iter_mut() {
+        *visibility = match *visibility {
+            Visibility::Visible => Visibility::Visible,
+            Visibility::Invisible => Visibility::Invisible,
+            Visibility::FadingIn(weight) => {
+                if weight >= 1.0 {
+                    Visibility::Visible
+                } else {
+                    Visibility::FadingIn(weight + step)
+                }
+            },
+            Visibility::FadingOut(weight) => {
+                if weight >= 1.0 {
+                    Visibility::Invisible
+                } else {
+                    Visibility::FadingOut(weight + step)
+                }
+            },
+        }
+    }
+}
+
+fn crab_visibility_system(
+    config: Res<GameConfig>,
+    mut query: Query<(&mut Transform, &Visibility), With<Crab>>,
+) {
+    // Grow/Shrink crabs to make them visible/invisible.
+    for (mut transform, visibility) in query.iter_mut() {
+        transform.scale =
+            Vec3::splat(visibility.opacity() * config.crab_max_scale);
     }
 }
 
 fn ball_visibility_system(
     config: Res<GameConfig>,
-    time: Res<Time>,
     asset_server: Res<AssetServer>,
-    mut query: Query<(&mut Handle<StandardMaterial>, &mut Ball)>,
+    mut query: Query<(&mut Handle<StandardMaterial>, &Visibility), With<Ball>>,
 ) {
-    // TODO: Might cause visual issues if second ball is already resetting when
-    // first ball starts.
-    let mut is_prior_resetting = false;
-    let step = config.fading_speed * time.delta_seconds();
-
-    for (mut material, mut ball) in query.iter_mut() {
-        let is_resetting = matches!(ball.visibility, Visibility::FadingIn(_));
-
-        if !is_prior_resetting || !is_resetting {
-            // Increase/Decrease ball opacity to make it visible/invisible.
-            let (opacity, new_visibility) = ball.visibility.step_fading(step);
-
-            // TODO: Reduce ball opacity
-            // asset_server.get_mut(&material).unwrap();
-            // material.base_color.a = opacity;
-            ball.visibility = new_visibility;
-            is_prior_resetting = is_resetting;
-        }
+    // Increase/Decrease ball opacity to make it visible/invisible.
+    for (mut material, visibility) in query.iter_mut() {
+        // TODO: Reduce ball opacity
+        // asset_server.get_mut(&material).unwrap();
+        // material.base_color.a = visibility.opacity();
     }
 }
 
-fn ball_collision_system(mut query: Query<(&Transform, &mut Ball)>) {
-    for (transform, mut ball) in query.iter_mut() {
-        if ball.visibility == Visibility::Visible {
+fn ball_collision_system(
+    mut query: Query<(&Transform, &mut Ball, &mut Visibility)>,
+) {
+    for (transform, mut ball, mut visibility) in query.iter_mut() {
+        if *visibility == Visibility::Visible {
             // TODO: Run collision logic
 
             // Begin fading out ball when it scores
             if false {
                 // TODO: Run scoring logic
-                ball.visibility = Visibility::FadingOut(0.0);
+                *visibility = Visibility::FadingOut(0.0);
             }
         }
     }
@@ -899,19 +903,19 @@ fn ball_collision_system(mut query: Query<(&Transform, &mut Ball)>) {
 fn ball_movement_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Ball)>,
+    mut query: Query<(&mut Transform, &mut Ball, &mut Visibility)>,
 ) {
     let mut rng = rand::thread_rng();
 
-    for (mut transform, mut ball) in query.iter_mut() {
-        match ball.visibility {
+    for (mut transform, mut ball, mut visibility) in query.iter_mut() {
+        match *visibility {
             Visibility::Visible | Visibility::FadingOut(_) => {
                 transform.translation +=
                     ball.direction * config.ball_speed * time.delta_seconds();
             },
             Visibility::Invisible => {
                 // Move ball back to center, then start fading it into view
-                ball.visibility = Visibility::FadingIn(0.0);
+                *visibility = Visibility::FadingIn(0.0);
                 transform.translation = Vec3::ZERO;
 
                 // Give the ball a random direction vector
