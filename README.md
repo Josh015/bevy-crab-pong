@@ -18,18 +18,18 @@ cargo run --release
 - [x] Add repeating slow swaying motion on camera.
 - [x] Add placeholder 2D UI elements.
 - [x] Add two balls that launch in random directions in succession.
+- [x] Add Game Over state that resets the game.
+- [x] Add crab visibility system to grow/shrink them into/from view.
+- [x] Get ball return working.
+- [x] Get win condition working.
+- [x] Fade out crabs, remove them, and add barrier on their side when their score reaches zero.
 - [ ] Add ball visibility system to fade them into/from view.
-- [ ] Get ball return working.
 - [ ] Get bounded crab walking working.
 - [ ] Get balls bouncing around inside 4 barriers and poles without crabs.
 - [ ] Get balls bouncing off each other.
 - [ ] Get score decrementing on goal working.
-- [x] Add Game Over state that resets the game.
-- [x] Add crab visibility system to grow/shrink them into/from view.
 - [ ] Add crabs AI.
-- [ ] Get win condition working.
 - [ ] After a ball passes a goal fade it out and reset it while decrementing that goal's score.
-- [ ] Fade out crabs, remove them, and add barrier on their side when their score reaches zero.
 - [ ] Add new game and game over messages UI.
 - [ ] Add a Ferris model (eg. [Ferris the Crab](https://cults3d.com/en/3d-model/art/ferris-the-crab))
 - [ ] Adjust model textures to support color tinting.

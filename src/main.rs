@@ -183,7 +183,9 @@ fn main() {
                 .with_system(crab_walking_system)
                 .with_system(player_crab_control_system)
                 .with_system(ai_crab_control_system)
+                .with_system(crab_scoring_system)
                 .with_system(ball_collision_system)
+                .with_system(ball_scoring_system)
                 .with_system(ball_movement_system),
         )
         .add_system_set(
@@ -764,23 +766,97 @@ fn ai_crab_control_system(
     }
 }
 
-fn ball_collision_system(
-    mut query: Query<(&Transform, &mut Ball, &mut Visibility)>,
+fn crab_scoring_system(
+    game: Res<Game>,
+    mut state: ResMut<State<GameState>>,
+    mut queries: QuerySet<(
+        QueryState<(&mut Visibility, &GoalLocation), With<Crab>>,
+        QueryState<(&mut Visibility, &GoalLocation), With<Pole>>,
+        QueryState<&GoalLocation, With<Crab>>,
+    )>,
 ) {
-    for (transform, mut ball, mut visibility) in query.iter_mut() {
+    // Fade out crab if score is zero
+    for (mut visibility, goal_location) in queries.q0().iter_mut() {
+        if *visibility == Visibility::Visible
+            && game.scores[&goal_location] <= 0
+        {
+            *visibility = Visibility::FadingOut(0.0);
+        }
+    }
+
+    // Fade in goal if score is zero
+    for (mut visibility, goal_location) in queries.q1().iter_mut() {
+        if *visibility == Visibility::Invisible
+            && game.scores[&goal_location] <= 0
+        {
+            *visibility = Visibility::FadingIn(0.0);
+        }
+    }
+
+    // Game over if player score is zero
+    for goal_location in queries.q2().iter_mut() {
+        if game.scores[&goal_location] <= 0 {
+            state.set(GameState::GameOver).unwrap();
+        }
+    }
+
+    // TODO: Need to check scores of enemy crabs as well
+}
+
+fn ball_collision_system(
+    mut bally_query: Query<(
+        Entity,
+        &Transform,
+        &mut Ball,
+        &Collider,
+        &Visibility,
+    )>,
+    colliders_query: Query<(Entity, &Transform, &Collider, &Visibility)>,
+) {
+    for (entity, transform, mut ball, collider, visibility) in
+        bally_query.iter_mut()
+    {
         if *visibility == Visibility::Visible {
-            // TODO: Run collision logic
-
-            // Begin fading out ball when it scores
-            if false {
-                // TODO: Run scoring logic
-                *visibility = Visibility::FadingOut(0.0);
+            // Colliders
+            for (entity2, transform2, collider2, visibility2) in
+                colliders_query.iter()
+            {
+                // Collide with visible entities that aren't the current one
+                if entity != entity2
+                    && matches!(
+                        visibility2,
+                        Visibility::Visible | Visibility::FadingIn(_)
+                    )
+                {
+                    // TODO: Run collision logic
+                    match collider2 {
+                        Collider::Circle { radius } => {
+                            // TODO: Circle-Circle collision
+                            // How to detect and handle the other ball?
+                        },
+                        Collider::Rectangle { width, height } => {
+                            // TODO: Circle-Rectangle collision
+                        },
+                    }
+                }
             }
+        }
+    }
+}
 
-            // TODO: Poles can be collided if they are FadingIn or Visible.
-
+// This has to be separate because of all the mutable borrows it needs
+fn ball_scoring_system(
+    mut game: ResMut<Game>,
+    mut ball_query: Query<(&Transform, &mut Ball, &mut Visibility)>,
+) {
+    for (transform, mut ball, mut visibility) in ball_query.iter_mut() {
+        if *visibility == Visibility::Visible {
             // FIXME: Temporary ball return code.
             if Vec3::ZERO.distance(transform.translation) >= 1.0 {
+                let scored_goal = GoalLocation::Bottom;
+                *game.scores.get_mut(&scored_goal).unwrap() -= 1;
+
+                // Begin fading out ball when it scores
                 *visibility = Visibility::FadingOut(0.0);
             }
         }
