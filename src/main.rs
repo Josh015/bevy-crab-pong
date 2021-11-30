@@ -186,10 +186,11 @@ fn main() {
                 .with_system(crab_walking_system)
                 .with_system(player_crab_control_system)
                 .with_system(ai_crab_control_system)
-                .with_system(crab_scoring_system)
+                .with_system(crab_elimination_system)
                 .with_system(ball_movement_system)
                 .with_system(ball_collision_system)
-                .with_system(goal_scoring_system),
+                .with_system(goal_scoring_system)
+                .with_system(gameover_check_system),
         )
         .add_system_set(
             SystemSet::on_exit(GameState::Playing).with_system(on_exit_playing),
@@ -771,13 +772,11 @@ fn ai_crab_control_system(
     }
 }
 
-fn crab_scoring_system(
+fn crab_elimination_system(
     game: Res<Game>,
-    mut state: ResMut<State<GameState>>,
     mut queries: QuerySet<(
         QueryState<(&mut Visibility, &GoalLocation), With<Crab>>,
         QueryState<(&mut Visibility, &GoalLocation), With<Pole>>,
-        QueryState<(&GoalLocation, &Pilot), With<Crab>>,
     )>,
 ) {
     // Fade out crab if score is zero
@@ -796,28 +795,6 @@ fn crab_scoring_system(
         {
             *visibility = Visibility::FadingIn(0.0);
         }
-    }
-
-    // Game over if the player's score is zero
-    let mut is_game_over = true;
-
-    for (goal_location, pilot) in queries.q2().iter_mut() {
-        is_game_over = is_game_over
-            && (*pilot != Pilot::Player || game.scores[&goal_location] <= 0);
-    }
-
-    // Game over if all the AI's scores are zero
-    if !is_game_over {
-        is_game_over = true;
-
-        for (goal_location, pilot) in queries.q2().iter_mut() {
-            is_game_over = is_game_over
-                && (*pilot != Pilot::Ai || game.scores[&goal_location] <= 0);
-        }
-    }
-
-    if is_game_over {
-        state.set(GameState::GameOver).unwrap();
     }
 }
 
@@ -921,5 +898,33 @@ fn goal_scoring_system(
                 *score = score.saturating_sub(1);
             }
         }
+    }
+}
+
+fn gameover_check_system(
+    game: Res<Game>,
+    mut state: ResMut<State<GameState>>,
+    mut query: Query<(&GoalLocation, &Pilot), With<Crab>>,
+) {
+    // Game over if the player's score is zero
+    let mut is_game_over = true;
+
+    for (goal_location, pilot) in query.iter_mut() {
+        is_game_over = is_game_over
+            && (*pilot != Pilot::Player || game.scores[&goal_location] <= 0);
+    }
+
+    // Game over if all the AI's scores are zero
+    if !is_game_over {
+        is_game_over = true;
+
+        for (goal_location, pilot) in query.iter_mut() {
+            is_game_over = is_game_over
+                && (*pilot != Pilot::Ai || game.scores[&goal_location] <= 0);
+        }
+    }
+
+    if is_game_over {
+        state.set(GameState::GameOver).unwrap();
     }
 }
