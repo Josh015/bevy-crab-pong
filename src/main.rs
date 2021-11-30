@@ -862,17 +862,14 @@ fn goal_scoring_system(
     mut ball_query: Query<(&GlobalTransform, &mut Visibility), With<Ball>>,
     goals_query: Query<(&GlobalTransform, &GoalLocation), With<Goal>>,
 ) {
+    // Check if a visible ball has gone out of bounds
     for (ball_transform, mut ball_visibility) in ball_query.iter_mut() {
-        // Check if a visible ball goes out of bounds
         if *ball_visibility == Visibility::Visible
             && Vec3::ZERO.distance(ball_transform.translation)
                 >= 0.5 * 2f32.sqrt()
         {
-            // Trigger ball return
-            *ball_visibility = Visibility::FadingOut(0.0);
-
-            // Whichever goal it's closest to is considered a score
-            let mut closest = 100.0;
+            // Score against the goal that's closest to this ball
+            let mut closest_distance = 100.0;
             let mut scored_goal = GoalLocation::Bottom;
 
             for (goal_transform, goal_location) in goals_query.iter() {
@@ -880,14 +877,17 @@ fn goal_scoring_system(
                     .translation
                     .distance(goal_transform.translation);
 
-                if new_distance < closest {
-                    closest = new_distance;
+                if new_distance < closest_distance {
+                    closest_distance = new_distance;
                     scored_goal = goal_location.clone();
                 }
             }
 
             let score = game.scores.get_mut(&scored_goal).unwrap();
             *score = score.saturating_sub(1);
+
+            // Trigger ball return and prevent repeated scoring
+            *ball_visibility = Visibility::FadingOut(0.0);
         }
     }
 }
