@@ -905,25 +905,17 @@ fn gameover_check_system(
     mut state: ResMut<State<GameState>>,
     query: Query<(&GoalLocation, &Pilot), With<Crab>>,
 ) {
-    // Game over if the player's score is zero
-    let mut is_game_over = true;
+    // Player wins if all AI crabs have score of zero
+    let has_player_won = query.iter().all(|(goal_location, pilot)| {
+        *pilot != Pilot::Ai || game.scores[&goal_location] <= 0
+    });
 
-    for (goal_location, pilot) in query.iter() {
-        is_game_over = is_game_over
-            && (*pilot != Pilot::Player || game.scores[&goal_location] <= 0);
-    }
+    // Player loses if all Player crabs have a score of zero
+    let has_player_lost = query.iter().all(|(goal_location, pilot)| {
+        *pilot != Pilot::Player || game.scores[&goal_location] <= 0
+    });
 
-    // Game over if all the AI's scores are zero
-    if !is_game_over {
-        is_game_over = true;
-
-        for (goal_location, pilot) in query.iter() {
-            is_game_over = is_game_over
-                && (*pilot != Pilot::Ai || game.scores[&goal_location] <= 0);
-        }
-    }
-
-    if is_game_over {
+    if has_player_won || has_player_lost {
         state.set(GameState::GameOver).unwrap();
     }
 }
