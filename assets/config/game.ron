@@ -8,4 +8,5 @@
   crab_max_speed: 2.2,
   fading_speed: 0.75,
   ball_speed: 0.5,
+  pole_radius: 0.05,
 )

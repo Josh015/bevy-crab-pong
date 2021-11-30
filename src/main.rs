@@ -129,6 +129,7 @@ struct GameConfig {
     crab_max_speed: f32,
     ball_speed: f32,
     fading_speed: f32,
+    pole_radius: f32,
     /* startingScore: u8, //20,
      * ballSpeed: f32,    // ?? */
 }
@@ -238,8 +239,7 @@ fn setup(
     // Poles
     let pole_material = materials.add(Color::hex("00A400").unwrap().into());
     let pole_height = 0.1;
-    let pole_radius = 0.05;
-    let pole_scale_x = Vec3::new(1.0, pole_radius, pole_radius);
+    let pole_scale_x = Vec3::new(1.0, config.pole_radius, config.pole_radius);
 
     // Barriers
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
@@ -290,9 +290,7 @@ fn setup(
         ),
     ];
 
-    for (i, (controller, color, goal_location, rect)) in
-        configs.iter().enumerate()
-    {
+    for (i, (pilot, color, goal_location, rect)) in configs.iter().enumerate() {
         commands
             .spawn_bundle(PbrBundle {
                 transform: Transform::from_rotation(Quat::from_axis_angle(
@@ -320,7 +318,7 @@ fn setup(
                     })
                     .insert(Crab::default())
                     .insert(Visibility::Invisible)
-                    .insert(controller.clone())
+                    .insert(pilot.clone())
                     .insert(Collider::Rectangle {
                         width: 0.0,
                         height: 0.0,
@@ -525,14 +523,14 @@ fn pole_visibility_system(
     config: Res<GameConfig>,
     mut query: Query<(&mut Transform, &Visibility), With<Pole>>,
 ) {
-    // TODO: Grow along YZ, but have X at maximum width so it starts thin and
-    // gets thicker.
-
-    //// Grow/Shrink poles to show/hide them
-    // for (mut transform, visibility) in query.iter_mut() {
-    //     transform.scale =
-    //         Vec3::splat(visibility.opacity() * config.crab_max_scale);
-    // }
+    // Grow/Shrink a pole's thickness to show/hide it
+    for (mut transform, visibility) in query.iter_mut() {
+        transform.scale = Vec3::new(
+            1.0,
+            visibility.opacity() * config.pole_radius,
+            visibility.opacity() * config.pole_radius,
+        );
+    }
 }
 
 fn ball_visibility_system(
@@ -626,7 +624,7 @@ fn setup_new_game(
 
     // Reset poles
     for mut visibility in queries.q2().iter_mut() {
-        *visibility = Visibility::Invisible;
+        *visibility = Visibility::FadingOut(0.0);
     }
 
     // Reset scores
