@@ -171,15 +171,17 @@ fn main() {
         .add_state(GameState::GameOver)
         .add_system_set(
             SystemSet::on_enter(GameState::GameOver)
-                .with_system(on_enter_gameover),
+                .with_system(show_gameover_ui),
         )
         .add_system_set(
             SystemSet::on_update(GameState::GameOver)
                 .with_system(gameover_keyboard_system),
         )
         .add_system_set(
-            SystemSet::on_enter(GameState::Playing)
-                .with_system(on_enter_playing),
+            SystemSet::on_enter(GameState::Playing).with_system(start_playing),
+        )
+        .add_system_set(
+            SystemSet::on_exit(GameState::Playing).with_system(stop_playing),
         )
         .add_system_set(
             SystemSet::on_update(GameState::Playing)
@@ -191,9 +193,6 @@ fn main() {
                 .with_system(ball_collision_system)
                 .with_system(goal_scoring_system)
                 .with_system(gameover_check_system),
-        )
-        .add_system_set(
-            SystemSet::on_exit(GameState::Playing).with_system(on_exit_playing),
         )
         .add_system(bevy::input::system::exit_on_esc_system)
         .run();
@@ -585,7 +584,7 @@ fn ball_visibility_system(
     }
 }
 
-fn on_enter_gameover(
+fn show_gameover_ui(
     game: Res<Game>,
     query: Query<(&Pilot, &GoalLocation), With<Crab>>,
 ) {
@@ -617,7 +616,7 @@ fn gameover_keyboard_system(
     }
 }
 
-fn on_enter_playing(
+fn start_playing(
     config: Res<GameConfig>,
     mut game: ResMut<Game>,
     mut queries: QuerySet<(
@@ -650,7 +649,7 @@ fn on_enter_playing(
     }
 }
 
-fn on_exit_playing(mut query: Query<&mut Visibility, With<Ball>>) {
+fn stop_playing(mut query: Query<&mut Visibility, With<Ball>>) {
     for mut visibility in query.iter_mut() {
         *visibility = Visibility::FadingOut(0.0);
     }
@@ -788,7 +787,7 @@ fn crab_elimination_system(
         }
     }
 
-    // Fade in goal if score is zero
+    // Fade in pole if score is zero
     for (mut visibility, goal_location) in queries.q1().iter_mut() {
         if *visibility == Visibility::Invisible
             && game.scores[&goal_location] <= 0
@@ -904,12 +903,12 @@ fn goal_scoring_system(
 fn gameover_check_system(
     game: Res<Game>,
     mut state: ResMut<State<GameState>>,
-    mut query: Query<(&GoalLocation, &Pilot), With<Crab>>,
+    query: Query<(&GoalLocation, &Pilot), With<Crab>>,
 ) {
     // Game over if the player's score is zero
     let mut is_game_over = true;
 
-    for (goal_location, pilot) in query.iter_mut() {
+    for (goal_location, pilot) in query.iter() {
         is_game_over = is_game_over
             && (*pilot != Pilot::Player || game.scores[&goal_location] <= 0);
     }
@@ -918,7 +917,7 @@ fn gameover_check_system(
     if !is_game_over {
         is_game_over = true;
 
-        for (goal_location, pilot) in query.iter_mut() {
+        for (goal_location, pilot) in query.iter() {
             is_game_over = is_game_over
                 && (*pilot != Pilot::Ai || game.scores[&goal_location] <= 0);
         }
