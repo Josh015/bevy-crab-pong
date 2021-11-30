@@ -35,7 +35,7 @@ enum GameState {
     GameOver,
 }
 
-#[derive(Clone, /* Component, */ PartialEq, Debug)]
+#[derive(Clone, Component, PartialEq, Debug)]
 enum Visibility {
     Visible,
     FadingOut(f32),
@@ -60,20 +60,20 @@ enum CrabWalking {
     Right,
 }
 
-#[derive(/* Component, */ Default)]
+#[derive(Component, Default)]
 struct SwayingCamera {
     angle: f32,
 }
 
-// #[derive(Component)]
+#[derive(Component)]
 struct Score;
 
-#[derive(/* Component, */ Default)]
+#[derive(Component, Default)]
 struct AnimatedWater {
     scroll: f32,
 }
 
-// #[derive(Component)]
+#[derive(Component)]
 struct Crab {
     walking: CrabWalking,
     /* speed0: f32,
@@ -88,7 +88,7 @@ impl Default for Crab {
     }
 }
 
-#[derive(Clone, /* Component, */ Copy, Eq, PartialEq, Debug, Hash)]
+#[derive(Clone, Component, Copy, Eq, PartialEq, Debug, Hash)]
 enum GoalLocation {
     Top,
     Right,
@@ -96,13 +96,13 @@ enum GoalLocation {
     Left,
 }
 
-#[derive(Clone, /* Component, */ Copy, Eq, PartialEq, Debug, Hash)]
+#[derive(Clone, Component, Copy, Eq, PartialEq, Debug, Hash)]
 enum Pilot {
     Player,
     Ai,
 }
 
-// #[derive(Component)]
+#[derive(Component)]
 struct Ball {
     direction: Vec3,
 }
@@ -111,13 +111,13 @@ impl Default for Ball {
     fn default() -> Self { Self { direction: Vec3::X } }
 }
 
-// #[derive(Component)]
+#[derive(Component)]
 struct Pole;
 
-// #[derive(Component)]
+#[derive(Component)]
 struct Goal;
 
-// #[derive(Component)]
+#[derive(Component)]
 enum Collider {
     Line { width: f32 },
     Circle { radius: f32 },
@@ -839,7 +839,7 @@ fn ball_collision_system(
         Entity,
         &GlobalTransform,
         &Collider,
-        &Option<Visibility>, // Barriers have no visibility
+        Option<&Visibility>, // Barriers have no visibility
     )>,
 ) {
     for (entity, transform, mut ball, collider, visibility) in
