@@ -144,6 +144,9 @@ struct Game {
     scores: HashMap<GoalLocation, u32>,
 }
 
+// TODO: Make Game resource smarter and have it share game data that can't be
+// configured. Example, game center point.
+
 fn main() {
     let config: GameConfig =
         files::load_config_from_file("assets/config/game.ron");
@@ -158,9 +161,11 @@ fn main() {
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(ClearColor(Color::rgb(0.7, 0.9, 1.0)))
         .add_plugins(DefaultPlugins)
-        .insert_resource(Game::default())
+        .init_resource::<Game>()
         .insert_resource(config)
-        .add_startup_system(setup)
+        .add_startup_system(setup_scene)
+        .add_startup_system(setup_balls)
+        .add_startup_system(setup_goals)
         .add_system(display_scores_system)
         .add_system(swaying_camera_system)
         .add_system(animated_water_system)
@@ -198,24 +203,17 @@ fn main() {
         .run();
 }
 
-fn setup(
-    mut game: ResMut<Game>,
-    config: Res<GameConfig>,
+fn setup_scene(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let unit_plane = meshes.add(Mesh::from(shape::Plane { size: 1.0 }));
-    let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
 
-    // Camera
+    // Cameras
     commands
         .spawn_bundle(PerspectiveCameraBundle::default())
         .insert(SwayingCamera::default());
-
-    // UI
-    let font = asset_server.load("fonts/FiraSans-Bold.ttf");
 
     commands.spawn_bundle(UiCameraBundle::default());
 
@@ -242,8 +240,53 @@ fn setup(
         transform: Transform::from_xyz(0.0, 0.0, 0.0),
         ..Default::default()
     });
+}
 
-    // Goals
+fn setup_balls(
+    config: Res<GameConfig>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let unit_sphere = meshes.add(Mesh::from(shape::Icosphere {
+        radius: 0.5,
+        subdivisions: 2,
+    }));
+    let ball_scale = Vec3::splat(config.ball_size);
+    let ball_height = 0.1;
+    let ball_color = Color::rgb(1.0, 1.0, 1.0);
+
+    for _ in 0..2 {
+        commands
+            .spawn_bundle(PbrBundle {
+                mesh: unit_sphere.clone(),
+                material: materials.add(ball_color.into()),
+                transform: Transform::from_matrix(
+                    Mat4::from_scale_rotation_translation(
+                        ball_scale,
+                        Quat::IDENTITY,
+                        Vec3::new(0.0, ball_height, 0.0),
+                    ),
+                ),
+                ..Default::default()
+            })
+            .insert(Ball::default())
+            .insert(Visibility::Invisible)
+            .insert(Collider::Circle { radius: 0.0 });
+    }
+}
+
+fn setup_goals(
+    mut game: ResMut<Game>,
+    config: Res<GameConfig>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let font = asset_server.load("fonts/FiraSans-Bold.ttf");
+    let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
+
     let crab_scale = Vec3::splat(config.crab_max_scale);
     let crab_height = 0.05;
 
@@ -405,34 +448,6 @@ fn setup(
             .insert(goal_location.clone());
 
         game.scores.insert(goal_location.clone(), 0);
-    }
-
-    // Balls
-    let unit_sphere = meshes.add(Mesh::from(shape::Icosphere {
-        radius: 0.5,
-        subdivisions: 2,
-    }));
-    let ball_scale = Vec3::splat(config.ball_size);
-    let ball_height = 0.1;
-    let ball_color = Color::rgb(1.0, 1.0, 1.0);
-
-    for _ in 0..2 {
-        commands
-            .spawn_bundle(PbrBundle {
-                mesh: unit_sphere.clone(),
-                material: materials.add(ball_color.into()),
-                transform: Transform::from_matrix(
-                    Mat4::from_scale_rotation_translation(
-                        ball_scale,
-                        Quat::IDENTITY,
-                        Vec3::new(0.0, ball_height, 0.0),
-                    ),
-                ),
-                ..Default::default()
-            })
-            .insert(Ball::default())
-            .insert(Visibility::Invisible)
-            .insert(Collider::Circle { radius: 0.0 });
     }
 }
 
