@@ -214,7 +214,7 @@ fn setup(
         .spawn_bundle(PerspectiveCameraBundle::default())
         .insert(SwayingCamera::default());
 
-    // Scores
+    // UI
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
 
     commands.spawn_bundle(UiCameraBundle::default());
@@ -243,22 +243,19 @@ fn setup(
         ..Default::default()
     });
 
-    // Crabs
+    // Goals
     let crab_scale = Vec3::splat(config.crab_max_scale);
     let crab_height = 0.05;
 
-    // Poles
     let pole_material = materials.add(Color::hex("00A400").unwrap().into());
     let pole_height = 0.1;
     let pole_scale_x = Vec3::new(1.0, config.pole_radius, config.pole_radius);
 
-    // Barriers
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
     let barrier_height = 0.1;
     let barrier_scale = Vec3::splat(0.20);
 
-    // Goals
-    let configs = [
+    let goal_configs = [
         (
             Pilot::Player,
             Color::RED,
@@ -301,12 +298,15 @@ fn setup(
         ),
     ];
 
-    for (i, (pilot, color, goal_location, rect)) in configs.iter().enumerate() {
+    for (i, (pilot, color, goal_location, rect)) in
+        goal_configs.iter().enumerate()
+    {
         commands
             .spawn_bundle(PbrBundle {
                 transform: Transform::from_rotation(Quat::from_axis_angle(
                     Vec3::Y,
-                    (i as f32 / configs.len() as f32) * std::f32::consts::TAU,
+                    (i as f32 / goal_configs.len() as f32)
+                        * std::f32::consts::TAU,
                 ))
                 .mul_transform(Transform::from_xyz(0.0, 0.0, 0.5)),
                 ..Default::default()
