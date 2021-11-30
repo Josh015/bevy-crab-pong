@@ -777,7 +777,7 @@ fn crab_scoring_system(
     mut queries: QuerySet<(
         QueryState<(&mut Visibility, &GoalLocation), With<Crab>>,
         QueryState<(&mut Visibility, &GoalLocation), With<Pole>>,
-        QueryState<&GoalLocation, With<Crab>>,
+        QueryState<(&GoalLocation, &Pilot), With<Crab>>,
     )>,
 ) {
     // Fade out crab if score is zero
@@ -798,14 +798,27 @@ fn crab_scoring_system(
         }
     }
 
-    // Game over if player score is zero
-    for goal_location in queries.q2().iter_mut() {
-        if game.scores[&goal_location] <= 0 {
-            state.set(GameState::GameOver).unwrap();
+    // Game over if the player's score is zero
+    let mut is_game_over = true;
+
+    for (goal_location, pilot) in queries.q2().iter_mut() {
+        is_game_over = is_game_over
+            && (*pilot != Pilot::Player || game.scores[&goal_location] <= 0);
+    }
+
+    // Game over if all the AI's scores are zero
+    if !is_game_over {
+        is_game_over = true;
+
+        for (goal_location, pilot) in queries.q2().iter_mut() {
+            is_game_over = is_game_over
+                && (*pilot != Pilot::Ai || game.scores[&goal_location] <= 0);
         }
     }
 
-    // TODO: Need to check scores of enemy crabs as well
+    if is_game_over {
+        state.set(GameState::GameOver).unwrap();
+    }
 }
 
 fn ball_movement_system(
@@ -904,7 +917,8 @@ fn goal_scoring_system(
                     }
                 }
 
-                *game.scores.get_mut(&scored_goal).unwrap() -= 1;
+                let score = game.scores.get_mut(&scored_goal).unwrap();
+                *score = score.saturating_sub(1);
             }
         }
     }
