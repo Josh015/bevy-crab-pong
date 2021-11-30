@@ -120,9 +120,20 @@ struct GameConfig {
     starting_score: u32,
 }
 
+#[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
+enum GameOutcome {
+    Won,
+    Lost,
+}
+
+impl Default for GameOutcome {
+    fn default() -> Self { GameOutcome::Lost }
+}
+
 #[derive(Default)]
 struct Game {
     scores: HashMap<GoalLocation, u32>,
+    outcome: Option<GameOutcome>,
 }
 
 // TODO: Make Game resource smarter and have it share game data that can't be
@@ -568,22 +579,12 @@ fn ball_visibility_system(
     }
 }
 
-fn show_gameover_ui(
-    game: Res<Game>,
-    query: Query<(&Pilot, &GoalLocation), With<Crab>>,
-) {
-    // Show win/lose text if there's a player and at least one non-zero score
-    if game.scores.iter().any(|score| *score.1 > 0) {
-        for (pilot, goal_location) in query.iter() {
-            if *pilot == Pilot::Player {
-                if game.scores[&goal_location] > 0 {
-                    // If player score is non-zero, show win text
-                    // TODO: Add win text
-                } else {
-                    // If player score is zero, show lose text
-                    // TODO: Add loss text
-                }
-            }
+fn show_gameover_ui(game: Res<Game>) {
+    if let Some(outcome) = game.outcome {
+        if outcome == GameOutcome::Won {
+            // TODO: Add win text
+        } else {
+            // TODO: Add loss text
         }
     }
 
@@ -892,11 +893,11 @@ fn goal_scoring_system(
 }
 
 fn gameover_check_system(
-    game: Res<Game>,
+    mut game: ResMut<Game>,
     mut state: ResMut<State<GameState>>,
     query: Query<(&GoalLocation, &Pilot), With<Crab>>,
 ) {
-    // Player wins if all AI crabs have score of zero
+    // Player wins if all AI crabs have a score of zero
     let has_player_won = query.iter().all(|(goal_location, pilot)| {
         *pilot != Pilot::Ai || game.scores[&goal_location] <= 0
     });
@@ -907,6 +908,12 @@ fn gameover_check_system(
     });
 
     if has_player_won || has_player_lost {
+        game.outcome = if has_player_won {
+            Some(GameOutcome::Won)
+        } else {
+            Some(GameOutcome::Lost)
+        };
+
         state.set(GameState::GameOver).unwrap();
     }
 }
@@ -917,9 +924,6 @@ fn gameover_check_system(
 
 // TODO: Move weights out of FadingIn and FadingOut because it's annoying having
 // to set them all over the place!
-
-// TODO: Have an Option<GameOver> in Game so aren't constantly iterating to
-// check win conditions?
 
 // TODO: Debug option to make all crabs driven by AI? Will need to revise player
 // system to handle no players.
