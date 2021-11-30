@@ -119,7 +119,7 @@ struct Goal;
 
 // #[derive(Component)]
 enum Collider {
-    Rectangle { width: f32, height: f32 },
+    Line { width: f32 },
     Circle { radius: f32 },
 }
 
@@ -245,6 +245,7 @@ fn setup_scene(
     // Barriers
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
     let total_barriers = 4;
+    let barrier_scale = 0.20;
 
     for i in 0..total_barriers {
         commands
@@ -257,14 +258,16 @@ fn setup_scene(
                 ))
                 .mul_transform(Transform::from_matrix(
                     Mat4::from_scale_rotation_translation(
-                        Vec3::splat(0.20),
+                        Vec3::splat(barrier_scale),
                         Quat::IDENTITY,
                         Vec3::new(0.5, 0.1, 0.5),
                     ),
                 )),
                 ..Default::default()
             })
-            .insert(Collider::Circle { radius: 0.0 });
+            .insert(Collider::Circle {
+                radius: 0.5 * barrier_scale,
+            });
     }
 }
 
@@ -296,7 +299,9 @@ fn setup_balls(
             })
             .insert(Ball::default())
             .insert(Visibility::Invisible)
-            .insert(Collider::Circle { radius: 0.0 });
+            .insert(Collider::Circle {
+                radius: 0.5 * config.ball_size,
+            });
     }
 }
 
@@ -311,6 +316,7 @@ fn setup_goals(
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
     let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
     let pole_material = materials.add(Color::hex("00A400").unwrap().into());
+    let pole_width = 1.0;
     let goal_configs = [
         (
             Pilot::Player,
@@ -388,9 +394,8 @@ fn setup_goals(
                     .insert(Crab::default())
                     .insert(Visibility::Invisible)
                     .insert(pilot.clone())
-                    .insert(Collider::Rectangle {
-                        width: 0.0,
-                        height: 0.0,
+                    .insert(Collider::Line {
+                        width: config.crab_max_scale,
                     })
                     .insert(goal_location.clone());
 
@@ -402,7 +407,7 @@ fn setup_goals(
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
                                 Vec3::new(
-                                    1.0,
+                                    pole_width,
                                     config.pole_radius,
                                     config.pole_radius,
                                 ),
@@ -415,10 +420,7 @@ fn setup_goals(
                     .insert(Pole)
                     .insert(goal_location.clone())
                     .insert(Visibility::Visible)
-                    .insert(Collider::Rectangle {
-                        width: 0.0,
-                        height: 0.0,
-                    });
+                    .insert(Collider::Line { width: pole_width });
             });
 
         // Score
@@ -833,7 +835,12 @@ fn ball_collision_system(
         &Collider,
         &Visibility,
     )>,
-    colliders_query: Query<(Entity, &GlobalTransform, &Collider, &Visibility)>,
+    colliders_query: Query<(
+        Entity,
+        &GlobalTransform,
+        &Collider,
+        &Option<Visibility>, // Barriers have no visibility
+    )>,
 ) {
     for (entity, transform, mut ball, collider, visibility) in
         bally_query.iter_mut()
@@ -847,7 +854,9 @@ fn ball_collision_system(
                 if entity != entity2
                     && matches!(
                         visibility2,
-                        Visibility::Visible | Visibility::FadingIn(_)
+                        None | Some(
+                            Visibility::Visible | Visibility::FadingIn(_)
+                        )
                     )
                 {
                     // TODO: Run collision logic
@@ -856,7 +865,7 @@ fn ball_collision_system(
                             // TODO: Circle-Circle collision
                             // How to detect and handle the other ball?
                         },
-                        Collider::Rectangle { width, height } => {
+                        Collider::Line { width } => {
                             // TODO: Circle-Rectangle collision
                         },
                     }
