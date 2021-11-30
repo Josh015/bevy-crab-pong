@@ -209,6 +209,7 @@ fn setup_scene(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let unit_plane = meshes.add(Mesh::from(shape::Plane { size: 1.0 }));
+    let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
 
     // Cameras
     commands
@@ -240,6 +241,31 @@ fn setup_scene(
         transform: Transform::from_xyz(0.0, 0.0, 0.0),
         ..Default::default()
     });
+
+    // Barriers
+    let barrier_material = materials.add(Color::hex("750000").unwrap().into());
+    let total_barriers = 4;
+
+    for i in 0..total_barriers {
+        commands
+            .spawn_bundle(PbrBundle {
+                mesh: unit_cube.clone(),
+                material: barrier_material.clone(),
+                transform: Transform::from_rotation(Quat::from_axis_angle(
+                    Vec3::Y,
+                    (i as f32 / total_barriers as f32) * std::f32::consts::TAU,
+                ))
+                .mul_transform(Transform::from_matrix(
+                    Mat4::from_scale_rotation_translation(
+                        Vec3::splat(0.20),
+                        Quat::IDENTITY,
+                        Vec3::new(0.5, 0.1, 0.5),
+                    ),
+                )),
+                ..Default::default()
+            })
+            .insert(Collider::Circle { radius: 0.0 });
+    }
 }
 
 fn setup_balls(
@@ -252,20 +278,18 @@ fn setup_balls(
         radius: 0.5,
         subdivisions: 2,
     }));
-    let ball_scale = Vec3::splat(config.ball_size);
-    let ball_height = 0.1;
-    let ball_color = Color::rgb(1.0, 1.0, 1.0);
+    let ball_material = materials.add(Color::rgb(1.0, 1.0, 1.0).into());
 
     for _ in 0..2 {
         commands
             .spawn_bundle(PbrBundle {
                 mesh: unit_sphere.clone(),
-                material: materials.add(ball_color.into()),
+                material: ball_material.clone(),
                 transform: Transform::from_matrix(
                     Mat4::from_scale_rotation_translation(
-                        ball_scale,
+                        Vec3::splat(config.ball_size),
                         Quat::IDENTITY,
-                        Vec3::new(0.0, ball_height, 0.0),
+                        Vec3::new(0.0, 0.1, 0.0),
                     ),
                 ),
                 ..Default::default()
@@ -286,18 +310,7 @@ fn setup_goals(
 ) {
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
     let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
-
-    let crab_scale = Vec3::splat(config.crab_max_scale);
-    let crab_height = 0.05;
-
     let pole_material = materials.add(Color::hex("00A400").unwrap().into());
-    let pole_height = 0.1;
-    let pole_scale_x = Vec3::new(1.0, config.pole_radius, config.pole_radius);
-
-    let barrier_material = materials.add(Color::hex("750000").unwrap().into());
-    let barrier_height = 0.1;
-    let barrier_scale = Vec3::splat(0.20);
-
     let goal_configs = [
         (
             Pilot::Player,
@@ -365,9 +378,9 @@ fn setup_goals(
                         material: materials.add(color.clone().into()),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                crab_scale,
+                                Vec3::splat(config.crab_max_scale),
                                 Quat::IDENTITY,
-                                Vec3::new(0.0, crab_height, 0.0),
+                                Vec3::new(0.0, 0.05, 0.0),
                             ),
                         ),
                         ..Default::default()
@@ -388,9 +401,13 @@ fn setup_goals(
                         material: pole_material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                pole_scale_x,
+                                Vec3::new(
+                                    1.0,
+                                    config.pole_radius,
+                                    config.pole_radius,
+                                ),
                                 Quat::IDENTITY,
-                                Vec3::new(0.0, pole_height, 0.0),
+                                Vec3::new(0.0, 0.1, 0.0),
                             ),
                         ),
                         ..Default::default()
@@ -402,22 +419,6 @@ fn setup_goals(
                         width: 0.0,
                         height: 0.0,
                     });
-
-                // Barrier
-                parent
-                    .spawn_bundle(PbrBundle {
-                        mesh: unit_cube.clone(),
-                        material: barrier_material.clone(),
-                        transform: Transform::from_matrix(
-                            Mat4::from_scale_rotation_translation(
-                                barrier_scale,
-                                Quat::IDENTITY,
-                                Vec3::new(0.5, barrier_height, 0.0),
-                            ),
-                        ),
-                        ..Default::default()
-                    })
-                    .insert(Collider::Circle { radius: 0.0 });
             });
 
         // Score
