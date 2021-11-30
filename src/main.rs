@@ -187,9 +187,9 @@ fn main() {
                 .with_system(player_crab_control_system)
                 .with_system(ai_crab_control_system)
                 .with_system(crab_scoring_system)
+                .with_system(ball_movement_system)
                 .with_system(ball_collision_system)
-                .with_system(goal_scoring_system)
-                .with_system(ball_movement_system),
+                .with_system(goal_scoring_system),
         )
         .add_system_set(
             SystemSet::on_exit(GameState::Playing).with_system(on_exit_playing),
@@ -257,7 +257,7 @@ fn setup(
     let barrier_height = 0.1;
     let barrier_scale = Vec3::splat(0.20);
 
-    // Zones
+    // Goals
     let configs = [
         (
             Pilot::Player,
@@ -271,11 +271,11 @@ fn setup(
         ),
         (
             Pilot::Ai,
-            Color::PURPLE,
-            GoalLocation::Left,
+            Color::BLUE,
+            GoalLocation::Right,
             Rect {
-                bottom: Val::Px(5.0),
-                left: Val::Px(5.0),
+                top: Val::Px(5.0),
+                right: Val::Px(5.0),
                 ..Default::default()
             },
         ),
@@ -291,11 +291,11 @@ fn setup(
         ),
         (
             Pilot::Ai,
-            Color::BLUE,
-            GoalLocation::Right,
+            Color::PURPLE,
+            GoalLocation::Left,
             Rect {
-                top: Val::Px(5.0),
-                right: Val::Px(5.0),
+                bottom: Val::Px(5.0),
+                left: Val::Px(5.0),
                 ..Default::default()
             },
         ),
@@ -311,6 +311,8 @@ fn setup(
                 .mul_transform(Transform::from_xyz(0.0, 0.0, 0.5)),
                 ..Default::default()
             })
+            .insert(Goal)
+            .insert(goal_location.clone())
             .with_children(|parent| {
                 // Crab
                 // NOTE: Treat it as the center of the goal
@@ -373,21 +375,6 @@ fn setup(
                         ..Default::default()
                     })
                     .insert(Collider::Circle { radius: 0.0 });
-
-                // Goal
-                parent
-                    .spawn_bundle(PbrBundle {
-                        transform: Transform::from_matrix(
-                            Mat4::from_scale_rotation_translation(
-                                Vec3::new(1.0, 0.01, 1.0),
-                                Quat::IDENTITY,
-                                Vec3::new(0.0, 0.0, 0.5),
-                            ),
-                        ),
-                        ..Default::default()
-                    })
-                    .insert(Goal)
-                    .insert(goal_location.clone());
             });
 
         // Score
@@ -821,6 +808,33 @@ fn crab_scoring_system(
     // TODO: Need to check scores of enemy crabs as well
 }
 
+fn ball_movement_system(
+    config: Res<GameConfig>,
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &mut Ball, &mut Visibility)>,
+) {
+    let mut rng = rand::thread_rng();
+
+    for (mut transform, mut ball, mut visibility) in query.iter_mut() {
+        match *visibility {
+            Visibility::Visible | Visibility::FadingOut(_) => {
+                transform.translation +=
+                    ball.direction * (config.ball_speed * time.delta_seconds());
+            },
+            Visibility::Invisible => {
+                // Move ball back to center, then start fading it into view
+                *visibility = Visibility::FadingIn(0.0);
+                transform.translation = Vec3::ZERO;
+
+                // Give the ball a random direction vector
+                let angle = rng.gen_range(0.0..std::f32::consts::TAU);
+                ball.direction = Vec3::new(angle.cos(), 0.0, angle.sin());
+            },
+            _ => {},
+        };
+    }
+}
+
 fn ball_collision_system(
     mut bally_query: Query<(
         Entity,
@@ -869,7 +883,7 @@ fn goal_scoring_system(
 ) {
     for (ball_transform, mut ball_visibility) in ball_query.iter_mut() {
         if *ball_visibility == Visibility::Visible {
-            // Trigger ball return if it goes too far.
+            // Trigger ball return if it goes out of bounds
             if Vec3::ZERO.distance(ball_transform.translation)
                 >= 0.5 * 2f32.sqrt()
             {
@@ -893,32 +907,5 @@ fn goal_scoring_system(
                 *game.scores.get_mut(&scored_goal).unwrap() -= 1;
             }
         }
-    }
-}
-
-fn ball_movement_system(
-    config: Res<GameConfig>,
-    time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Ball, &mut Visibility)>,
-) {
-    let mut rng = rand::thread_rng();
-
-    for (mut transform, mut ball, mut visibility) in query.iter_mut() {
-        match *visibility {
-            Visibility::Visible | Visibility::FadingOut(_) => {
-                transform.translation +=
-                    ball.direction * (config.ball_speed * time.delta_seconds());
-            },
-            Visibility::Invisible => {
-                // Move ball back to center, then start fading it into view
-                *visibility = Visibility::FadingIn(0.0);
-                transform.translation = Vec3::ZERO;
-
-                // Give the ball a random direction vector
-                let angle = rng.gen_range(0.0..std::f32::consts::TAU);
-                ball.direction = Vec3::new(angle.cos(), 0.0, angle.sin());
-            },
-            _ => {},
-        };
     }
 }
