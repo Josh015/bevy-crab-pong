@@ -416,39 +416,24 @@ fn setup(
     let ball_height = 0.1;
     let ball_color = Color::rgb(1.0, 1.0, 1.0);
 
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_sphere.clone(),
-            material: materials.add(ball_color.into()),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    ball_scale,
-                    Quat::IDENTITY,
-                    Vec3::new(0.0, ball_height, 0.0),
+    for _ in 0..2 {
+        commands
+            .spawn_bundle(PbrBundle {
+                mesh: unit_sphere.clone(),
+                material: materials.add(ball_color.into()),
+                transform: Transform::from_matrix(
+                    Mat4::from_scale_rotation_translation(
+                        ball_scale,
+                        Quat::IDENTITY,
+                        Vec3::new(0.0, ball_height, 0.0),
+                    ),
                 ),
-            ),
-            ..Default::default()
-        })
-        .insert(Ball::default())
-        .insert(Visibility::Invisible)
-        .insert(Collider::Circle { radius: 0.0 });
-
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_sphere.clone(),
-            material: materials.add(ball_color.into()),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    ball_scale,
-                    Quat::IDENTITY,
-                    Vec3::new(0.0, ball_height, 0.0),
-                ),
-            ),
-            ..Default::default()
-        })
-        .insert(Ball::default())
-        .insert(Visibility::Invisible)
-        .insert(Collider::Circle { radius: 0.0 });
+                ..Default::default()
+            })
+            .insert(Ball::default())
+            .insert(Visibility::Invisible)
+            .insert(Collider::Circle { radius: 0.0 });
+    }
 }
 
 fn display_scores_system(
