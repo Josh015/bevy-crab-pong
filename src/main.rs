@@ -1,22 +1,3 @@
-// TODO: Debug option to make all crabs driven by AI? Will need to revise player
-// system to handle no players.
-
-// TODO: Debug option to directly control single ball's exact position with
-// keyboard and see how crabs respond. Can go in goals, triggering a score and
-// ball return?
-
-// TODO: Debug option to add small cubes at the projected points on goals with
-// debug lines to the nearest ball. Also add a line from the crab to a flat but
-// wide cube (to allow both to be visible if they overlap) that matches the
-// crab's hit box dimensions and is positioned where the crab predicts it will
-// stop. One of each per goal so we can spawn them in advance.
-
-// TODO: Instead of handling different crabs individually, build Goal with child
-// Barrier, Pole, and Crab together and have crab move on relative transform?
-
-// TODO: For crab, need to immediately set to inactive, halt AI, set walking to
-// Stopped, and set fading to zero.
-
 mod files;
 
 use bevy::{
@@ -881,31 +862,31 @@ fn goal_scoring_system(
     goals_query: Query<(&GlobalTransform, &GoalLocation), With<Goal>>,
 ) {
     for (ball_transform, mut ball_visibility) in ball_query.iter_mut() {
-        if *ball_visibility == Visibility::Visible {
-            // Trigger ball return if it goes out of bounds
-            if Vec3::ZERO.distance(ball_transform.translation)
+        // Check if a visible ball goes out of bounds
+        if *ball_visibility == Visibility::Visible
+            && Vec3::ZERO.distance(ball_transform.translation)
                 >= 0.5 * 2f32.sqrt()
-            {
-                *ball_visibility = Visibility::FadingOut(0.0);
+        {
+            // Trigger ball return
+            *ball_visibility = Visibility::FadingOut(0.0);
 
-                // Whichever goal it's closest to is considered a score
-                let mut closest = 100.0;
-                let mut scored_goal = GoalLocation::Bottom;
+            // Whichever goal it's closest to is considered a score
+            let mut closest = 100.0;
+            let mut scored_goal = GoalLocation::Bottom;
 
-                for (goal_transform, goal_location) in goals_query.iter() {
-                    let new_distance = ball_transform
-                        .translation
-                        .distance(goal_transform.translation);
+            for (goal_transform, goal_location) in goals_query.iter() {
+                let new_distance = ball_transform
+                    .translation
+                    .distance(goal_transform.translation);
 
-                    if new_distance < closest {
-                        closest = new_distance;
-                        scored_goal = goal_location.clone();
-                    }
+                if new_distance < closest {
+                    closest = new_distance;
+                    scored_goal = goal_location.clone();
                 }
-
-                let score = game.scores.get_mut(&scored_goal).unwrap();
-                *score = score.saturating_sub(1);
             }
+
+            let score = game.scores.get_mut(&scored_goal).unwrap();
+            *score = score.saturating_sub(1);
         }
     }
 }
@@ -929,3 +910,26 @@ fn gameover_check_system(
         state.set(GameState::GameOver).unwrap();
     }
 }
+
+// TODO: Need a component to house visibility and can have an is_active field so
+// we can check that in all relevant functions and allow weird cases like Poles
+// to be active in multiple Visibility states!
+
+// TODO: Move weights out of FadingIn and FadingOut because it's annoying having
+// to set them all over the place!
+
+// TODO: Have an Option<GameOver> in Game so aren't constantly iterating to
+// check win conditions?
+
+// TODO: Debug option to make all crabs driven by AI? Will need to revise player
+// system to handle no players.
+
+// TODO: Debug option to directly control single ball's exact position with
+// keyboard and see how crabs respond. Can go in goals, triggering a score and
+// ball return?
+
+// TODO: Debug option to add small cubes at the projected points on goals with
+// debug lines to the nearest ball. Also add a line from the crab to a flat but
+// wide cube (to allow both to be visible if they overlap) that matches the
+// crab's hit box dimensions and is positioned where the crab predicts it will
+// stop. One of each per goal so we can spawn them in advance.
