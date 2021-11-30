@@ -612,9 +612,8 @@ fn setup_new_game(
 
     // Reset crabs
     for (mut transform, mut visibility) in queries.q0().iter_mut() {
-        *visibility = Visibility::FadingIn(0.0);
-        // TODO: Need to reset crabs to starting positions. Will be easier if we
-        // make their positions relative.
+        *visibility = Visibility::Visible;
+        transform.translation = Vec3::new(0.0, 0.05, 0.0); // TODO: Centralize
     }
 
     // Reset balls
@@ -624,7 +623,7 @@ fn setup_new_game(
 
     // Reset poles
     for mut visibility in queries.q2().iter_mut() {
-        *visibility = Visibility::FadingOut(0.0);
+        *visibility = Visibility::Invisible
     }
 
     // Reset scores
