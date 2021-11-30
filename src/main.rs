@@ -158,8 +158,8 @@ fn main() {
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(ClearColor(Color::rgb(0.7, 0.9, 1.0)))
         .add_plugins(DefaultPlugins)
-        .insert_resource(config)
         .insert_resource(Game::default())
+        .insert_resource(config)
         .add_startup_system(setup)
         .add_system(display_scores_system)
         .add_system(swaying_camera_system)
@@ -186,8 +186,8 @@ fn main() {
         .add_system_set(
             SystemSet::on_update(GameState::Playing)
                 .with_system(crab_walking_system)
-                .with_system(player_crab_control_system)
-                .with_system(ai_crab_control_system)
+                .with_system(crab_player_control_system)
+                .with_system(crab_ai_control_system)
                 .with_system(crab_elimination_system)
                 .with_system(ball_movement_system)
                 .with_system(ball_collision_system)
@@ -701,7 +701,7 @@ fn crab_walking_system(
     }
 }
 
-fn player_crab_control_system(
+fn crab_player_control_system(
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(&mut Crab, &Visibility, &Pilot)>,
 ) {
@@ -718,7 +718,7 @@ fn player_crab_control_system(
     }
 }
 
-fn ai_crab_control_system(
+fn crab_ai_control_system(
     balls_query: Query<&GlobalTransform, With<Ball>>,
     mut crab_query: Query<(&GlobalTransform, &mut Crab, &Visibility, &Pilot)>,
 ) {
