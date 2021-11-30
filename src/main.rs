@@ -115,6 +115,9 @@ impl Default for Ball {
 struct Pole;
 
 // #[derive(Component)]
+struct Goal;
+
+// #[derive(Component)]
 enum Collider {
     Rectangle { width: f32, height: f32 },
     Circle { radius: f32 },
@@ -185,7 +188,7 @@ fn main() {
                 .with_system(ai_crab_control_system)
                 .with_system(crab_scoring_system)
                 .with_system(ball_collision_system)
-                .with_system(ball_scoring_system)
+                .with_system(goal_scoring_system)
                 .with_system(ball_movement_system),
         )
         .add_system_set(
@@ -254,7 +257,7 @@ fn setup(
     let barrier_height = 0.1;
     let barrier_scale = Vec3::splat(0.20);
 
-    // Goals
+    // Zones
     let configs = [
         (
             Pilot::Player,
@@ -370,6 +373,21 @@ fn setup(
                         ..Default::default()
                     })
                     .insert(Collider::Circle { radius: 0.0 });
+
+                // Goal
+                parent
+                    .spawn_bundle(PbrBundle {
+                        transform: Transform::from_matrix(
+                            Mat4::from_scale_rotation_translation(
+                                Vec3::new(1.0, 0.01, 1.0),
+                                Quat::IDENTITY,
+                                Vec3::new(0.0, 0.0, 0.5),
+                            ),
+                        ),
+                        ..Default::default()
+                    })
+                    .insert(Goal)
+                    .insert(goal_location.clone());
             });
 
         // Score
@@ -404,7 +422,7 @@ fn setup(
 
     // Balls
     let unit_sphere = meshes.add(Mesh::from(shape::Icosphere {
-        radius: 1.5,
+        radius: 0.5,
         subdivisions: 2,
     }));
     let ball_scale = Vec3::splat(config.ball_size);
@@ -806,12 +824,12 @@ fn crab_scoring_system(
 fn ball_collision_system(
     mut bally_query: Query<(
         Entity,
-        &Transform,
+        &GlobalTransform,
         &mut Ball,
         &Collider,
         &Visibility,
     )>,
-    colliders_query: Query<(Entity, &Transform, &Collider, &Visibility)>,
+    colliders_query: Query<(Entity, &GlobalTransform, &Collider, &Visibility)>,
 ) {
     for (entity, transform, mut ball, collider, visibility) in
         bally_query.iter_mut()
@@ -844,20 +862,35 @@ fn ball_collision_system(
     }
 }
 
-// This has to be separate because of all the mutable borrows it needs
-fn ball_scoring_system(
+fn goal_scoring_system(
     mut game: ResMut<Game>,
-    mut ball_query: Query<(&Transform, &mut Ball, &mut Visibility)>,
+    mut ball_query: Query<(&GlobalTransform, &mut Visibility), With<Ball>>,
+    goals_query: Query<(&GlobalTransform, &GoalLocation), With<Goal>>,
 ) {
-    for (transform, mut ball, mut visibility) in ball_query.iter_mut() {
-        if *visibility == Visibility::Visible {
-            // FIXME: Temporary ball return code.
-            if Vec3::ZERO.distance(transform.translation) >= 1.0 {
-                let scored_goal = GoalLocation::Bottom;
-                *game.scores.get_mut(&scored_goal).unwrap() -= 1;
+    for (ball_transform, mut ball_visibility) in ball_query.iter_mut() {
+        if *ball_visibility == Visibility::Visible {
+            // Trigger ball return if it goes too far.
+            if Vec3::ZERO.distance(ball_transform.translation)
+                >= 0.5 * 2f32.sqrt()
+            {
+                *ball_visibility = Visibility::FadingOut(0.0);
 
-                // Begin fading out ball when it scores
-                *visibility = Visibility::FadingOut(0.0);
+                // Whichever goal it's closest to is considered a score
+                let mut closest = 100.0;
+                let mut scored_goal = GoalLocation::Bottom;
+
+                for (goal_transform, goal_location) in goals_query.iter() {
+                    let new_distance = ball_transform
+                        .translation
+                        .distance(goal_transform.translation);
+
+                    if new_distance < closest {
+                        closest = new_distance;
+                        scored_goal = goal_location.clone();
+                    }
+                }
+
+                *game.scores.get_mut(&scored_goal).unwrap() -= 1;
             }
         }
     }
