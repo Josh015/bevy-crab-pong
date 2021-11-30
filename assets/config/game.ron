@@ -9,4 +9,5 @@
   fading_speed: 0.75,
   ball_speed: 0.5,
   pole_radius: 0.05,
+  starting_score: 20,
 )

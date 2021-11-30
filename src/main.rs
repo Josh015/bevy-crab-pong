@@ -130,8 +130,7 @@ struct GameConfig {
     ball_speed: f32,
     fading_speed: f32,
     pole_radius: f32,
-    /* startingScore: u8, //20,
-     * ballSpeed: f32,    // ?? */
+    starting_score: u32,
 }
 
 #[derive(Default)]
@@ -601,6 +600,7 @@ fn gameover_keyboard_system(
 }
 
 fn setup_new_game(
+    config: Res<GameConfig>,
     mut game: ResMut<Game>,
     mut queries: QuerySet<(
         QueryState<(&mut Transform, &mut Visibility), With<Crab>>,
@@ -629,7 +629,7 @@ fn setup_new_game(
 
     // Reset scores
     for (_, score) in game.scores.iter_mut() {
-        *score = 20;
+        *score = config.starting_score;
     }
 }
 
