@@ -19,7 +19,9 @@
 
 mod files;
 
-use bevy::{ecs::prelude::*, prelude::*};
+use bevy::{
+    ecs::prelude::*, prelude::*, render::camera::PerspectiveProjection,
+};
 use rand::prelude::*;
 use serde::Deserialize;
 use std::{
@@ -127,6 +129,7 @@ struct GameConfig {
     animated_water_speed: f32,
     crab_max_scale: f32,
     crab_max_speed: f32,
+    ball_size: f32,
     ball_speed: f32,
     fading_speed: f32,
     pole_radius: f32,
@@ -164,15 +167,16 @@ fn main() {
         .add_system(ball_visibility_system)
         .add_state(GameState::GameOver)
         .add_system_set(
-            SystemSet::on_enter(GameState::Playing)
-                .with_system(setup_game_over),
+            SystemSet::on_enter(GameState::GameOver)
+                .with_system(on_enter_gameover),
         )
         .add_system_set(
             SystemSet::on_update(GameState::GameOver)
                 .with_system(gameover_keyboard_system),
         )
         .add_system_set(
-            SystemSet::on_enter(GameState::Playing).with_system(setup_new_game),
+            SystemSet::on_enter(GameState::Playing)
+                .with_system(on_enter_playing),
         )
         .add_system_set(
             SystemSet::on_update(GameState::Playing)
@@ -181,6 +185,9 @@ fn main() {
                 .with_system(ai_crab_control_system)
                 .with_system(ball_collision_system)
                 .with_system(ball_movement_system),
+        )
+        .add_system_set(
+            SystemSet::on_exit(GameState::Playing).with_system(on_exit_playing),
         )
         .add_system(bevy::input::system::exit_on_esc_system)
         .run();
@@ -398,7 +405,7 @@ fn setup(
         radius: 1.5,
         subdivisions: 2,
     }));
-    let ball_scale = Vec3::splat(0.05);
+    let ball_scale = Vec3::splat(config.ball_size);
     let ball_height = 0.1;
     let ball_color = Color::rgb(1.0, 1.0, 1.0);
 
@@ -450,7 +457,10 @@ fn display_scores_system(
 fn swaying_camera_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut SwayingCamera)>,
+    mut query: Query<
+        (&mut Transform, &mut SwayingCamera),
+        With<PerspectiveProjection>,
+    >,
 ) {
     // Slowly sway the camera back and forth
     let (mut transform, mut swaying_camera) = query.single_mut();
@@ -536,14 +546,18 @@ fn ball_visibility_system(
     config: Res<GameConfig>,
     asset_server: Res<AssetServer>,
     mut query: Query<
-        (&mut Handle<StandardMaterial>, &mut Visibility),
+        (
+            &mut Handle<StandardMaterial>,
+            &mut Transform,
+            &mut Visibility,
+        ),
         With<Ball>,
     >,
 ) {
     // Increase/Decrease balls' opacity to show/hide them
     let mut is_prior_fading = false;
 
-    for (mut material, mut visibility) in query.iter_mut() {
+    for (mut material, mut transform, mut visibility) in query.iter_mut() {
         let is_current_fading = matches!(*visibility, Visibility::FadingIn(_));
 
         // Force current ball to wait if other is also fading in
@@ -551,6 +565,11 @@ fn ball_visibility_system(
             *visibility = Visibility::FadingIn(0.0);
         } else {
             is_prior_fading = is_current_fading;
+
+            // FIXME: Use scaling until we can get opacity working.
+            transform.scale =
+                Vec3::splat(visibility.opacity() * config.ball_size);
+
             // TODO: Reduce ball opacity
             // asset_server.get_mut(&material).unwrap();
             // material.base_color.a = visibility.opacity();
@@ -558,22 +577,13 @@ fn ball_visibility_system(
     }
 }
 
-fn setup_game_over(
+fn on_enter_gameover(
     game: Res<Game>,
-    mut queries: QuerySet<(
-        QueryState<&mut Visibility, With<Ball>>,
-        QueryState<(&Pilot, &GoalLocation), With<Crab>>,
-    )>,
+    query: Query<(&Pilot, &GoalLocation), With<Crab>>,
 ) {
-    // TODO: Should this be different on game start?
-    // Hide balls
-    for mut visibility in queries.q0().iter_mut() {
-        *visibility = Visibility::FadingOut(0.0);
-    }
-
     // Show win/lose text if there's a player and at least one non-zero score
-    if game.scores.iter().any(|score| score.1 > &0) {
-        for (pilot, goal_location) in queries.q1().iter() {
+    if game.scores.iter().any(|score| *score.1 > 0) {
+        for (pilot, goal_location) in query.iter() {
             if *pilot == Pilot::Player {
                 if game.scores[&goal_location] > 0 {
                     // If player score is non-zero, show win text
@@ -599,7 +609,7 @@ fn gameover_keyboard_system(
     }
 }
 
-fn setup_new_game(
+fn on_enter_playing(
     config: Res<GameConfig>,
     mut game: ResMut<Game>,
     mut queries: QuerySet<(
@@ -629,6 +639,12 @@ fn setup_new_game(
     // Reset scores
     for (_, score) in game.scores.iter_mut() {
         *score = config.starting_score;
+    }
+}
+
+fn on_exit_playing(mut query: Query<&mut Visibility, With<Ball>>) {
+    for mut visibility in query.iter_mut() {
+        *visibility = Visibility::FadingOut(0.0);
     }
 }
 

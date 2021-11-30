@@ -7,6 +7,7 @@
   crab_max_scale: 0.1,
   crab_max_speed: 2.2,
   fading_speed: 0.75,
+  ball_size: 0.05,
   ball_speed: 0.5,
   pole_radius: 0.05,
   starting_score: 20,
