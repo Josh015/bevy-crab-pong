@@ -83,6 +83,10 @@ enum Pilot {
     Ai,
 }
 
+impl Default for Pilot {
+    fn default() -> Self { Self::Player }
+}
+
 #[derive(Component)]
 struct Ball {
     direction: Vec3,
@@ -124,20 +128,10 @@ struct GameConfig {
     starting_score: u32,
 }
 
-#[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
-enum GameOutcome {
-    Won,
-    Lost,
-}
-
-impl Default for GameOutcome {
-    fn default() -> Self { GameOutcome::Lost }
-}
-
 #[derive(Default)]
 struct Game {
     scores: HashMap<GoalSide, u32>,
-    outcome: Option<GameOutcome>,
+    winner: Option<Pilot>,
 }
 
 // TODO: Make Game resource smarter and have it share game data that can't be
@@ -577,8 +571,8 @@ fn ball_transition_system(
 }
 
 fn show_gameover_ui(game: Res<Game>) {
-    if let Some(outcome) = game.outcome {
-        if outcome == GameOutcome::Won {
+    if let Some(winner) = game.winner {
+        if winner == Pilot::Player {
             // TODO: Add win text
         } else {
             // TODO: Add loss text
@@ -909,10 +903,10 @@ fn gameover_check_system(
     });
 
     if has_player_won || has_player_lost {
-        game.outcome = if has_player_won {
-            Some(GameOutcome::Won)
+        game.winner = if has_player_won {
+            Some(Pilot::Player)
         } else {
-            Some(GameOutcome::Lost)
+            Some(Pilot::Ai)
         };
 
         state.set(GameState::GameOver).unwrap();
