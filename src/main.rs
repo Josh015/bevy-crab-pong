@@ -37,6 +37,7 @@ fn main() {
         .add_system(pole_transition_system)
         .add_system(ball_transition_system)
         .add_state(GameState::GameOver)
+        .add_event::<GoalEliminated>()
         .add_system_set(
             SystemSet::on_enter(GameState::GameOver)
                 .with_system(show_gameover_ui),
@@ -59,7 +60,7 @@ fn main() {
                 .with_system(paddle_ai_control_system)
                 .with_system(ball_movement_system)
                 .with_system(ball_collision_system)
-                .with_system(goal_scoring_system)
+                .with_system(goal_scored_system)
                 .with_system(goal_elimination_system)
                 .with_system(gameover_check_system),
         )
@@ -110,6 +111,8 @@ enum Movement {
 impl Default for Movement {
     fn default() -> Self { Self::Stopped }
 }
+
+struct GoalEliminated(GoalSide);
 
 #[derive(Clone, Component, PartialEq, Debug)]
 enum Transition {
@@ -820,9 +823,10 @@ fn ball_collision_system(
     }
 }
 
-fn goal_scoring_system(
+fn goal_scored_system(
     config: Res<GameConfig>,
     mut game: ResMut<Game>,
+    mut goal_eliminated_writer: EventWriter<GoalEliminated>,
     mut ball_query: Query<(&GlobalTransform, &mut Transition), With<Ball>>,
     goals_query: Query<(&GlobalTransform, &GoalSide), With<Goal>>,
 ) {
@@ -851,8 +855,13 @@ fn goal_scoring_system(
                     }
                 }
 
+                // Decrement the score and potentially eliminate the goal
                 let score = game.scores.get_mut(&scored_goal).unwrap();
                 *score = score.saturating_sub(1);
+
+                if *score == 0 {
+                    goal_eliminated_writer.send(GoalEliminated(scored_goal))
+                }
 
                 // Trigger ball return and prevent repeated scoring
                 *ball_transition = Transition::FadeOut(0.0);
@@ -862,23 +871,27 @@ fn goal_scoring_system(
 }
 
 fn goal_elimination_system(
-    game: Res<Game>,
+    mut goal_eliminated_reader: EventReader<GoalEliminated>,
     mut queries: QuerySet<(
         QueryState<(&mut Transition, &GoalSide), With<Paddle>>,
         QueryState<(&mut Transition, &GoalSide), With<Pole>>,
     )>,
 ) {
-    // Fade out paddle if score is zero
-    for (mut transition, goal_side) in queries.q0().iter_mut() {
-        if *transition == Transition::Show && game.scores[&goal_side] <= 0 {
-            *transition = Transition::FadeOut(0.0);
+    for GoalEliminated(eliminated_side) in goal_eliminated_reader.iter() {
+        // Fade out the goal's paddle
+        for (mut transition, goal_side) in queries.q0().iter_mut() {
+            if goal_side == eliminated_side {
+                *transition = Transition::FadeOut(0.0);
+                break;
+            }
         }
-    }
 
-    // Fade in pole if score is zero
-    for (mut transition, goal_side) in queries.q1().iter_mut() {
-        if *transition == Transition::Hide && game.scores[&goal_side] <= 0 {
-            *transition = Transition::FadeIn(0.0);
+        // Fade in the goal's pole
+        for (mut transition, goal_side) in queries.q1().iter_mut() {
+            if goal_side == eliminated_side {
+                *transition = Transition::FadeIn(0.0);
+                break;
+            }
         }
     }
 }
@@ -886,26 +899,30 @@ fn goal_elimination_system(
 fn gameover_check_system(
     mut game: ResMut<Game>,
     mut state: ResMut<State<GameState>>,
+    mut goal_eliminated_reader: EventReader<GoalEliminated>,
     query: Query<(&Pilot, &GoalSide), With<Paddle>>,
 ) {
-    // Player wins if all AI paddles have a score of zero
-    let has_player_won = query.iter().all(|(pilot, goal_side)| {
-        *pilot != Pilot::Ai || game.scores[&goal_side] <= 0
-    });
+    for GoalEliminated(_) in goal_eliminated_reader.iter() {
+        // Player wins if all AI paddles have a score of zero
+        let has_player_won = query.iter().all(|(pilot, goal_side)| {
+            *pilot != Pilot::Ai || game.scores[&goal_side] <= 0
+        });
 
-    // Player loses if all Player paddles have a score of zero
-    let has_player_lost = query.iter().all(|(pilot, goal_side)| {
-        *pilot != Pilot::Player || game.scores[&goal_side] <= 0
-    });
+        // Player loses if all Player paddles have a score of zero
+        let has_player_lost = query.iter().all(|(pilot, goal_side)| {
+            *pilot != Pilot::Player || game.scores[&goal_side] <= 0
+        });
 
-    if has_player_won || has_player_lost {
-        game.winner = if has_player_won {
-            Some(Pilot::Player)
-        } else {
-            Some(Pilot::Ai)
-        };
+        // Declare a winner and trigger gameover
+        if has_player_won || has_player_lost {
+            game.winner = if has_player_won {
+                Some(Pilot::Player)
+            } else {
+                Some(Pilot::Ai)
+            };
 
-        state.set(GameState::GameOver).unwrap();
+            state.set(GameState::GameOver).unwrap();
+        }
     }
 }
 
