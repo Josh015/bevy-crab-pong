@@ -40,7 +40,11 @@ fn main() {
         .add_event::<GoalEliminated>()
         .add_system_set(
             SystemSet::on_enter(GameState::GameOver)
-                .with_system(show_gameover_ui),
+                .with_system(gameover_show_ui),
+        )
+        .add_system_set(
+            SystemSet::on_exit(GameState::GameOver)
+                .with_system(gameover_hide_ui),
         )
         .add_system_set(
             SystemSet::on_update(GameState::GameOver)
@@ -493,6 +497,7 @@ fn transition_system(
     time: Res<Time>,
     mut query: Query<&mut Transition>,
 ) {
+    // Simulates transition from visible->invisible and vice versa over time
     let step = config.fading_speed * time.delta_seconds();
 
     for mut transition in query.iter_mut() {
@@ -573,7 +578,7 @@ fn ball_transition_animation_system(
     }
 }
 
-fn show_gameover_ui(game: Res<Game>) {
+fn gameover_show_ui(game: Res<Game>) {
     if let Some(winner) = game.winner {
         if winner == Pilot::Player {
             // TODO: Add win text
@@ -584,6 +589,10 @@ fn show_gameover_ui(game: Res<Game>) {
 
     // Show instructions for new game
     // TODO: new game text visible
+}
+
+fn gameover_hide_ui() {
+    // TODO: Hide message text
 }
 
 fn gameover_keyboard_system(
@@ -604,8 +613,6 @@ fn reset_game_entities(
         QueryState<&mut Transition, With<Pole>>,
     )>,
 ) {
-    // TODO: Hide message text
-
     // Reset paddles
     for (mut transform, mut transition) in queries.q0().iter_mut() {
         if matches!(*transition, Transition::Hide | Transition::FadeOut(_)) {
