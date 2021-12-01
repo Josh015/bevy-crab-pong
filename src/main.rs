@@ -564,17 +564,17 @@ fn ball_transition_animation_system(
         // Force current ball to wait if other is also fading in
         if is_prior_fading && is_current_fading {
             *transition = Transition::FadeIn(0.0);
-        } else {
-            is_prior_fading = is_current_fading;
-
-            // FIXME: Use scaling until we can get opacity working.
-            transform.scale =
-                Vec3::splat(transition.opacity() * config.ball_size);
-
-            // TODO: Reduce ball opacity
-            // asset_server.get_mut(&material).unwrap();
-            // material.base_color.a = transition.opacity();
+            continue;
         }
+
+        is_prior_fading = is_current_fading;
+
+        // FIXME: Use scaling until we can get opacity working.
+        transform.scale = Vec3::splat(transition.opacity() * config.ball_size);
+
+        // TODO: Reduce ball opacity
+        // asset_server.get_mut(&material).unwrap();
+        // material.base_color.a = transition.opacity();
     }
 }
 
@@ -656,44 +656,44 @@ fn crab_movement_system(
     mut query: Query<(&mut Transform, &mut Crab, &Transition)>,
 ) {
     for (mut transform, mut crab, transition) in query.iter_mut() {
-        if *transition == Transition::Show {
-            // Accelerate the crab
-            let acceleration =
-                config.crab_max_speed / config.crab_seconds_to_max_speed;
-            let delta_speed = acceleration * time.delta_seconds();
-
-            if crab.movement == Movement::Stopped {
-                let s = crab.speed.abs().sub(delta_speed).max(0.0);
-                crab.speed = crab.speed.max(-s).min(s);
-            } else {
-                crab.speed = crab
-                    .speed
-                    .add(if crab.movement == Movement::Left {
-                        -delta_speed
-                    } else {
-                        delta_speed
-                    })
-                    .clamp(-config.crab_max_speed, config.crab_max_speed);
-            }
-
-            // Limit crab to open space between barriers
-            let mut position = transform.translation.x + crab.speed;
-            let extents = 0.5
-                * (config.beach_width
-                    - config.barrier_width
-                    - config.crab_scale.0);
-
-            if position >= extents {
-                position = extents;
-                crab.speed = 0.0;
-            } else if position <= -extents {
-                position = -extents;
-                crab.speed = 0.0;
-            }
-
-            // Move the crab
-            transform.translation.x = position;
+        if *transition != Transition::Show {
+            continue;
         }
+
+        // Accelerate the crab
+        let acceleration =
+            config.crab_max_speed / config.crab_seconds_to_max_speed;
+        let delta_speed = acceleration * time.delta_seconds();
+
+        if crab.movement == Movement::Stopped {
+            let s = crab.speed.abs().sub(delta_speed).max(0.0);
+            crab.speed = crab.speed.max(-s).min(s);
+        } else {
+            crab.speed = crab
+                .speed
+                .add(if crab.movement == Movement::Left {
+                    -delta_speed
+                } else {
+                    delta_speed
+                })
+                .clamp(-config.crab_max_speed, config.crab_max_speed);
+        }
+
+        // Limit crab to open space between barriers
+        let mut position = transform.translation.x + crab.speed;
+        let extents = 0.5
+            * (config.beach_width - config.barrier_width - config.crab_scale.0);
+
+        if position >= extents {
+            position = extents;
+            crab.speed = 0.0;
+        } else if position <= -extents {
+            position = -extents;
+            crab.speed = 0.0;
+        }
+
+        // Move the crab
+        transform.translation.x = position;
     }
 }
 
@@ -702,14 +702,16 @@ fn crab_player_control_system(
     mut query: Query<(&mut Crab, &Transition, &Pilot)>,
 ) {
     for (mut crab, transition, pilot) in query.iter_mut() {
-        if *transition == Transition::Show && *pilot == Pilot::Player {
-            if keyboard_input.pressed(KeyCode::Left) {
-                crab.movement = Movement::Left;
-            } else if keyboard_input.pressed(KeyCode::Right) {
-                crab.movement = Movement::Right;
-            } else {
-                crab.movement = Movement::Stopped;
-            }
+        if *transition != Transition::Show || *pilot != Pilot::Player {
+            continue;
+        }
+
+        if keyboard_input.pressed(KeyCode::Left) {
+            crab.movement = Movement::Left;
+        } else if keyboard_input.pressed(KeyCode::Right) {
+            crab.movement = Movement::Right;
+        } else {
+            crab.movement = Movement::Stopped;
         }
     }
 }
@@ -719,33 +721,35 @@ fn crab_ai_control_system(
     mut crab_query: Query<(&GlobalTransform, &mut Crab, &Transition, &Pilot)>,
 ) {
     for (crab_transform, mut crab, transition, pilot) in crab_query.iter_mut() {
-        if *transition == Transition::Show && *pilot == Pilot::Ai {
-            // Pick which ball is closest to this crab's goal
-            for ball_transform in balls_query.iter() {
-                // TODO:
-                // Project ball center onto goal line.
-                // Get normalized vector between ball center and projected
-                // point. Multiply normal by radius, and offset
-                // from ball center. Get `ball_distance` between
-                // offset point and projected point.
-                // Get `target_position` by figuring out which extent it is
-                // closer to to find sign and make a weight
-                // between the two points.
-            }
+        if *transition != Transition::Show || *pilot != Pilot::Ai {
+            continue;
+        }
 
-            // Predict the crab's stop position if it begins decelerating
-            let stop_position = 0.0;
+        // Pick which ball is closest to this crab's goal
+        for ball_transform in balls_query.iter() {
+            // TODO:
+            // Project ball center onto goal line.
+            // Get normalized vector between ball center and projected
+            // point. Multiply normal by radius, and offset
+            // from ball center. Get `ball_distance` between
+            // offset point and projected point.
+            // Get `target_position` by figuring out which extent it is
+            // closer to to find sign and make a weight
+            // between the two points.
+        }
 
-            // Begin decelerating if the ball will land over 70% of the crab's
-            // middle at its predicted stop position. Otherwise go left/right
-            // depending on which side of the crab it's approaching.
-            if true {
-                crab.movement = Movement::Stopped;
-            } else if false {
-                crab.movement = Movement::Left;
-            } else {
-                crab.movement = Movement::Right;
-            }
+        // Predict the crab's stop position if it begins decelerating
+        let stop_position = 0.0;
+
+        // Begin decelerating if the ball will land over 70% of the crab's
+        // middle at its predicted stop position. Otherwise go left/right
+        // depending on which side of the crab it's approaching.
+        if true {
+            crab.movement = Movement::Stopped;
+        } else if false {
+            crab.movement = Movement::Left;
+        } else {
+            crab.movement = Movement::Right;
         }
     }
 }
@@ -795,28 +799,30 @@ fn ball_collision_system(
     for (entity, transform, mut ball, collider, transition) in
         bally_query.iter_mut()
     {
-        if *transition == Transition::Show {
-            // Colliders
-            for (entity2, transform2, collider2, transition2) in
-                colliders_query.iter()
+        if *transition != Transition::Show {
+            continue;
+        }
+
+        // Colliders
+        for (entity2, transform2, collider2, transition2) in
+            colliders_query.iter()
+        {
+            // Collide with visible entities that aren't the current one
+            if entity != entity2
+                && matches!(
+                    transition2,
+                    None | Some(Transition::Show | Transition::FadeIn(_))
+                )
             {
-                // Collide with visible entities that aren't the current one
-                if entity != entity2
-                    && matches!(
-                        transition2,
-                        None | Some(Transition::Show | Transition::FadeIn(_))
-                    )
-                {
-                    // TODO: Run collision logic
-                    match collider2 {
-                        Collider::Circle { radius } => {
-                            // TODO: Circle-Circle collision
-                            // How to detect and handle the other ball?
-                        },
-                        Collider::Line { width } => {
-                            // TODO: Circle-Rectangle collision
-                        },
-                    }
+                // TODO: Run collision logic
+                match collider2 {
+                    Collider::Circle { radius } => {
+                        // TODO: Circle-Circle collision
+                        // How to detect and handle the other ball?
+                    },
+                    Collider::Line { width } => {
+                        // TODO: Circle-Rectangle collision
+                    },
                 }
             }
         }
@@ -831,41 +837,43 @@ fn goal_scored_system(
     goals_query: Query<(&GlobalTransform, &GoalSide), With<Goal>>,
 ) {
     for (ball_transform, mut ball_transition) in ball_query.iter_mut() {
-        if *ball_transition == Transition::Show {
-            let distance_to_center = ball_transform
-                .translation
-                .distance(config.beach_center_point.into());
-            let beach_widths = Vec2::splat(config.beach_width);
-            let beach_radius = 0.5 * beach_widths.dot(beach_widths).sqrt();
+        if *ball_transition != Transition::Show {
+            continue;
+        }
 
-            // Check if a ball has gone out of bounds
-            if distance_to_center >= beach_radius {
-                let mut closest_distance = std::f32::MAX;
-                let mut scored_goal = GoalSide::Bottom;
+        let distance_to_center = ball_transform
+            .translation
+            .distance(config.beach_center_point.into());
+        let beach_widths = Vec2::splat(config.beach_width);
+        let beach_radius = 0.5 * beach_widths.dot(beach_widths).sqrt();
 
-                // Score against the goal that's closest to this ball
-                for (goal_transform, goal_side) in goals_query.iter() {
-                    let new_distance = ball_transform
-                        .translation
-                        .distance(goal_transform.translation);
+        // Check if a ball has gone out of bounds
+        if distance_to_center >= beach_radius {
+            let mut closest_distance = std::f32::MAX;
+            let mut scored_goal = GoalSide::Bottom;
 
-                    if new_distance < closest_distance {
-                        closest_distance = new_distance;
-                        scored_goal = goal_side.clone();
-                    }
+            // Score against the goal that's closest to this ball
+            for (goal_transform, goal_side) in goals_query.iter() {
+                let new_distance = ball_transform
+                    .translation
+                    .distance(goal_transform.translation);
+
+                if new_distance < closest_distance {
+                    closest_distance = new_distance;
+                    scored_goal = goal_side.clone();
                 }
-
-                // Decrement the score and potentially eliminate the goal
-                let score = game.scores.get_mut(&scored_goal).unwrap();
-                *score = score.saturating_sub(1);
-
-                if *score == 0 {
-                    goal_eliminated_writer.send(GoalEliminated(scored_goal))
-                }
-
-                // Trigger ball return and prevent repeated scoring
-                *ball_transition = Transition::FadeOut(0.0);
             }
+
+            // Decrement the score and potentially eliminate the goal
+            let score = game.scores.get_mut(&scored_goal).unwrap();
+            *score = score.saturating_sub(1);
+
+            if *score == 0 {
+                goal_eliminated_writer.send(GoalEliminated(scored_goal))
+            }
+
+            // Trigger ball return and prevent repeated scoring
+            *ball_transition = Transition::FadeOut(0.0);
         }
     }
 }
