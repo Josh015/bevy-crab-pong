@@ -201,7 +201,6 @@ fn setup_scene(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let unit_plane = meshes.add(Mesh::from(shape::Plane { size: 1.0 }));
-    let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
 
     // Cameras
     commands
@@ -233,34 +232,6 @@ fn setup_scene(
         transform: Transform::from_xyz(0.0, 0.0, 0.0),
         ..Default::default()
     });
-
-    // Barriers
-    let barrier_material = materials.add(Color::hex("750000").unwrap().into());
-    let total_barriers = 4;
-    let barrier_scale = 0.20;
-
-    for i in 0..total_barriers {
-        commands
-            .spawn_bundle(PbrBundle {
-                mesh: unit_cube.clone(),
-                material: barrier_material.clone(),
-                transform: Transform::from_rotation(Quat::from_axis_angle(
-                    Vec3::Y,
-                    (i as f32 / total_barriers as f32) * std::f32::consts::TAU,
-                ))
-                .mul_transform(Transform::from_matrix(
-                    Mat4::from_scale_rotation_translation(
-                        Vec3::splat(barrier_scale),
-                        Quat::IDENTITY,
-                        Vec3::new(0.5, 0.1, 0.5),
-                    ),
-                )),
-                ..Default::default()
-            })
-            .insert(Collider::Circle {
-                radius: 0.5 * barrier_scale,
-            });
-    }
 }
 
 fn setup_balls(
@@ -309,6 +280,8 @@ fn setup_goals(
     let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
     let pole_material = materials.add(Color::hex("00A400").unwrap().into());
     let pole_width = 1.0;
+    let barrier_material = materials.add(Color::hex("750000").unwrap().into());
+    let barrier_scale = 0.20;
     let goal_configs = [
         (
             Pilot::Player,
@@ -413,6 +386,24 @@ fn setup_goals(
                     .insert(goal_location.clone())
                     .insert(Visibility::Visible)
                     .insert(Collider::Line { width: pole_width });
+
+                // Barrier
+                parent
+                    .spawn_bundle(PbrBundle {
+                        mesh: unit_cube.clone(),
+                        material: barrier_material.clone(),
+                        transform: Transform::from_matrix(
+                            Mat4::from_scale_rotation_translation(
+                                Vec3::splat(barrier_scale),
+                                Quat::IDENTITY,
+                                Vec3::new(0.5, 0.1, 0.0),
+                            ),
+                        ),
+                        ..Default::default()
+                    })
+                    .insert(Collider::Circle {
+                        radius: 0.5 * barrier_scale,
+                    });
             });
 
         // Score
@@ -922,13 +913,6 @@ fn gameover_check_system(
         state.set(GameState::GameOver).unwrap();
     }
 }
-
-// TODO: Need a component to house visibility and can have an is_active field so
-// we can check that in all relevant functions and allow weird cases like Poles
-// to be active in multiple Visibility states!
-
-// TODO: Move weights out of FadingIn and FadingOut because it's annoying having
-// to set them all over the place!
 
 // TODO: Debug option to make all crabs driven by AI? Will need to revise player
 // system to handle no players.
