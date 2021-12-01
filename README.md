@@ -27,7 +27,7 @@ cargo run --release
 - [x] After a ball passes a goal fade it out and reset it while decrementing that goal's score.
 - [x] Add ball visibility system to fade them into/from view.
 - [x] Get bounded crab walking working.
-- [ ] Add acceleration to crab movement.
+- [x] Add acceleration to crab movement.
 - [ ] Get balls bouncing around inside 4 barriers and poles without crabs.
 - [ ] Get balls bouncing off each other.
 - [ ] Add crabs AI.

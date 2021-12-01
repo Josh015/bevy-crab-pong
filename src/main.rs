@@ -89,6 +89,7 @@ struct GameConfig {
     arena_center_point: (f32, f32, f32),
     arena_width: f32,
     paddle_max_speed: f32,
+    paddle_seconds_to_max_speed: f32,
     paddle_scale: (f32, f32, f32),
     paddle_start_position: (f32, f32, f32),
     ball_size: f32,
@@ -99,6 +100,7 @@ struct GameConfig {
     starting_score: u32,
 }
 
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum Movement {
     Stopped,
     Left,
@@ -144,8 +146,7 @@ struct AnimatedWater {
 #[derive(Component, Default)]
 struct Paddle {
     movement: Movement,
-    /* speed0: f32,
-     * pos0: f32, */
+    speed: f32,
 }
 
 #[derive(Clone, Component, Copy, Eq, PartialEq, Debug, Hash)]
@@ -646,62 +647,42 @@ fn paddle_movement_system(
 ) {
     for (mut transform, mut paddle, transition) in query.iter_mut() {
         if *transition == Transition::Show {
-            let direction = match paddle.movement {
-                Movement::Stopped => 0.0,
-                Movement::Left => -1.0,
-                Movement::Right => 1.0,
-            };
+            // Accelerate the crab
+            let acceleration =
+                config.paddle_max_speed / config.paddle_seconds_to_max_speed;
+            let delta_speed = acceleration * time.delta_seconds();
+
+            if paddle.movement == Movement::Stopped {
+                let s = paddle.speed.abs().sub(delta_speed).max(0.0);
+                paddle.speed = paddle.speed.max(-s).min(s);
+            } else {
+                paddle.speed = paddle
+                    .speed
+                    .add(if paddle.movement == Movement::Left {
+                        -delta_speed
+                    } else {
+                        delta_speed
+                    })
+                    .clamp(-config.paddle_max_speed, config.paddle_max_speed);
+            }
 
             // Limit paddle to open space between barriers
+            let mut position = transform.translation.x + paddle.speed;
             let extents = 0.5
                 * (config.arena_width
                     - config.barrier_width
                     - config.paddle_scale.0);
-            transform.translation.x = transform
-                .translation
-                .x
-                .add(direction * time.delta_seconds())
-                .clamp(-extents, extents);
 
-            // TODO: speed0 is used for predicting stop position is AI.
-            // TODO: pos0
+            if position >= extents {
+                position = extents;
+                paddle.speed = 0.0;
+            } else if position <= -extents {
+                position = -extents;
+                paddle.speed = 0.0;
+            }
 
-            // // Accelerate the crab
-            // const CRAB_STEP_TIME: f32 = 0.01;
-            // const TIME_TO_MAXIMUM_SPEED: f32 = 0.18;
-            // const CRAB_LENGTH: f32 = 0.2;
-            // //The radius of the four barriers positioned at the corners
-            // const BARRIER_SIZE: f32 = 0.12;
-
-            // // TODO: This is used by multiple functions, but is not
-            // crab-specific. let acceleration = config.crab_max_speed /
-            // TIME_TO_MAXIMUM_SPEED;
-
-            // let ds = CRAB_STEP_TIME * acceleration;
-
-            // if sign != 0.0 {
-            //     crab.speed0 = crab
-            //         .speed0
-            //         .add(sign * ds)
-            //         .clamp(-config.crab_max_speed,
-            // config.crab_max_speed); } else {
-            //     let s = crab.speed0.abs().sub(ds).min(0.0);
-            //     crab.speed0 = crab.speed0.min(-s).max(s); // Can't use
-            // clamp() here. }
-
-            // // Move the crab
-            // crab.pos0 += CRAB_STEP_TIME * crab.speed0;
-
-            // if crab.pos0 < BARRIER_SIZE + CRAB_LENGTH / 2.0 {
-            //     crab.pos0 = BARRIER_SIZE + CRAB_LENGTH / 2.0;
-            //     crab.speed0 = 0.0;
-            // } else if crab.pos0 > 1.0 - BARRIER_SIZE - CRAB_LENGTH / 2.0 {
-            //     crab.pos0 = 1.0 - BARRIER_SIZE - CRAB_LENGTH / 2.0;
-            //     crab.speed0 = 0.0;
-            // }
-
-            // transform.translation =
-            //     crab.pos0 * sign * left_direction * time.delta_seconds();
+            // Move the paddle
+            transform.translation.x = position;
         }
     }
 }
