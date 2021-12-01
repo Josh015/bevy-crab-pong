@@ -57,10 +57,10 @@ fn main() {
                 .with_system(paddle_movement_system)
                 .with_system(paddle_player_control_system)
                 .with_system(paddle_ai_control_system)
-                .with_system(paddle_elimination_system)
                 .with_system(ball_movement_system)
                 .with_system(ball_collision_system)
                 .with_system(goal_scoring_system)
+                .with_system(goal_elimination_system)
                 .with_system(gameover_check_system),
         )
         .add_system(bevy::input::system::exit_on_esc_system)
@@ -747,28 +747,6 @@ fn paddle_ai_control_system(
     }
 }
 
-fn paddle_elimination_system(
-    game: Res<Game>,
-    mut queries: QuerySet<(
-        QueryState<(&mut Transition, &GoalSide), With<Paddle>>,
-        QueryState<(&mut Transition, &GoalSide), With<Pole>>,
-    )>,
-) {
-    // Fade out paddle if score is zero
-    for (mut transition, goal_side) in queries.q0().iter_mut() {
-        if *transition == Transition::Show && game.scores[&goal_side] <= 0 {
-            *transition = Transition::FadeOut(0.0);
-        }
-    }
-
-    // Fade in pole if score is zero
-    for (mut transition, goal_side) in queries.q1().iter_mut() {
-        if *transition == Transition::Hide && game.scores[&goal_side] <= 0 {
-            *transition = Transition::FadeIn(0.0);
-        }
-    }
-}
-
 fn ball_movement_system(
     config: Res<GameConfig>,
     time: Res<Time>,
@@ -879,6 +857,28 @@ fn goal_scoring_system(
                 // Trigger ball return and prevent repeated scoring
                 *ball_transition = Transition::FadeOut(0.0);
             }
+        }
+    }
+}
+
+fn goal_elimination_system(
+    game: Res<Game>,
+    mut queries: QuerySet<(
+        QueryState<(&mut Transition, &GoalSide), With<Paddle>>,
+        QueryState<(&mut Transition, &GoalSide), With<Pole>>,
+    )>,
+) {
+    // Fade out paddle if score is zero
+    for (mut transition, goal_side) in queries.q0().iter_mut() {
+        if *transition == Transition::Show && game.scores[&goal_side] <= 0 {
+            *transition = Transition::FadeOut(0.0);
+        }
+    }
+
+    // Fade in pole if score is zero
+    for (mut transition, goal_side) in queries.q1().iter_mut() {
+        if *transition == Transition::Hide && game.scores[&goal_side] <= 0 {
+            *transition = Transition::FadeIn(0.0);
         }
     }
 }

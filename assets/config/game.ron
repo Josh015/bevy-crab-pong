@@ -15,5 +15,5 @@
   ball_speed: 0.5,
   barrier_width: 0.20,
   pole_radius: 0.05,
-  starting_score: 20,
+  starting_score: 2,
 )
