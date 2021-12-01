@@ -105,6 +105,10 @@ enum CrabWalking {
     Right,
 }
 
+impl Default for CrabWalking {
+    fn default() -> Self { Self::Stopped }
+}
+
 #[derive(Clone, Component, PartialEq, Debug)]
 enum Transition {
     Show,
@@ -137,19 +141,11 @@ struct AnimatedWater {
     scroll: f32,
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 struct Crab {
     walking: CrabWalking,
     /* speed0: f32,
      * pos0: f32, */
-}
-
-impl Default for Crab {
-    fn default() -> Self {
-        Self {
-            walking: CrabWalking::Stopped,
-        }
-    }
 }
 
 #[derive(Clone, Component, Copy, Eq, PartialEq, Debug, Hash)]
@@ -206,7 +202,7 @@ fn setup_scene(
 
     commands.spawn_bundle(UiCameraBundle::default());
 
-    // light
+    // Light
     commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
@@ -247,7 +243,7 @@ fn setup_balls(
         radius: 0.5,
         subdivisions: 2,
     }));
-    let ball_material = materials.add(Color::rgb(1.0, 1.0, 1.0).into());
+    let ball_material = materials.add(Color::WHITE.into());
 
     for _ in 0..2 {
         commands
@@ -282,7 +278,6 @@ fn setup_goals(
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
     let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
     let pole_material = materials.add(Color::hex("00A400").unwrap().into());
-    let pole_width = 1.0;
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
     let goal_configs = [
         (
@@ -329,14 +324,19 @@ fn setup_goals(
 
     for (i, (pilot, color, goal_side, rect)) in goal_configs.iter().enumerate()
     {
+        // Goal
         commands
             .spawn_bundle(PbrBundle {
                 transform: Transform::from_rotation(Quat::from_axis_angle(
                     Vec3::Y,
-                    (i as f32 / goal_configs.len() as f32)
-                        * std::f32::consts::TAU,
+                    std::f32::consts::TAU
+                        * (i as f32 / goal_configs.len() as f32),
                 ))
-                .mul_transform(Transform::from_xyz(0.0, 0.0, 0.5)),
+                .mul_transform(Transform::from_xyz(
+                    0.0,
+                    0.0,
+                    0.5 * config.sand_width,
+                )),
                 ..Default::default()
             })
             .insert(Goal)
@@ -373,7 +373,7 @@ fn setup_goals(
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
                                 Vec3::new(
-                                    pole_width,
+                                    config.sand_width,
                                     config.pole_radius,
                                     config.pole_radius,
                                 ),
@@ -386,7 +386,9 @@ fn setup_goals(
                     .insert(Pole)
                     .insert(goal_side.clone())
                     .insert(Transition::Show)
-                    .insert(Collider::Line { width: pole_width });
+                    .insert(Collider::Line {
+                        width: config.sand_width,
+                    });
 
                 // Barrier
                 parent
@@ -397,7 +399,7 @@ fn setup_goals(
                             Mat4::from_scale_rotation_translation(
                                 Vec3::splat(config.barrier_width),
                                 Quat::IDENTITY,
-                                Vec3::new(0.5, 0.1, 0.0),
+                                Vec3::new(0.5 * config.sand_width, 0.1, 0.0),
                             ),
                         ),
                         ..Default::default()
