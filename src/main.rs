@@ -86,8 +86,8 @@ struct GameConfig {
     height: u32,
     swaying_camera_speed: f32,
     animated_water_speed: f32,
-    sand_center_point: (f32, f32, f32),
-    sand_width: f32,
+    arena_center_point: (f32, f32, f32),
+    arena_width: f32,
     paddle_max_speed: f32,
     paddle_scale: (f32, f32, f32),
     paddle_start_position: (f32, f32, f32),
@@ -218,15 +218,15 @@ fn setup_scene(
         })
         .insert(AnimatedWater::default());
 
-    // Sand
+    // Arena
     commands.spawn_bundle(PbrBundle {
         mesh: unit_plane.clone(),
         material: materials.add(Color::hex("C4BD99").unwrap().into()),
         transform: Transform::from_matrix(
             Mat4::from_scale_rotation_translation(
-                Vec3::splat(config.sand_width),
+                Vec3::splat(config.arena_width),
                 Quat::IDENTITY,
-                config.sand_center_point.into(),
+                config.arena_center_point.into(),
             ),
         ),
         ..Default::default()
@@ -335,7 +335,7 @@ fn setup_goals(
                 .mul_transform(Transform::from_xyz(
                     0.0,
                     0.0,
-                    0.5 * config.sand_width,
+                    0.5 * config.arena_width,
                 )),
                 ..Default::default()
             })
@@ -373,7 +373,7 @@ fn setup_goals(
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
                                 Vec3::new(
-                                    config.sand_width,
+                                    config.arena_width,
                                     config.pole_radius,
                                     config.pole_radius,
                                 ),
@@ -387,7 +387,7 @@ fn setup_goals(
                     .insert(goal_side.clone())
                     .insert(Transition::Show)
                     .insert(Collider::Line {
-                        width: config.sand_width,
+                        width: config.arena_width,
                     });
 
                 // Barrier
@@ -399,7 +399,7 @@ fn setup_goals(
                             Mat4::from_scale_rotation_translation(
                                 Vec3::splat(config.barrier_width),
                                 Quat::IDENTITY,
-                                Vec3::new(0.5 * config.sand_width, 0.1, 0.0),
+                                Vec3::new(0.5 * config.arena_width, 0.1, 0.0),
                             ),
                         ),
                         ..Default::default()
@@ -460,10 +460,10 @@ fn swaying_camera_system(
 ) {
     // Slowly sway the camera back and forth
     let (mut transform, mut swaying_camera) = query.single_mut();
-    let x = swaying_camera.angle.sin() * 0.5 * config.sand_width;
+    let x = swaying_camera.angle.sin() * 0.5 * config.arena_width;
 
     *transform = Transform::from_xyz(x, 2.25, 2.0)
-        .looking_at(config.sand_center_point.into(), Vec3::Y);
+        .looking_at(config.arena_center_point.into(), Vec3::Y);
 
     swaying_camera.angle += config.swaying_camera_speed * time.delta_seconds();
     swaying_camera.angle %= std::f32::consts::TAU;
@@ -530,7 +530,7 @@ fn pole_transition_system(
     // Grow/Shrink a pole's thickness to show/hide it
     for (mut transform, transition) in query.iter_mut() {
         let radius = transition.opacity() * config.pole_radius;
-        transform.scale = Vec3::new(config.sand_width, radius, radius);
+        transform.scale = Vec3::new(config.arena_width, radius, radius);
     }
 }
 
@@ -654,7 +654,7 @@ fn paddle_movement_system(
 
             // Limit paddle to open space between barriers
             let extents = 0.5
-                * (config.sand_width
+                * (config.arena_width
                     - config.barrier_width
                     - config.paddle_scale.0);
             transform.translation.x = transform
@@ -804,7 +804,7 @@ fn ball_movement_system(
             Transition::Hide => {
                 // Move ball back to center, then start fading it into view
                 *transition = Transition::FadeIn(0.0);
-                transform.translation = config.sand_center_point.into();
+                transform.translation = config.arena_center_point.into();
 
                 // Give the ball a random direction vector
                 let angle = rng.gen_range(0.0..std::f32::consts::TAU);
@@ -871,12 +871,12 @@ fn goal_scoring_system(
         if *ball_transition == Transition::Show {
             let distance_to_center = ball_transform
                 .translation
-                .distance(config.sand_center_point.into());
-            let sand_widths = Vec2::splat(config.sand_width);
-            let sand_radius = 0.5 * sand_widths.dot(sand_widths).sqrt();
+                .distance(config.arena_center_point.into());
+            let arena_widths = Vec2::splat(config.arena_width);
+            let arena_radius = 0.5 * arena_widths.dot(arena_widths).sqrt();
 
             // Check if a ball has gone out of bounds
-            if distance_to_center >= sand_radius {
+            if distance_to_center >= arena_radius {
                 let mut closest_distance = std::f32::MAX;
                 let mut scored_goal = GoalSide::Bottom;
 
