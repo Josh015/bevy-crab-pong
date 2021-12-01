@@ -70,7 +70,7 @@ impl Default for Crab {
 }
 
 #[derive(Clone, Component, Copy, Eq, PartialEq, Debug, Hash)]
-enum GoalLocation {
+enum GoalSide {
     Top,
     Right,
     Bottom,
@@ -136,7 +136,7 @@ impl Default for GameOutcome {
 
 #[derive(Default)]
 struct Game {
-    scores: HashMap<GoalLocation, u32>,
+    scores: HashMap<GoalSide, u32>,
     outcome: Option<GameOutcome>,
 }
 
@@ -296,7 +296,7 @@ fn setup_goals(
         (
             Pilot::Player,
             Color::RED,
-            GoalLocation::Bottom,
+            GoalSide::Bottom,
             Rect {
                 bottom: Val::Px(5.0),
                 right: Val::Px(5.0),
@@ -306,7 +306,7 @@ fn setup_goals(
         (
             Pilot::Ai,
             Color::BLUE,
-            GoalLocation::Right,
+            GoalSide::Right,
             Rect {
                 top: Val::Px(5.0),
                 right: Val::Px(5.0),
@@ -316,7 +316,7 @@ fn setup_goals(
         (
             Pilot::Ai,
             Color::ORANGE,
-            GoalLocation::Top,
+            GoalSide::Top,
             Rect {
                 top: Val::Px(5.0),
                 left: Val::Px(5.0),
@@ -326,7 +326,7 @@ fn setup_goals(
         (
             Pilot::Ai,
             Color::PURPLE,
-            GoalLocation::Left,
+            GoalSide::Left,
             Rect {
                 bottom: Val::Px(5.0),
                 left: Val::Px(5.0),
@@ -335,8 +335,7 @@ fn setup_goals(
         ),
     ];
 
-    for (i, (pilot, color, goal_location, rect)) in
-        goal_configs.iter().enumerate()
+    for (i, (pilot, color, goal_side, rect)) in goal_configs.iter().enumerate()
     {
         commands
             .spawn_bundle(PbrBundle {
@@ -349,7 +348,7 @@ fn setup_goals(
                 ..Default::default()
             })
             .insert(Goal)
-            .insert(goal_location.clone())
+            .insert(goal_side.clone())
             .with_children(|parent| {
                 // Crab
                 // NOTE: Treat it as the center of the goal
@@ -372,7 +371,7 @@ fn setup_goals(
                     .insert(Collider::Line {
                         width: config.crab_scale.0,
                     })
-                    .insert(goal_location.clone());
+                    .insert(goal_side.clone());
 
                 // Pole
                 parent
@@ -393,7 +392,7 @@ fn setup_goals(
                         ..Default::default()
                     })
                     .insert(Pole)
-                    .insert(goal_location.clone())
+                    .insert(goal_side.clone())
                     .insert(Visibility::Visible)
                     .insert(Collider::Line { width: pole_width });
 
@@ -441,18 +440,18 @@ fn setup_goals(
                 ..Default::default()
             })
             .insert(Score)
-            .insert(goal_location.clone());
+            .insert(goal_side.clone());
 
-        game.scores.insert(goal_location.clone(), 0);
+        game.scores.insert(goal_side.clone(), 0);
     }
 }
 
 fn display_scores_system(
     game: Res<Game>,
-    mut query: Query<(&mut Text, &GoalLocation), With<Score>>,
+    mut query: Query<(&mut Text, &GoalSide), With<Score>>,
 ) {
-    for (mut text, goal_location) in query.iter_mut() {
-        let score_value = game.scores[&goal_location];
+    for (mut text, goal_side) in query.iter_mut() {
+        let score_value = game.scores[&goal_side];
         text.sections[0].value = score_value.to_string();
     }
 }
@@ -765,23 +764,20 @@ fn crab_ai_control_system(
 fn crab_elimination_system(
     game: Res<Game>,
     mut queries: QuerySet<(
-        QueryState<(&mut Visibility, &GoalLocation), With<Crab>>,
-        QueryState<(&mut Visibility, &GoalLocation), With<Pole>>,
+        QueryState<(&mut Visibility, &GoalSide), With<Crab>>,
+        QueryState<(&mut Visibility, &GoalSide), With<Pole>>,
     )>,
 ) {
     // Fade out crab if score is zero
-    for (mut visibility, goal_location) in queries.q0().iter_mut() {
-        if *visibility == Visibility::Visible
-            && game.scores[&goal_location] <= 0
-        {
+    for (mut visibility, goal_side) in queries.q0().iter_mut() {
+        if *visibility == Visibility::Visible && game.scores[&goal_side] <= 0 {
             *visibility = Visibility::FadingOut(0.0);
         }
     }
 
     // Fade in pole if score is zero
-    for (mut visibility, goal_location) in queries.q1().iter_mut() {
-        if *visibility == Visibility::Invisible
-            && game.scores[&goal_location] <= 0
+    for (mut visibility, goal_side) in queries.q1().iter_mut() {
+        if *visibility == Visibility::Invisible && game.scores[&goal_side] <= 0
         {
             *visibility = Visibility::FadingIn(0.0);
         }
@@ -867,7 +863,7 @@ fn goal_scoring_system(
     config: Res<GameConfig>,
     mut game: ResMut<Game>,
     mut ball_query: Query<(&GlobalTransform, &mut Visibility), With<Ball>>,
-    goals_query: Query<(&GlobalTransform, &GoalLocation), With<Goal>>,
+    goals_query: Query<(&GlobalTransform, &GoalSide), With<Goal>>,
 ) {
     for (ball_transform, mut ball_visibility) in ball_query.iter_mut() {
         if *ball_visibility == Visibility::Visible {
@@ -880,17 +876,17 @@ fn goal_scoring_system(
             // Check if a ball has gone out of bounds
             if distance_to_center >= sand_radius {
                 let mut closest_distance = std::f32::MAX;
-                let mut scored_goal = GoalLocation::Bottom;
+                let mut scored_goal = GoalSide::Bottom;
 
                 // Score against the goal that's closest to this ball
-                for (goal_transform, goal_location) in goals_query.iter() {
+                for (goal_transform, goal_side) in goals_query.iter() {
                     let new_distance = ball_transform
                         .translation
                         .distance(goal_transform.translation);
 
                     if new_distance < closest_distance {
                         closest_distance = new_distance;
-                        scored_goal = goal_location.clone();
+                        scored_goal = goal_side.clone();
                     }
                 }
 
@@ -907,16 +903,16 @@ fn goal_scoring_system(
 fn gameover_check_system(
     mut game: ResMut<Game>,
     mut state: ResMut<State<GameState>>,
-    query: Query<(&GoalLocation, &Pilot), With<Crab>>,
+    query: Query<(&Pilot, &GoalSide), With<Crab>>,
 ) {
     // Player wins if all AI crabs have a score of zero
-    let has_player_won = query.iter().all(|(goal_location, pilot)| {
-        *pilot != Pilot::Ai || game.scores[&goal_location] <= 0
+    let has_player_won = query.iter().all(|(pilot, goal_side)| {
+        *pilot != Pilot::Ai || game.scores[&goal_side] <= 0
     });
 
     // Player loses if all Player crabs have a score of zero
-    let has_player_lost = query.iter().all(|(goal_location, pilot)| {
-        *pilot != Pilot::Player || game.scores[&goal_location] <= 0
+    let has_player_lost = query.iter().all(|(pilot, goal_side)| {
+        *pilot != Pilot::Player || game.scores[&goal_side] <= 0
     });
 
     if has_player_won || has_player_lost {
