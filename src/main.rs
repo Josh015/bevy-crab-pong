@@ -111,7 +111,7 @@ struct GameConfig {
     height: u32,
     swaying_camera_speed: f32,
     animated_water_speed: f32,
-    crab_max_scale: f32,
+    crab_max_width: f32,
     crab_max_speed: f32,
     ball_size: f32,
     ball_speed: f32,
@@ -376,7 +376,7 @@ fn setup_goals(
                         material: materials.add(color.clone().into()),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                Vec3::splat(config.crab_max_scale),
+                                Vec3::new(config.crab_max_width, 0.01, 0.01),
                                 Quat::IDENTITY,
                                 Vec3::new(0.0, 0.05, 0.0),
                             ),
@@ -387,7 +387,7 @@ fn setup_goals(
                     .insert(Visibility::Invisible)
                     .insert(pilot.clone())
                     .insert(Collider::Line {
-                        width: config.crab_max_scale,
+                        width: config.crab_max_width,
                     })
                     .insert(goal_location.clone());
 
@@ -499,8 +499,6 @@ fn visibility_lifecycle_system(
 
     for mut visibility in query.iter_mut() {
         *visibility = match *visibility {
-            Visibility::Visible => Visibility::Visible,
-            Visibility::Invisible => Visibility::Invisible,
             Visibility::FadingIn(weight) => {
                 if weight >= 1.0 {
                     Visibility::Visible
@@ -515,6 +513,7 @@ fn visibility_lifecycle_system(
                     Visibility::FadingOut(weight + step)
                 }
             },
+            _ => visibility.clone(),
         }
     }
 }
@@ -526,7 +525,7 @@ fn crab_visibility_system(
     // Grow/Shrink crabs to show/hide them
     for (mut transform, visibility) in query.iter_mut() {
         transform.scale =
-            Vec3::splat(visibility.opacity() * config.crab_max_scale);
+            visibility.opacity() * Vec3::new(config.crab_max_width, 0.1, 0.1);
     }
 }
 
@@ -645,18 +644,24 @@ fn crab_walking_system(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut Crab, &Visibility)>,
 ) {
-    let left_direction = Vec3::new(-1.0, 0.0, 0.0);
-
     for (mut transform, mut crab, visibility) in query.iter_mut() {
         if *visibility == Visibility::Visible {
-            let sign = match crab.walking {
+            let direction = match crab.walking {
                 CrabWalking::Stopped => 0.0,
-                CrabWalking::Left => 1.0,
-                CrabWalking::Right => -1.0,
+                CrabWalking::Left => -1.0,
+                CrabWalking::Right => 1.0,
             };
 
-            transform.translation +=
-                sign * left_direction * time.delta_seconds();
+            // Limit crab to open space between barriers
+            let barrier_width = 0.20;
+            let arena_width = 1.0;
+            let extents =
+                (arena_width - barrier_width - config.crab_max_width) * 0.5;
+            transform.translation.x = transform
+                .translation
+                .x
+                .add(direction * time.delta_seconds())
+                .clamp(-extents, extents);
 
             // TODO: speed0 is used for predicting stop position is AI.
             // TODO: pos0

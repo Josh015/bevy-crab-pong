@@ -25,12 +25,14 @@ cargo run --release
 - [x] Fade out crabs, remove them, and add barrier on their side when their score reaches zero.
 - [x] Get score decrementing on goal working.
 - [x] After a ball passes a goal fade it out and reset it while decrementing that goal's score.
-- [ ] Add ball visibility system to fade them into/from view.
-- [ ] Get bounded crab walking working.
+- [x] Add ball visibility system to fade them into/from view.
+- [x] Get bounded crab walking working.
+- [ ] Add acceleration to crab movement.
 - [ ] Get balls bouncing around inside 4 barriers and poles without crabs.
 - [ ] Get balls bouncing off each other.
 - [ ] Add crabs AI.
 - [ ] Add new game and game over messages UI.
+- [ ] Switch balls to opacity and alpha-blending for fading from view.
 - [ ] Add a Ferris model (eg. [Ferris the Crab](https://cults3d.com/en/3d-model/art/ferris-the-crab))
 - [ ] Adjust model textures to support color tinting.
 - [ ] Add "reflections" in the water via mirrored geometry and water blending.

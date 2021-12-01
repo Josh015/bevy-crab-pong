@@ -4,7 +4,7 @@
   height: 800,
   swaying_camera_speed: 0.2,
   animated_water_speed: 0.01,
-  crab_max_scale: 0.1,
+  crab_max_width: 0.15,
   crab_max_speed: 2.2,
   fading_speed: 0.75,
   ball_size: 0.1,
