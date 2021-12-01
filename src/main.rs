@@ -604,18 +604,25 @@ fn reset_game_entities(
 
     // Reset crabs
     for (mut transform, mut transition) in queries.q0().iter_mut() {
-        *transition = Transition::FadeIn(0.4);
+        if matches!(*transition, Transition::Hide | Transition::FadeOut(_)) {
+            *transition = Transition::FadeIn(0.4);
+        }
+
         transform.translation = config.crab_start_position.into();
     }
 
     // Reset balls
     for mut transition in queries.q1().iter_mut() {
-        *transition = Transition::Hide;
+        if matches!(*transition, Transition::Show | Transition::FadeIn(_)) {
+            *transition = Transition::Hide;
+        }
     }
 
     // Reset poles
     for mut transition in queries.q2().iter_mut() {
-        *transition = Transition::FadeOut(0.3)
+        if matches!(*transition, Transition::Show | Transition::FadeIn(_)) {
+            *transition = Transition::FadeOut(0.3)
+        }
     }
 
     // Reset scores
