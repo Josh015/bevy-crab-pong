@@ -105,6 +105,12 @@ struct GameConfig {
     starting_score: u32,
 }
 
+impl GameConfig {
+    fn crab_acceleration(&self) -> f32 {
+        self.crab_max_speed / self.crab_seconds_to_max_speed
+    }
+}
+
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum Movement {
     Stopped,
@@ -177,10 +183,16 @@ impl Default for Pilot {
 #[derive(Component)]
 struct Ball {
     direction: Vec3,
+    radius: f32,
 }
 
-impl Default for Ball {
-    fn default() -> Self { Self { direction: Vec3::X } }
+impl Ball {
+    fn with_radius(radius: f32) -> Self {
+        Self {
+            direction: Vec3::X,
+            radius,
+        }
+    }
 }
 
 #[derive(Component)]
@@ -267,11 +279,8 @@ fn setup_balls(
                 ),
                 ..Default::default()
             })
-            .insert(Ball::default())
-            .insert(Transition::Hide)
-            .insert(Collider::Circle {
-                radius: 0.5 * config.ball_size,
-            });
+            .insert(Ball::with_radius(0.5 * config.ball_size))
+            .insert(Transition::Hide);
     }
 }
 
@@ -661,9 +670,7 @@ fn crab_movement_system(
         }
 
         // Accelerate the crab
-        let acceleration =
-            config.crab_max_speed / config.crab_seconds_to_max_speed;
-        let delta_speed = acceleration * time.delta_seconds();
+        let delta_speed = config.crab_acceleration() * time.delta_seconds();
 
         if crab.movement == Movement::Stopped {
             let s = crab.speed.abs().sub(delta_speed).max(0.0);
@@ -716,37 +723,71 @@ fn crab_player_control_system(
     }
 }
 
+// TODO: Try to implement with both GlobalTransforms so we can dump the touchy
+// distance logic.
 fn crab_ai_control_system(
-    balls_query: Query<&GlobalTransform, With<Ball>>,
-    mut crab_query: Query<(&GlobalTransform, &mut Crab, &Transition, &Pilot)>,
+    config: Res<GameConfig>,
+    balls_query: Query<(&Ball, &GlobalTransform)>,
+    mut crab_query: Query<(
+        &Transform,
+        &mut Crab,
+        &Transition,
+        &Pilot,
+        &GoalSide,
+    )>,
 ) {
-    for (crab_transform, mut crab, transition, pilot) in crab_query.iter_mut() {
+    for (crab_transform, mut crab, transition, pilot, goal_side) in
+        crab_query.iter_mut()
+    {
         if *transition != Transition::Show || *pilot != Pilot::Ai {
             continue;
         }
 
         // Pick which ball is closest to this crab's goal
-        for ball_transform in balls_query.iter() {
-            // TODO:
-            // Project ball center onto goal line.
-            // Get normalized vector between ball center and projected
-            // point. Multiply normal by radius, and offset
-            // from ball center. Get `ball_distance` between
-            // offset point and projected point.
-            // Get `target_position` by figuring out which extent it is
-            // closer to to find sign and make a weight
-            // between the two points.
+        let mut closest_ball_distance = std::f32::MAX;
+        let mut target_position = 0.5;
+
+        for (ball, ball_transform) in balls_query.iter() {
+            let ball_translation = ball_transform.translation;
+
+            let (ball_distance, ball_position) = match *goal_side {
+                GoalSide::Top => {
+                    (ball_translation.z + ball.radius, -ball_translation.x)
+                },
+                GoalSide::Right => {
+                    (ball_translation.x - ball.radius, -ball_translation.z)
+                },
+                GoalSide::Bottom => {
+                    (ball_translation.z - ball.radius, ball_translation.x)
+                },
+                GoalSide::Left => {
+                    (ball_translation.x + ball.radius, ball_translation.z)
+                },
+            };
+
+            if ball_distance < closest_ball_distance {
+                target_position = ball_position;
+                closest_ball_distance = ball_distance;
+            }
         }
 
-        // Predict the crab's stop position if it begins decelerating
-        let stop_position = 0.0;
+        // Predict the position where the crab will stop if it immediately
+        // begins decelerating.
+        let d = crab.speed * crab.speed / config.crab_acceleration();
+        let stop_position = if crab.speed > 0.0 {
+            crab_transform.translation.x + d
+        } else {
+            crab_transform.translation.x - d
+        };
 
         // Begin decelerating if the ball will land over 70% of the crab's
         // middle at its predicted stop position. Otherwise go left/right
         // depending on which side of the crab it's approaching.
-        if true {
+        if (stop_position - target_position).abs()
+            < 0.7 * (config.crab_scale.0 * 0.5)
+        {
             crab.movement = Movement::Stopped;
-        } else if false {
+        } else if target_position < crab_transform.translation.x {
             crab.movement = Movement::Left;
         } else {
             crab.movement = Movement::Right;
