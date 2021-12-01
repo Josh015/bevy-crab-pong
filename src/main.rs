@@ -608,6 +608,8 @@ fn reset_game_entities(
             *transition = Transition::FadeIn(0.4);
         }
 
+        // TODO: Find a way to make already visible paddles smoothly slide back
+        // to default position rather than abruptly snapping back
         transform.translation = config.crab_start_position.into();
     }
 
