@@ -10,10 +10,99 @@ use std::{
     ops::{Add, Sub},
 };
 
+fn main() {
+    let config: GameConfig =
+        files::load_config_from_file("assets/config/game.ron");
+
+    App::new()
+        .insert_resource(WindowDescriptor {
+            title: config.title.clone(),
+            width: config.width as f32,
+            height: config.height as f32,
+            ..Default::default()
+        })
+        .insert_resource(Msaa { samples: 4 })
+        .insert_resource(ClearColor(Color::rgb(0.7, 0.9, 1.0)))
+        .add_plugins(DefaultPlugins)
+        .init_resource::<Game>()
+        .insert_resource(config)
+        .add_startup_system(setup_scene)
+        .add_startup_system(setup_balls)
+        .add_startup_system(setup_goals)
+        .add_system(display_scores_system)
+        .add_system(swaying_camera_system)
+        .add_system(animated_water_system)
+        .add_system(transition_system)
+        .add_system(crab_transition_system)
+        .add_system(pole_transition_system)
+        .add_system(ball_transition_system)
+        .add_state(GameState::GameOver)
+        .add_system_set(
+            SystemSet::on_enter(GameState::GameOver)
+                .with_system(show_gameover_ui),
+        )
+        .add_system_set(
+            SystemSet::on_update(GameState::GameOver)
+                .with_system(gameover_keyboard_system),
+        )
+        .add_system_set(
+            SystemSet::on_enter(GameState::Playing)
+                .with_system(reset_game_entities),
+        )
+        .add_system_set(
+            SystemSet::on_exit(GameState::Playing).with_system(fade_out_balls),
+        )
+        .add_system_set(
+            SystemSet::on_update(GameState::Playing)
+                .with_system(crab_walking_system)
+                .with_system(crab_player_control_system)
+                .with_system(crab_ai_control_system)
+                .with_system(crab_elimination_system)
+                .with_system(ball_movement_system)
+                .with_system(ball_collision_system)
+                .with_system(goal_scoring_system)
+                .with_system(gameover_check_system),
+        )
+        .add_system(bevy::input::system::exit_on_esc_system)
+        .run();
+}
+
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
     Playing,
     GameOver,
+}
+
+#[derive(Default)]
+struct Game {
+    scores: HashMap<GoalSide, u32>,
+    winner: Option<Pilot>,
+}
+
+#[derive(Debug, Deserialize)]
+struct GameConfig {
+    title: String,
+    width: u32,
+    height: u32,
+    swaying_camera_speed: f32,
+    animated_water_speed: f32,
+    sand_center_point: (f32, f32, f32),
+    sand_width: f32,
+    crab_max_speed: f32,
+    crab_scale: (f32, f32, f32),
+    crab_start_position: (f32, f32, f32),
+    ball_size: f32,
+    ball_speed: f32,
+    barrier_width: f32,
+    fading_speed: f32,
+    pole_radius: f32,
+    starting_score: u32,
+}
+
+enum CrabWalking {
+    Stopped,
+    Left,
+    Right,
 }
 
 #[derive(Clone, Component, PartialEq, Debug)]
@@ -33,12 +122,6 @@ impl Transition {
             Transition::FadeOut(weight) => 1.0 - weight,
         }
     }
-}
-
-enum CrabWalking {
-    Stopped,
-    Left,
-    Right,
 }
 
 #[derive(Component, Default)]
@@ -106,92 +189,6 @@ struct Goal;
 enum Collider {
     Line { width: f32 },
     Circle { radius: f32 },
-}
-
-#[derive(Debug, Deserialize)]
-struct GameConfig {
-    title: String,
-    width: u32,
-    height: u32,
-    swaying_camera_speed: f32,
-    animated_water_speed: f32,
-    sand_center_point: (f32, f32, f32),
-    sand_width: f32,
-    crab_max_speed: f32,
-    crab_scale: (f32, f32, f32),
-    crab_start_position: (f32, f32, f32),
-    ball_size: f32,
-    ball_speed: f32,
-    barrier_width: f32,
-    fading_speed: f32,
-    pole_radius: f32,
-    starting_score: u32,
-}
-
-#[derive(Default)]
-struct Game {
-    scores: HashMap<GoalSide, u32>,
-    winner: Option<Pilot>,
-}
-
-// TODO: Make Game resource smarter and have it share game data that can't be
-// configured. Example, game center point.
-
-fn main() {
-    let config: GameConfig =
-        files::load_config_from_file("assets/config/game.ron");
-
-    App::new()
-        .insert_resource(WindowDescriptor {
-            title: config.title.clone(),
-            width: config.width as f32,
-            height: config.height as f32,
-            ..Default::default()
-        })
-        .insert_resource(Msaa { samples: 4 })
-        .insert_resource(ClearColor(Color::rgb(0.7, 0.9, 1.0)))
-        .add_plugins(DefaultPlugins)
-        .init_resource::<Game>()
-        .insert_resource(config)
-        .add_startup_system(setup_scene)
-        .add_startup_system(setup_balls)
-        .add_startup_system(setup_goals)
-        .add_system(display_scores_system)
-        .add_system(swaying_camera_system)
-        .add_system(animated_water_system)
-        .add_system(transition_system)
-        .add_system(crab_transition_system)
-        .add_system(pole_transition_system)
-        .add_system(ball_transition_system)
-        .add_state(GameState::GameOver)
-        .add_system_set(
-            SystemSet::on_enter(GameState::GameOver)
-                .with_system(show_gameover_ui),
-        )
-        .add_system_set(
-            SystemSet::on_update(GameState::GameOver)
-                .with_system(gameover_keyboard_system),
-        )
-        .add_system_set(
-            SystemSet::on_enter(GameState::Playing)
-                .with_system(reset_game_entities),
-        )
-        .add_system_set(
-            SystemSet::on_exit(GameState::Playing).with_system(fade_out_balls),
-        )
-        .add_system_set(
-            SystemSet::on_update(GameState::Playing)
-                .with_system(crab_walking_system)
-                .with_system(crab_player_control_system)
-                .with_system(crab_ai_control_system)
-                .with_system(crab_elimination_system)
-                .with_system(ball_movement_system)
-                .with_system(ball_collision_system)
-                .with_system(goal_scoring_system)
-                .with_system(gameover_check_system),
-        )
-        .add_system(bevy::input::system::exit_on_esc_system)
-        .run();
 }
 
 fn setup_scene(
