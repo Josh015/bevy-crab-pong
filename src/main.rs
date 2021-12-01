@@ -604,7 +604,7 @@ fn reset_game_entities(
 
     // Reset crabs
     for (mut transform, mut transition) in queries.q0().iter_mut() {
-        *transition = Transition::Show;
+        *transition = Transition::FadeIn(0.4);
         transform.translation = config.crab_start_position.into();
     }
 
@@ -615,7 +615,7 @@ fn reset_game_entities(
 
     // Reset poles
     for mut transition in queries.q2().iter_mut() {
-        *transition = Transition::Hide
+        *transition = Transition::FadeOut(0.3)
     }
 
     // Reset scores
