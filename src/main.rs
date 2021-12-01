@@ -111,10 +111,14 @@ struct GameConfig {
     height: u32,
     swaying_camera_speed: f32,
     animated_water_speed: f32,
-    crab_max_width: f32,
+    sand_center_point: (f32, f32, f32),
+    sand_width: f32,
     crab_max_speed: f32,
+    crab_scale: (f32, f32, f32),
+    crab_start_position: (f32, f32, f32),
     ball_size: f32,
     ball_speed: f32,
+    barrier_width: f32,
     fading_speed: f32,
     pole_radius: f32,
     starting_score: u32,
@@ -196,6 +200,7 @@ fn main() {
 }
 
 fn setup_scene(
+    config: Res<GameConfig>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -229,7 +234,13 @@ fn setup_scene(
     commands.spawn_bundle(PbrBundle {
         mesh: unit_plane.clone(),
         material: materials.add(Color::hex("C4BD99").unwrap().into()),
-        transform: Transform::from_xyz(0.0, 0.0, 0.0),
+        transform: Transform::from_matrix(
+            Mat4::from_scale_rotation_translation(
+                Vec3::splat(config.sand_width),
+                Quat::IDENTITY,
+                config.sand_center_point.into(),
+            ),
+        ),
         ..Default::default()
     });
 }
@@ -281,7 +292,6 @@ fn setup_goals(
     let pole_material = materials.add(Color::hex("00A400").unwrap().into());
     let pole_width = 1.0;
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
-    let barrier_scale = 0.20;
     let goal_configs = [
         (
             Pilot::Player,
@@ -349,9 +359,9 @@ fn setup_goals(
                         material: materials.add(color.clone().into()),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                Vec3::new(config.crab_max_width, 0.01, 0.01),
+                                config.crab_scale.into(),
                                 Quat::IDENTITY,
-                                Vec3::new(0.0, 0.05, 0.0),
+                                config.crab_start_position.into(),
                             ),
                         ),
                         ..Default::default()
@@ -360,7 +370,7 @@ fn setup_goals(
                     .insert(Visibility::Invisible)
                     .insert(pilot.clone())
                     .insert(Collider::Line {
-                        width: config.crab_max_width,
+                        width: config.crab_scale.0,
                     })
                     .insert(goal_location.clone());
 
@@ -394,7 +404,7 @@ fn setup_goals(
                         material: barrier_material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                Vec3::splat(barrier_scale),
+                                Vec3::splat(config.barrier_width),
                                 Quat::IDENTITY,
                                 Vec3::new(0.5, 0.1, 0.0),
                             ),
@@ -402,7 +412,7 @@ fn setup_goals(
                         ..Default::default()
                     })
                     .insert(Collider::Circle {
-                        radius: 0.5 * barrier_scale,
+                        radius: 0.5 * config.barrier_width,
                     });
             });
 
@@ -459,8 +469,8 @@ fn swaying_camera_system(
     let (mut transform, mut swaying_camera) = query.single_mut();
     let x = swaying_camera.angle.sin() * 0.5;
 
-    *transform =
-        Transform::from_xyz(x, 2.25, 2.0).looking_at(Vec3::ZERO, Vec3::Y);
+    *transform = Transform::from_xyz(x, 2.25, 2.0)
+        .looking_at(config.sand_center_point.into(), Vec3::Y);
 
     swaying_camera.angle += config.swaying_camera_speed * time.delta_seconds();
     swaying_camera.angle %= std::f32::consts::TAU;
@@ -515,8 +525,8 @@ fn crab_visibility_system(
 ) {
     // Grow/Shrink crabs to show/hide them
     for (mut transform, visibility) in query.iter_mut() {
-        transform.scale =
-            visibility.opacity() * Vec3::new(config.crab_max_width, 0.1, 0.1);
+        transform.scale = config.crab_scale.into();
+        transform.scale *= visibility.opacity();
     }
 }
 
@@ -605,7 +615,7 @@ fn start_playing(
     // Reset crabs
     for (mut transform, mut visibility) in queries.q0().iter_mut() {
         *visibility = Visibility::Visible;
-        transform.translation = Vec3::new(0.0, 0.05, 0.0); // TODO: Centralize
+        transform.translation = config.crab_start_position.into();
     }
 
     // Reset balls
@@ -644,10 +654,10 @@ fn crab_walking_system(
             };
 
             // Limit crab to open space between barriers
-            let barrier_width = 0.20;
-            let arena_width = 1.0;
-            let extents =
-                (arena_width - barrier_width - config.crab_max_width) * 0.5;
+            let extents = 0.5
+                * (config.sand_width
+                    - config.barrier_width
+                    - config.crab_scale.0);
             transform.translation.x = transform
                 .translation
                 .x
@@ -794,7 +804,7 @@ fn ball_movement_system(
             Visibility::Invisible => {
                 // Move ball back to center, then start fading it into view
                 *visibility = Visibility::FadingIn(0.0);
-                transform.translation = Vec3::ZERO;
+                transform.translation = config.sand_center_point.into();
 
                 // Give the ball a random direction vector
                 let angle = rng.gen_range(0.0..std::f32::consts::TAU);
@@ -854,36 +864,42 @@ fn ball_collision_system(
 }
 
 fn goal_scoring_system(
+    config: Res<GameConfig>,
     mut game: ResMut<Game>,
     mut ball_query: Query<(&GlobalTransform, &mut Visibility), With<Ball>>,
     goals_query: Query<(&GlobalTransform, &GoalLocation), With<Goal>>,
 ) {
-    // Check if a visible ball has gone out of bounds
     for (ball_transform, mut ball_visibility) in ball_query.iter_mut() {
-        if *ball_visibility == Visibility::Visible
-            && Vec3::ZERO.distance(ball_transform.translation)
-                >= 0.5 * 2f32.sqrt()
-        {
-            // Score against the goal that's closest to this ball
-            let mut closest_distance = 100.0;
-            let mut scored_goal = GoalLocation::Bottom;
+        if *ball_visibility == Visibility::Visible {
+            let distance_to_center = ball_transform
+                .translation
+                .distance(config.sand_center_point.into());
+            let sand_widths = Vec2::splat(config.sand_width);
+            let sand_radius = 0.5 * sand_widths.dot(sand_widths).sqrt();
 
-            for (goal_transform, goal_location) in goals_query.iter() {
-                let new_distance = ball_transform
-                    .translation
-                    .distance(goal_transform.translation);
+            // Check if a ball has gone out of bounds
+            if distance_to_center >= sand_radius {
+                let mut closest_distance = std::f32::MAX;
+                let mut scored_goal = GoalLocation::Bottom;
 
-                if new_distance < closest_distance {
-                    closest_distance = new_distance;
-                    scored_goal = goal_location.clone();
+                // Score against the goal that's closest to this ball
+                for (goal_transform, goal_location) in goals_query.iter() {
+                    let new_distance = ball_transform
+                        .translation
+                        .distance(goal_transform.translation);
+
+                    if new_distance < closest_distance {
+                        closest_distance = new_distance;
+                        scored_goal = goal_location.clone();
+                    }
                 }
+
+                let score = game.scores.get_mut(&scored_goal).unwrap();
+                *score = score.saturating_sub(1);
+
+                // Trigger ball return and prevent repeated scoring
+                *ball_visibility = Visibility::FadingOut(0.0);
             }
-
-            let score = game.scores.get_mut(&scored_goal).unwrap();
-            *score = score.saturating_sub(1);
-
-            // Trigger ball return and prevent repeated scoring
-            *ball_visibility = Visibility::FadingOut(0.0);
         }
     }
 }
