@@ -33,7 +33,7 @@ fn main() {
         .add_system(swaying_camera_system)
         .add_system(animated_water_system)
         .add_system(transition_system)
-        .add_system(crab_transition_system)
+        .add_system(paddle_transition_system)
         .add_system(pole_transition_system)
         .add_system(ball_transition_system)
         .add_state(GameState::GameOver)
@@ -54,10 +54,10 @@ fn main() {
         )
         .add_system_set(
             SystemSet::on_update(GameState::Playing)
-                .with_system(crab_walking_system)
-                .with_system(crab_player_control_system)
-                .with_system(crab_ai_control_system)
-                .with_system(crab_elimination_system)
+                .with_system(paddle_movement_system)
+                .with_system(paddle_player_control_system)
+                .with_system(paddle_ai_control_system)
+                .with_system(paddle_elimination_system)
                 .with_system(ball_movement_system)
                 .with_system(ball_collision_system)
                 .with_system(goal_scoring_system)
@@ -88,9 +88,9 @@ struct GameConfig {
     animated_water_speed: f32,
     sand_center_point: (f32, f32, f32),
     sand_width: f32,
-    crab_max_speed: f32,
-    crab_scale: (f32, f32, f32),
-    crab_start_position: (f32, f32, f32),
+    paddle_max_speed: f32,
+    paddle_scale: (f32, f32, f32),
+    paddle_start_position: (f32, f32, f32),
     ball_size: f32,
     ball_speed: f32,
     barrier_width: f32,
@@ -99,14 +99,14 @@ struct GameConfig {
     starting_score: u32,
 }
 
-enum CrabWalking {
-    Stop,
+enum Movement {
+    Stopped,
     Left,
     Right,
 }
 
-impl Default for CrabWalking {
-    fn default() -> Self { Self::Stop }
+impl Default for Movement {
+    fn default() -> Self { Self::Stopped }
 }
 
 #[derive(Clone, Component, PartialEq, Debug)]
@@ -142,8 +142,8 @@ struct AnimatedWater {
 }
 
 #[derive(Component, Default)]
-struct Crab {
-    walking: CrabWalking,
+struct Paddle {
+    movement: Movement,
     /* speed0: f32,
      * pos0: f32, */
 }
@@ -342,7 +342,7 @@ fn setup_goals(
             .insert(Goal)
             .insert(goal_side.clone())
             .with_children(|parent| {
-                // Crab
+                // Paddle
                 // NOTE: Treat it as the center of the goal
                 parent
                     .spawn_bundle(PbrBundle {
@@ -350,18 +350,18 @@ fn setup_goals(
                         material: materials.add(color.clone().into()),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                config.crab_scale.into(),
+                                config.paddle_scale.into(),
                                 Quat::IDENTITY,
-                                config.crab_start_position.into(),
+                                config.paddle_start_position.into(),
                             ),
                         ),
                         ..Default::default()
                     })
-                    .insert(Crab::default())
+                    .insert(Paddle::default())
                     .insert(Transition::Hide)
                     .insert(pilot.clone())
                     .insert(Collider::Line {
-                        width: config.crab_scale.0,
+                        width: config.paddle_scale.0,
                     })
                     .insert(goal_side.clone());
 
@@ -512,13 +512,13 @@ fn transition_system(
     }
 }
 
-fn crab_transition_system(
+fn paddle_transition_system(
     config: Res<GameConfig>,
-    mut query: Query<(&mut Transform, &Transition), With<Crab>>,
+    mut query: Query<(&mut Transform, &Transition), With<Paddle>>,
 ) {
-    // Grow/Shrink crabs to show/hide them
+    // Grow/Shrink paddles to show/hide them
     for (mut transform, transition) in query.iter_mut() {
-        transform.scale = config.crab_scale.into();
+        transform.scale = config.paddle_scale.into();
         transform.scale *= transition.opacity();
     }
 }
@@ -595,14 +595,14 @@ fn reset_game_entities(
     config: Res<GameConfig>,
     mut game: ResMut<Game>,
     mut queries: QuerySet<(
-        QueryState<(&mut Transform, &mut Transition), With<Crab>>,
+        QueryState<(&mut Transform, &mut Transition), With<Paddle>>,
         QueryState<&mut Transition, With<Ball>>,
         QueryState<&mut Transition, With<Pole>>,
     )>,
 ) {
     // TODO: Hide message text
 
-    // Reset crabs
+    // Reset paddles
     for (mut transform, mut transition) in queries.q0().iter_mut() {
         if matches!(*transition, Transition::Hide | Transition::FadeOut(_)) {
             *transition = Transition::FadeIn(0.4);
@@ -610,7 +610,7 @@ fn reset_game_entities(
 
         // TODO: Find a way to make already visible paddles smoothly slide back
         // to default position rather than abruptly snapping back
-        transform.translation = config.crab_start_position.into();
+        transform.translation = config.paddle_start_position.into();
     }
 
     // Reset balls
@@ -639,24 +639,24 @@ fn fade_out_balls(mut query: Query<&mut Transition, With<Ball>>) {
     }
 }
 
-fn crab_walking_system(
+fn paddle_movement_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Crab, &Transition)>,
+    mut query: Query<(&mut Transform, &mut Paddle, &Transition)>,
 ) {
-    for (mut transform, mut crab, transition) in query.iter_mut() {
+    for (mut transform, mut paddle, transition) in query.iter_mut() {
         if *transition == Transition::Show {
-            let direction = match crab.walking {
-                CrabWalking::Stop => 0.0,
-                CrabWalking::Left => -1.0,
-                CrabWalking::Right => 1.0,
+            let direction = match paddle.movement {
+                Movement::Stopped => 0.0,
+                Movement::Left => -1.0,
+                Movement::Right => 1.0,
             };
 
-            // Limit crab to open space between barriers
+            // Limit paddle to open space between barriers
             let extents = 0.5
                 * (config.sand_width
                     - config.barrier_width
-                    - config.crab_scale.0);
+                    - config.paddle_scale.0);
             transform.translation.x = transform
                 .translation
                 .x
@@ -706,30 +706,37 @@ fn crab_walking_system(
     }
 }
 
-fn crab_player_control_system(
+fn paddle_player_control_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Crab, &Transition, &Pilot)>,
+    mut query: Query<(&mut Paddle, &Transition, &Pilot)>,
 ) {
-    for (mut crab, transition, pilot) in query.iter_mut() {
+    for (mut paddle, transition, pilot) in query.iter_mut() {
         if *transition == Transition::Show && *pilot == Pilot::Player {
             if keyboard_input.pressed(KeyCode::Left) {
-                crab.walking = CrabWalking::Left;
+                paddle.movement = Movement::Left;
             } else if keyboard_input.pressed(KeyCode::Right) {
-                crab.walking = CrabWalking::Right;
+                paddle.movement = Movement::Right;
             } else {
-                crab.walking = CrabWalking::Stop;
+                paddle.movement = Movement::Stopped;
             }
         }
     }
 }
 
-fn crab_ai_control_system(
+fn paddle_ai_control_system(
     balls_query: Query<&GlobalTransform, With<Ball>>,
-    mut crab_query: Query<(&GlobalTransform, &mut Crab, &Transition, &Pilot)>,
+    mut paddle_query: Query<(
+        &GlobalTransform,
+        &mut Paddle,
+        &Transition,
+        &Pilot,
+    )>,
 ) {
-    for (crab_transform, mut crab, transition, pilot) in crab_query.iter_mut() {
+    for (paddle_transform, mut paddle, transition, pilot) in
+        paddle_query.iter_mut()
+    {
         if *transition == Transition::Show && *pilot == Pilot::Ai {
-            // Pick which ball is closest to this crab's goal
+            // Pick which ball is closest to this paddle's goal
             for ball_transform in balls_query.iter() {
                 // TODO:
                 // Project ball center onto goal line.
@@ -742,31 +749,31 @@ fn crab_ai_control_system(
                 // between the two points.
             }
 
-            // Predict the crab's stop position if it begins decelerating
+            // Predict the paddle's stop position if it begins decelerating
             let stop_position = 0.0;
 
-            // Begin decelerating if the ball will land over 70% of the crab's
+            // Begin decelerating if the ball will land over 70% of the paddle's
             // middle at its predicted stop position. Otherwise go left/right
-            // depending on which side of the crab it's approaching.
+            // depending on which side of the paddle it's approaching.
             if true {
-                crab.walking = CrabWalking::Stop;
+                paddle.movement = Movement::Stopped;
             } else if false {
-                crab.walking = CrabWalking::Left;
+                paddle.movement = Movement::Left;
             } else {
-                crab.walking = CrabWalking::Right;
+                paddle.movement = Movement::Right;
             }
         }
     }
 }
 
-fn crab_elimination_system(
+fn paddle_elimination_system(
     game: Res<Game>,
     mut queries: QuerySet<(
-        QueryState<(&mut Transition, &GoalSide), With<Crab>>,
+        QueryState<(&mut Transition, &GoalSide), With<Paddle>>,
         QueryState<(&mut Transition, &GoalSide), With<Pole>>,
     )>,
 ) {
-    // Fade out crab if score is zero
+    // Fade out paddle if score is zero
     for (mut transition, goal_side) in queries.q0().iter_mut() {
         if *transition == Transition::Show && game.scores[&goal_side] <= 0 {
             *transition = Transition::FadeOut(0.0);
@@ -898,14 +905,14 @@ fn goal_scoring_system(
 fn gameover_check_system(
     mut game: ResMut<Game>,
     mut state: ResMut<State<GameState>>,
-    query: Query<(&Pilot, &GoalSide), With<Crab>>,
+    query: Query<(&Pilot, &GoalSide), With<Paddle>>,
 ) {
-    // Player wins if all AI crabs have a score of zero
+    // Player wins if all AI paddles have a score of zero
     let has_player_won = query.iter().all(|(pilot, goal_side)| {
         *pilot != Pilot::Ai || game.scores[&goal_side] <= 0
     });
 
-    // Player loses if all Player crabs have a score of zero
+    // Player loses if all Player paddles have a score of zero
     let has_player_lost = query.iter().all(|(pilot, goal_side)| {
         *pilot != Pilot::Player || game.scores[&goal_side] <= 0
     });
@@ -921,15 +928,15 @@ fn gameover_check_system(
     }
 }
 
-// TODO: Debug option to make all crabs driven by AI? Will need to revise player
-// system to handle no players.
+// TODO: Debug option to make all paddles driven by AI? Will need to revise
+// player system to handle no players.
 
 // TODO: Debug option to directly control single ball's exact position with
-// keyboard and see how crabs respond. Can go in goals, triggering a score and
+// keyboard and see how paddles respond. Can go in goals, triggering a score and
 // ball return?
 
 // TODO: Debug option to add small cubes at the projected points on goals with
-// debug lines to the nearest ball. Also add a line from the crab to a flat but
-// wide cube (to allow both to be visible if they overlap) that matches the
-// crab's hit box dimensions and is positioned where the crab predicts it will
-// stop. One of each per goal so we can spawn them in advance.
+// debug lines to the nearest ball. Also add a line from the paddle to a flat
+// but wide cube (to allow both to be visible if they overlap) that matches the
+// paddle's hit box dimensions and is positioned where the paddle predicts it
+// will stop. One of each per goal so we can spawn them in advance.
