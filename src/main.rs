@@ -727,7 +727,7 @@ fn crab_player_control_system(
 // distance logic.
 fn crab_ai_control_system(
     config: Res<GameConfig>,
-    balls_query: Query<(&Ball, &GlobalTransform)>,
+    balls_query: Query<(&Ball, &GlobalTransform, &Transition)>,
     mut crab_query: Query<(
         &Transform,
         &mut Crab,
@@ -745,20 +745,24 @@ fn crab_ai_control_system(
 
         // Pick which ball is closest to this crab's goal
         let mut closest_ball_distance = std::f32::MAX;
-        let mut target_position = 0.5;
+        let mut target_position = config.crab_start_position.0;
 
-        for (ball, ball_transform) in balls_query.iter() {
+        for (ball, ball_transform, transition) in balls_query.iter() {
+            if *transition != Transition::Show {
+                continue;
+            }
+
             let ball_translation = ball_transform.translation;
 
             let (ball_distance, ball_position) = match *goal_side {
                 GoalSide::Top => {
-                    (ball_translation.z + ball.radius, -ball_translation.x)
+                    (ball_translation.z - ball.radius, -ball_translation.x)
                 },
                 GoalSide::Right => {
                     (ball_translation.x - ball.radius, -ball_translation.z)
                 },
                 GoalSide::Bottom => {
-                    (ball_translation.z - ball.radius, ball_translation.x)
+                    (ball_translation.z + ball.radius, ball_translation.x)
                 },
                 GoalSide::Left => {
                     (ball_translation.x + ball.radius, ball_translation.z)
