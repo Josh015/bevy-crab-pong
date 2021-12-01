@@ -100,13 +100,13 @@ struct GameConfig {
 }
 
 enum CrabWalking {
-    Stopped,
+    Stop,
     Left,
     Right,
 }
 
 impl Default for CrabWalking {
-    fn default() -> Self { Self::Stopped }
+    fn default() -> Self { Self::Stop }
 }
 
 #[derive(Clone, Component, PartialEq, Debug)]
@@ -460,7 +460,7 @@ fn swaying_camera_system(
 ) {
     // Slowly sway the camera back and forth
     let (mut transform, mut swaying_camera) = query.single_mut();
-    let x = swaying_camera.angle.sin() * 0.5;
+    let x = swaying_camera.angle.sin() * 0.5 * config.sand_width;
 
     *transform = Transform::from_xyz(x, 2.25, 2.0)
         .looking_at(config.sand_center_point.into(), Vec3::Y);
@@ -530,7 +530,7 @@ fn pole_transition_system(
     // Grow/Shrink a pole's thickness to show/hide it
     for (mut transform, transition) in query.iter_mut() {
         let radius = transition.opacity() * config.pole_radius;
-        transform.scale = Vec3::new(1.0, radius, radius);
+        transform.scale = Vec3::new(config.sand_width, radius, radius);
     }
 }
 
@@ -638,7 +638,7 @@ fn crab_walking_system(
     for (mut transform, mut crab, transition) in query.iter_mut() {
         if *transition == Transition::Show {
             let direction = match crab.walking {
-                CrabWalking::Stopped => 0.0,
+                CrabWalking::Stop => 0.0,
                 CrabWalking::Left => -1.0,
                 CrabWalking::Right => 1.0,
             };
@@ -708,7 +708,7 @@ fn crab_player_control_system(
             } else if keyboard_input.pressed(KeyCode::Right) {
                 crab.walking = CrabWalking::Right;
             } else {
-                crab.walking = CrabWalking::Stopped;
+                crab.walking = CrabWalking::Stop;
             }
         }
     }
@@ -740,7 +740,7 @@ fn crab_ai_control_system(
             // middle at its predicted stop position. Otherwise go left/right
             // depending on which side of the crab it's approaching.
             if true {
-                crab.walking = CrabWalking::Stopped;
+                crab.walking = CrabWalking::Stop;
             } else if false {
                 crab.walking = CrabWalking::Left;
             } else {
