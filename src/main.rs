@@ -33,9 +33,9 @@ fn main() {
         .add_system(swaying_camera_system)
         .add_system(animated_water_system)
         .add_system(transition_system)
-        .add_system(paddle_transition_system)
-        .add_system(pole_transition_system)
-        .add_system(ball_transition_system)
+        .add_system(paddle_transition_animation_system)
+        .add_system(pole_transition_animation_system)
+        .add_system(ball_transition_animation_system)
         .add_state(GameState::GameOver)
         .add_event::<GoalEliminated>()
         .add_system_set(
@@ -61,7 +61,7 @@ fn main() {
                 .with_system(ball_movement_system)
                 .with_system(ball_collision_system)
                 .with_system(goal_scored_system)
-                .with_system(goal_elimination_system)
+                .with_system(goal_elimination_animation_system)
                 .with_system(gameover_check_system),
         )
         .add_system(bevy::input::system::exit_on_esc_system)
@@ -516,7 +516,7 @@ fn transition_system(
     }
 }
 
-fn paddle_transition_system(
+fn paddle_transition_animation_system(
     config: Res<GameConfig>,
     mut query: Query<(&mut Transform, &Transition), With<Paddle>>,
 ) {
@@ -527,7 +527,7 @@ fn paddle_transition_system(
     }
 }
 
-fn pole_transition_system(
+fn pole_transition_animation_system(
     config: Res<GameConfig>,
     mut query: Query<(&mut Transform, &Transition), With<Pole>>,
 ) {
@@ -538,7 +538,7 @@ fn pole_transition_system(
     }
 }
 
-fn ball_transition_system(
+fn ball_transition_animation_system(
     config: Res<GameConfig>,
     asset_server: Res<AssetServer>,
     mut query: Query<
@@ -870,7 +870,7 @@ fn goal_scored_system(
     }
 }
 
-fn goal_elimination_system(
+fn goal_elimination_animation_system(
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
     mut queries: QuerySet<(
         QueryState<(&mut Transition, &GoalSide), With<Paddle>>,
