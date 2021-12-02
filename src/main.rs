@@ -111,6 +111,10 @@ impl GameConfig {
     }
 
     fn ball_radius(&self) -> f32 { 0.5 * self.ball_size }
+
+    fn pole_scale(&self) -> Vec3 {
+        Vec3::new(self.beach_width, self.pole_radius, self.pole_radius)
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
@@ -388,11 +392,7 @@ fn setup_goals(
                         material: pole_material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                Vec3::new(
-                                    config.beach_width,
-                                    config.pole_radius,
-                                    config.pole_radius,
-                                ),
+                                config.pole_scale(),
                                 Quat::IDENTITY,
                                 Vec3::new(0.0, 0.1, 0.0),
                             ),
@@ -544,10 +544,12 @@ fn pole_transition_animation_system(
     config: Res<GameConfig>,
     mut query: Query<(&mut Transform, &Transition), With<Pole>>,
 ) {
-    // Grow/Shrink a pole's thickness to show/hide it
+    // Pole shrinks along its width into a pancake and then vanishes
     for (mut transform, transition) in query.iter_mut() {
-        let radius = transition.opacity() * config.pole_radius;
-        transform.scale = Vec3::new(config.beach_width, radius, radius);
+        let x_mask = transition.opacity();
+        let yz_mask = x_mask.powf(0.001);
+        let mask = Vec3::new(x_mask, yz_mask, yz_mask);
+        transform.scale = mask * config.pole_scale();
     }
 }
 
