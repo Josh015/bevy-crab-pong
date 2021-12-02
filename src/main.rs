@@ -664,9 +664,9 @@ fn fade_out_balls(mut query: Query<&mut Transition, With<Ball>>) {
 fn crab_movement_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Crab, &Transition)>,
+    mut query: Query<(&mut Transform, &Transition, &mut Crab)>,
 ) {
-    for (mut transform, mut crab, transition) in query.iter_mut() {
+    for (mut transform, transition, mut crab) in query.iter_mut() {
         if *transition != Transition::Show {
             continue;
         }
@@ -708,9 +708,9 @@ fn crab_movement_system(
 
 fn crab_player_control_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Crab, &Transition, &Pilot)>,
+    mut query: Query<(&Transition, &Pilot, &mut Crab)>,
 ) {
-    for (mut crab, transition, pilot) in query.iter_mut() {
+    for (transition, pilot, mut crab) in query.iter_mut() {
         if *transition != Transition::Show || *pilot != Pilot::Player {
             continue;
         }
@@ -730,16 +730,16 @@ fn crab_player_control_system(
 fn crab_ai_control_system(
     config: Res<GameConfig>,
     balls_query: Query<(&GlobalTransform, &Transition), With<Ball>>,
-    mut crab_query: Query<(
-        &mut Crab,
+    mut crabs_query: Query<(
         &Transform,
         &Transition,
         &Pilot,
         &GoalSide,
+        &mut Crab,
     )>,
 ) {
-    for (mut crab, crab_transform, crab_transition, pilot, goal_side) in
-        crab_query.iter_mut()
+    for (crab_transform, crab_transition, pilot, goal_side, mut crab) in
+        crabs_query.iter_mut()
     {
         if *crab_transition != Transition::Show || *pilot != Pilot::Ai {
             continue;
@@ -806,11 +806,11 @@ fn crab_ai_control_system(
 fn ball_movement_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Ball, &mut Transition)>,
+    mut query: Query<(&mut Transform, &mut Transition, &mut Ball)>,
 ) {
     let mut rng = rand::thread_rng();
 
-    for (mut transform, mut ball, mut transition) in query.iter_mut() {
+    for (mut transform, mut transition, mut ball) in query.iter_mut() {
         match *transition {
             Transition::Show | Transition::FadeOut(_) => {
                 transform.translation +=
@@ -834,18 +834,18 @@ fn ball_collision_system(
     mut bally_query: Query<(
         Entity,
         &GlobalTransform,
-        &mut Ball,
-        &Collider,
         &Transition,
+        &Collider,
+        &mut Ball,
     )>,
     colliders_query: Query<(
         Entity,
         &GlobalTransform,
-        &Collider,
         Option<&Transition>, // Barriers have no transition
+        &Collider,
     )>,
 ) {
-    for (entity, transform, mut ball, collider, transition) in
+    for (entity, transform, transition, collider, mut ball) in
         bally_query.iter_mut()
     {
         if *transition != Transition::Show {
@@ -853,7 +853,7 @@ fn ball_collision_system(
         }
 
         // Colliders
-        for (entity2, transform2, collider2, transition2) in
+        for (entity2, transform2, transition2, collider2) in
             colliders_query.iter()
         {
             // Collide with visible entities that aren't the current one
