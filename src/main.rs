@@ -109,6 +109,8 @@ impl GameConfig {
     fn crab_acceleration(&self) -> f32 {
         self.crab_max_speed / self.crab_seconds_to_max_speed
     }
+
+    fn ball_radius(&self) -> f32 { 0.5 * self.ball_size }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
@@ -183,16 +185,10 @@ impl Default for Pilot {
 #[derive(Component)]
 struct Ball {
     direction: Vec3,
-    radius: f32,
 }
 
-impl Ball {
-    fn with_radius(radius: f32) -> Self {
-        Self {
-            direction: Vec3::X,
-            radius,
-        }
-    }
+impl Default for Ball {
+    fn default() -> Self { Self { direction: Vec3::X } }
 }
 
 #[derive(Component)]
@@ -279,8 +275,11 @@ fn setup_balls(
                 ),
                 ..Default::default()
             })
-            .insert(Ball::with_radius(0.5 * config.ball_size))
-            .insert(Transition::Hide);
+            .insert(Ball::default())
+            .insert(Transition::Hide)
+            .insert(Collider::Circle {
+                radius: config.ball_radius(),
+            });
     }
 }
 
@@ -727,16 +726,16 @@ fn crab_player_control_system(
 // distance logic.
 fn crab_ai_control_system(
     config: Res<GameConfig>,
-    balls_query: Query<(&Ball, &GlobalTransform, &Transition)>,
+    balls_query: Query<(&GlobalTransform, &Transition), With<Ball>>,
     mut crab_query: Query<(
-        &Transform,
         &mut Crab,
+        &Transform,
         &Transition,
         &Pilot,
         &GoalSide,
     )>,
 ) {
-    for (crab_transform, mut crab, transition, pilot, goal_side) in
+    for (mut crab, crab_transform, transition, pilot, goal_side) in
         crab_query.iter_mut()
     {
         if *transition != Transition::Show || *pilot != Pilot::Ai {
@@ -747,25 +746,25 @@ fn crab_ai_control_system(
         let mut closest_ball_distance = std::f32::MAX;
         let mut target_position = config.crab_start_position.0;
 
-        for (ball, ball_transform, transition) in balls_query.iter() {
+        for (ball_transform, transition) in balls_query.iter() {
             if *transition != Transition::Show {
                 continue;
             }
 
             let ball_translation = ball_transform.translation;
-
+            let ball_radius = config.ball_radius();
             let (ball_distance, ball_position) = match *goal_side {
                 GoalSide::Top => {
-                    (ball_translation.z - ball.radius, -ball_translation.x)
+                    (ball_translation.z - ball_radius, -ball_translation.x)
                 },
                 GoalSide::Right => {
-                    (ball_translation.x - ball.radius, -ball_translation.z)
+                    (ball_translation.x - ball_radius, -ball_translation.z)
                 },
                 GoalSide::Bottom => {
-                    (ball_translation.z + ball.radius, ball_translation.x)
+                    (ball_translation.z + ball_radius, ball_translation.x)
                 },
                 GoalSide::Left => {
-                    (ball_translation.x + ball.radius, ball_translation.z)
+                    (ball_translation.x + ball_radius, ball_translation.z)
                 },
             };
 
