@@ -478,7 +478,7 @@ fn swaying_camera_system(
     let (mut transform, mut swaying_camera) = query.single_mut();
     let x = swaying_camera.angle.sin() * 0.5 * config.beach_width;
 
-    *transform = Transform::from_xyz(x, 2.25, 2.0)
+    *transform = Transform::from_xyz(x, 2.0, 1.5)
         .looking_at(config.beach_center_point.into(), Vec3::Y);
 
     swaying_camera.angle += config.swaying_camera_speed * time.delta_seconds();
@@ -548,8 +548,9 @@ fn pole_transition_animation_system(
     for (mut transform, transition) in query.iter_mut() {
         let x_mask = transition.opacity();
         let yz_mask = x_mask.powf(0.001);
-        let mask = Vec3::new(x_mask, yz_mask, yz_mask);
-        transform.scale = mask * config.pole_scale();
+
+        transform.scale =
+            config.pole_scale() * Vec3::new(x_mask, yz_mask, yz_mask);
     }
 }
 
@@ -749,6 +750,7 @@ fn crab_ai_control_system(
         let mut target_position = config.crab_start_position.0;
 
         for (ball_transform, ball_transition) in balls_query.iter() {
+            // Ignore balls that are spawning or scoring
             if *ball_transition != Transition::Show {
                 continue;
             }
