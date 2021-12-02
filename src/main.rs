@@ -735,10 +735,10 @@ fn crab_ai_control_system(
         &GoalSide,
     )>,
 ) {
-    for (mut crab, crab_transform, transition, pilot, goal_side) in
+    for (mut crab, crab_transform, crab_transition, pilot, goal_side) in
         crab_query.iter_mut()
     {
-        if *transition != Transition::Show || *pilot != Pilot::Ai {
+        if *crab_transition != Transition::Show || *pilot != Pilot::Ai {
             continue;
         }
 
@@ -746,11 +746,12 @@ fn crab_ai_control_system(
         let mut closest_ball_distance = std::f32::MAX;
         let mut target_position = config.crab_start_position.0;
 
-        for (ball_transform, transition) in balls_query.iter() {
-            if *transition != Transition::Show {
+        for (ball_transform, ball_transition) in balls_query.iter() {
+            if *ball_transition != Transition::Show {
                 continue;
             }
 
+            // Remap from ball's global space to crab's local space
             let ball_translation = ball_transform.translation;
             let ball_radius = config.ball_radius();
             let (ball_distance, ball_position) = match *goal_side {

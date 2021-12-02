@@ -28,9 +28,9 @@ cargo run --release
 - [x] Add ball visibility system to fade them into/from view.
 - [x] Get bounded crab walking working.
 - [x] Add acceleration to crab movement.
+- [x] Add crabs AI.
 - [ ] Get balls bouncing around inside 4 barriers and poles without crabs.
 - [ ] Get balls bouncing off each other.
-- [ ] Add crabs AI.
 - [ ] Add new game and game over messages UI.
 - [ ] Try to mimic the lighting of the original.
 - [ ] Switch balls to opacity and alpha-blending for fading from view.
