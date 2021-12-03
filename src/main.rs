@@ -601,12 +601,14 @@ fn gameover_keyboard_system(
 }
 
 fn assign_players(
+    mut game: ResMut<Game>,
     mut commands: Commands,
     query: Query<(Entity, &GoalSide), With<Crab>>,
 ) {
     for (entity, goal_side) in query.iter() {
         if *goal_side == GoalSide::Bottom {
             commands.entity(entity).insert(Player);
+            *game.scores.get_mut(&goal_side).unwrap() = 99; // FIXME
         } else {
             commands.entity(entity).insert(Enemy);
         }
@@ -811,18 +813,23 @@ fn ball_reset_velocity_system(
 }
 
 fn ball_collision_system(
+    mut commands: Commands,
     config: Res<GameConfig>,
     balls_query: Query<
         (Entity, &GlobalTransform, &Velocity),
         (With<Ball>, With<Active>),
     >,
     crabs_query: Query<&GlobalTransform, (With<Crab>, With<Active>)>,
-    poles_query: Query<&GoalSide, (With<Pole>, With<Active>)>,
     barriers_query: Query<&GlobalTransform, With<Barrier>>,
+    poles_query: Query<
+        (&GlobalTransform, &GoalSide),
+        (With<Pole>, With<Active>),
+    >,
 ) {
     for (entity, transform, velocity) in balls_query.iter() {
         let ball_radius = config.ball_radius();
         let barrier_radius = 0.5 * config.barrier_width;
+        let half_width = 0.5 * config.beach_width;
 
         // TODO: Order these so that highest precedence collision type is at the
         // bottom, since it can overwrite others!
@@ -843,7 +850,33 @@ fn ball_collision_system(
         }
 
         // Pole collisions
-        for goal_side in poles_query.iter() {
+        for (pole_transform, goal_side) in poles_query.iter() {
+            let d = velocity.0.normalize();
+            let edge_position = transform.translation + d * ball_radius;
+            let pole_translation = pole_transform.translation;
+            let (n, length_to_goal) = match *goal_side {
+                GoalSide::Top => {
+                    (-Vec3::Z, edge_position.z - pole_translation.z)
+                },
+                GoalSide::Right => {
+                    (Vec3::X, -edge_position.x + pole_translation.x)
+                },
+                GoalSide::Bottom => {
+                    (Vec3::Z, -edge_position.z + pole_translation.z)
+                },
+                GoalSide::Left => {
+                    (-Vec3::X, edge_position.x - pole_translation.x)
+                },
+            };
+
+            if length_to_goal > 0.0 {
+                continue;
+            }
+
+            let r = (d - (2.0 * (d.dot(n) * n))).normalize();
+            commands
+                .entity(entity)
+                .insert(Velocity(r * config.ball_speed));
             break;
         }
     }
@@ -953,6 +986,12 @@ fn gameover_check_system(
         }
     }
 }
+
+// TODO: Need a fix for the rare occasion when a ball just bounces infinitely
+// between two poles in a straight line?
+
+// TODO: Offer a "Traditional" mode with two crabs (1xPlayer, 1xEnemy) opposite
+// each other and the other two walled off. Also just one ball?
 
 // TODO: Debug option to make all crabs driven by AI? Will need to revise
 // player system to handle no players.

@@ -29,7 +29,9 @@ cargo run --release
 - [x] Get bounded crab walking working.
 - [x] Add acceleration to crab movement.
 - [x] Add crabs AI.
-- [ ] Get balls bouncing around inside 4 barriers and poles without crabs.
+- [x] Get balls bouncing around inside 4 poles.
+- [ ] Get balls bouncing off of 4 barriers.
+- [ ] Get balls bouncing off of 4 crabs.
 - [ ] Get balls bouncing off each other.
 - [ ] Add new game and game over messages UI.
 - [ ] Try to mimic the lighting of the original.
