@@ -112,8 +112,6 @@ impl GameConfig {
         self.crab_max_speed / self.crab_seconds_to_max_speed
     }
 
-    fn ball_radius(&self) -> f32 { 0.5 * self.ball_size }
-
     fn pole_scale(&self) -> Vec3 {
         Vec3::new(self.beach_width, self.pole_radius, self.pole_radius)
     }
@@ -289,7 +287,7 @@ fn setup_balls(
             .insert(Ball::default())
             .insert(Fading::Out(0.99))
             .insert(Collider::Circle {
-                radius: config.ball_radius(),
+                radius: 0.5 * config.ball_size,
             });
     }
 }
@@ -728,17 +726,15 @@ fn crab_player_control_system(
     }
 }
 
-// TODO: Try to implement with both GlobalTransforms so we can dump the touchy
-// distance logic.
 fn crab_ai_control_system(
     config: Res<GameConfig>,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Active>)>,
     mut crabs_query: Query<
-        (&Transform, &GoalSide, &mut Crab),
+        (&Transform, &GlobalTransform, &GoalSide, &mut Crab),
         (With<Active>, With<Enemy>),
     >,
 ) {
-    for (crab_transform, goal_side, mut crab) in crabs_query.iter_mut() {
+    for (local, global, goal_side, mut crab) in crabs_query.iter_mut() {
         // Pick which ball is closest to this crab's goal
         let mut closest_ball_distance = std::f32::MAX;
         let mut target_position = config.crab_start_position.0;
@@ -746,20 +742,12 @@ fn crab_ai_control_system(
         for ball_transform in balls_query.iter() {
             // Remap from ball's global space to crab's local space
             let ball_translation = ball_transform.translation;
-            let ball_radius = config.ball_radius();
-            let (ball_distance, ball_position) = match *goal_side {
-                GoalSide::Top => {
-                    (ball_translation.z - ball_radius, -ball_translation.x)
-                },
-                GoalSide::Right => {
-                    (ball_translation.x - ball_radius, -ball_translation.z)
-                },
-                GoalSide::Bottom => {
-                    (ball_translation.z + ball_radius, ball_translation.x)
-                },
-                GoalSide::Left => {
-                    (ball_translation.x + ball_radius, ball_translation.z)
-                },
+            let ball_distance = global.translation.distance(ball_translation);
+            let ball_position = match *goal_side {
+                GoalSide::Top => -ball_translation.x,
+                GoalSide::Right => -ball_translation.z,
+                GoalSide::Bottom => ball_translation.x,
+                GoalSide::Left => ball_translation.z,
             };
 
             if ball_distance < closest_ball_distance {
@@ -772,9 +760,9 @@ fn crab_ai_control_system(
         // begins decelerating.
         let d = crab.speed * crab.speed / config.crab_acceleration();
         let stop_position = if crab.speed > 0.0 {
-            crab_transform.translation.x + d
+            local.translation.x + d
         } else {
-            crab_transform.translation.x - d
+            local.translation.x - d
         };
 
         // Begin decelerating if the ball will land over 70% of the crab's
@@ -784,7 +772,7 @@ fn crab_ai_control_system(
             < 0.7 * (config.crab_scale.0 * 0.5)
         {
             crab.movement = Movement::Stopped;
-        } else if target_position < crab_transform.translation.x {
+        } else if target_position < local.translation.x {
             crab.movement = Movement::Left;
         } else {
             crab.movement = Movement::Right;
