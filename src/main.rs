@@ -52,6 +52,7 @@ fn main() {
         )
         .add_system_set(
             SystemSet::on_enter(GameState::Playing)
+                .with_system(assign_players)
                 .with_system(reset_game_entities),
         )
         .add_system_set(
@@ -81,7 +82,7 @@ enum GameState {
 #[derive(Default)]
 struct Game {
     scores: HashMap<GoalSide, u32>,
-    winner: Option<Pilot>,
+    winner: Option<Winner>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -157,13 +158,13 @@ enum GoalSide {
     Left,
 }
 
-#[derive(Clone, Component, Copy, Eq, PartialEq, Debug, Hash)]
-enum Pilot {
+#[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
+enum Winner {
     Player,
-    Ai,
+    Enemy,
 }
 
-impl Default for Pilot {
+impl Default for Winner {
     fn default() -> Self { Self::Player }
 }
 
@@ -187,6 +188,12 @@ enum Collider {
     Line { width: f32 },
     Circle { radius: f32 },
 }
+
+#[derive(Component)]
+struct Player;
+
+#[derive(Component)]
+struct Enemy;
 
 #[derive(Component)]
 struct Active;
@@ -300,7 +307,6 @@ fn setup_goals(
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
     let goal_configs = [
         (
-            Pilot::Player,
             Color::RED,
             GoalSide::Bottom,
             Rect {
@@ -310,7 +316,6 @@ fn setup_goals(
             },
         ),
         (
-            Pilot::Ai,
             Color::BLUE,
             GoalSide::Right,
             Rect {
@@ -320,7 +325,6 @@ fn setup_goals(
             },
         ),
         (
-            Pilot::Ai,
             Color::ORANGE,
             GoalSide::Top,
             Rect {
@@ -330,7 +334,6 @@ fn setup_goals(
             },
         ),
         (
-            Pilot::Ai,
             Color::PURPLE,
             GoalSide::Left,
             Rect {
@@ -341,8 +344,7 @@ fn setup_goals(
         ),
     ];
 
-    for (i, (pilot, color, goal_side, rect)) in goal_configs.iter().enumerate()
-    {
+    for (i, (color, goal_side, rect)) in goal_configs.iter().enumerate() {
         // Goal
         commands
             .spawn_bundle(PbrBundle {
@@ -378,7 +380,6 @@ fn setup_goals(
                     })
                     .insert(Crab::default())
                     .insert(Fading::Out(0.99))
-                    .insert(pilot.clone())
                     .insert(Collider::Line {
                         width: config.crab_scale.0,
                     })
@@ -589,7 +590,7 @@ fn ball_fading_animation_system(
 
 fn gameover_show_ui(game: Res<Game>) {
     if let Some(winner) = game.winner {
-        if winner == Pilot::Player {
+        if winner == Winner::Player {
             // TODO: Add win text
         } else {
             // TODO: Add loss text
@@ -610,6 +611,19 @@ fn gameover_keyboard_system(
 ) {
     if keyboard_input.just_pressed(KeyCode::Return) {
         state.set(GameState::Playing).unwrap();
+    }
+}
+
+fn assign_players(
+    mut commands: Commands,
+    mut query: Query<(Entity, &GoalSide), With<Crab>>,
+) {
+    for (entity, goal_side) in query.iter_mut() {
+        if *goal_side == GoalSide::Bottom {
+            commands.entity(entity).insert(Player);
+        } else {
+            commands.entity(entity).insert(Enemy);
+        }
     }
 }
 
@@ -700,13 +714,9 @@ fn crab_movement_system(
 
 fn crab_player_control_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&Pilot, &mut Crab), With<Active>>,
+    mut query: Query<&mut Crab, (With<Active>, With<Player>)>,
 ) {
-    for (pilot, mut crab) in query.iter_mut() {
-        if *pilot != Pilot::Player {
-            continue;
-        }
-
+    for mut crab in query.iter_mut() {
         if keyboard_input.pressed(KeyCode::Left) {
             crab.movement = Movement::Left;
         } else if keyboard_input.pressed(KeyCode::Right) {
@@ -723,15 +733,11 @@ fn crab_ai_control_system(
     config: Res<GameConfig>,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Active>)>,
     mut crabs_query: Query<
-        (&Transform, &Pilot, &GoalSide, &mut Crab),
-        With<Active>,
+        (&Transform, &GoalSide, &mut Crab),
+        (With<Active>, With<Enemy>),
     >,
 ) {
-    for (crab_transform, pilot, goal_side, mut crab) in crabs_query.iter_mut() {
-        if *pilot != Pilot::Ai {
-            continue;
-        }
-
+    for (crab_transform, goal_side, mut crab) in crabs_query.iter_mut() {
         // Pick which ball is closest to this crab's goal
         let mut closest_ball_distance = std::f32::MAX;
         let mut target_position = config.crab_start_position.0;
@@ -921,24 +927,26 @@ fn gameover_check_system(
     mut game: ResMut<Game>,
     mut state: ResMut<State<GameState>>,
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
-    query: Query<(&Pilot, &GoalSide), (With<Crab>, With<Active>)>,
+    players_query: Query<&GoalSide, (With<Crab>, With<Player>)>,
+    enemies_query: Query<&GoalSide, (With<Crab>, With<Enemy>)>,
 ) {
     for GoalEliminated(_) in goal_eliminated_reader.iter() {
-        let has_player_won = query.iter().all(|(pilot, goal_side)| {
-            *pilot != Pilot::Ai || game.scores[&goal_side] == 0
-        });
+        // Player wins if all Enemy crabs have a score of zero
+        let has_player_won = enemies_query
+            .iter()
+            .all(|goal_side| game.scores[&goal_side] == 0);
 
         // Player loses if all Player crabs have a score of zero
-        let has_player_lost = query.iter().all(|(pilot, goal_side)| {
-            *pilot != Pilot::Player || game.scores[&goal_side] == 0
-        });
+        let has_player_lost = players_query
+            .iter()
+            .all(|goal_side| game.scores[&goal_side] == 0);
 
         // Declare a winner and trigger gameover
         if has_player_won || has_player_lost {
             game.winner = if has_player_won {
-                Some(Pilot::Player)
+                Some(Winner::Player)
             } else {
-                Some(Pilot::Ai)
+                Some(Winner::Enemy)
             };
 
             state.set(GameState::GameOver).unwrap();
