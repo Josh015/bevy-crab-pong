@@ -83,7 +83,7 @@ enum GameState {
 #[derive(Default)]
 struct Game {
     scores: HashMap<GoalSide, u32>,
-    winner: Option<Winner>,
+    over: Option<GameOver>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -158,13 +158,13 @@ enum GoalSide {
 }
 
 #[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
-enum Winner {
-    Player,
-    Enemy,
+enum GameOver {
+    Won,
+    Lost,
 }
 
-impl Default for Winner {
-    fn default() -> Self { Self::Player }
+impl Default for GameOver {
+    fn default() -> Self { Self::Won }
 }
 
 #[derive(Component)]
@@ -590,8 +590,8 @@ fn ball_fading_animation_system(
 }
 
 fn gameover_show_ui(game: Res<Game>) {
-    if let Some(winner) = game.winner {
-        if winner == Winner::Player {
+    if let Some(game_over) = game.over {
+        if game_over == GameOver::Won {
             // TODO: Add win text
         } else {
             // TODO: Add loss text
@@ -941,10 +941,10 @@ fn gameover_check_system(
 
         // Declare a winner and trigger gameover
         if has_player_won || has_player_lost {
-            game.winner = if has_player_won {
-                Some(Winner::Player)
+            game.over = if has_player_won {
+                Some(GameOver::Won)
             } else {
-                Some(Winner::Enemy)
+                Some(GameOver::Lost)
             };
 
             state.set(GameState::GameOver).unwrap();
