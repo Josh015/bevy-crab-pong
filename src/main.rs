@@ -64,7 +64,8 @@ fn main() {
                 .with_system(crab_player_control_system)
                 .with_system(crab_ai_control_system)
                 .with_system(ball_movement_system)
-                .with_system(ball_reset_system)
+                .with_system(ball_reset_position_system)
+                .with_system(ball_reset_velocity_system)
                 .with_system(ball_collision_system)
                 .with_system(goal_scored_system)
                 .with_system(goal_eliminated_animation_system)
@@ -167,14 +168,8 @@ impl Default for GameOver {
     fn default() -> Self { Self::Won }
 }
 
-#[derive(Component)]
-struct Ball {
-    direction: Vec3,
-}
-
-impl Default for Ball {
-    fn default() -> Self { Self { direction: Vec3::X } }
-}
+#[derive(Component, Default)]
+struct Ball;
 
 #[derive(Component)]
 struct Pole;
@@ -211,6 +206,9 @@ impl Fading {
         }
     }
 }
+
+#[derive(Component)]
+struct Velocity(Vec3);
 
 fn setup_scene(
     config: Res<GameConfig>,
@@ -783,42 +781,45 @@ fn crab_ai_control_system(
 }
 
 fn ball_movement_system(
-    config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &Ball, Option<&Active>, Option<&Fading>)>,
+    mut query: Query<(&mut Transform, &Velocity), With<Ball>>,
 ) {
-    for (mut transform, ball, active, fading) in query.iter_mut() {
-        // Balls can keep moving if they are active, or fading out
-        if !active.is_some() && !matches!(fading, Some(Fading::Out(_))) {
-            continue;
-        }
-
-        transform.translation +=
-            ball.direction * (config.ball_speed * time.delta_seconds());
+    for (mut transform, velocity) in query.iter_mut() {
+        transform.translation += velocity.0 * time.delta_seconds();
     }
 }
 
-fn ball_reset_system(
+fn ball_reset_position_system(
     mut commands: Commands,
     config: Res<GameConfig>,
     mut query: Query<
-        (Entity, &mut Transform, &mut Ball),
-        (Without<Active>, Without<Fading>),
+        (Entity, &mut Transform),
+        (With<Ball>, Without<Active>, Without<Fading>),
     >,
 ) {
-    for (entity, mut transform, mut ball) in query.iter_mut() {
-        // TODO: Move this into a global resource?
-        let mut rng = rand::thread_rng();
-
-        // Move the ball back to the center
+    for (entity, mut transform) in query.iter_mut() {
         transform.translation = config.beach_center_point.into();
+        commands.entity(entity).remove::<Velocity>();
+        commands.entity(entity).insert(Fading::In(0.0));
+    }
+}
+
+fn ball_reset_velocity_system(
+    mut commands: Commands,
+    config: Res<GameConfig>,
+    query: Query<Entity, (With<Ball>, With<Active>, Without<Velocity>)>,
+) {
+    for entity in query.iter() {
+        // TODO: Move this into a global resource? Also, make a reusable uniform
+        // for random rotation?
+        let mut rng = rand::thread_rng();
 
         // Give the ball a random direction vector
         let angle = rng.gen_range(0.0..std::f32::consts::TAU);
-        ball.direction = Vec3::new(angle.cos(), 0.0, angle.sin());
+        let velocity =
+            config.ball_speed * Vec3::new(angle.cos(), 0.0, angle.sin());
 
-        // Start fading it back into view
-        commands.entity(entity).insert(Fading::In(0.0));
+        commands.entity(entity).insert(Velocity(velocity));
     }
 }
 
