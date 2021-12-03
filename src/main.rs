@@ -64,6 +64,7 @@ fn main() {
                 .with_system(crab_player_control_system)
                 .with_system(crab_ai_control_system)
                 .with_system(ball_movement_system)
+                .with_system(ball_reset_system)
                 .with_system(ball_collision_system)
                 .with_system(goal_scored_system)
                 .with_system(goal_eliminated_animation_system)
@@ -792,35 +793,36 @@ fn crab_ai_control_system(
 }
 
 fn ball_movement_system(
-    mut commands: Commands,
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(
-        Entity,
-        &mut Transform,
-        &mut Ball,
-        Option<&Active>,
-        Option<&Fading>,
-    )>,
+    mut query: Query<(&mut Transform, &Ball), With<Active>>,
+) {
+    for (mut transform, ball) in query.iter_mut() {
+        transform.translation +=
+            ball.direction * (config.ball_speed * time.delta_seconds());
+    }
+}
+
+fn ball_reset_system(
+    mut commands: Commands,
+    config: Res<GameConfig>,
+    mut query: Query<
+        (Entity, &mut Transform, &mut Ball),
+        (Without<Fading>, Without<Active>),
+    >,
 ) {
     let mut rng = rand::thread_rng();
 
-    for (entity, mut transform, mut ball, active, fading) in query.iter_mut() {
-        // Move active balls in a straight path until they hit something
-        if active.is_some() {
-            transform.translation +=
-                ball.direction * (config.ball_speed * time.delta_seconds());
-        } else if fading.is_none() {
-            // Move ball back to center
-            transform.translation = config.beach_center_point.into();
+    for (entity, mut transform, mut ball) in query.iter_mut() {
+        // Move the ball back to the center
+        transform.translation = config.beach_center_point.into();
 
-            // Give the ball a random direction vector
-            let angle = rng.gen_range(0.0..std::f32::consts::TAU);
-            ball.direction = Vec3::new(angle.cos(), 0.0, angle.sin());
+        // Give the ball a random direction vector
+        let angle = rng.gen_range(0.0..std::f32::consts::TAU);
+        ball.direction = Vec3::new(angle.cos(), 0.0, angle.sin());
 
-            // Start fading it back into view
-            commands.entity(entity).insert(Fading::In(0.0));
-        }
+        // Start fading it back into view
+        commands.entity(entity).insert(Fading::In(0.0));
     }
 }
 
