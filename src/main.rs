@@ -558,16 +558,16 @@ fn pole_fading_animation_system(
 
 fn ball_fading_animation_system(
     config: Res<GameConfig>,
-    asset_server: Res<AssetServer>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<
-        (&mut Handle<StandardMaterial>, &mut Transform, &mut Fading),
+        (&Handle<StandardMaterial>, &mut Transform, &mut Fading),
         With<Ball>,
     >,
 ) {
     // Increase/Decrease balls' opacity to show/hide them
     let mut is_prior_fading = false;
 
-    for (mut material, mut transform, mut fading) in query.iter_mut() {
+    for (material, mut transform, mut fading) in query.iter_mut() {
         let is_current_fading = matches!(*fading, Fading::In(_));
 
         // Force current ball to wait if other is also fading in
@@ -578,12 +578,14 @@ fn ball_fading_animation_system(
 
         is_prior_fading = is_current_fading;
 
-        // FIXME: Use scaling until we can get opacity working.
-        transform.scale = Vec3::splat(fading.opacity() * config.ball_size);
+        // materials
+        //     .get_mut(material)
+        //     .unwrap()
+        //     .base_color
+        //     .set_a(fading.opacity());
 
-        // TODO: Reduce ball opacity
-        // asset_server.get_mut(&material).unwrap();
-        // material.base_color.a = fading.opacity();
+        // FIXME: Use scaling until we can get alpha-blending working
+        transform.scale = Vec3::splat(fading.opacity() * config.ball_size);
     }
 }
 
@@ -716,13 +718,13 @@ fn crab_player_control_system(
     mut query: Query<&mut Crab, (With<Active>, With<Player>)>,
 ) {
     for mut crab in query.iter_mut() {
-        if keyboard_input.pressed(KeyCode::Left) {
-            crab.movement = Movement::Left;
+        crab.movement = if keyboard_input.pressed(KeyCode::Left) {
+            Movement::Left
         } else if keyboard_input.pressed(KeyCode::Right) {
-            crab.movement = Movement::Right;
+            Movement::Right
         } else {
-            crab.movement = Movement::Stopped;
-        }
+            Movement::Stopped
+        };
     }
 }
 
@@ -849,23 +851,24 @@ fn goal_scored_system(
     balls_query: Query<(Entity, &GlobalTransform), (With<Ball>, With<Active>)>,
     goals_query: Query<(&GlobalTransform, &GoalSide), With<Goal>>,
 ) {
-    for (entity, ball_transform) in balls_query.iter() {
-        let distance_to_center = ball_transform
-            .translation
-            .distance(config.beach_center_point.into());
-        let beach_widths = Vec2::splat(config.beach_width);
-        let beach_radius = 0.5 * beach_widths.dot(beach_widths).sqrt();
+    // TODO: Cache these values via a resource?
+    let beach_widths = Vec2::splat(config.beach_width);
+    let beach_radius = 0.5 * beach_widths.dot(beach_widths).sqrt();
+    let center: Vec3 = config.beach_center_point.into();
 
-        // Check if a ball has gone out of bounds
+    for (entity, ball_transform) in balls_query.iter() {
+        let ball_translation = ball_transform.translation;
+        let distance_to_center = ball_translation.distance(center);
+
+        // Check if the ball has gone out of bounds
         if distance_to_center >= beach_radius {
             let mut closest_distance = std::f32::MAX;
             let mut scored_goal = GoalSide::Bottom;
 
             // Score against the goal that's closest to this ball
             for (goal_transform, goal_side) in goals_query.iter() {
-                let new_distance = ball_transform
-                    .translation
-                    .distance(goal_transform.translation);
+                let new_distance =
+                    ball_translation.distance(goal_transform.translation);
 
                 if new_distance < closest_distance {
                     closest_distance = new_distance;
