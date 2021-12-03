@@ -785,9 +785,14 @@ fn crab_ai_control_system(
 fn ball_movement_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &Ball), With<Active>>,
+    mut query: Query<(&mut Transform, &Ball, Option<&Fading>, Option<&Active>)>,
 ) {
-    for (mut transform, ball) in query.iter_mut() {
+    for (mut transform, ball, fading, active) in query.iter_mut() {
+        // Balls can keep moving if they are active, or fading out
+        if !active.is_some() && !matches!(fading, Some(Fading::Out(_))) {
+            continue;
+        }
+
         transform.translation +=
             ball.direction * (config.ball_speed * time.delta_seconds());
     }
@@ -801,9 +806,10 @@ fn ball_reset_system(
         (Without<Fading>, Without<Active>),
     >,
 ) {
-    let mut rng = rand::thread_rng();
-
     for (entity, mut transform, mut ball) in query.iter_mut() {
+        // TODO: Move this into a global resource?
+        let mut rng = rand::thread_rng();
+
         // Move the ball back to the center
         transform.translation = config.beach_center_point.into();
 
@@ -851,12 +857,11 @@ fn goal_scored_system(
     balls_query: Query<(Entity, &GlobalTransform), (With<Ball>, With<Active>)>,
     goals_query: Query<(&GlobalTransform, &GoalSide), With<Goal>>,
 ) {
-    // TODO: Cache these values via a resource?
-    let beach_widths = Vec2::splat(config.beach_width);
-    let beach_radius = 0.5 * beach_widths.dot(beach_widths).sqrt();
-    let center: Vec3 = config.beach_center_point.into();
-
     for (entity, ball_transform) in balls_query.iter() {
+        // TODO: Cache these values via a resource?
+        let beach_widths = Vec2::splat(config.beach_width);
+        let beach_radius = 0.5 * beach_widths.dot(beach_widths).sqrt();
+        let center: Vec3 = config.beach_center_point.into();
         let ball_translation = ball_transform.translation;
         let distance_to_center = ball_translation.distance(center);
 
@@ -946,10 +951,6 @@ fn gameover_check_system(
         }
     }
 }
-
-// TODO: Must do goal_eliminated_animation_system() before
-// gameover_check_system() to ensure active crab check can happen without score
-// check!
 
 // TODO: Find a fix for balls/crabs that need to start with a scale of zero but
 // can't because setting that as their initial scale causes them to stay hidden
