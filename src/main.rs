@@ -83,7 +83,7 @@ enum GameState {
 
 #[derive(Default)]
 struct Game {
-    scores: HashMap<GoalSide, u32>,
+    scores: HashMap<Goal, u32>,
     over: Option<GameOver>,
 }
 
@@ -131,7 +131,7 @@ impl Default for Movement {
     fn default() -> Self { Self::Stopped }
 }
 
-struct GoalEliminated(GoalSide);
+struct GoalEliminated(Goal);
 
 #[derive(Component, Default)]
 struct SwayingCamera {
@@ -153,7 +153,7 @@ struct Crab {
 }
 
 #[derive(Clone, Component, Copy, Eq, PartialEq, Debug, Hash)]
-enum GoalSide {
+enum Goal {
     Top,
     Right,
     Bottom,
@@ -298,7 +298,7 @@ fn setup_goals(
     let goal_configs = [
         (
             Color::RED,
-            GoalSide::Bottom,
+            Goal::Bottom,
             Rect {
                 bottom: Val::Px(5.0),
                 right: Val::Px(5.0),
@@ -307,7 +307,7 @@ fn setup_goals(
         ),
         (
             Color::BLUE,
-            GoalSide::Right,
+            Goal::Right,
             Rect {
                 top: Val::Px(5.0),
                 right: Val::Px(5.0),
@@ -316,7 +316,7 @@ fn setup_goals(
         ),
         (
             Color::ORANGE,
-            GoalSide::Top,
+            Goal::Top,
             Rect {
                 top: Val::Px(5.0),
                 left: Val::Px(5.0),
@@ -325,7 +325,7 @@ fn setup_goals(
         ),
         (
             Color::PURPLE,
-            GoalSide::Left,
+            Goal::Left,
             Rect {
                 bottom: Val::Px(5.0),
                 left: Val::Px(5.0),
@@ -334,7 +334,7 @@ fn setup_goals(
         ),
     ];
 
-    for (i, (color, goal_side, rect)) in goal_configs.iter().enumerate() {
+    for (i, (color, goal, rect)) in goal_configs.iter().enumerate() {
         // Goal
         commands
             .spawn_bundle(PbrBundle {
@@ -350,7 +350,6 @@ fn setup_goals(
                 )),
                 ..Default::default()
             })
-            .insert(goal_side.clone())
             .with_children(|parent| {
                 // Crab
                 // NOTE: Treat it as the center of the goal
@@ -369,7 +368,7 @@ fn setup_goals(
                     })
                     .insert(Crab::default())
                     .insert(Fade::Out(1.0))
-                    .insert(goal_side.clone());
+                    .insert(goal.clone());
 
                 // Pole
                 parent
@@ -386,8 +385,8 @@ fn setup_goals(
                         ..Default::default()
                     })
                     .insert(Pole)
-                    .insert(goal_side.clone())
-                    .insert(Active);
+                    .insert(Active)
+                    .insert(goal.clone());
 
                 // Barrier
                 parent
@@ -431,18 +430,18 @@ fn setup_goals(
                 ..Default::default()
             })
             .insert(Score)
-            .insert(goal_side.clone());
+            .insert(goal.clone());
 
-        game.scores.insert(goal_side.clone(), 0);
+        game.scores.insert(goal.clone(), 0);
     }
 }
 
 fn display_scores_system(
     game: Res<Game>,
-    mut query: Query<(&mut Text, &GoalSide), With<Score>>,
+    mut query: Query<(&mut Text, &Goal), With<Score>>,
 ) {
-    for (mut text, goal_side) in query.iter_mut() {
-        let score_value = game.scores[&goal_side];
+    for (mut text, goal) in query.iter_mut() {
+        let score_value = game.scores[&goal];
         text.sections[0].value = score_value.to_string();
     }
 }
@@ -599,12 +598,12 @@ fn gameover_keyboard_system(
 fn assign_players(
     mut game: ResMut<Game>,
     mut commands: Commands,
-    query: Query<(Entity, &GoalSide), With<Crab>>,
+    query: Query<(Entity, &Goal), With<Crab>>,
 ) {
-    for (entity, goal_side) in query.iter() {
-        if *goal_side == GoalSide::Bottom {
+    for (entity, goal) in query.iter() {
+        if *goal == Goal::Bottom {
             commands.entity(entity).insert(Player);
-            *game.scores.get_mut(&goal_side).unwrap() = 99; // FIXME
+            *game.scores.get_mut(&goal).unwrap() = 99; // FIXME
         } else {
             commands.entity(entity).insert(Enemy);
         }
@@ -715,11 +714,11 @@ fn crab_ai_control_system(
     config: Res<GameConfig>,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Active>)>,
     mut crabs_query: Query<
-        (&Transform, &GlobalTransform, &GoalSide, &mut Crab),
+        (&Transform, &GlobalTransform, &Goal, &mut Crab),
         (With<Active>, With<Enemy>),
     >,
 ) {
-    for (local, global, goal_side, mut crab) in crabs_query.iter_mut() {
+    for (local, global, goal, mut crab) in crabs_query.iter_mut() {
         // Pick which ball is closest to this crab's goal
         let mut closest_ball_distance = std::f32::MAX;
         let mut target_position = config.crab_start_position.0;
@@ -728,11 +727,11 @@ fn crab_ai_control_system(
             // Remap from ball's global space to crab's local space
             let ball_translation = ball_transform.translation;
             let ball_distance = global.translation.distance(ball_translation);
-            let ball_position = match *goal_side {
-                GoalSide::Top => -ball_translation.x,
-                GoalSide::Right => -ball_translation.z,
-                GoalSide::Bottom => ball_translation.x,
-                GoalSide::Left => ball_translation.z,
+            let ball_position = match *goal {
+                Goal::Top => -ball_translation.x,
+                Goal::Right => -ball_translation.z,
+                Goal::Bottom => ball_translation.x,
+                Goal::Left => ball_translation.z,
             };
 
             if ball_distance < closest_ball_distance {
@@ -817,10 +816,7 @@ fn ball_collision_system(
     >,
     crabs_query: Query<&GlobalTransform, (With<Crab>, With<Active>)>,
     barriers_query: Query<&GlobalTransform, With<Barrier>>,
-    poles_query: Query<
-        (&GlobalTransform, &GoalSide),
-        (With<Pole>, With<Active>),
-    >,
+    poles_query: Query<(&GlobalTransform, &Goal), (With<Pole>, With<Active>)>,
 ) {
     for (entity, transform, velocity) in balls_query.iter() {
         let ball_radius = config.ball_radius();
@@ -846,20 +842,20 @@ fn ball_collision_system(
         }
 
         // Pole collisions
-        for (pole_transform, goal_side) in poles_query.iter() {
+        for (pole_transform, goal) in poles_query.iter() {
             let d = velocity.0.normalize();
             let ball_radius_position = transform.translation + d * ball_radius;
             let pole_global_position = pole_transform.translation;
             let distance_to_goal = axis_distance_to_goal(
-                goal_side,
+                goal,
                 &ball_radius_position,
                 &pole_global_position,
             );
-            let n = match goal_side {
-                GoalSide::Top => -Vec3::Z,
-                GoalSide::Right => Vec3::X,
-                GoalSide::Bottom => Vec3::Z,
-                GoalSide::Left => -Vec3::X,
+            let n = match goal {
+                Goal::Top => -Vec3::Z,
+                Goal::Right => Vec3::X,
+                Goal::Bottom => Vec3::Z,
+                Goal::Left => -Vec3::X,
             };
 
             if distance_to_goal > 0.0 {
@@ -876,16 +872,16 @@ fn ball_collision_system(
 }
 
 fn axis_distance_to_goal(
-    goal_side: &GoalSide,
+    goal: &Goal,
     ball_radius_position: &Vec3,
     pole_global_position: &Vec3,
 ) -> f32 {
     // Axis-aligned distance from a ball to a given goal
-    match goal_side {
-        GoalSide::Top => ball_radius_position.z - pole_global_position.z,
-        GoalSide::Right => -ball_radius_position.x + pole_global_position.x,
-        GoalSide::Bottom => -ball_radius_position.z + pole_global_position.z,
-        GoalSide::Left => ball_radius_position.x - pole_global_position.x,
+    match goal {
+        Goal::Top => ball_radius_position.z - pole_global_position.z,
+        Goal::Right => -ball_radius_position.x + pole_global_position.x,
+        Goal::Bottom => -ball_radius_position.z + pole_global_position.z,
+        Goal::Left => ball_radius_position.x - pole_global_position.x,
     }
 }
 
@@ -898,7 +894,7 @@ fn goal_scored_system(
         (Entity, &GlobalTransform, &Velocity),
         (With<Ball>, With<Active>),
     >,
-    poles_query: Query<(&GlobalTransform, &GoalSide), With<Pole>>,
+    poles_query: Query<(&GlobalTransform, &Goal), With<Pole>>,
 ) {
     for (entity, ball_transform, velocity) in balls_query.iter() {
         let ball_translation = ball_transform.translation;
@@ -906,10 +902,10 @@ fn goal_scored_system(
         let d = velocity.0.normalize();
         let ball_radius_position = ball_translation + d * ball_radius;
 
-        for (goal_transform, goal_side) in poles_query.iter() {
+        for (goal_transform, goal) in poles_query.iter() {
             // Score against the goal that's closest to this ball
             let distance_to_goal = axis_distance_to_goal(
-                goal_side,
+                goal,
                 &ball_radius_position,
                 &goal_transform.translation,
             );
@@ -921,11 +917,11 @@ fn goal_scored_system(
             }
 
             // Decrement the score and potentially eliminate the goal
-            let score = game.scores.get_mut(goal_side).unwrap();
+            let score = game.scores.get_mut(goal).unwrap();
             *score = score.saturating_sub(1);
 
             if *score == 0 {
-                goal_eliminated_writer.send(GoalEliminated(*goal_side))
+                goal_eliminated_writer.send(GoalEliminated(*goal))
             }
 
             // Fade out and deactivate the ball to prevent repeated scoring
@@ -939,20 +935,20 @@ fn goal_scored_system(
 fn goal_eliminated_animation_system(
     mut commands: Commands,
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
-    balls_query: Query<(Entity, &GoalSide), (With<Crab>, With<Active>)>,
-    poles_query: Query<(Entity, &GoalSide), (With<Pole>, Without<Active>)>,
+    balls_query: Query<(Entity, &Goal), (With<Crab>, With<Active>)>,
+    poles_query: Query<(Entity, &Goal), (With<Pole>, Without<Active>)>,
 ) {
-    for GoalEliminated(eliminated_side) in goal_eliminated_reader.iter() {
-        for (entity, goal_side) in balls_query.iter() {
-            if goal_side == eliminated_side {
+    for GoalEliminated(eliminated_goal) in goal_eliminated_reader.iter() {
+        for (entity, goal) in balls_query.iter() {
+            if goal == eliminated_goal {
                 commands.entity(entity).remove::<Active>();
                 commands.entity(entity).insert(Fade::Out(0.0));
                 break;
             }
         }
 
-        for (entity, goal_side) in poles_query.iter() {
-            if goal_side == eliminated_side {
+        for (entity, goal) in poles_query.iter() {
+            if goal == eliminated_goal {
                 commands.entity(entity).insert(Active);
                 commands.entity(entity).insert(Fade::In(0.0));
                 break;
@@ -965,19 +961,17 @@ fn gameover_check_system(
     mut game: ResMut<Game>,
     mut state: ResMut<State<GameState>>,
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
-    players_query: Query<&GoalSide, (With<Crab>, With<Player>)>,
-    enemies_query: Query<&GoalSide, (With<Crab>, With<Enemy>)>,
+    players_query: Query<&Goal, (With<Crab>, With<Player>)>,
+    enemies_query: Query<&Goal, (With<Crab>, With<Enemy>)>,
 ) {
     for GoalEliminated(_) in goal_eliminated_reader.iter() {
         // Player wins if all Enemy crabs have a score of zero
-        let has_player_won = enemies_query
-            .iter()
-            .all(|goal_side| game.scores[&goal_side] == 0);
+        let has_player_won =
+            enemies_query.iter().all(|goal| game.scores[&goal] == 0);
 
         // Player loses if all Player crabs have a score of zero
-        let has_player_lost = players_query
-            .iter()
-            .all(|goal_side| game.scores[&goal_side] == 0);
+        let has_player_lost =
+            players_query.iter().all(|goal| game.scores[&goal] == 0);
 
         // Declare a winner and trigger gameover
         if has_player_won || has_player_lost {
