@@ -32,10 +32,10 @@ fn main() {
         .add_system(display_scores_system)
         .add_system(swaying_camera_system)
         .add_system(animated_water_system)
-        .add_system(fading_system)
-        .add_system(crab_fading_animation_system)
-        .add_system(pole_fading_animation_system)
-        .add_system(ball_fading_animation_system)
+        .add_system(fade_system)
+        .add_system(crab_fade_animation_system)
+        .add_system(pole_fade_animation_system)
+        .add_system(ball_fade_animation_system)
         .add_state(GameState::GameOver)
         .add_event::<GoalEliminated>()
         .add_system_set(
@@ -103,7 +103,7 @@ struct GameConfig {
     ball_size: f32,
     ball_speed: f32,
     barrier_width: f32,
-    fading_speed: f32,
+    fade_speed: f32,
     pole_radius: f32,
     starting_score: u32,
 }
@@ -193,12 +193,12 @@ struct Enemy;
 struct Active;
 
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
-enum Fading {
+enum Fade {
     Out(f32),
     In(f32),
 }
 
-impl Fading {
+impl Fade {
     fn opacity(&self) -> f32 {
         match self {
             Self::In(weight) => *weight,
@@ -283,7 +283,7 @@ fn setup_balls(
                 ..Default::default()
             })
             .insert(Ball::default())
-            .insert(Fading::Out(1.0))
+            .insert(Fade::Out(1.0))
             .insert(Collider::Circle {
                 radius: 0.5 * config.ball_size,
             });
@@ -376,7 +376,7 @@ fn setup_goals(
                         ..Default::default()
                     })
                     .insert(Crab::default())
-                    .insert(Fading::Out(1.0))
+                    .insert(Fade::Out(1.0))
                     .insert(Collider::Line {
                         width: config.crab_scale.0,
                     })
@@ -498,30 +498,30 @@ fn animated_water_system(
     animated_water.scroll %= 1.0;
 }
 
-fn fading_system(
+fn fade_system(
     mut commands: Commands,
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(Entity, &mut Fading)>,
+    mut query: Query<(Entity, &mut Fade)>,
 ) {
-    // Simulates fading from visible->invisible and vice versa over time
-    let step = config.fading_speed * time.delta_seconds();
+    // Simulates fade from visible->invisible and vice versa over time
+    let step = config.fade_speed * time.delta_seconds();
 
-    for (entity, mut fading) in query.iter_mut() {
-        match *fading {
-            Fading::In(weight) => {
+    for (entity, mut fade) in query.iter_mut() {
+        match *fade {
+            Fade::In(weight) => {
                 if weight < 1.0 {
-                    *fading = Fading::In(weight.max(0.0) + step);
+                    *fade = Fade::In(weight.max(0.0) + step);
                 } else {
-                    commands.entity(entity).remove::<Fading>();
+                    commands.entity(entity).remove::<Fade>();
                     commands.entity(entity).insert(Active);
                 }
             },
-            Fading::Out(weight) => {
+            Fade::Out(weight) => {
                 if weight < 1.0 {
-                    *fading = Fading::Out(weight.max(0.0) + step);
+                    *fade = Fade::Out(weight.max(0.0) + step);
                 } else {
-                    commands.entity(entity).remove::<Fading>();
+                    commands.entity(entity).remove::<Fade>();
                     commands.entity(entity).remove::<Active>();
                 }
             },
@@ -529,24 +529,24 @@ fn fading_system(
     }
 }
 
-fn crab_fading_animation_system(
+fn crab_fade_animation_system(
     config: Res<GameConfig>,
-    mut query: Query<(&mut Transform, &Fading), With<Crab>>,
+    mut query: Query<(&mut Transform, &Fade), With<Crab>>,
 ) {
     // Grow/Shrink crabs to show/hide them
-    for (mut transform, fading) in query.iter_mut() {
+    for (mut transform, fade) in query.iter_mut() {
         transform.scale = config.crab_scale.into();
-        transform.scale *= fading.opacity();
+        transform.scale *= fade.opacity();
     }
 }
 
-fn pole_fading_animation_system(
+fn pole_fade_animation_system(
     config: Res<GameConfig>,
-    mut query: Query<(&mut Transform, &Fading), With<Pole>>,
+    mut query: Query<(&mut Transform, &Fade), With<Pole>>,
 ) {
     // Pole shrinks along its width into a pancake and then vanishes
-    for (mut transform, fading) in query.iter_mut() {
-        let x_mask = fading.opacity();
+    for (mut transform, fade) in query.iter_mut() {
+        let x_mask = fade.opacity();
         let yz_mask = x_mask.powf(0.001);
 
         transform.scale =
@@ -554,36 +554,36 @@ fn pole_fading_animation_system(
     }
 }
 
-fn ball_fading_animation_system(
+fn ball_fade_animation_system(
     config: Res<GameConfig>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<
-        (&Handle<StandardMaterial>, &mut Transform, &mut Fading),
+        (&Handle<StandardMaterial>, &mut Transform, &mut Fade),
         With<Ball>,
     >,
 ) {
     // Increase/Decrease balls' opacity to show/hide them
-    let mut is_prior_fading = false;
+    let mut is_prior_fade = false;
 
-    for (material, mut transform, mut fading) in query.iter_mut() {
-        let is_current_fading = matches!(*fading, Fading::In(_));
+    for (material, mut transform, mut fade) in query.iter_mut() {
+        let is_current_fade = matches!(*fade, Fade::In(_));
 
-        // Force current ball to wait if other is also fading in
-        if is_prior_fading && is_current_fading {
-            *fading = Fading::In(0.0);
+        // Force current ball to wait if other is also fade in
+        if is_prior_fade && is_current_fade {
+            *fade = Fade::In(0.0);
             continue;
         }
 
-        is_prior_fading = is_current_fading;
+        is_prior_fade = is_current_fade;
 
         // materials
         //     .get_mut(material)
         //     .unwrap()
         //     .base_color
-        //     .set_a(fading.opacity());
+        //     .set_a(fade.opacity());
 
         // FIXME: Use scaling until we can get alpha-blending working
-        transform.scale = Vec3::splat(fading.opacity() * config.ball_size);
+        transform.scale = Vec3::splat(fade.opacity() * config.ball_size);
     }
 }
 
@@ -638,13 +638,13 @@ fn reset_game_entities(
 ) {
     // Reset crabs
     for (entity, mut transform) in crabs_query.iter_mut() {
-        commands.entity(entity).insert(Fading::In(0.4));
+        commands.entity(entity).insert(Fade::In(0.4));
         transform.translation = config.crab_start_position.into();
     }
 
     // Reset poles
     for entity in poles_query.iter() {
-        commands.entity(entity).insert(Fading::Out(0.3));
+        commands.entity(entity).insert(Fade::Out(0.3));
     }
 
     // Reset scores
@@ -655,15 +655,15 @@ fn reset_game_entities(
 
 fn fade_out_balls(
     mut commands: Commands,
-    query: Query<(Entity, Option<&Active>, Option<&Fading>), With<Ball>>,
+    query: Query<(Entity, Option<&Active>, Option<&Fade>), With<Ball>>,
 ) {
-    for (entity, active, fading) in query.iter() {
-        match fading {
-            Some(Fading::In(weight)) => {
-                commands.entity(entity).insert(Fading::Out(1.0 - weight));
+    for (entity, active, fade) in query.iter() {
+        match fade {
+            Some(Fade::In(weight)) => {
+                commands.entity(entity).insert(Fade::Out(1.0 - weight));
             },
             None if active.is_some() => {
-                commands.entity(entity).insert(Fading::Out(0.0));
+                commands.entity(entity).insert(Fade::Out(0.0));
             },
             _ => {},
         }
@@ -794,13 +794,13 @@ fn ball_reset_position_system(
     config: Res<GameConfig>,
     mut query: Query<
         (Entity, &mut Transform),
-        (With<Ball>, Without<Active>, Without<Fading>),
+        (With<Ball>, Without<Active>, Without<Fade>),
     >,
 ) {
     for (entity, mut transform) in query.iter_mut() {
         transform.translation = config.beach_center_point.into();
         commands.entity(entity).remove::<Velocity>();
-        commands.entity(entity).insert(Fading::In(0.0));
+        commands.entity(entity).insert(Fade::In(0.0));
     }
 }
 
@@ -892,7 +892,7 @@ fn goal_scored_system(
 
             // Trigger ball return and prevent repeated scoring
             commands.entity(entity).remove::<Active>();
-            commands.entity(entity).insert(Fading::Out(0.0));
+            commands.entity(entity).insert(Fade::Out(0.0));
         }
     }
 }
@@ -907,7 +907,7 @@ fn goal_eliminated_animation_system(
         for (entity, goal_side) in balls_query.iter() {
             if goal_side == eliminated_side {
                 commands.entity(entity).remove::<Active>();
-                commands.entity(entity).insert(Fading::Out(0.0));
+                commands.entity(entity).insert(Fade::Out(0.0));
                 break;
             }
         }
@@ -915,7 +915,7 @@ fn goal_eliminated_animation_system(
         for (entity, goal_side) in poles_query.iter() {
             if goal_side == eliminated_side {
                 commands.entity(entity).insert(Active);
-                commands.entity(entity).insert(Fading::In(0.0));
+                commands.entity(entity).insert(Fade::In(0.0));
                 break;
             }
         }

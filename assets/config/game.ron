@@ -10,7 +10,7 @@
   crab_seconds_to_max_speed: 1.0,
   crab_scale: (0.2, 0.1, 0.1),
   crab_start_position: (0.0, 0.05, 0.0),
-  fading_speed: 0.75,
+  fade_speed: 0.75,
   ball_size: 0.1,
   ball_speed: 0.5,
   barrier_width: 0.20,
