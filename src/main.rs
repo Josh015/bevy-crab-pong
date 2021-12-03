@@ -859,7 +859,7 @@ fn goal_scored_system(
     goals_query: Query<(&GlobalTransform, &GoalSide), With<Goal>>,
 ) {
     for (entity, ball_transform) in balls_query.iter() {
-        // TODO: Cache these values via a resource?
+        // TODO: Cache some of these values via a resource?
         let beach_widths = Vec2::splat(config.beach_width);
         let beach_radius = 0.5 * beach_widths.dot(beach_widths).sqrt();
         let center: Vec3 = config.beach_center_point.into();
@@ -867,33 +867,35 @@ fn goal_scored_system(
         let distance_to_center = ball_translation.distance(center);
 
         // Check if the ball has gone out of bounds
-        if distance_to_center >= beach_radius {
-            let mut closest_distance = std::f32::MAX;
-            let mut scored_goal = GoalSide::Bottom;
-
-            // Score against the goal that's closest to this ball
-            for (goal_transform, goal_side) in goals_query.iter() {
-                let new_distance =
-                    ball_translation.distance(goal_transform.translation);
-
-                if new_distance < closest_distance {
-                    closest_distance = new_distance;
-                    scored_goal = goal_side.clone();
-                }
-            }
-
-            // Decrement the score and potentially eliminate the goal
-            let score = game.scores.get_mut(&scored_goal).unwrap();
-            *score = score.saturating_sub(1);
-
-            if *score == 0 {
-                goal_eliminated_writer.send(GoalEliminated(scored_goal))
-            }
-
-            // Trigger ball return and prevent repeated scoring
-            commands.entity(entity).remove::<Active>();
-            commands.entity(entity).insert(Fade::Out(0.0));
+        if distance_to_center < beach_radius {
+            continue;
         }
+
+        // Score against the goal that's closest to this ball
+        let mut closest_distance = std::f32::MAX;
+        let mut scored_goal = GoalSide::Bottom;
+
+        for (goal_transform, goal_side) in goals_query.iter() {
+            let new_distance =
+                ball_translation.distance(goal_transform.translation);
+
+            if new_distance < closest_distance {
+                closest_distance = new_distance;
+                scored_goal = goal_side.clone();
+            }
+        }
+
+        // Decrement the score and potentially eliminate the goal
+        let score = game.scores.get_mut(&scored_goal).unwrap();
+        *score = score.saturating_sub(1);
+
+        if *score == 0 {
+            goal_eliminated_writer.send(GoalEliminated(scored_goal))
+        }
+
+        // Fade out and deactivate the ball to prevent repeated scoring
+        commands.entity(entity).remove::<Active>();
+        commands.entity(entity).insert(Fade::Out(0.0));
     }
 }
 
