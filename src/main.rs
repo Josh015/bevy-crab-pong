@@ -65,7 +65,7 @@ fn main() {
                 .with_system(ball_movement_system)
                 .with_system(ball_collision_system)
                 .with_system(goal_scored_system)
-                .with_system(goal_elimination_animation_system)
+                .with_system(goal_eliminated_animation_system)
                 .with_system(gameover_check_system),
         )
         .add_system(bevy::input::system::exit_on_esc_system)
@@ -927,7 +927,7 @@ fn goal_scored_system(
     }
 }
 
-fn goal_elimination_animation_system(
+fn goal_eliminated_animation_system(
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
     mut queries: QuerySet<(
         QueryState<(&mut Transition, &GoalSide), With<Crab>>,
@@ -962,12 +962,12 @@ fn gameover_check_system(
     for GoalEliminated(_) in goal_eliminated_reader.iter() {
         // Player wins if all AI crabs have a score of zero
         let has_player_won = query.iter().all(|(pilot, goal_side)| {
-            *pilot != Pilot::Ai || game.scores[&goal_side] <= 0
+            *pilot != Pilot::Ai || game.scores[&goal_side] == 0
         });
 
         // Player loses if all Player crabs have a score of zero
         let has_player_lost = query.iter().all(|(pilot, goal_side)| {
-            *pilot != Pilot::Player || game.scores[&goal_side] <= 0
+            *pilot != Pilot::Player || game.scores[&goal_side] == 0
         });
 
         // Declare a winner and trigger gameover
