@@ -177,9 +177,6 @@ struct Ball;
 struct Pole;
 
 #[derive(Component)]
-struct Goal;
-
-#[derive(Component)]
 struct Player;
 
 #[derive(Component)]
@@ -353,7 +350,6 @@ fn setup_goals(
                 )),
                 ..Default::default()
             })
-            .insert(Goal)
             .insert(goal_side.clone())
             .with_children(|parent| {
                 // Crab
@@ -852,24 +848,21 @@ fn ball_collision_system(
         // Pole collisions
         for (pole_transform, goal_side) in poles_query.iter() {
             let d = velocity.0.normalize();
-            let edge_position = transform.translation + d * ball_radius;
-            let pole_translation = pole_transform.translation;
-            let (n, length_to_goal) = match *goal_side {
-                GoalSide::Top => {
-                    (-Vec3::Z, edge_position.z - pole_translation.z)
-                },
-                GoalSide::Right => {
-                    (Vec3::X, -edge_position.x + pole_translation.x)
-                },
-                GoalSide::Bottom => {
-                    (Vec3::Z, -edge_position.z + pole_translation.z)
-                },
-                GoalSide::Left => {
-                    (-Vec3::X, edge_position.x - pole_translation.x)
-                },
+            let ball_radius_position = transform.translation + d * ball_radius;
+            let pole_global_position = pole_transform.translation;
+            let distance_to_goal = axis_distance_to_goal(
+                goal_side,
+                &ball_radius_position,
+                &pole_global_position,
+            );
+            let n = match goal_side {
+                GoalSide::Top => -Vec3::Z,
+                GoalSide::Right => Vec3::X,
+                GoalSide::Bottom => Vec3::Z,
+                GoalSide::Left => -Vec3::X,
             };
 
-            if length_to_goal > 0.0 {
+            if distance_to_goal > 0.0 {
                 continue;
             }
 
@@ -882,52 +875,64 @@ fn ball_collision_system(
     }
 }
 
+fn axis_distance_to_goal(
+    goal_side: &GoalSide,
+    ball_radius_position: &Vec3,
+    pole_global_position: &Vec3,
+) -> f32 {
+    // Axis-aligned distance from a ball to a given goal
+    match goal_side {
+        GoalSide::Top => ball_radius_position.z - pole_global_position.z,
+        GoalSide::Right => -ball_radius_position.x + pole_global_position.x,
+        GoalSide::Bottom => -ball_radius_position.z + pole_global_position.z,
+        GoalSide::Left => ball_radius_position.x - pole_global_position.x,
+    }
+}
+
 fn goal_scored_system(
     mut commands: Commands,
     config: Res<GameConfig>,
     mut game: ResMut<Game>,
     mut goal_eliminated_writer: EventWriter<GoalEliminated>,
-    balls_query: Query<(Entity, &GlobalTransform), (With<Ball>, With<Active>)>,
-    goals_query: Query<(&GlobalTransform, &GoalSide), With<Goal>>,
+    balls_query: Query<
+        (Entity, &GlobalTransform, &Velocity),
+        (With<Ball>, With<Active>),
+    >,
+    poles_query: Query<(&GlobalTransform, &GoalSide), With<Pole>>,
 ) {
-    for (entity, ball_transform) in balls_query.iter() {
-        // TODO: Cache some of these values via a resource?
-        let beach_widths = Vec2::splat(config.beach_width);
-        let beach_radius = 0.5 * beach_widths.dot(beach_widths).sqrt();
-        let center: Vec3 = config.beach_center_point.into();
+    for (entity, ball_transform, velocity) in balls_query.iter() {
         let ball_translation = ball_transform.translation;
-        let distance_to_center = ball_translation.distance(center);
+        let ball_radius = config.ball_radius();
+        let d = velocity.0.normalize();
+        let ball_radius_position = ball_translation + d * ball_radius;
 
-        // Check if the ball has gone out of bounds
-        if distance_to_center < beach_radius {
-            continue;
-        }
+        for (goal_transform, goal_side) in poles_query.iter() {
+            // Score against the goal that's closest to this ball
+            let distance_to_goal = axis_distance_to_goal(
+                goal_side,
+                &ball_radius_position,
+                &goal_transform.translation,
+            );
 
-        // Score against the goal that's closest to this ball
-        let mut closest_distance = std::f32::MAX;
-        let mut scored_goal = GoalSide::Bottom;
-
-        for (goal_transform, goal_side) in goals_query.iter() {
-            let new_distance =
-                ball_translation.distance(goal_transform.translation);
-
-            if new_distance < closest_distance {
-                closest_distance = new_distance;
-                scored_goal = goal_side.clone();
+            // TODO: Offset slightly to avoid scoring when bouncing off a pole.
+            // Document this!
+            if distance_to_goal > -0.1 {
+                continue;
             }
+
+            // Decrement the score and potentially eliminate the goal
+            let score = game.scores.get_mut(goal_side).unwrap();
+            *score = score.saturating_sub(1);
+
+            if *score == 0 {
+                goal_eliminated_writer.send(GoalEliminated(*goal_side))
+            }
+
+            // Fade out and deactivate the ball to prevent repeated scoring
+            commands.entity(entity).remove::<Active>();
+            commands.entity(entity).insert(Fade::Out(0.0));
+            break;
         }
-
-        // Decrement the score and potentially eliminate the goal
-        let score = game.scores.get_mut(&scored_goal).unwrap();
-        *score = score.saturating_sub(1);
-
-        if *score == 0 {
-            goal_eliminated_writer.send(GoalEliminated(scored_goal))
-        }
-
-        // Fade out and deactivate the ball to prevent repeated scoring
-        commands.entity(entity).remove::<Active>();
-        commands.entity(entity).insert(Fade::Out(0.0));
     }
 }
 
