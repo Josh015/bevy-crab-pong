@@ -657,9 +657,9 @@ fn reset_game_entities(
 
 fn fade_out_balls(
     mut commands: Commands,
-    query: Query<(Entity, Option<&Fading>, Option<&Active>), With<Ball>>,
+    query: Query<(Entity, Option<&Active>, Option<&Fading>), With<Ball>>,
 ) {
-    for (entity, fading, active) in query.iter() {
+    for (entity, active, fading) in query.iter() {
         match fading {
             Some(Fading::In(weight)) => {
                 commands.entity(entity).insert(Fading::Out(1.0 - weight));
@@ -785,9 +785,9 @@ fn crab_ai_control_system(
 fn ball_movement_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &Ball, Option<&Fading>, Option<&Active>)>,
+    mut query: Query<(&mut Transform, &Ball, Option<&Active>, Option<&Fading>)>,
 ) {
-    for (mut transform, ball, fading, active) in query.iter_mut() {
+    for (mut transform, ball, active, fading) in query.iter_mut() {
         // Balls can keep moving if they are active, or fading out
         if !active.is_some() && !matches!(fading, Some(Fading::Out(_))) {
             continue;
@@ -803,7 +803,7 @@ fn ball_reset_system(
     config: Res<GameConfig>,
     mut query: Query<
         (Entity, &mut Transform, &mut Ball),
-        (Without<Fading>, Without<Active>),
+        (Without<Active>, Without<Fading>),
     >,
 ) {
     for (entity, mut transform, mut ball) in query.iter_mut() {
