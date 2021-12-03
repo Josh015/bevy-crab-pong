@@ -32,10 +32,10 @@ fn main() {
         .add_system(display_scores_system)
         .add_system(swaying_camera_system)
         .add_system(animated_water_system)
-        .add_system(transition_system)
-        .add_system(crab_transition_animation_system)
-        .add_system(pole_transition_animation_system)
-        .add_system(ball_transition_animation_system)
+        .add_system(fading_system)
+        .add_system(crab_fading_animation_system)
+        .add_system(pole_fading_animation_system)
+        .add_system(ball_fading_animation_system)
         .add_state(GameState::GameOver)
         .add_event::<GoalEliminated>()
         .add_system_set(
@@ -130,25 +130,6 @@ impl Default for Movement {
 
 struct GoalEliminated(GoalSide);
 
-#[derive(Clone, Component, PartialEq, Debug)]
-enum Transition {
-    Show,
-    Hide,
-    FadeIn(f32),
-    FadeOut(f32),
-}
-
-impl Transition {
-    fn opacity(&self) -> f32 {
-        match self {
-            Transition::Show => 1.0,
-            Transition::Hide => 0.0,
-            Transition::FadeIn(weight) => *weight,
-            Transition::FadeOut(weight) => 1.0 - weight,
-        }
-    }
-}
-
 #[derive(Component, Default)]
 struct SwayingCamera {
     angle: f32,
@@ -205,6 +186,24 @@ struct Goal;
 enum Collider {
     Line { width: f32 },
     Circle { radius: f32 },
+}
+
+#[derive(Component)]
+struct Active;
+
+#[derive(Clone, Component, Copy, PartialEq, Debug)]
+enum Fading {
+    Out(f32),
+    In(f32),
+}
+
+impl Fading {
+    fn opacity(&self) -> f32 {
+        match self {
+            Self::In(weight) => *weight,
+            Self::Out(weight) => 1.0 - weight,
+        }
+    }
 }
 
 fn setup_scene(
@@ -280,7 +279,7 @@ fn setup_balls(
                 ..Default::default()
             })
             .insert(Ball::default())
-            .insert(Transition::Hide)
+            .insert(Fading::Out(0.99))
             .insert(Collider::Circle {
                 radius: config.ball_radius(),
             });
@@ -378,7 +377,7 @@ fn setup_goals(
                         ..Default::default()
                     })
                     .insert(Crab::default())
-                    .insert(Transition::Hide)
+                    .insert(Fading::Out(0.99))
                     .insert(pilot.clone())
                     .insert(Collider::Line {
                         width: config.crab_scale.0,
@@ -401,7 +400,7 @@ fn setup_goals(
                     })
                     .insert(Pole)
                     .insert(goal_side.clone())
-                    .insert(Transition::Show)
+                    .insert(Active)
                     .insert(Collider::Line {
                         width: config.beach_width,
                     });
@@ -420,6 +419,7 @@ fn setup_goals(
                         ),
                         ..Default::default()
                     })
+                    .insert(Active)
                     .insert(Collider::Circle {
                         radius: 0.5 * config.barrier_width,
                     });
@@ -500,53 +500,55 @@ fn animated_water_system(
     animated_water.scroll %= 1.0;
 }
 
-fn transition_system(
+fn fading_system(
+    mut commands: Commands,
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<&mut Transition>,
+    mut query: Query<(Entity, &mut Fading)>,
 ) {
-    // Simulates transition from visible->invisible and vice versa over time
+    // Simulates fading from visible->invisible and vice versa over time
     let step = config.fading_speed * time.delta_seconds();
 
-    for mut transition in query.iter_mut() {
-        *transition = match *transition {
-            Transition::FadeIn(weight) => {
-                if weight >= 1.0 {
-                    Transition::Show
+    for (entity, mut fading) in query.iter_mut() {
+        match *fading {
+            Fading::In(weight) => {
+                if weight < 1.0 {
+                    *fading = Fading::In(weight.max(0.0) + step);
                 } else {
-                    Transition::FadeIn(weight.max(0.0) + step)
+                    commands.entity(entity).remove::<Fading>();
+                    commands.entity(entity).insert(Active);
                 }
             },
-            Transition::FadeOut(weight) => {
-                if weight >= 1.0 {
-                    Transition::Hide
+            Fading::Out(weight) => {
+                if weight < 1.0 {
+                    *fading = Fading::Out(weight.max(0.0) + step);
                 } else {
-                    Transition::FadeOut(weight.max(0.0) + step)
+                    commands.entity(entity).remove::<Fading>();
+                    commands.entity(entity).remove::<Active>();
                 }
             },
-            _ => transition.clone(),
         }
     }
 }
 
-fn crab_transition_animation_system(
+fn crab_fading_animation_system(
     config: Res<GameConfig>,
-    mut query: Query<(&mut Transform, &Transition), With<Crab>>,
+    mut query: Query<(&mut Transform, &Fading), With<Crab>>,
 ) {
     // Grow/Shrink crabs to show/hide them
-    for (mut transform, transition) in query.iter_mut() {
+    for (mut transform, fading) in query.iter_mut() {
         transform.scale = config.crab_scale.into();
-        transform.scale *= transition.opacity();
+        transform.scale *= fading.opacity();
     }
 }
 
-fn pole_transition_animation_system(
+fn pole_fading_animation_system(
     config: Res<GameConfig>,
-    mut query: Query<(&mut Transform, &Transition), With<Pole>>,
+    mut query: Query<(&mut Transform, &Fading), With<Pole>>,
 ) {
     // Pole shrinks along its width into a pancake and then vanishes
-    for (mut transform, transition) in query.iter_mut() {
-        let x_mask = transition.opacity();
+    for (mut transform, fading) in query.iter_mut() {
+        let x_mask = fading.opacity();
         let yz_mask = x_mask.powf(0.001);
 
         transform.scale =
@@ -554,38 +556,34 @@ fn pole_transition_animation_system(
     }
 }
 
-fn ball_transition_animation_system(
+fn ball_fading_animation_system(
     config: Res<GameConfig>,
     asset_server: Res<AssetServer>,
     mut query: Query<
-        (
-            &mut Handle<StandardMaterial>,
-            &mut Transform,
-            &mut Transition,
-        ),
+        (&mut Handle<StandardMaterial>, &mut Transform, &mut Fading),
         With<Ball>,
     >,
 ) {
     // Increase/Decrease balls' opacity to show/hide them
     let mut is_prior_fading = false;
 
-    for (mut material, mut transform, mut transition) in query.iter_mut() {
-        let is_current_fading = matches!(*transition, Transition::FadeIn(_));
+    for (mut material, mut transform, mut fading) in query.iter_mut() {
+        let is_current_fading = matches!(*fading, Fading::In(_));
 
         // Force current ball to wait if other is also fading in
         if is_prior_fading && is_current_fading {
-            *transition = Transition::FadeIn(0.0);
+            *fading = Fading::In(0.0);
             continue;
         }
 
         is_prior_fading = is_current_fading;
 
         // FIXME: Use scaling until we can get opacity working.
-        transform.scale = Vec3::splat(transition.opacity() * config.ball_size);
+        transform.scale = Vec3::splat(fading.opacity() * config.ball_size);
 
         // TODO: Reduce ball opacity
         // asset_server.get_mut(&material).unwrap();
-        // material.base_color.a = transition.opacity();
+        // material.base_color.a = fading.opacity();
     }
 }
 
@@ -616,37 +614,24 @@ fn gameover_keyboard_system(
 }
 
 fn reset_game_entities(
+    mut commands: Commands,
     config: Res<GameConfig>,
     mut game: ResMut<Game>,
-    mut queries: QuerySet<(
-        QueryState<(&mut Transform, &mut Transition), With<Crab>>,
-        QueryState<&mut Transition, With<Ball>>,
-        QueryState<&mut Transition, With<Pole>>,
-    )>,
+    mut crabs_query: Query<
+        (Entity, &mut Transform),
+        (With<Crab>, Without<Active>),
+    >,
+    poles_query: Query<Entity, (With<Pole>, With<Active>)>,
 ) {
     // Reset crabs
-    for (mut transform, mut transition) in queries.q0().iter_mut() {
-        if matches!(*transition, Transition::Hide | Transition::FadeOut(_)) {
-            *transition = Transition::FadeIn(0.4);
-        }
-
-        // TODO: Find a way to make already visible crabs smoothly slide back
-        // to default position rather than abruptly snapping back
+    for (entity, mut transform) in crabs_query.iter_mut() {
+        commands.entity(entity).insert(Fading::In(0.4));
         transform.translation = config.crab_start_position.into();
     }
 
-    // Reset balls
-    for mut transition in queries.q1().iter_mut() {
-        if matches!(*transition, Transition::Show | Transition::FadeIn(_)) {
-            *transition = Transition::Hide;
-        }
-    }
-
     // Reset poles
-    for mut transition in queries.q2().iter_mut() {
-        if matches!(*transition, Transition::Show | Transition::FadeIn(_)) {
-            *transition = Transition::FadeOut(0.3)
-        }
+    for entity in poles_query.iter() {
+        commands.entity(entity).insert(Fading::Out(0.3));
     }
 
     // Reset scores
@@ -655,22 +640,29 @@ fn reset_game_entities(
     }
 }
 
-fn fade_out_balls(mut query: Query<&mut Transition, With<Ball>>) {
-    for mut transition in query.iter_mut() {
-        *transition = Transition::FadeOut(0.0);
+fn fade_out_balls(
+    mut commands: Commands,
+    query: Query<(Entity, Option<&Fading>, Option<&Active>), With<Ball>>,
+) {
+    for (entity, fading, active) in query.iter() {
+        match fading {
+            Some(Fading::In(weight)) => {
+                commands.entity(entity).insert(Fading::Out(1.0 - weight));
+            },
+            None if active.is_some() => {
+                commands.entity(entity).insert(Fading::Out(0.0));
+            },
+            _ => {},
+        }
     }
 }
 
 fn crab_movement_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &Transition, &mut Crab)>,
+    mut query: Query<(&mut Transform, &mut Crab), With<Active>>,
 ) {
-    for (mut transform, transition, mut crab) in query.iter_mut() {
-        if *transition != Transition::Show {
-            continue;
-        }
-
+    for (mut transform, mut crab) in query.iter_mut() {
         // Accelerate the crab
         let delta_speed = config.crab_acceleration() * time.delta_seconds();
 
@@ -708,10 +700,10 @@ fn crab_movement_system(
 
 fn crab_player_control_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&Transition, &Pilot, &mut Crab)>,
+    mut query: Query<(&Pilot, &mut Crab), With<Active>>,
 ) {
-    for (transition, pilot, mut crab) in query.iter_mut() {
-        if *transition != Transition::Show || *pilot != Pilot::Player {
+    for (pilot, mut crab) in query.iter_mut() {
+        if *pilot != Pilot::Player {
             continue;
         }
 
@@ -729,19 +721,14 @@ fn crab_player_control_system(
 // distance logic.
 fn crab_ai_control_system(
     config: Res<GameConfig>,
-    balls_query: Query<(&GlobalTransform, &Transition), With<Ball>>,
-    mut crabs_query: Query<(
-        &Transform,
-        &Transition,
-        &Pilot,
-        &GoalSide,
-        &mut Crab,
-    )>,
+    balls_query: Query<&GlobalTransform, (With<Ball>, With<Active>)>,
+    mut crabs_query: Query<
+        (&Transform, &Pilot, &GoalSide, &mut Crab),
+        With<Active>,
+    >,
 ) {
-    for (crab_transform, crab_transition, pilot, goal_side, mut crab) in
-        crabs_query.iter_mut()
-    {
-        if *crab_transition != Transition::Show || *pilot != Pilot::Ai {
+    for (crab_transform, pilot, goal_side, mut crab) in crabs_query.iter_mut() {
+        if *pilot != Pilot::Ai {
             continue;
         }
 
@@ -749,12 +736,7 @@ fn crab_ai_control_system(
         let mut closest_ball_distance = std::f32::MAX;
         let mut target_position = config.crab_start_position.0;
 
-        for (ball_transform, ball_transition) in balls_query.iter() {
-            // Ignore balls that are spawning or scoring
-            if *ball_transition != Transition::Show {
-                continue;
-            }
-
+        for ball_transform in balls_query.iter() {
             // Remap from ball's global space to crab's local space
             let ball_translation = ball_transform.translation;
             let ball_radius = config.ball_radius();
@@ -804,65 +786,50 @@ fn crab_ai_control_system(
 }
 
 fn ball_movement_system(
+    mut commands: Commands,
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Transition, &mut Ball)>,
+    mut query: Query<(
+        Entity,
+        &mut Transform,
+        &mut Ball,
+        Option<&Active>,
+        Option<&Fading>,
+    )>,
 ) {
     let mut rng = rand::thread_rng();
 
-    for (mut transform, mut transition, mut ball) in query.iter_mut() {
-        match *transition {
-            Transition::Show | Transition::FadeOut(_) => {
-                transform.translation +=
-                    ball.direction * (config.ball_speed * time.delta_seconds());
-            },
-            Transition::Hide => {
-                // Move ball back to center, then start fading it into view
-                *transition = Transition::FadeIn(0.0);
-                transform.translation = config.beach_center_point.into();
+    for (entity, mut transform, mut ball, active, fading) in query.iter_mut() {
+        // Move active balls in a straight path until they hit something
+        if active.is_some() {
+            transform.translation +=
+                ball.direction * (config.ball_speed * time.delta_seconds());
+        } else if fading.is_none() {
+            // Move ball back to center
+            transform.translation = config.beach_center_point.into();
 
-                // Give the ball a random direction vector
-                let angle = rng.gen_range(0.0..std::f32::consts::TAU);
-                ball.direction = Vec3::new(angle.cos(), 0.0, angle.sin());
-            },
-            _ => {},
-        };
+            // Give the ball a random direction vector
+            let angle = rng.gen_range(0.0..std::f32::consts::TAU);
+            ball.direction = Vec3::new(angle.cos(), 0.0, angle.sin());
+
+            // Start fading it back into view
+            commands.entity(entity).insert(Fading::In(0.0));
+        }
     }
 }
 
 fn ball_collision_system(
-    mut bally_query: Query<(
-        Entity,
-        &GlobalTransform,
-        &Transition,
-        &Collider,
-        &mut Ball,
-    )>,
-    colliders_query: Query<(
-        Entity,
-        &GlobalTransform,
-        Option<&Transition>, // Barriers have no transition
-        &Collider,
-    )>,
+    mut bally_query: Query<
+        (Entity, &GlobalTransform, &Collider, &mut Ball),
+        With<Active>,
+    >,
+    colliders_query: Query<(Entity, &GlobalTransform, &Collider), With<Active>>,
 ) {
-    for (entity, transform, transition, collider, mut ball) in
-        bally_query.iter_mut()
-    {
-        if *transition != Transition::Show {
-            continue;
-        }
-
+    for (entity, transform, collider, mut ball) in bally_query.iter_mut() {
         // Colliders
-        for (entity2, transform2, transition2, collider2) in
-            colliders_query.iter()
-        {
-            // Collide with visible entities that aren't the current one
-            if entity != entity2
-                && matches!(
-                    transition2,
-                    None | Some(Transition::Show | Transition::FadeIn(_))
-                )
-            {
+        for (entity2, transform2, collider2) in colliders_query.iter() {
+            // Collide with active entities that aren't the current one
+            if entity != entity2 {
                 // TODO: Run collision logic
                 match collider2 {
                     Collider::Circle { radius } => {
@@ -879,17 +846,14 @@ fn ball_collision_system(
 }
 
 fn goal_scored_system(
+    mut commands: Commands,
     config: Res<GameConfig>,
     mut game: ResMut<Game>,
     mut goal_eliminated_writer: EventWriter<GoalEliminated>,
-    mut ball_query: Query<(&GlobalTransform, &mut Transition), With<Ball>>,
+    balls_query: Query<(Entity, &GlobalTransform), (With<Ball>, With<Active>)>,
     goals_query: Query<(&GlobalTransform, &GoalSide), With<Goal>>,
 ) {
-    for (ball_transform, mut ball_transition) in ball_query.iter_mut() {
-        if *ball_transition != Transition::Show {
-            continue;
-        }
-
+    for (entity, ball_transform) in balls_query.iter() {
         let distance_to_center = ball_transform
             .translation
             .distance(config.beach_center_point.into());
@@ -922,31 +886,31 @@ fn goal_scored_system(
             }
 
             // Trigger ball return and prevent repeated scoring
-            *ball_transition = Transition::FadeOut(0.0);
+            commands.entity(entity).remove::<Active>();
+            commands.entity(entity).insert(Fading::Out(0.0));
         }
     }
 }
 
 fn goal_eliminated_animation_system(
+    mut commands: Commands,
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
-    mut queries: QuerySet<(
-        QueryState<(&mut Transition, &GoalSide), With<Crab>>,
-        QueryState<(&mut Transition, &GoalSide), With<Pole>>,
-    )>,
+    balls_query: Query<(Entity, &GoalSide), (With<Crab>, With<Active>)>,
+    poles_query: Query<(Entity, &GoalSide), (With<Pole>, Without<Active>)>,
 ) {
     for GoalEliminated(eliminated_side) in goal_eliminated_reader.iter() {
-        // Fade out the goal's crab
-        for (mut transition, goal_side) in queries.q0().iter_mut() {
+        for (entity, goal_side) in balls_query.iter() {
             if goal_side == eliminated_side {
-                *transition = Transition::FadeOut(0.0);
+                commands.entity(entity).remove::<Active>();
+                commands.entity(entity).insert(Fading::Out(0.0));
                 break;
             }
         }
 
-        // Fade in the goal's pole
-        for (mut transition, goal_side) in queries.q1().iter_mut() {
+        for (entity, goal_side) in poles_query.iter() {
             if goal_side == eliminated_side {
-                *transition = Transition::FadeIn(0.0);
+                commands.entity(entity).insert(Active);
+                commands.entity(entity).insert(Fading::In(0.0));
                 break;
             }
         }
@@ -957,10 +921,9 @@ fn gameover_check_system(
     mut game: ResMut<Game>,
     mut state: ResMut<State<GameState>>,
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
-    query: Query<(&Pilot, &GoalSide), With<Crab>>,
+    query: Query<(&Pilot, &GoalSide), (With<Crab>, With<Active>)>,
 ) {
     for GoalEliminated(_) in goal_eliminated_reader.iter() {
-        // Player wins if all AI crabs have a score of zero
         let has_player_won = query.iter().all(|(pilot, goal_side)| {
             *pilot != Pilot::Ai || game.scores[&goal_side] == 0
         });
@@ -982,6 +945,14 @@ fn gameover_check_system(
         }
     }
 }
+
+// TODO: Must do goal_eliminated_animation_system() before
+// gameover_check_system() to ensure active crab check can happen without score
+// check!
+
+// TODO: Find a fix for balls/crabs that need to start with a scale of zero but
+// can't because setting that as their initial scale causes them to stay hidden
+// forever. Find something without resorting to a fade value of 0.9999.
 
 // TODO: Debug option to make all crabs driven by AI? Will need to revise
 // player system to handle no players.
