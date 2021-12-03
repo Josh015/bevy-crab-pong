@@ -113,6 +113,8 @@ impl GameConfig {
         self.crab_max_speed / self.crab_seconds_to_max_speed
     }
 
+    fn ball_radius(&self) -> f32 { 0.5 * self.ball_size }
+
     fn pole_scale(&self) -> Vec3 {
         Vec3::new(self.beach_width, self.pole_radius, self.pole_radius)
     }
@@ -168,7 +170,7 @@ impl Default for GameOver {
     fn default() -> Self { Self::Won }
 }
 
-#[derive(Component, Default)]
+#[derive(Component)]
 struct Ball;
 
 #[derive(Component)]
@@ -176,12 +178,6 @@ struct Pole;
 
 #[derive(Component)]
 struct Goal;
-
-#[derive(Component)]
-enum Collider {
-    Line { width: f32 },
-    Circle { radius: f32 },
-}
 
 #[derive(Component)]
 struct Player;
@@ -209,6 +205,9 @@ impl Fade {
 
 #[derive(Component)]
 struct Velocity(Vec3);
+
+#[derive(Component)]
+struct Barrier;
 
 fn setup_scene(
     config: Res<GameConfig>,
@@ -282,11 +281,8 @@ fn setup_balls(
                 ),
                 ..Default::default()
             })
-            .insert(Ball::default())
-            .insert(Fade::Out(1.0))
-            .insert(Collider::Circle {
-                radius: 0.5 * config.ball_size,
-            });
+            .insert(Ball)
+            .insert(Fade::Out(1.0));
     }
 }
 
@@ -377,9 +373,6 @@ fn setup_goals(
                     })
                     .insert(Crab::default())
                     .insert(Fade::Out(1.0))
-                    .insert(Collider::Line {
-                        width: config.crab_scale.0,
-                    })
                     .insert(goal_side.clone());
 
                 // Pole
@@ -398,10 +391,7 @@ fn setup_goals(
                     })
                     .insert(Pole)
                     .insert(goal_side.clone())
-                    .insert(Active)
-                    .insert(Collider::Line {
-                        width: config.beach_width,
-                    });
+                    .insert(Active);
 
                 // Barrier
                 parent
@@ -417,10 +407,7 @@ fn setup_goals(
                         ),
                         ..Default::default()
                     })
-                    .insert(Active)
-                    .insert(Collider::Circle {
-                        radius: 0.5 * config.barrier_width,
-                    });
+                    .insert(Barrier);
             });
 
         // Score
@@ -615,9 +602,9 @@ fn gameover_keyboard_system(
 
 fn assign_players(
     mut commands: Commands,
-    mut query: Query<(Entity, &GoalSide), With<Crab>>,
+    query: Query<(Entity, &GoalSide), With<Crab>>,
 ) {
-    for (entity, goal_side) in query.iter_mut() {
+    for (entity, goal_side) in query.iter() {
         if *goal_side == GoalSide::Bottom {
             commands.entity(entity).insert(Player);
         } else {
@@ -824,28 +811,40 @@ fn ball_reset_velocity_system(
 }
 
 fn ball_collision_system(
-    mut bally_query: Query<
-        (Entity, &GlobalTransform, &Collider, &mut Ball),
-        With<Active>,
+    config: Res<GameConfig>,
+    balls_query: Query<
+        (Entity, &GlobalTransform, &Velocity),
+        (With<Ball>, With<Active>),
     >,
-    colliders_query: Query<(Entity, &GlobalTransform, &Collider), With<Active>>,
+    crabs_query: Query<&GlobalTransform, (With<Crab>, With<Active>)>,
+    poles_query: Query<&GoalSide, (With<Pole>, With<Active>)>,
+    barriers_query: Query<&GlobalTransform, With<Barrier>>,
 ) {
-    for (entity, transform, collider, mut ball) in bally_query.iter_mut() {
-        // Colliders
-        for (entity2, transform2, collider2) in colliders_query.iter() {
-            // Collide with active entities that aren't the current one
-            if entity != entity2 {
-                // TODO: Run collision logic
-                match collider2 {
-                    Collider::Circle { radius } => {
-                        // TODO: Circle-Circle collision
-                        // How to detect and handle the other ball?
-                    },
-                    Collider::Line { width } => {
-                        // TODO: Circle-Rectangle collision
-                    },
-                }
-            }
+    for (entity, transform, velocity) in balls_query.iter() {
+        let ball_radius = config.ball_radius();
+        let barrier_radius = 0.5 * config.barrier_width;
+
+        // TODO: Order these so that highest precedence collision type is at the
+        // bottom, since it can overwrite others!
+
+        // Ball collisions
+        for (entity2, transform2, velocity2) in balls_query.iter() {
+            break;
+        }
+
+        // Crab collisions
+        for transform in crabs_query.iter() {
+            break;
+        }
+
+        // Barrier collisions
+        for transform in barriers_query.iter() {
+            break;
+        }
+
+        // Pole collisions
+        for goal_side in poles_query.iter() {
+            break;
         }
     }
 }
