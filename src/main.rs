@@ -283,7 +283,7 @@ fn setup_balls(
                 ..Default::default()
             })
             .insert(Ball::default())
-            .insert(Fading::Out(0.99))
+            .insert(Fading::Out(1.0))
             .insert(Collider::Circle {
                 radius: 0.5 * config.ball_size,
             });
@@ -376,7 +376,7 @@ fn setup_goals(
                         ..Default::default()
                     })
                     .insert(Crab::default())
-                    .insert(Fading::Out(0.99))
+                    .insert(Fading::Out(1.0))
                     .insert(Collider::Line {
                         width: config.crab_scale.0,
                     })
@@ -952,10 +952,6 @@ fn gameover_check_system(
         }
     }
 }
-
-// TODO: Find a fix for balls/crabs that need to start with a scale of zero but
-// can't because setting that as their initial scale causes them to stay hidden
-// forever. Find something without resorting to a fade value of 0.9999.
 
 // TODO: Debug option to make all crabs driven by AI? Will need to revise
 // player system to handle no players.
