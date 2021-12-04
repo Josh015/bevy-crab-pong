@@ -505,9 +505,9 @@ fn fade_step_system(
     mut query: Query<(Entity, &mut Fade)>,
 ) {
     // Simulates fade from visible->invisible and vice versa over time
-    let step = config.fade_speed * time.delta_seconds();
-
     for (entity, mut fade) in query.iter_mut() {
+        let step = config.fade_speed * time.delta_seconds();
+
         match *fade {
             Fade::In(weight) => {
                 if weight < 1.0 {
