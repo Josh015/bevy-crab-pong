@@ -621,14 +621,12 @@ fn gameover_keyboard_system(
 }
 
 fn assign_players(
-    mut game: ResMut<Game>,
     mut commands: Commands,
     query: Query<(Entity, &Goal), With<Crab>>,
 ) {
     for (entity, goal) in query.iter() {
         if *goal == Goal::Bottom {
             commands.entity(entity).insert(Player);
-            *game.scores.get_mut(&goal).unwrap() = 99; // FIXME
         } else {
             commands.entity(entity).insert(Enemy);
         }
@@ -657,8 +655,13 @@ fn reset_game_entities(
     }
 
     // Reset scores
-    for (_, score) in game.scores.iter_mut() {
+    for (goal, score) in game.scores.iter_mut() {
         *score = config.starting_score;
+
+        // HACK: Makes debugging simpler for now
+        if *goal == Goal::Bottom {
+            *score = 99;
+        }
     }
 }
 
