@@ -502,16 +502,14 @@ fn fade_system(
                 if weight < 1.0 {
                     *fade = Fade::In(weight.max(0.0) + step);
                 } else {
-                    commands.entity(entity).remove::<Fade>();
-                    commands.entity(entity).insert(Active);
+                    commands.entity(entity).remove::<Fade>().insert(Active);
                 }
             },
             Fade::Out(weight) => {
                 if weight < 1.0 {
                     *fade = Fade::Out(weight.max(0.0) + step);
                 } else {
-                    commands.entity(entity).remove::<Fade>();
-                    commands.entity(entity).remove::<Active>();
+                    commands.entity(entity).remove::<Fade>().remove::<Active>();
                 }
             },
         }
@@ -585,16 +583,17 @@ fn goal_eliminated_animation_system(
     for GoalEliminated(eliminated_goal) in goal_eliminated_reader.iter() {
         for (entity, goal) in balls_query.iter() {
             if goal == eliminated_goal {
-                commands.entity(entity).remove::<Active>();
-                commands.entity(entity).insert(Fade::Out(0.0));
+                commands
+                    .entity(entity)
+                    .remove::<Active>()
+                    .insert(Fade::Out(0.0));
                 break;
             }
         }
 
         for (entity, goal) in walls_query.iter() {
             if goal == eliminated_goal {
-                commands.entity(entity).insert(Active);
-                commands.entity(entity).insert(Fade::In(0.0));
+                commands.entity(entity).insert(Active).insert(Fade::In(0.0));
                 break;
             }
         }
@@ -818,8 +817,10 @@ fn ball_reset_position_system(
 ) {
     for (entity, mut transform) in query.iter_mut() {
         transform.translation = config.ball_center_point();
-        commands.entity(entity).remove::<Velocity>();
-        commands.entity(entity).insert(Fade::In(0.0));
+        commands
+            .entity(entity)
+            .remove::<Velocity>()
+            .insert(Fade::In(0.0));
     }
 }
 
@@ -943,8 +944,10 @@ fn goal_scored_system(
             }
 
             // Fade out and deactivate the ball to prevent repeated scoring
-            commands.entity(entity).remove::<Active>();
-            commands.entity(entity).insert(Fade::Out(0.0));
+            commands
+                .entity(entity)
+                .remove::<Active>()
+                .insert(Fade::Out(0.0));
             break;
         }
     }
