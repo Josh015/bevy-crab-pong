@@ -11,7 +11,7 @@ use super::{
 #[derive(Component)]
 pub struct Player;
 
-pub(super) fn paddle_control_system(
+pub fn paddle_control_system(
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<&mut Paddle, (With<Active>, With<Player>)>,
 ) {

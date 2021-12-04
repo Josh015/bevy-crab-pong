@@ -20,7 +20,7 @@ impl Fade {
     }
 }
 
-pub(super) fn start_fade_system(
+pub fn start_fade_system(
     mut commands: Commands,
     query: Query<(Entity, &Fade), Added<Fade>>,
 ) {
@@ -31,7 +31,7 @@ pub(super) fn start_fade_system(
     }
 }
 
-pub(super) fn step_fade_system(
+pub fn step_fade_system(
     mut commands: Commands,
     config: Res<GameConfig>,
     time: Res<Time>,

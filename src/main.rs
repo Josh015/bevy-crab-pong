@@ -26,11 +26,21 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .init_resource::<Game>()
         .insert_resource(config)
-        .add_plugin(ComponentsPlugin)
         .add_startup_system(setup_scene)
         .add_startup_system(setup_balls)
         .add_startup_system(setup_goals)
+        .add_system(score::update_scores_system)
+        .add_system(swaying_camera::swaying_system)
+        .add_system(animated_water::animation_system)
+        .add_system(fade::start_fade_system)
+        .add_system(fade::step_fade_system)
+        .add_system(paddle::step_fade_animation_system)
+        .add_system(wall::start_fade_system)
+        .add_system(wall::step_fade_animation_system)
+        .add_system(ball::step_fade_animation_system)
+        .add_system(goal::eliminated_animation_system)
         .add_state(GameState::GameOver)
+        .add_event::<GoalEliminated>()
         .add_system_set(
             SystemSet::on_enter(GameState::GameOver)
                 .with_system(gameover_show_ui),
@@ -50,6 +60,18 @@ fn main() {
         )
         .add_system_set(
             SystemSet::on_exit(GameState::Playing).with_system(fade_out_balls),
+        )
+        .add_system_set(
+            SystemSet::on_update(GameState::Playing)
+                .with_system(paddle::movement_system)
+                .with_system(player::paddle_control_system)
+                .with_system(enemy::paddle_control_system)
+                .with_system(velocity::movement_system)
+                .with_system(goal::scored_system)
+                .with_system(goal::gameover_check_system)
+                .with_system(arena::reset_ball_position_system)
+                .with_system(arena::reset_ball_velocity_system)
+                .with_system(arena::collision_system),
         )
         .add_system(bevy::input::system::exit_on_esc_system)
         .run();

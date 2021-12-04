@@ -16,7 +16,7 @@ use super::{
 #[derive(Component)]
 pub struct Arena;
 
-pub(super) fn reset_ball_position_system(
+pub fn reset_ball_position_system(
     mut commands: Commands,
     config: Res<GameConfig>,
     mut query: Query<
@@ -33,7 +33,7 @@ pub(super) fn reset_ball_position_system(
     }
 }
 
-pub(super) fn reset_ball_velocity_system(
+pub fn reset_ball_velocity_system(
     mut commands: Commands,
     config: Res<GameConfig>,
     query: Query<Entity, (With<Ball>, Without<Velocity>, Added<Active>)>,
@@ -52,7 +52,7 @@ pub(super) fn reset_ball_velocity_system(
     }
 }
 
-pub(super) fn collision_system(
+pub fn collision_system(
     mut commands: Commands,
     config: Res<GameConfig>,
     balls_query: Query<

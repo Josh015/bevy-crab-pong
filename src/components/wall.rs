@@ -6,7 +6,7 @@ use crate::GameConfig;
 #[derive(Component)]
 pub struct Wall;
 
-pub(super) fn start_fade_system(
+pub fn start_fade_system(
     mut commands: Commands,
     query: Query<(Entity, &Fade), (With<Wall>, Added<Fade>)>,
 ) {
@@ -18,7 +18,7 @@ pub(super) fn start_fade_system(
     }
 }
 
-pub(super) fn step_fade_animation_system(
+pub fn step_fade_animation_system(
     config: Res<GameConfig>,
     mut query: Query<(&mut Transform, &Fade), With<Wall>>,
 ) {

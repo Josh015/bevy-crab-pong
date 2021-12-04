@@ -10,7 +10,7 @@ use super::goal::Goal;
 #[derive(Component)]
 pub struct Score;
 
-pub(super) fn update_scores_system(
+pub fn update_scores_system(
     game: Res<Game>,
     mut query: Query<(&mut Text, &Goal), With<Score>>,
 ) {

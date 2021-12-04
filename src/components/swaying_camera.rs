@@ -12,7 +12,7 @@ pub struct SwayingCamera {
     angle: f32,
 }
 
-pub(super) fn swaying_system(
+pub fn swaying_system(
     config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<

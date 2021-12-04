@@ -10,7 +10,7 @@ pub struct AnimatedWater {
     scroll: f32,
 }
 
-pub(super) fn animation_system(
+pub fn animation_system(
     config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut AnimatedWater)>,

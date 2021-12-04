@@ -20,9 +20,9 @@ pub enum Goal {
     Left,
 }
 
-pub(super) struct GoalEliminated(pub Goal);
+pub struct GoalEliminated(pub Goal);
 
-pub(super) fn scored_system(
+pub fn scored_system(
     mut commands: Commands,
     config: Res<GameConfig>,
     mut game: ResMut<Game>,
@@ -68,7 +68,7 @@ pub(super) fn scored_system(
     }
 }
 
-pub(super) fn eliminated_animation_system(
+pub fn eliminated_animation_system(
     mut commands: Commands,
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
     balls_query: Query<(Entity, &Goal), (With<Paddle>, With<Active>)>,
@@ -91,7 +91,7 @@ pub(super) fn eliminated_animation_system(
     }
 }
 
-pub(super) fn gameover_check_system(
+pub fn gameover_check_system(
     mut game: ResMut<Game>,
     mut state: ResMut<State<GameState>>,
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
