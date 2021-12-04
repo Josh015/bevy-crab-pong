@@ -34,7 +34,7 @@ fn main() {
         .add_system(animated_water_system)
         .add_system(fade_system)
         .add_system(crab_fade_animation_system)
-        .add_system(pole_fade_animation_system)
+        .add_system(wall_fade_animation_system)
         .add_system(ball_fade_animation_system)
         .add_system(goal_eliminated_animation_system)
         .add_state(GameState::GameOver)
@@ -104,7 +104,7 @@ struct GameConfig {
     ball_speed: f32,
     barrier_width: f32,
     fade_speed: f32,
-    pole_radius: f32,
+    wall_radius: f32,
     starting_score: u32,
 }
 
@@ -115,8 +115,8 @@ impl GameConfig {
 
     fn ball_radius(&self) -> f32 { 0.5 * self.ball_size }
 
-    fn pole_scale(&self) -> Vec3 {
-        Vec3::new(self.beach_width, self.pole_radius, self.pole_radius)
+    fn wall_scale(&self) -> Vec3 {
+        Vec3::new(self.beach_width, self.wall_radius, self.wall_radius)
     }
 }
 
@@ -174,7 +174,7 @@ impl Default for GameOver {
 struct Ball;
 
 #[derive(Component)]
-struct Pole;
+struct Wall;
 
 #[derive(Component)]
 struct Player;
@@ -293,7 +293,7 @@ fn setup_goals(
 ) {
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
     let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
-    let pole_material = materials.add(Color::hex("00A400").unwrap().into());
+    let wall_material = materials.add(Color::hex("00A400").unwrap().into());
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
     let goal_configs = [
         (
@@ -370,21 +370,21 @@ fn setup_goals(
                     .insert(Fade::Out(1.0))
                     .insert(goal.clone());
 
-                // Pole
+                // Wall
                 parent
                     .spawn_bundle(PbrBundle {
                         mesh: unit_cube.clone(),
-                        material: pole_material.clone(),
+                        material: wall_material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                config.pole_scale(),
+                                config.wall_scale(),
                                 Quat::IDENTITY,
                                 Vec3::new(0.0, 0.1, 0.0),
                             ),
                         ),
                         ..Default::default()
                     })
-                    .insert(Pole)
+                    .insert(Wall)
                     .insert(Active)
                     .insert(goal.clone());
 
@@ -522,17 +522,17 @@ fn crab_fade_animation_system(
     }
 }
 
-fn pole_fade_animation_system(
+fn wall_fade_animation_system(
     config: Res<GameConfig>,
-    mut query: Query<(&mut Transform, &Fade), With<Pole>>,
+    mut query: Query<(&mut Transform, &Fade), With<Wall>>,
 ) {
-    // Pole shrinks along its width into a pancake and then vanishes
+    // Wall shrinks along its width into a pancake and then vanishes
     for (mut transform, fade) in query.iter_mut() {
         let x_mask = fade.opacity();
         let yz_mask = x_mask.powf(0.001);
 
         transform.scale =
-            config.pole_scale() * Vec3::new(x_mask, yz_mask, yz_mask);
+            config.wall_scale() * Vec3::new(x_mask, yz_mask, yz_mask);
     }
 }
 
@@ -573,7 +573,7 @@ fn goal_eliminated_animation_system(
     mut commands: Commands,
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
     balls_query: Query<(Entity, &Goal), (With<Crab>, With<Active>)>,
-    poles_query: Query<(Entity, &Goal), (With<Pole>, Without<Active>)>,
+    walls_query: Query<(Entity, &Goal), (With<Wall>, Without<Active>)>,
 ) {
     for GoalEliminated(eliminated_goal) in goal_eliminated_reader.iter() {
         for (entity, goal) in balls_query.iter() {
@@ -584,7 +584,7 @@ fn goal_eliminated_animation_system(
             }
         }
 
-        for (entity, goal) in poles_query.iter() {
+        for (entity, goal) in walls_query.iter() {
             if goal == eliminated_goal {
                 commands.entity(entity).insert(Active);
                 commands.entity(entity).insert(Fade::In(0.0));
@@ -641,7 +641,7 @@ fn reset_game_entities(
         (Entity, &mut Transform),
         (With<Crab>, Without<Active>),
     >,
-    poles_query: Query<Entity, (With<Pole>, With<Active>)>,
+    walls_query: Query<Entity, (With<Wall>, With<Active>)>,
 ) {
     // Reset crabs
     for (entity, mut transform) in crabs_query.iter_mut() {
@@ -649,8 +649,8 @@ fn reset_game_entities(
         transform.translation = config.crab_start_position.into();
     }
 
-    // Reset poles
-    for entity in poles_query.iter() {
+    // Reset walls
+    for entity in walls_query.iter() {
         commands.entity(entity).insert(Fade::Out(0.3));
     }
 
@@ -844,7 +844,7 @@ fn ball_collision_system(
     >,
     crabs_query: Query<&GlobalTransform, (With<Crab>, With<Active>)>,
     barriers_query: Query<&GlobalTransform, With<Barrier>>,
-    poles_query: Query<(&GlobalTransform, &Goal), (With<Pole>, With<Active>)>,
+    walls_query: Query<(&GlobalTransform, &Goal), (With<Wall>, With<Active>)>,
 ) {
     for (entity, transform, velocity) in balls_query.iter() {
         let ball_radius = config.ball_radius();
@@ -871,14 +871,14 @@ fn ball_collision_system(
             break;
         }
 
-        // Pole collisions
-        for (pole_transform, goal) in poles_query.iter() {
-            let pole_position = pole_transform.translation;
+        // Wall collisions
+        for (wall_transform, goal) in walls_query.iter() {
+            let wall_position = wall_transform.translation;
             let (n, distance_to_goal) = match goal {
-                Goal::Top => (-Vec3::Z, radius_position.z - pole_position.z),
-                Goal::Right => (Vec3::X, -radius_position.x + pole_position.x),
-                Goal::Bottom => (Vec3::Z, -radius_position.z + pole_position.z),
-                Goal::Left => (-Vec3::X, radius_position.x - pole_position.x),
+                Goal::Top => (-Vec3::Z, radius_position.z - wall_position.z),
+                Goal::Right => (Vec3::X, -radius_position.x + wall_position.x),
+                Goal::Bottom => (Vec3::Z, -radius_position.z + wall_position.z),
+                Goal::Left => (-Vec3::X, radius_position.x - wall_position.x),
             };
 
             if distance_to_goal > 0.0 {
@@ -903,7 +903,7 @@ fn goal_scored_system(
         (Entity, &GlobalTransform, &Velocity),
         (With<Ball>, With<Active>),
     >,
-    poles_query: Query<(&GlobalTransform, &Goal), With<Pole>>,
+    walls_query: Query<(&GlobalTransform, &Goal), With<Wall>>,
 ) {
     for (entity, ball_transform, velocity) in balls_query.iter() {
         let ball_translation = ball_transform.translation;
@@ -911,9 +911,9 @@ fn goal_scored_system(
         let d = velocity.0.normalize();
         let radius_position = ball_translation + d * ball_radius;
 
-        for (pole_transform, goal) in poles_query.iter() {
+        for (wall_transform, goal) in walls_query.iter() {
             // Score against the goal that's closest to this ball
-            let goal_position = pole_transform.translation;
+            let goal_position = wall_transform.translation;
             let distance_to_goal = match goal {
                 Goal::Top => radius_position.z - goal_position.z,
                 Goal::Right => -radius_position.x + goal_position.x,
@@ -921,7 +921,7 @@ fn goal_scored_system(
                 Goal::Left => radius_position.x - goal_position.x,
             };
 
-            // TODO: Offset slightly to avoid scoring when bouncing off a pole.
+            // TODO: Offset slightly to avoid scoring when bouncing off a wall.
             // Document this!
             if distance_to_goal > -0.1 {
                 continue;
@@ -974,15 +974,13 @@ fn gameover_check_system(
 
 // TODO: Add proper settings for player and enemy starting scores.
 
-// TODO: Rename "Pole" to "Wall".
-
 // TODO: Need to split this file up into proper modules now that the divisions
 // mostly seem to have settled.
 
 // TODO: Need to document the hell out of this code.
 
 // TODO: Need a fix for the rare occasion when a ball just bounces infinitely
-// between two poles in a straight line?
+// between two walls in a straight line?
 
 // TODO: Offer a "Traditional" mode with two crabs (1xPlayer, 1xEnemy) opposite
 // each other and the other two walled off. Also just one ball?
