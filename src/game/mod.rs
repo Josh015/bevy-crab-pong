@@ -58,6 +58,7 @@ pub struct GameConfig {
     pub title: String,
     pub width: u32,
     pub height: u32,
+    pub clear_color: Color,
     pub swaying_camera_speed: f32,
     pub animated_water_speed: f32,
     pub beach_center_point: (f32, f32, f32),

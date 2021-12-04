@@ -2,6 +2,7 @@
   title: "Bevy Crab Pong",
   width: 800,
   height: 800,
+  clear_color: Rgba(red: 0.7, green: 0.9, blue: 1.0, alpha: 1.0),
   swaying_camera_speed: 0.2,
   animated_water_speed: 0.01,
   beach_center_point: (0.0, 0.0, 0.0),

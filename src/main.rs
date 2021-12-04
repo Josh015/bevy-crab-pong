@@ -16,7 +16,7 @@ fn main() {
             ..Default::default()
         })
         .insert_resource(Msaa { samples: 4 })
-        .insert_resource(ClearColor(Color::rgb(0.7, 0.9, 1.0)))
+        .insert_resource(ClearColor(config.clear_color))
         .add_plugins(DefaultPlugins)
         .init_resource::<Game>()
         .insert_resource(config)
