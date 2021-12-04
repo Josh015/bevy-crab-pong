@@ -1,4 +1,5 @@
 pub mod animated_water;
+pub mod arena;
 pub mod ball;
 pub mod barrier;
 pub mod crab;
