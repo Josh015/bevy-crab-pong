@@ -1,7 +1,12 @@
+mod ecs;
 mod files;
 
 use bevy::{
     ecs::prelude::*, prelude::*, render::camera::PerspectiveProjection,
+};
+use ecs::{
+    animated_water::*, ball::*, barrier::*, crab::*, enemy::*, fade::*,
+    goal::*, player::*, score::*, swaying_camera::*, velocity::*, wall::*, *,
 };
 use rand::prelude::*;
 use serde::Deserialize;
@@ -29,15 +34,15 @@ fn main() {
         .add_startup_system(setup_scene)
         .add_startup_system(setup_balls)
         .add_startup_system(setup_goals)
-        .add_system(display_scores_system)
+        .add_system(score::display_scores_system)
         .add_system(swaying_camera_system)
-        .add_system(animated_water_system)
-        .add_system(fade_start_system)
-        .add_system(fade_step_system)
-        .add_system(crab_fade_animation_system)
-        .add_system(wall_fade_start_system)
-        .add_system(wall_fade_animation_system)
-        .add_system(ball_fade_animation_system)
+        .add_system(animated_water::animation_system)
+        .add_system(fade::start_fade_system)
+        .add_system(fade::step_fade_system)
+        .add_system(crab::step_fade_animation_system)
+        .add_system(wall::start_fade_system)
+        .add_system(wall::step_fade_animation_system)
+        .add_system(ball::step_fade_animation_system)
         .add_system(goal_eliminated_animation_system)
         .add_state(GameState::GameOver)
         .add_event::<GoalEliminated>()
@@ -63,13 +68,13 @@ fn main() {
         )
         .add_system_set(
             SystemSet::on_update(GameState::Playing)
-                .with_system(crab_movement_system)
-                .with_system(crab_player_control_system)
-                .with_system(crab_ai_control_system)
-                .with_system(ball_movement_system)
-                .with_system(ball_reset_position_system)
-                .with_system(ball_reset_velocity_system)
-                .with_system(ball_collision_system)
+                .with_system(crab::movement_system)
+                .with_system(player::crab_control_system)
+                .with_system(enemy::crab_control_system)
+                .with_system(velocity::movement_system)
+                .with_system(reset_ball_position_system)
+                .with_system(reset_ball_velocity_system)
+                .with_system(collision_system)
                 .with_system(goal_scored_system)
                 .with_system(gameover_check_system),
         )
@@ -78,19 +83,19 @@ fn main() {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
-enum GameState {
+pub enum GameState {
     Playing,
     GameOver,
 }
 
 #[derive(Default)]
-struct Game {
-    scores: HashMap<Goal, u32>,
-    over: Option<GameOver>,
+pub struct Game {
+    pub scores: HashMap<Goal, u32>,
+    pub over: Option<GameOver>,
 }
 
 #[derive(Debug, Deserialize)]
-struct GameConfig {
+pub struct GameConfig {
     title: String,
     width: u32,
     height: u32,
@@ -129,48 +134,10 @@ impl GameConfig {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Hash)]
-enum Movement {
-    Stopped,
-    Left,
-    Right,
-}
-
-impl Default for Movement {
-    fn default() -> Self { Self::Stopped }
-}
-
 struct GoalEliminated(Goal);
 
-#[derive(Component, Default)]
-struct SwayingCamera {
-    angle: f32,
-}
-
-#[derive(Component)]
-struct Score;
-
-#[derive(Component, Default)]
-struct AnimatedWater {
-    scroll: f32,
-}
-
-#[derive(Component, Default)]
-struct Crab {
-    movement: Movement,
-    speed: f32,
-}
-
-#[derive(Clone, Component, Copy, Eq, PartialEq, Debug, Hash)]
-enum Goal {
-    Top,
-    Right,
-    Bottom,
-    Left,
-}
-
 #[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
-enum GameOver {
+pub enum GameOver {
     Won,
     Lost,
 }
@@ -178,42 +145,6 @@ enum GameOver {
 impl Default for GameOver {
     fn default() -> Self { Self::Won }
 }
-
-#[derive(Component)]
-struct Ball;
-
-#[derive(Component)]
-struct Wall;
-
-#[derive(Component)]
-struct Player;
-
-#[derive(Component)]
-struct Enemy;
-
-#[derive(Component)]
-struct Active;
-
-#[derive(Clone, Component, Copy, PartialEq, Debug)]
-enum Fade {
-    Out(f32),
-    In(f32),
-}
-
-impl Fade {
-    fn opacity(&self) -> f32 {
-        match self {
-            Self::In(weight) => *weight,
-            Self::Out(weight) => 1.0 - weight,
-        }
-    }
-}
-
-#[derive(Component)]
-struct Velocity(Vec3);
-
-#[derive(Component)]
-struct Barrier;
 
 fn setup_scene(
     config: Res<GameConfig>,
@@ -443,160 +374,6 @@ fn setup_goals(
     }
 }
 
-fn display_scores_system(
-    game: Res<Game>,
-    mut query: Query<(&mut Text, &Goal), With<Score>>,
-) {
-    for (mut text, goal) in query.iter_mut() {
-        let score_value = game.scores[&goal];
-        text.sections[0].value = score_value.to_string();
-    }
-}
-
-fn swaying_camera_system(
-    config: Res<GameConfig>,
-    time: Res<Time>,
-    mut query: Query<
-        (&mut Transform, &mut SwayingCamera),
-        With<PerspectiveProjection>,
-    >,
-) {
-    // Slowly sway the camera back and forth
-    let (mut transform, mut swaying_camera) = query.single_mut();
-    let x = swaying_camera.angle.sin() * 0.5 * config.beach_width;
-
-    *transform = Transform::from_xyz(x, 2.0, 1.5)
-        .looking_at(config.beach_center_point.into(), Vec3::Y);
-
-    swaying_camera.angle += config.swaying_camera_speed * time.delta_seconds();
-    swaying_camera.angle %= std::f32::consts::TAU;
-}
-
-fn animated_water_system(
-    config: Res<GameConfig>,
-    time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut AnimatedWater)>,
-) {
-    // Translate the plane on the Z-axis, since we currently can't animate the
-    // texture coordinates.
-    let (mut transform, mut animated_water) = query.single_mut();
-
-    *transform = Transform::from_xyz(0.0, -0.01, animated_water.scroll);
-
-    animated_water.scroll += config.animated_water_speed * time.delta_seconds();
-    animated_water.scroll %= 1.0;
-}
-
-fn fade_start_system(
-    mut commands: Commands,
-    query: Query<(Entity, &Fade), Added<Fade>>,
-) {
-    for (entity, fade) in query.iter() {
-        if matches!(*fade, Fade::Out(_)) {
-            commands.entity(entity).remove::<Active>();
-        }
-    }
-}
-
-fn fade_step_system(
-    mut commands: Commands,
-    config: Res<GameConfig>,
-    time: Res<Time>,
-    mut query: Query<(Entity, &mut Fade)>,
-) {
-    // Simulates fade from visible->invisible and vice versa over time
-    for (entity, mut fade) in query.iter_mut() {
-        let step = config.fade_speed * time.delta_seconds();
-
-        match *fade {
-            Fade::In(weight) => {
-                if weight < 1.0 {
-                    *fade = Fade::In(weight.max(0.0) + step);
-                } else {
-                    commands.entity(entity).remove::<Fade>().insert(Active);
-                }
-            },
-            Fade::Out(weight) => {
-                if weight < 1.0 {
-                    *fade = Fade::Out(weight.max(0.0) + step);
-                } else {
-                    commands.entity(entity).remove::<Fade>();
-                }
-            },
-        }
-    }
-}
-
-fn crab_fade_animation_system(
-    config: Res<GameConfig>,
-    mut query: Query<(&mut Transform, &Fade), With<Crab>>,
-) {
-    // Grow/Shrink crabs to show/hide them
-    for (mut transform, fade) in query.iter_mut() {
-        transform.scale = config.crab_scale.into();
-        transform.scale *= fade.opacity();
-    }
-}
-
-fn wall_fade_start_system(
-    mut commands: Commands,
-    query: Query<(Entity, &Fade), (With<Wall>, Added<Fade>)>,
-) {
-    for (entity, fade) in query.iter() {
-        // Immediately activate walls to avoid repeating eliminated animation
-        if matches!(*fade, Fade::In(_)) {
-            commands.entity(entity).insert(Active);
-        }
-    }
-}
-
-fn wall_fade_animation_system(
-    config: Res<GameConfig>,
-    mut query: Query<(&mut Transform, &Fade), With<Wall>>,
-) {
-    // Wall shrinks along its width into a pancake and then vanishes
-    for (mut transform, fade) in query.iter_mut() {
-        let x_mask = fade.opacity();
-        let yz_mask = x_mask.powf(0.001);
-
-        transform.scale =
-            config.wall_scale() * Vec3::new(x_mask, yz_mask, yz_mask);
-    }
-}
-
-fn ball_fade_animation_system(
-    config: Res<GameConfig>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut query: Query<
-        (&Handle<StandardMaterial>, &mut Transform, &mut Fade),
-        With<Ball>,
-    >,
-) {
-    // Increase/Decrease balls' opacity to show/hide them
-    let mut is_prior_fading = false;
-
-    for (material, mut transform, mut fade) in query.iter_mut() {
-        let is_current_fading = matches!(*fade, Fade::In(_));
-
-        // Force current ball to wait if other is also fading in
-        if is_prior_fading && is_current_fading {
-            *fade = Fade::In(0.0);
-            continue;
-        }
-
-        is_prior_fading = is_current_fading;
-
-        // materials
-        //     .get_mut(material)
-        //     .unwrap()
-        //     .base_color
-        //     .set_a(fade.opacity());
-
-        // FIXME: Use scaling until we can get alpha-blending working
-        transform.scale = Vec3::splat(fade.opacity() * config.ball_size);
-    }
-}
-
 fn goal_eliminated_animation_system(
     mut commands: Commands,
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
@@ -710,126 +487,9 @@ fn fade_out_balls(
     }
 }
 
-fn crab_movement_system(
-    config: Res<GameConfig>,
-    time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Crab), With<Active>>,
-) {
-    for (mut transform, mut crab) in query.iter_mut() {
-        // Accelerate the crab
-        let delta_speed = config.crab_acceleration() * time.delta_seconds();
+// TODO: This would be a good opportunity for a score event!
 
-        if crab.movement == Movement::Stopped {
-            let s = crab.speed.abs().sub(delta_speed).max(0.0);
-            crab.speed = crab.speed.max(-s).min(s);
-        } else {
-            crab.speed = crab
-                .speed
-                .add(if crab.movement == Movement::Left {
-                    -delta_speed
-                } else {
-                    delta_speed
-                })
-                .clamp(-config.crab_max_speed, config.crab_max_speed);
-        }
-
-        // Limit crab to open space between barriers
-        let mut position = transform.translation.x + crab.speed;
-        let extents = 0.5
-            * (config.beach_width - config.barrier_width - config.crab_scale.0);
-
-        if position >= extents {
-            position = extents;
-            crab.speed = 0.0;
-        } else if position <= -extents {
-            position = -extents;
-            crab.speed = 0.0;
-        }
-
-        // Move the crab
-        transform.translation.x = position;
-    }
-}
-
-fn crab_player_control_system(
-    keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Crab, (With<Active>, With<Player>)>,
-) {
-    for mut crab in query.iter_mut() {
-        crab.movement = if keyboard_input.pressed(KeyCode::Left) {
-            Movement::Left
-        } else if keyboard_input.pressed(KeyCode::Right) {
-            Movement::Right
-        } else {
-            Movement::Stopped
-        };
-    }
-}
-
-fn crab_ai_control_system(
-    config: Res<GameConfig>,
-    balls_query: Query<&GlobalTransform, (With<Ball>, With<Active>)>,
-    mut crabs_query: Query<
-        (&Transform, &GlobalTransform, &Goal, &mut Crab),
-        (With<Active>, With<Enemy>),
-    >,
-) {
-    for (local, global, goal, mut crab) in crabs_query.iter_mut() {
-        // Pick which ball is closest to this crab's goal
-        let mut closest_ball_distance = std::f32::MAX;
-        let mut target_position = config.crab_start_position.0;
-
-        for ball_transform in balls_query.iter() {
-            // Remap from ball's global space to crab's local space
-            let ball_translation = ball_transform.translation;
-            let ball_distance = global.translation.distance(ball_translation);
-            let ball_position = match *goal {
-                Goal::Top => -ball_translation.x,
-                Goal::Right => -ball_translation.z,
-                Goal::Bottom => ball_translation.x,
-                Goal::Left => ball_translation.z,
-            };
-
-            if ball_distance < closest_ball_distance {
-                target_position = ball_position;
-                closest_ball_distance = ball_distance;
-            }
-        }
-
-        // Predict the position where the crab will stop if it immediately
-        // begins decelerating.
-        let d = crab.speed * crab.speed / config.crab_acceleration();
-        let stop_position = if crab.speed > 0.0 {
-            local.translation.x + d
-        } else {
-            local.translation.x - d
-        };
-
-        // Begin decelerating if the ball will land over 70% of the crab's
-        // middle at its predicted stop position. Otherwise go left/right
-        // depending on which side of the crab it's approaching.
-        if (stop_position - target_position).abs()
-            < 0.7 * (config.crab_scale.0 * 0.5)
-        {
-            crab.movement = Movement::Stopped;
-        } else if target_position < local.translation.x {
-            crab.movement = Movement::Left;
-        } else {
-            crab.movement = Movement::Right;
-        }
-    }
-}
-
-fn ball_movement_system(
-    time: Res<Time>,
-    mut query: Query<(&mut Transform, &Velocity), With<Ball>>,
-) {
-    for (mut transform, velocity) in query.iter_mut() {
-        transform.translation += velocity.0 * time.delta_seconds();
-    }
-}
-
-fn ball_reset_position_system(
+fn reset_ball_position_system(
     mut commands: Commands,
     config: Res<GameConfig>,
     mut query: Query<
@@ -846,7 +506,7 @@ fn ball_reset_position_system(
     }
 }
 
-fn ball_reset_velocity_system(
+fn reset_ball_velocity_system(
     mut commands: Commands,
     config: Res<GameConfig>,
     query: Query<Entity, (With<Ball>, Without<Velocity>, Added<Active>)>,
@@ -865,7 +525,7 @@ fn ball_reset_velocity_system(
     }
 }
 
-fn ball_collision_system(
+fn collision_system(
     mut commands: Commands,
     config: Res<GameConfig>,
     balls_query: Query<
@@ -957,6 +617,8 @@ fn goal_scored_system(
                 continue;
             }
 
+            // TODO: This would be a good opportunity for a score event!
+
             // Decrement the score and potentially eliminate the goal
             let score = game.scores.get_mut(goal).unwrap();
             *score = score.saturating_sub(1);
@@ -1000,9 +662,6 @@ fn gameover_check_system(
         }
     }
 }
-
-// TODO: Need to split this file up into proper modules now that the divisions
-// mostly seem to have settled.
 
 // TODO: Need to document the hell out of this code.
 
