@@ -3,7 +3,7 @@ use bevy::{ecs::prelude::*, prelude::*};
 #[derive(Component)]
 pub struct Velocity(pub Vec3);
 
-pub fn movement_system(
+pub(super) fn movement_system(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &Velocity)>,
 ) {

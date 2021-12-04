@@ -21,7 +21,7 @@ pub struct Paddle {
     pub speed: f32,
 }
 
-pub fn step_fade_animation_system(
+pub(super) fn step_fade_animation_system(
     config: Res<GameConfig>,
     mut query: Query<(&mut Transform, &Fade), With<Paddle>>,
 ) {
@@ -32,7 +32,7 @@ pub fn step_fade_animation_system(
     }
 }
 
-pub fn movement_system(
+pub(super) fn movement_system(
     config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut Paddle), With<Active>>,

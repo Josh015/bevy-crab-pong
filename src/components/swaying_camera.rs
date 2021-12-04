@@ -9,10 +9,10 @@ use crate::GameConfig;
 
 #[derive(Component, Default)]
 pub struct SwayingCamera {
-    pub angle: f32,
+    angle: f32,
 }
 
-pub fn swaying_system(
+pub(super) fn swaying_system(
     config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<

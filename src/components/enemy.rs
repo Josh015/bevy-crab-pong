@@ -12,7 +12,7 @@ use super::{
 #[derive(Component)]
 pub struct Enemy;
 
-pub fn paddle_control_system(
+pub(super) fn paddle_control_system(
     config: Res<GameConfig>,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Active>)>,
     mut paddles_query: Query<

@@ -20,7 +20,7 @@ pub struct ComponentsPlugin;
 
 impl Plugin for ComponentsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(score::display_scores_system)
+        app.add_system(score::update_scores_system)
             .add_system(swaying_camera::swaying_system)
             .add_system(animated_water::animation_system)
             .add_system(fade::start_fade_system)

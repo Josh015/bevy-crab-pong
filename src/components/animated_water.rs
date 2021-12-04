@@ -7,10 +7,10 @@ use crate::GameConfig;
 
 #[derive(Component, Default)]
 pub struct AnimatedWater {
-    pub scroll: f32,
+    scroll: f32,
 }
 
-pub fn animation_system(
+pub(super) fn animation_system(
     config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut AnimatedWater)>,

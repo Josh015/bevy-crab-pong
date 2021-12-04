@@ -10,7 +10,7 @@ use crate::GameConfig;
 #[derive(Component)]
 pub struct Ball;
 
-pub fn step_fade_animation_system(
+pub(super) fn step_fade_animation_system(
     config: Res<GameConfig>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<

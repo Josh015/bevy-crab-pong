@@ -437,9 +437,6 @@ fn fade_out_balls(
     }
 }
 
-// TODO: Add more strict access modifiers to modules and bundle them up into
-// plugins!
-
 // TODO: Add event logging.
 
 // TODO: Need to document the hell out of this code.
