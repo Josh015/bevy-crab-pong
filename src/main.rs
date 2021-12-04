@@ -1,8 +1,8 @@
-mod components;
 mod files;
+mod game;
 
 use bevy::{ecs::prelude::*, prelude::*};
-use components::*;
+use game::*;
 
 fn main() {
     let config: GameConfig =
