@@ -60,9 +60,9 @@ fn main() {
                 .with_system(velocity::movement_system)
                 .with_system(goal::scored_system)
                 .with_system(goal::gameover_check_system)
-                .with_system(arena::reset_ball_position_system)
-                .with_system(arena::reset_ball_velocity_system)
-                .with_system(arena::collision_system),
+                .with_system(ball::reset_position_system)
+                .with_system(ball::reset_velocity_system)
+                .with_system(ball::collision_system),
         )
         .add_system(bevy::input::system::exit_on_esc_system)
         .run();

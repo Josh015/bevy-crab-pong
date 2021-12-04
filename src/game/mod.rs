@@ -5,9 +5,6 @@ use std::collections::HashMap;
 pub mod animated_water;
 pub use animated_water::*;
 
-pub mod arena;
-pub use arena::*;
-
 pub mod ball;
 pub use ball::*;
 
@@ -138,20 +135,18 @@ pub fn setup(
         .insert(AnimatedWater::default());
 
     // Beach
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: unit_plane.clone(),
-            material: materials.add(Color::hex("C4BD99").unwrap().into()),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    Vec3::splat(config.beach_width),
-                    Quat::IDENTITY,
-                    config.beach_center_point.into(),
-                ),
+    commands.spawn_bundle(PbrBundle {
+        mesh: unit_plane.clone(),
+        material: materials.add(Color::hex("C4BD99").unwrap().into()),
+        transform: Transform::from_matrix(
+            Mat4::from_scale_rotation_translation(
+                Vec3::splat(config.beach_width),
+                Quat::IDENTITY,
+                config.beach_center_point.into(),
             ),
-            ..Default::default()
-        })
-        .insert(Arena);
+        ),
+        ..Default::default()
+    });
 
     // Balls
     let unit_sphere = meshes.add(Mesh::from(shape::Icosphere {
