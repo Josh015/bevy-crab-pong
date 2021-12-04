@@ -103,8 +103,10 @@ impl Default for GameOver {
     fn default() -> Self { Self::Won }
 }
 
-pub fn setup_scene(
+pub fn setup(
+    mut game: ResMut<Game>,
     config: Res<GameConfig>,
+    asset_server: Res<AssetServer>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -149,14 +151,8 @@ pub fn setup_scene(
             ..Default::default()
         })
         .insert(Arena);
-}
 
-pub fn setup_balls(
-    config: Res<GameConfig>,
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
+    // Balls
     let unit_sphere = meshes.add(Mesh::from(shape::Icosphere {
         radius: 0.5,
         subdivisions: 2,
@@ -179,16 +175,8 @@ pub fn setup_balls(
             })
             .insert_bundle((Ball, Fade::Out(1.0)));
     }
-}
 
-pub fn setup_goals(
-    mut game: ResMut<Game>,
-    config: Res<GameConfig>,
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
+    // Goals
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
     let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
     let wall_material = materials.add(Color::hex("00A400").unwrap().into());
@@ -333,7 +321,7 @@ pub fn setup_goals(
     }
 }
 
-pub fn gameover_show_ui(game: Res<Game>) {
+pub fn show_gameover_ui(game: Res<Game>) {
     if let Some(game_over) = game.over {
         if game_over == GameOver::Won {
             // TODO: Add win text
@@ -346,7 +334,7 @@ pub fn gameover_show_ui(game: Res<Game>) {
     // TODO: new game text visible
 }
 
-pub fn gameover_hide_ui() {
+pub fn hide_gameover_ui() {
     // TODO: Hide message text
 }
 
@@ -359,10 +347,18 @@ pub fn gameover_keyboard_system(
     }
 }
 
-pub fn assign_players(
+pub fn reset_game_entities(
     mut commands: Commands,
+    config: Res<GameConfig>,
+    mut game: ResMut<Game>,
     query: Query<(Entity, &Goal), With<Paddle>>,
+    mut paddles_query: Query<
+        (Entity, &mut Transform),
+        (With<Paddle>, Without<Active>),
+    >,
+    walls_query: Query<Entity, (With<Wall>, With<Active>)>,
 ) {
+    // Assign players
     for (entity, goal) in query.iter() {
         // TODO: Build this out to support more crazy configurations that can be
         // set at runtime
@@ -372,18 +368,7 @@ pub fn assign_players(
             commands.entity(entity).insert(Enemy);
         }
     }
-}
 
-pub fn reset_game_entities(
-    mut commands: Commands,
-    config: Res<GameConfig>,
-    mut game: ResMut<Game>,
-    mut paddles_query: Query<
-        (Entity, &mut Transform),
-        (With<Paddle>, Without<Active>),
-    >,
-    walls_query: Query<Entity, (With<Wall>, With<Active>)>,
-) {
     // Reset paddles
     for (entity, mut transform) in paddles_query.iter_mut() {
         commands.entity(entity).insert(Fade::In(0.4));

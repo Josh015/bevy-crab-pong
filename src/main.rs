@@ -20,9 +20,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .init_resource::<Game>()
         .insert_resource(config)
-        .add_startup_system(setup_scene)
-        .add_startup_system(setup_balls)
-        .add_startup_system(setup_goals)
+        .add_startup_system(setup)
         .add_system(score::update_scores_system)
         .add_system(swaying_camera::swaying_system)
         .add_system(animated_water::animation_system)
@@ -37,11 +35,11 @@ fn main() {
         .add_event::<GoalEliminated>()
         .add_system_set(
             SystemSet::on_enter(GameState::GameOver)
-                .with_system(gameover_show_ui),
+                .with_system(show_gameover_ui),
         )
         .add_system_set(
             SystemSet::on_exit(GameState::GameOver)
-                .with_system(gameover_hide_ui),
+                .with_system(hide_gameover_ui),
         )
         .add_system_set(
             SystemSet::on_update(GameState::GameOver)
@@ -49,7 +47,6 @@ fn main() {
         )
         .add_system_set(
             SystemSet::on_enter(GameState::Playing)
-                .with_system(assign_players)
                 .with_system(reset_game_entities),
         )
         .add_system_set(
