@@ -889,7 +889,9 @@ fn ball_collision_system(
                 Goal::Left => (-Vec3::X, radius_position.x - wall_position.x),
             };
 
-            if distance_to_goal > 0.0 {
+            // Slight offset from the wall so the ball doesn't phase into it.
+            // Also prevents it from being treated as out of bounds.
+            if distance_to_goal > 0.01 {
                 continue;
             }
 
@@ -929,9 +931,7 @@ fn goal_scored_system(
                 Goal::Left => radius_position.x - goal_position.x,
             };
 
-            // TODO: Offset slightly to avoid scoring when bouncing off a wall.
-            // Document this!
-            if distance_to_goal > -0.1 {
+            if distance_to_goal > 0.0 {
                 continue;
             }
 
