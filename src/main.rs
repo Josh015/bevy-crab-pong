@@ -101,6 +101,7 @@ struct GameConfig {
     crab_scale: (f32, f32, f32),
     crab_start_position: (f32, f32, f32),
     ball_size: f32,
+    ball_height: f32,
     ball_speed: f32,
     barrier_width: f32,
     fade_speed: f32,
@@ -111,6 +112,12 @@ struct GameConfig {
 impl GameConfig {
     fn crab_acceleration(&self) -> f32 {
         self.crab_max_speed / self.crab_seconds_to_max_speed
+    }
+
+    fn ball_center_point(&self) -> Vec3 {
+        let mut ball_center_point: Vec3 = self.beach_center_point.into();
+        ball_center_point.y = self.ball_height;
+        ball_center_point
     }
 
     fn ball_radius(&self) -> f32 { 0.5 * self.ball_size }
@@ -273,7 +280,7 @@ fn setup_balls(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(config.ball_size),
                         Quat::IDENTITY,
-                        Vec3::new(0.0, 0.1, 0.0),
+                        config.ball_center_point(),
                     ),
                 ),
                 ..Default::default()
@@ -810,7 +817,7 @@ fn ball_reset_position_system(
     >,
 ) {
     for (entity, mut transform) in query.iter_mut() {
-        transform.translation = config.beach_center_point.into();
+        transform.translation = config.ball_center_point();
         commands.entity(entity).remove::<Velocity>();
         commands.entity(entity).insert(Fade::In(0.0));
     }
@@ -971,8 +978,6 @@ fn gameover_check_system(
         }
     }
 }
-
-// TODO: Add proper settings for player and enemy starting scores.
 
 // TODO: Need to split this file up into proper modules now that the divisions
 // mostly seem to have settled.
