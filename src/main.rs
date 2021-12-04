@@ -32,8 +32,10 @@ fn main() {
         .add_system(display_scores_system)
         .add_system(swaying_camera_system)
         .add_system(animated_water_system)
-        .add_system(fade_system)
+        .add_system(fade_start_system)
+        .add_system(fade_step_system)
         .add_system(crab_fade_animation_system)
+        .add_system(wall_fade_start_system)
         .add_system(wall_fade_animation_system)
         .add_system(ball_fade_animation_system)
         .add_system(goal_eliminated_animation_system)
@@ -485,7 +487,18 @@ fn animated_water_system(
     animated_water.scroll %= 1.0;
 }
 
-fn fade_system(
+fn fade_start_system(
+    mut commands: Commands,
+    query: Query<(Entity, &Fade), Added<Fade>>,
+) {
+    for (entity, fade) in query.iter() {
+        if matches!(*fade, Fade::Out(_)) {
+            commands.entity(entity).remove::<Active>();
+        }
+    }
+}
+
+fn fade_step_system(
     mut commands: Commands,
     config: Res<GameConfig>,
     time: Res<Time>,
@@ -507,7 +520,7 @@ fn fade_system(
                 if weight < 1.0 {
                     *fade = Fade::Out(weight.max(0.0) + step);
                 } else {
-                    commands.entity(entity).remove::<Fade>().remove::<Active>();
+                    commands.entity(entity).remove::<Fade>();
                 }
             },
         }
@@ -522,6 +535,18 @@ fn crab_fade_animation_system(
     for (mut transform, fade) in query.iter_mut() {
         transform.scale = config.crab_scale.into();
         transform.scale *= fade.opacity();
+    }
+}
+
+fn wall_fade_start_system(
+    mut commands: Commands,
+    query: Query<(Entity, &Fade), (With<Wall>, Added<Fade>)>,
+) {
+    for (entity, fade) in query.iter() {
+        // Immediately activate walls to avoid repeating eliminated animation
+        if matches!(*fade, Fade::In(_)) {
+            commands.entity(entity).insert(Active);
+        }
     }
 }
 
@@ -581,17 +606,14 @@ fn goal_eliminated_animation_system(
     for GoalEliminated(eliminated_goal) in goal_eliminated_reader.iter() {
         for (entity, goal) in balls_query.iter() {
             if goal == eliminated_goal {
-                commands
-                    .entity(entity)
-                    .remove::<Active>()
-                    .insert(Fade::Out(0.0));
+                commands.entity(entity).insert(Fade::Out(0.0));
                 break;
             }
         }
 
         for (entity, goal) in walls_query.iter() {
             if goal == eliminated_goal {
-                commands.entity(entity).insert(Active).insert(Fade::In(0.0));
+                commands.entity(entity).insert(Fade::In(0.0));
                 break;
             }
         }
@@ -657,10 +679,7 @@ fn reset_game_entities(
 
     // Reset walls
     for entity in walls_query.iter() {
-        commands
-            .entity(entity)
-            .remove::<Active>()
-            .insert(Fade::Out(0.3));
+        commands.entity(entity).insert(Fade::Out(0.3));
     }
 
     // Reset scores
@@ -914,7 +933,7 @@ fn goal_scored_system(
     mut goal_eliminated_writer: EventWriter<GoalEliminated>,
     balls_query: Query<
         (Entity, &GlobalTransform, &Velocity),
-        (With<Ball>, With<Active>),
+        (With<Ball>, With<Active>, Without<Fade>),
     >,
     walls_query: Query<(&GlobalTransform, &Goal), With<Wall>>,
 ) {
@@ -947,10 +966,7 @@ fn goal_scored_system(
             }
 
             // Fade out and deactivate the ball to prevent repeated scoring
-            commands
-                .entity(entity)
-                .remove::<Active>()
-                .insert(Fade::Out(0.0));
+            commands.entity(entity).insert(Fade::Out(0.0));
             break;
         }
     }
