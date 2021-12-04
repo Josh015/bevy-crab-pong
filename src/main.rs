@@ -1,19 +1,14 @@
 mod ecs;
 mod files;
 
-use bevy::{
-    ecs::prelude::*, prelude::*, render::camera::PerspectiveProjection,
-};
+use bevy::{ecs::prelude::*, prelude::*};
 use ecs::{
     animated_water::*, ball::*, barrier::*, crab::*, enemy::*, fade::*,
     goal::*, player::*, score::*, swaying_camera::*, velocity::*, wall::*, *,
 };
 use rand::prelude::*;
 use serde::Deserialize;
-use std::{
-    collections::HashMap,
-    ops::{Add, Sub},
-};
+use std::{collections::HashMap, ops::Add};
 
 fn main() {
     let config: GameConfig =
@@ -35,7 +30,7 @@ fn main() {
         .add_startup_system(setup_balls)
         .add_startup_system(setup_goals)
         .add_system(score::display_scores_system)
-        .add_system(swaying_camera_system)
+        .add_system(swaying_camera::swaying_system)
         .add_system(animated_water::animation_system)
         .add_system(fade::start_fade_system)
         .add_system(fade::step_fade_system)
@@ -43,7 +38,7 @@ fn main() {
         .add_system(wall::start_fade_system)
         .add_system(wall::step_fade_animation_system)
         .add_system(ball::step_fade_animation_system)
-        .add_system(goal_eliminated_animation_system)
+        .add_system(goal::eliminated_animation_system)
         .add_state(GameState::GameOver)
         .add_event::<GoalEliminated>()
         .add_system_set(
@@ -72,11 +67,11 @@ fn main() {
                 .with_system(player::crab_control_system)
                 .with_system(enemy::crab_control_system)
                 .with_system(velocity::movement_system)
+                .with_system(goal::scored_system)
+                .with_system(goal::gameover_check_system)
                 .with_system(reset_ball_position_system)
                 .with_system(reset_ball_velocity_system)
-                .with_system(collision_system)
-                .with_system(goal_scored_system)
-                .with_system(gameover_check_system),
+                .with_system(collision_system),
         )
         .add_system(bevy::input::system::exit_on_esc_system)
         .run();
@@ -133,8 +128,6 @@ impl GameConfig {
         Vec3::new(self.beach_width, self.wall_radius, self.wall_radius)
     }
 }
-
-struct GoalEliminated(Goal);
 
 #[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
 pub enum GameOver {
@@ -374,29 +367,6 @@ fn setup_goals(
     }
 }
 
-fn goal_eliminated_animation_system(
-    mut commands: Commands,
-    mut goal_eliminated_reader: EventReader<GoalEliminated>,
-    balls_query: Query<(Entity, &Goal), (With<Crab>, With<Active>)>,
-    walls_query: Query<(Entity, &Goal), (With<Wall>, Without<Active>)>,
-) {
-    for GoalEliminated(eliminated_goal) in goal_eliminated_reader.iter() {
-        for (entity, goal) in balls_query.iter() {
-            if goal == eliminated_goal {
-                commands.entity(entity).insert(Fade::Out(0.0));
-                break;
-            }
-        }
-
-        for (entity, goal) in walls_query.iter() {
-            if goal == eliminated_goal {
-                commands.entity(entity).insert(Fade::In(0.0));
-                break;
-            }
-        }
-    }
-}
-
 fn gameover_show_ui(game: Res<Game>) {
     if let Some(game_over) = game.over {
         if game_over == GameOver::Won {
@@ -486,8 +456,6 @@ fn fade_out_balls(
         }
     }
 }
-
-// TODO: This would be a good opportunity for a score event!
 
 fn reset_ball_position_system(
     mut commands: Commands,
@@ -586,82 +554,10 @@ fn collision_system(
     }
 }
 
-fn goal_scored_system(
-    mut commands: Commands,
-    config: Res<GameConfig>,
-    mut game: ResMut<Game>,
-    mut goal_eliminated_writer: EventWriter<GoalEliminated>,
-    balls_query: Query<
-        (Entity, &GlobalTransform, &Velocity),
-        (With<Ball>, With<Active>, Without<Fade>),
-    >,
-    walls_query: Query<(&GlobalTransform, &Goal), With<Wall>>,
-) {
-    for (entity, ball_transform, velocity) in balls_query.iter() {
-        let ball_translation = ball_transform.translation;
-        let ball_radius = config.ball_radius();
-        let d = velocity.0.normalize();
-        let radius_position = ball_translation + d * ball_radius;
+// TODO: Add more strict access modifiers to modules and bundle them up into
+// plugins!
 
-        for (wall_transform, goal) in walls_query.iter() {
-            // Score against the goal that's closest to this ball
-            let goal_position = wall_transform.translation;
-            let distance_to_goal = match goal {
-                Goal::Top => radius_position.z - goal_position.z,
-                Goal::Right => -radius_position.x + goal_position.x,
-                Goal::Bottom => -radius_position.z + goal_position.z,
-                Goal::Left => radius_position.x - goal_position.x,
-            };
-
-            if distance_to_goal > 0.0 {
-                continue;
-            }
-
-            // TODO: This would be a good opportunity for a score event!
-
-            // Decrement the score and potentially eliminate the goal
-            let score = game.scores.get_mut(goal).unwrap();
-            *score = score.saturating_sub(1);
-
-            if *score == 0 {
-                goal_eliminated_writer.send(GoalEliminated(*goal))
-            }
-
-            // Fade out and deactivate the ball to prevent repeated scoring
-            commands.entity(entity).insert(Fade::Out(0.0));
-            break;
-        }
-    }
-}
-
-fn gameover_check_system(
-    mut game: ResMut<Game>,
-    mut state: ResMut<State<GameState>>,
-    mut goal_eliminated_reader: EventReader<GoalEliminated>,
-    players_query: Query<&Goal, (With<Crab>, With<Player>)>,
-    enemies_query: Query<&Goal, (With<Crab>, With<Enemy>)>,
-) {
-    for GoalEliminated(_) in goal_eliminated_reader.iter() {
-        // Player wins if all Enemy crabs have a score of zero
-        let has_player_won =
-            enemies_query.iter().all(|goal| game.scores[&goal] == 0);
-
-        // Player loses if all Player crabs have a score of zero
-        let has_player_lost =
-            players_query.iter().all(|goal| game.scores[&goal] == 0);
-
-        // Declare a winner and trigger gameover
-        if has_player_won || has_player_lost {
-            game.over = if has_player_won {
-                Some(GameOver::Won)
-            } else {
-                Some(GameOver::Lost)
-            };
-
-            state.set(GameState::GameOver).unwrap();
-        }
-    }
-}
+// TODO: Add event logging.
 
 // TODO: Need to document the hell out of this code.
 

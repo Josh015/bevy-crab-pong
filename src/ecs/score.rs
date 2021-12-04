@@ -10,8 +10,6 @@ use super::goal::Goal;
 #[derive(Component)]
 pub struct Score;
 
-// TODO: This would be a good opportunity for a score event!
-
 pub fn display_scores_system(
     game: Res<Game>,
     mut query: Query<(&mut Text, &Goal), With<Score>>,
