@@ -285,8 +285,7 @@ fn setup_balls(
                 ),
                 ..Default::default()
             })
-            .insert(Ball)
-            .insert(Fade::Out(1.0));
+            .insert_bundle((Ball, Fade::Out(1.0)));
     }
 }
 
@@ -373,9 +372,11 @@ fn setup_goals(
                         ),
                         ..Default::default()
                     })
-                    .insert(Crab::default())
-                    .insert(Fade::Out(1.0))
-                    .insert(goal.clone());
+                    .insert_bundle((
+                        Crab::default(),
+                        Fade::Out(1.0),
+                        goal.clone(),
+                    ));
 
                 // Wall
                 parent
@@ -391,9 +392,7 @@ fn setup_goals(
                         ),
                         ..Default::default()
                     })
-                    .insert(Wall)
-                    .insert(Active)
-                    .insert(goal.clone());
+                    .insert_bundle((Wall, Active, goal.clone()));
 
                 // Barrier
                 parent
@@ -436,8 +435,7 @@ fn setup_goals(
                 ),
                 ..Default::default()
             })
-            .insert(Score)
-            .insert(goal.clone());
+            .insert_bundle((Score, goal.clone()));
 
         game.scores.insert(goal.clone(), 0);
     }
