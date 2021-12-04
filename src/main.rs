@@ -850,6 +850,8 @@ fn ball_collision_system(
         let ball_radius = config.ball_radius();
         let barrier_radius = 0.5 * config.barrier_width;
         let half_width = 0.5 * config.beach_width;
+        let d = velocity.0.normalize();
+        let radius_position = transform.translation + d * ball_radius;
 
         // TODO: Order these so that highest precedence collision type is at the
         // bottom, since it can overwrite others!
@@ -871,19 +873,12 @@ fn ball_collision_system(
 
         // Pole collisions
         for (pole_transform, goal) in poles_query.iter() {
-            let d = velocity.0.normalize();
-            let ball_radius_position = transform.translation + d * ball_radius;
-            let pole_global_position = pole_transform.translation;
-            let distance_to_goal = axis_distance_to_goal(
-                goal,
-                &ball_radius_position,
-                &pole_global_position,
-            );
-            let n = match goal {
-                Goal::Top => -Vec3::Z,
-                Goal::Right => Vec3::X,
-                Goal::Bottom => Vec3::Z,
-                Goal::Left => -Vec3::X,
+            let pole_position = pole_transform.translation;
+            let (n, distance_to_goal) = match goal {
+                Goal::Top => (-Vec3::Z, radius_position.z - pole_position.z),
+                Goal::Right => (Vec3::X, -radius_position.x + pole_position.x),
+                Goal::Bottom => (Vec3::Z, -radius_position.z + pole_position.z),
+                Goal::Left => (-Vec3::X, radius_position.x - pole_position.x),
             };
 
             if distance_to_goal > 0.0 {
@@ -896,20 +891,6 @@ fn ball_collision_system(
                 .insert(Velocity(r * config.ball_speed));
             break;
         }
-    }
-}
-
-fn axis_distance_to_goal(
-    goal: &Goal,
-    ball_radius_position: &Vec3,
-    pole_global_position: &Vec3,
-) -> f32 {
-    // Axis-aligned distance from a ball to a given goal
-    match goal {
-        Goal::Top => ball_radius_position.z - pole_global_position.z,
-        Goal::Right => -ball_radius_position.x + pole_global_position.x,
-        Goal::Bottom => -ball_radius_position.z + pole_global_position.z,
-        Goal::Left => ball_radius_position.x - pole_global_position.x,
     }
 }
 
@@ -928,15 +909,17 @@ fn goal_scored_system(
         let ball_translation = ball_transform.translation;
         let ball_radius = config.ball_radius();
         let d = velocity.0.normalize();
-        let ball_radius_position = ball_translation + d * ball_radius;
+        let radius_position = ball_translation + d * ball_radius;
 
-        for (goal_transform, goal) in poles_query.iter() {
+        for (pole_transform, goal) in poles_query.iter() {
             // Score against the goal that's closest to this ball
-            let distance_to_goal = axis_distance_to_goal(
-                goal,
-                &ball_radius_position,
-                &goal_transform.translation,
-            );
+            let goal_position = pole_transform.translation;
+            let distance_to_goal = match goal {
+                Goal::Top => radius_position.z - goal_position.z,
+                Goal::Right => -radius_position.x + goal_position.x,
+                Goal::Bottom => -radius_position.z + goal_position.z,
+                Goal::Left => radius_position.x - goal_position.x,
+            };
 
             // TODO: Offset slightly to avoid scoring when bouncing off a pole.
             // Document this!
@@ -988,6 +971,15 @@ fn gameover_check_system(
         }
     }
 }
+
+// TODO: Add proper settings for player and enemy starting scores.
+
+// TODO: Rename "Pole" to "Wall".
+
+// TODO: Need to split this file up into proper modules now that the divisions
+// mostly seem to have settled.
+
+// TODO: Need to document the hell out of this code.
 
 // TODO: Need a fix for the rare occasion when a ball just bounces infinitely
 // between two poles in a straight line?
