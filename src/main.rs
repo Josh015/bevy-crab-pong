@@ -548,18 +548,18 @@ fn ball_fade_animation_system(
     >,
 ) {
     // Increase/Decrease balls' opacity to show/hide them
-    let mut is_prior_fade = false;
+    let mut is_prior_fading = false;
 
     for (material, mut transform, mut fade) in query.iter_mut() {
-        let is_current_fade = matches!(*fade, Fade::In(_));
+        let is_current_fading = matches!(*fade, Fade::In(_));
 
-        // Force current ball to wait if other is also fade in
-        if is_prior_fade && is_current_fade {
+        // Force current ball to wait if other is also fading in
+        if is_prior_fading && is_current_fading {
             *fade = Fade::In(0.0);
             continue;
         }
 
-        is_prior_fade = is_current_fade;
+        is_prior_fading = is_current_fading;
 
         // materials
         //     .get_mut(material)
@@ -629,6 +629,8 @@ fn assign_players(
     query: Query<(Entity, &Goal), With<Crab>>,
 ) {
     for (entity, goal) in query.iter() {
+        // TODO: Build this out to support more crazy configurations that can be
+        // set at runtime
         if *goal == Goal::Bottom {
             commands.entity(entity).insert(Player);
         } else {
@@ -655,7 +657,10 @@ fn reset_game_entities(
 
     // Reset walls
     for entity in walls_query.iter() {
-        commands.entity(entity).insert(Fade::Out(0.3));
+        commands
+            .entity(entity)
+            .remove::<Active>()
+            .insert(Fade::Out(0.3));
     }
 
     // Reset scores
@@ -810,7 +815,7 @@ fn ball_reset_position_system(
     config: Res<GameConfig>,
     mut query: Query<
         (Entity, &mut Transform),
-        (With<Ball>, Without<Active>, Without<Fade>),
+        (With<Ball>, Without<Fade>, Without<Active>),
     >,
 ) {
     for (entity, mut transform) in query.iter_mut() {
@@ -825,7 +830,7 @@ fn ball_reset_position_system(
 fn ball_reset_velocity_system(
     mut commands: Commands,
     config: Res<GameConfig>,
-    query: Query<Entity, (With<Ball>, With<Active>, Without<Velocity>)>,
+    query: Query<Entity, (With<Ball>, Without<Velocity>, Added<Active>)>,
 ) {
     for entity in query.iter() {
         // TODO: Move this into a global resource? Also, make a reusable uniform
