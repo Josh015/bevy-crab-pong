@@ -4,9 +4,9 @@ use crate::{Game, GameConfig, GameOver, GameState};
 
 use super::{
     ball::Ball,
-    crab::Crab,
     enemy::Enemy,
     fade::{Active, Fade},
+    paddle::Paddle,
     player::Player,
     velocity::Velocity,
     wall::Wall,
@@ -71,7 +71,7 @@ pub fn scored_system(
 pub fn eliminated_animation_system(
     mut commands: Commands,
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
-    balls_query: Query<(Entity, &Goal), (With<Crab>, With<Active>)>,
+    balls_query: Query<(Entity, &Goal), (With<Paddle>, With<Active>)>,
     walls_query: Query<(Entity, &Goal), (With<Wall>, Without<Active>)>,
 ) {
     for GoalEliminated(eliminated_goal) in goal_eliminated_reader.iter() {
@@ -95,15 +95,15 @@ pub fn gameover_check_system(
     mut game: ResMut<Game>,
     mut state: ResMut<State<GameState>>,
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
-    players_query: Query<&Goal, (With<Crab>, With<Player>)>,
-    enemies_query: Query<&Goal, (With<Crab>, With<Enemy>)>,
+    players_query: Query<&Goal, (With<Paddle>, With<Player>)>,
+    enemies_query: Query<&Goal, (With<Paddle>, With<Enemy>)>,
 ) {
     for GoalEliminated(_) in goal_eliminated_reader.iter() {
-        // Player wins if all Enemy crabs have a score of zero
+        // Player wins if all Enemy paddles have a score of zero
         let has_player_won =
             enemies_query.iter().all(|goal| game.scores[&goal] == 0);
 
-        // Player loses if all Player crabs have a score of zero
+        // Player loses if all Player paddles have a score of zero
         let has_player_lost =
             players_query.iter().all(|goal| game.scores[&goal] == 0);
 

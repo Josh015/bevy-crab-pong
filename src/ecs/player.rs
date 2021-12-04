@@ -4,19 +4,19 @@ use bevy::{
 };
 
 use super::{
-    crab::{Crab, Movement},
     fade::Active,
+    paddle::{Movement, Paddle},
 };
 
 #[derive(Component)]
 pub struct Player;
 
-pub fn crab_control_system(
+pub fn paddle_control_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Crab, (With<Active>, With<Player>)>,
+    mut query: Query<&mut Paddle, (With<Active>, With<Player>)>,
 ) {
-    for mut crab in query.iter_mut() {
-        crab.movement = if keyboard_input.pressed(KeyCode::Left) {
+    for mut paddle in query.iter_mut() {
+        paddle.movement = if keyboard_input.pressed(KeyCode::Left) {
             Movement::Left
         } else if keyboard_input.pressed(KeyCode::Right) {
             Movement::Right

@@ -6,9 +6,9 @@ use crate::GameConfig;
 use super::{
     ball::Ball,
     barrier::Barrier,
-    crab::Crab,
     fade::{Active, Fade},
     goal::Goal,
+    paddle::Paddle,
     velocity::Velocity,
     wall::Wall,
 };
@@ -59,7 +59,7 @@ pub fn collision_system(
         (Entity, &GlobalTransform, &Velocity),
         (With<Ball>, With<Active>),
     >,
-    crabs_query: Query<&GlobalTransform, (With<Crab>, With<Active>)>,
+    paddles_query: Query<&GlobalTransform, (With<Paddle>, With<Active>)>,
     barriers_query: Query<&GlobalTransform, With<Barrier>>,
     walls_query: Query<(&GlobalTransform, &Goal), (With<Wall>, With<Active>)>,
 ) {
@@ -78,8 +78,8 @@ pub fn collision_system(
             break;
         }
 
-        // Crab collisions
-        for transform in crabs_query.iter() {
+        // Paddle collisions
+        for transform in paddles_query.iter() {
             break;
         }
 

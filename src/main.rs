@@ -3,8 +3,8 @@ mod files;
 
 use bevy::{ecs::prelude::*, prelude::*};
 use ecs::{
-    animated_water::*, arena::*, ball::*, barrier::*, crab::*, enemy::*,
-    fade::*, goal::*, player::*, score::*, swaying_camera::*, velocity::*,
+    animated_water::*, arena::*, ball::*, barrier::*, enemy::*, fade::*,
+    goal::*, paddle::*, player::*, score::*, swaying_camera::*, velocity::*,
     wall::*, *,
 };
 use serde::Deserialize;
@@ -34,7 +34,7 @@ fn main() {
         .add_system(animated_water::animation_system)
         .add_system(fade::start_fade_system)
         .add_system(fade::step_fade_system)
-        .add_system(crab::step_fade_animation_system)
+        .add_system(paddle::step_fade_animation_system)
         .add_system(wall::start_fade_system)
         .add_system(wall::step_fade_animation_system)
         .add_system(ball::step_fade_animation_system)
@@ -63,9 +63,9 @@ fn main() {
         )
         .add_system_set(
             SystemSet::on_update(GameState::Playing)
-                .with_system(crab::movement_system)
-                .with_system(player::crab_control_system)
-                .with_system(enemy::crab_control_system)
+                .with_system(paddle::movement_system)
+                .with_system(player::paddle_control_system)
+                .with_system(enemy::paddle_control_system)
                 .with_system(velocity::movement_system)
                 .with_system(goal::scored_system)
                 .with_system(goal::gameover_check_system)
@@ -98,10 +98,10 @@ pub struct GameConfig {
     animated_water_speed: f32,
     beach_center_point: (f32, f32, f32),
     beach_width: f32,
-    crab_max_speed: f32,
-    crab_seconds_to_max_speed: f32,
-    crab_scale: (f32, f32, f32),
-    crab_start_position: (f32, f32, f32),
+    paddle_max_speed: f32,
+    paddle_seconds_to_max_speed: f32,
+    paddle_scale: (f32, f32, f32),
+    paddle_start_position: (f32, f32, f32),
     ball_size: f32,
     ball_height: f32,
     ball_speed: f32,
@@ -112,8 +112,8 @@ pub struct GameConfig {
 }
 
 impl GameConfig {
-    fn crab_acceleration(&self) -> f32 {
-        self.crab_max_speed / self.crab_seconds_to_max_speed
+    fn paddle_acceleration(&self) -> f32 {
+        self.paddle_max_speed / self.paddle_seconds_to_max_speed
     }
 
     fn ball_center_point(&self) -> Vec3 {
@@ -285,7 +285,7 @@ fn setup_goals(
                 ..Default::default()
             })
             .with_children(|parent| {
-                // Crab
+                // Paddle
                 // NOTE: Treat it as the center of the goal
                 parent
                     .spawn_bundle(PbrBundle {
@@ -293,15 +293,15 @@ fn setup_goals(
                         material: materials.add(color.clone().into()),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                config.crab_scale.into(),
+                                config.paddle_scale.into(),
                                 Quat::IDENTITY,
-                                config.crab_start_position.into(),
+                                config.paddle_start_position.into(),
                             ),
                         ),
                         ..Default::default()
                     })
                     .insert_bundle((
-                        Crab::default(),
+                        Paddle::default(),
                         Fade::Out(1.0),
                         goal.clone(),
                     ));
@@ -397,7 +397,7 @@ fn gameover_keyboard_system(
 
 fn assign_players(
     mut commands: Commands,
-    query: Query<(Entity, &Goal), With<Crab>>,
+    query: Query<(Entity, &Goal), With<Paddle>>,
 ) {
     for (entity, goal) in query.iter() {
         // TODO: Build this out to support more crazy configurations that can be
@@ -414,16 +414,16 @@ fn reset_game_entities(
     mut commands: Commands,
     config: Res<GameConfig>,
     mut game: ResMut<Game>,
-    mut crabs_query: Query<
+    mut paddles_query: Query<
         (Entity, &mut Transform),
-        (With<Crab>, Without<Active>),
+        (With<Paddle>, Without<Active>),
     >,
     walls_query: Query<Entity, (With<Wall>, With<Active>)>,
 ) {
-    // Reset crabs
-    for (entity, mut transform) in crabs_query.iter_mut() {
+    // Reset paddles
+    for (entity, mut transform) in paddles_query.iter_mut() {
         commands.entity(entity).insert(Fade::In(0.4));
-        transform.translation = config.crab_start_position.into();
+        transform.translation = config.paddle_start_position.into();
     }
 
     // Reset walls
@@ -469,18 +469,18 @@ fn fade_out_balls(
 // TODO: Need a fix for the rare occasion when a ball just bounces infinitely
 // between two walls in a straight line?
 
-// TODO: Offer a "Traditional" mode with two crabs (1xPlayer, 1xEnemy) opposite
-// each other and the other two walled off. Also just one ball?
+// TODO: Offer a "Traditional" mode with two paddles (1xPlayer, 1xEnemy)
+// opposite each other and the other two walled off. Also just one ball?
 
-// TODO: Debug option to make all crabs driven by AI? Will need to revise
+// TODO: Debug option to make all paddles driven by AI? Will need to revise
 // player system to handle no players.
 
 // TODO: Debug option to directly control single ball's exact position with
-// keyboard and see how crabs respond. Can go in goals, triggering a score and
+// keyboard and see how paddles respond. Can go in goals, triggering a score and
 // ball return?
 
 // TODO: Debug option to add small cubes at the projected points on goals with
-// debug lines to the nearest ball. Also add a line from the crab to a flat
+// debug lines to the nearest ball. Also add a line from the paddle to a flat
 // but wide cube (to allow both to be visible if they overlap) that matches the
-// crab's hit box dimensions and is positioned where the crab predicts it
+// paddle's hit box dimensions and is positioned where the paddle predicts it
 // will stop. One of each per goal so we can spawn them in advance.
