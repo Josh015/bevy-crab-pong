@@ -36,6 +36,7 @@ fn main() {
         .add_system(crab_fade_animation_system)
         .add_system(pole_fade_animation_system)
         .add_system(ball_fade_animation_system)
+        .add_system(goal_eliminated_animation_system)
         .add_state(GameState::GameOver)
         .add_event::<GoalEliminated>()
         .add_system_set(
@@ -68,7 +69,6 @@ fn main() {
                 .with_system(ball_reset_velocity_system)
                 .with_system(ball_collision_system)
                 .with_system(goal_scored_system)
-                .with_system(goal_eliminated_animation_system)
                 .with_system(gameover_check_system),
         )
         .add_system(bevy::input::system::exit_on_esc_system)
@@ -569,6 +569,31 @@ fn ball_fade_animation_system(
     }
 }
 
+fn goal_eliminated_animation_system(
+    mut commands: Commands,
+    mut goal_eliminated_reader: EventReader<GoalEliminated>,
+    balls_query: Query<(Entity, &Goal), (With<Crab>, With<Active>)>,
+    poles_query: Query<(Entity, &Goal), (With<Pole>, Without<Active>)>,
+) {
+    for GoalEliminated(eliminated_goal) in goal_eliminated_reader.iter() {
+        for (entity, goal) in balls_query.iter() {
+            if goal == eliminated_goal {
+                commands.entity(entity).remove::<Active>();
+                commands.entity(entity).insert(Fade::Out(0.0));
+                break;
+            }
+        }
+
+        for (entity, goal) in poles_query.iter() {
+            if goal == eliminated_goal {
+                commands.entity(entity).insert(Active);
+                commands.entity(entity).insert(Fade::In(0.0));
+                break;
+            }
+        }
+    }
+}
+
 fn gameover_show_ui(game: Res<Game>) {
     if let Some(game_over) = game.over {
         if game_over == GameOver::Won {
@@ -928,31 +953,6 @@ fn goal_scored_system(
             commands.entity(entity).remove::<Active>();
             commands.entity(entity).insert(Fade::Out(0.0));
             break;
-        }
-    }
-}
-
-fn goal_eliminated_animation_system(
-    mut commands: Commands,
-    mut goal_eliminated_reader: EventReader<GoalEliminated>,
-    balls_query: Query<(Entity, &Goal), (With<Crab>, With<Active>)>,
-    poles_query: Query<(Entity, &Goal), (With<Pole>, Without<Active>)>,
-) {
-    for GoalEliminated(eliminated_goal) in goal_eliminated_reader.iter() {
-        for (entity, goal) in balls_query.iter() {
-            if goal == eliminated_goal {
-                commands.entity(entity).remove::<Active>();
-                commands.entity(entity).insert(Fade::Out(0.0));
-                break;
-            }
-        }
-
-        for (entity, goal) in poles_query.iter() {
-            if goal == eliminated_goal {
-                commands.entity(entity).insert(Active);
-                commands.entity(entity).insert(Fade::In(0.0));
-                break;
-            }
         }
     }
 }
