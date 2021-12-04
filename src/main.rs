@@ -2,11 +2,7 @@ mod components;
 mod files;
 
 use bevy::{ecs::prelude::*, prelude::*};
-use components::{
-    animated_water::*, arena::*, ball::*, barrier::*, enemy::*, fade::*,
-    goal::*, paddle::*, player::*, score::*, swaying_camera::*, velocity::*,
-    wall::*, *,
-};
+use components::*;
 use serde::Deserialize;
 use std::{collections::HashMap, ops::Add};
 
