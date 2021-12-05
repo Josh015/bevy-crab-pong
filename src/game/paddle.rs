@@ -9,7 +9,7 @@ use crate::GameConfig;
 
 #[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
 pub enum Paddle {
-    Stopped,
+    Stop,
     Left,
     Right,
 }
@@ -34,7 +34,7 @@ pub fn acceleration_system(
         // Accelerate the paddle
         let delta_speed = config.paddle_acceleration() * time.delta_seconds();
 
-        if *paddle == Paddle::Stopped {
+        if *paddle == Paddle::Stop {
             let s = velocity.speed.abs().sub(delta_speed).max(0.0);
             velocity.speed = velocity.speed.max(-s).min(s);
         } else {
@@ -75,21 +75,11 @@ pub fn bounded_movement_system(
     }
 }
 
-// TODO: Idea, have crab movement based on modified Velocity. Velocity here is
-// more like Fade in that it will just build up speed over time until it hits a
-// maximum. Crab movement system is then based on Changed<Movement>, only
-// manipulating the Velocity when it changes. For crabs, direction vector will
-// stay the same, but speed can be either positive or negative to control which
+// TODO: Velocity here is more like Fade in that it will just build up speed
+// over time until it hits a maximum. For crabs, direction vector will stay the
+// same, but speed can be either positive or negative to control which
 // way they're moving and allow us to accelerate/decelerate. Can just keep
 // velocity
 
 // TODO: To help justify the more general Velocity, maybe balls can have a short
 // acceleration after they launch?
-
-// TODO: Instead of constantly removing Velocity, do major setup at entity
-// creation time, then at runtime only change direction, current_speed, then a
-// value for if they're accelerating positive/negative or decelerating?
-
-// TODO: Maybe rename Movement to Delta and have it be a separate component that
-// modifies Velocity? Can keep the concept separate for Ball vs Paddle! Can
-// remove acceleration while setting Velocity to zero!

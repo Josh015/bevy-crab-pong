@@ -53,7 +53,7 @@ pub fn paddle_control_system(
         if (stop_position - target_position).abs()
             < 0.7 * (config.paddle_scale.0 * 0.5)
         {
-            *paddle = Paddle::Stopped;
+            *paddle = Paddle::Stop;
         } else if target_position < local.translation.x {
             *paddle = Paddle::Left;
         } else {

@@ -18,7 +18,7 @@ pub fn paddle_control_system(
         } else if keyboard_input.pressed(KeyCode::Right) {
             Paddle::Right
         } else {
-            Paddle::Stopped
+            Paddle::Stop
         };
     }
 }

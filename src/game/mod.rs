@@ -249,7 +249,7 @@ pub fn setup(
                         ..Default::default()
                     })
                     .insert_bundle((
-                        Paddle::Stopped,
+                        Paddle::Stop,
                         Fade::Out(1.0),
                         Velocity {
                             speed: 0.0,
