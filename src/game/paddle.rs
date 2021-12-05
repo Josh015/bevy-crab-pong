@@ -39,7 +39,8 @@ pub fn movement_system(
 ) {
     for (mut transform, mut paddle) in query.iter_mut() {
         // Accelerate the paddle
-        let delta_speed = config.paddle_acceleration() * time.delta_seconds();
+        let delta_seconds = time.delta_seconds();
+        let delta_speed = config.paddle_acceleration() * delta_seconds;
 
         if paddle.movement == Movement::Stopped {
             let s = paddle.speed.abs().sub(delta_speed).max(0.0);
@@ -56,7 +57,8 @@ pub fn movement_system(
         }
 
         // Limit paddle to open space between barriers
-        let mut position = transform.translation.x + paddle.speed;
+        let mut position =
+            transform.translation.x + (paddle.speed * delta_seconds);
         let extents = 0.5
             * (config.beach_width
                 - config.barrier_width
