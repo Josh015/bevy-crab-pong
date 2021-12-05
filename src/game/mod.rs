@@ -433,9 +433,23 @@ pub fn fade_out_balls(
     }
 }
 
+// NOTE: Rules for which modules get which systems:
+// 1.) The component of the outermost query (eg. With<Ball>, With<Paddle>, etc.)
+// is where that system should live.
+// 2.) Especially the case if the system ultimately modifies that entity that
+// owns that component.
+
+// TODO: Go back through and remove un-needed imports.
+
+// TODO: Go back through and remove un-needed iter_mut() and mutability calls.
+
 // TODO: Add event logging.
 
 // TODO: Need to document the hell out of this code.
+
+// TODO: Need to fix rare issue where restarting the game too quickly can make a
+// wall disappear, but it still deflects balls as though it was there. May be
+// related to it being the last goal before gameover?
 
 // TODO: Need a fix for the rare occasion when a ball just bounces infinitely
 // between two walls in a straight line?
