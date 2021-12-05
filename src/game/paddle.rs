@@ -7,20 +7,11 @@ use super::{
 };
 use crate::GameConfig;
 
-#[derive(Clone, Eq, PartialEq, Debug, Hash)]
-pub enum Movement {
+#[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
+pub enum Paddle {
     Stopped,
     Left,
     Right,
-}
-
-impl Default for Movement {
-    fn default() -> Self { Self::Stopped }
-}
-
-#[derive(Component, Default)]
-pub struct Paddle {
-    pub movement: Movement,
 }
 
 pub fn step_fade_animation_system(
@@ -43,13 +34,13 @@ pub fn acceleration_system(
         // Accelerate the paddle
         let delta_speed = config.paddle_acceleration() * time.delta_seconds();
 
-        if paddle.movement == Movement::Stopped {
+        if *paddle == Paddle::Stopped {
             let s = velocity.speed.abs().sub(delta_speed).max(0.0);
             velocity.speed = velocity.speed.max(-s).min(s);
         } else {
             velocity.speed = velocity
                 .speed
-                .add(if paddle.movement == Movement::Left {
+                .add(if *paddle == Paddle::Left {
                     -delta_speed
                 } else {
                     delta_speed

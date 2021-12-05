@@ -2,13 +2,7 @@ use bevy::prelude::{Component, GlobalTransform, Query, Res, Transform, With};
 
 use crate::GameConfig;
 
-use super::{
-    ball::Ball,
-    fade::Active,
-    goal::Goal,
-    paddle::{Movement, Paddle},
-    Velocity,
-};
+use super::{ball::Ball, fade::Active, goal::Goal, paddle::Paddle, Velocity};
 
 #[derive(Component)]
 pub struct Enemy;
@@ -59,11 +53,11 @@ pub fn paddle_control_system(
         if (stop_position - target_position).abs()
             < 0.7 * (config.paddle_scale.0 * 0.5)
         {
-            paddle.movement = Movement::Stopped;
+            *paddle = Paddle::Stopped;
         } else if target_position < local.translation.x {
-            paddle.movement = Movement::Left;
+            *paddle = Paddle::Left;
         } else {
-            paddle.movement = Movement::Right;
+            *paddle = Paddle::Right;
         }
     }
 }

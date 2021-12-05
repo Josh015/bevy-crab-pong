@@ -3,10 +3,7 @@ use bevy::{
     prelude::{Component, KeyCode, Query, Res, With},
 };
 
-use super::{
-    fade::Active,
-    paddle::{Movement, Paddle},
-};
+use super::{fade::Active, paddle::Paddle};
 
 #[derive(Component)]
 pub struct Player;
@@ -16,12 +13,12 @@ pub fn paddle_control_system(
     mut query: Query<&mut Paddle, (With<Active>, With<Player>)>,
 ) {
     for mut paddle in query.iter_mut() {
-        paddle.movement = if keyboard_input.pressed(KeyCode::Left) {
-            Movement::Left
+        *paddle = if keyboard_input.pressed(KeyCode::Left) {
+            Paddle::Left
         } else if keyboard_input.pressed(KeyCode::Right) {
-            Movement::Right
+            Paddle::Right
         } else {
-            Movement::Stopped
+            Paddle::Stopped
         };
     }
 }
