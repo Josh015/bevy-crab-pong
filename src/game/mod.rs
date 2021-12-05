@@ -251,6 +251,10 @@ pub fn setup(
                     .insert_bundle((
                         Paddle::default(),
                         Fade::Out(1.0),
+                        Velocity {
+                            speed: 0.0,
+                            direction: Vec3::X,
+                        },
                         goal.clone(),
                     ));
 
