@@ -2,23 +2,23 @@ use bevy::{ecs::prelude::*, prelude::*};
 
 use crate::GameConfig;
 
-#[derive(Component)]
-pub struct Active;
-
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub enum Fade {
-    Out(f32),
     In(f32),
+    Out(f32),
 }
 
 impl Fade {
     pub fn opacity(&self) -> f32 {
-        match self {
-            Self::In(weight) => *weight,
+        match *self {
+            Self::In(weight) => weight,
             Self::Out(weight) => 1.0 - weight,
         }
     }
 }
+
+#[derive(Component)]
+pub struct Active;
 
 pub fn start_fade_system(
     mut commands: Commands,

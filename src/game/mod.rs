@@ -330,10 +330,6 @@ pub fn show_gameover_ui(game: Res<Game>) {
     // TODO: new game text visible
 }
 
-pub fn hide_gameover_ui() {
-    // TODO: Hide message text
-}
-
 pub fn gameover_keyboard_system(
     mut state: ResMut<State<GameState>>,
     keyboard_input: Res<Input<KeyCode>>,
@@ -341,6 +337,10 @@ pub fn gameover_keyboard_system(
     if keyboard_input.just_pressed(KeyCode::Return) {
         state.set(GameState::Playing).unwrap();
     }
+}
+
+pub fn hide_gameover_ui() {
+    // TODO: Hide message text
 }
 
 pub fn reset_game_entities(
@@ -438,6 +438,8 @@ pub fn fade_out_balls(
 // is where that system should live.
 // 2.) Especially the case if the system ultimately modifies that entity that
 // owns that component.
+// 3.) If it has multiple top-level queries, then it probably belongs in the
+// game module.
 
 // TODO: Go back through and remove un-needed imports.
 

@@ -123,7 +123,7 @@ pub fn collision_system(
         // Wall collisions
         for (wall_transform, goal) in walls_query.iter() {
             let wall_position = wall_transform.translation;
-            let (n, distance_to_goal) = match goal {
+            let (n, distance_to_goal) = match *goal {
                 Goal::Top => (-Vec3::Z, radius_position.z - wall_position.z),
                 Goal::Right => (Vec3::X, -radius_position.x + wall_position.x),
                 Goal::Bottom => (Vec3::Z, -radius_position.z + wall_position.z),
@@ -165,7 +165,7 @@ pub fn scored_system(
         for (wall_transform, goal) in walls_query.iter() {
             // Score against the goal that's closest to this ball
             let goal_position = wall_transform.translation;
-            let distance_to_goal = match goal {
+            let distance_to_goal = match *goal {
                 Goal::Top => radius_position.z - goal_position.z,
                 Goal::Right => -radius_position.x + goal_position.x,
                 Goal::Bottom => -radius_position.z + goal_position.z,
