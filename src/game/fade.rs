@@ -2,14 +2,14 @@ use bevy::{ecs::prelude::*, prelude::*};
 
 use crate::GameConfig;
 
-#[derive(Component)]
-pub struct Active;
-
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub enum Fade {
-    Out(f32),
     In(f32),
+    Out(f32),
 }
+
+#[derive(Component)]
+pub struct Active;
 
 impl Fade {
     pub fn opacity(&self) -> f32 {
@@ -35,25 +35,26 @@ pub fn step_fade_system(
     mut commands: Commands,
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(Entity, &mut Fade)>,
+    query: Query<(Entity, &Fade)>,
 ) {
     // Simulates fade from visible->invisible and vice versa over time
-    for (entity, mut fade) in query.iter_mut() {
+    for (entity, fade) in query.iter() {
+        let mut entity_commands = commands.entity(entity);
         let step = config.fade_speed * time.delta_seconds();
 
         match *fade {
             Fade::In(weight) => {
                 if weight < 1.0 {
-                    *fade = Fade::In(weight.max(0.0) + step);
+                    entity_commands.insert(Fade::In(weight.max(0.0) + step));
                 } else {
-                    commands.entity(entity).remove::<Fade>().insert(Active);
+                    entity_commands.remove::<Fade>().insert(Active);
                 }
             },
             Fade::Out(weight) => {
                 if weight < 1.0 {
-                    *fade = Fade::Out(weight.max(0.0) + step);
+                    entity_commands.insert(Fade::Out(weight.max(0.0) + step));
                 } else {
-                    commands.entity(entity).remove::<Fade>();
+                    entity_commands.remove::<Fade>();
                 }
             },
         }
