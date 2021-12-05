@@ -55,7 +55,7 @@ fn main() {
                 .with_system(ball::reset_position_system)
                 .with_system(ball::reset_velocity_system)
                 .with_system(enemy::paddle_control_system)
-                .with_system(goal::gameover_check_system)
+                .with_system(game::gameover_check_system)
                 .with_system(goal::scored_system)
                 .with_system(paddle::movement_system)
                 .with_system(player::paddle_control_system)

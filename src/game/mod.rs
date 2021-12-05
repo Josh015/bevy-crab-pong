@@ -387,6 +387,35 @@ pub fn reset_game_entities(
     }
 }
 
+pub fn gameover_check_system(
+    mut game: ResMut<Game>,
+    mut state: ResMut<State<GameState>>,
+    mut goal_eliminated_reader: EventReader<GoalEliminated>,
+    players_query: Query<&Goal, (With<Paddle>, With<Player>)>,
+    enemies_query: Query<&Goal, (With<Paddle>, With<Enemy>)>,
+) {
+    for GoalEliminated(_) in goal_eliminated_reader.iter() {
+        // Player wins if all Enemy paddles have a score of zero
+        let has_player_won =
+            enemies_query.iter().all(|goal| game.scores[&goal] == 0);
+
+        // Player loses if all Player paddles have a score of zero
+        let has_player_lost =
+            players_query.iter().all(|goal| game.scores[&goal] == 0);
+
+        // Declare a winner and trigger gameover
+        if has_player_won || has_player_lost {
+            game.over = if has_player_won {
+                Some(GameOver::Won)
+            } else {
+                Some(GameOver::Lost)
+            };
+
+            state.set(GameState::GameOver).unwrap();
+        }
+    }
+}
+
 pub fn fade_out_balls(
     mut commands: Commands,
     query: Query<(Entity, Option<&Active>, Option<&Fade>), With<Ball>>,

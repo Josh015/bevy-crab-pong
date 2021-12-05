@@ -1,6 +1,6 @@
 use bevy::{ecs::prelude::*, prelude::*};
 
-use crate::{Game, GameConfig, GameOver, GameState};
+use crate::{Game, GameConfig};
 
 use super::{
     ball::Ball,
@@ -21,6 +21,29 @@ pub enum Goal {
 }
 
 pub struct GoalEliminated(pub Goal);
+
+pub fn eliminated_animation_system(
+    mut commands: Commands,
+    mut goal_eliminated_reader: EventReader<GoalEliminated>,
+    balls_query: Query<(Entity, &Goal), (With<Paddle>, With<Active>)>,
+    walls_query: Query<(Entity, &Goal), (With<Wall>, Without<Active>)>,
+) {
+    for GoalEliminated(eliminated_goal) in goal_eliminated_reader.iter() {
+        for (entity, goal) in balls_query.iter() {
+            if goal == eliminated_goal {
+                commands.entity(entity).insert(Fade::Out(0.0));
+                break;
+            }
+        }
+
+        for (entity, goal) in walls_query.iter() {
+            if goal == eliminated_goal {
+                commands.entity(entity).insert(Fade::In(0.0));
+                break;
+            }
+        }
+    }
+}
 
 pub fn scored_system(
     mut commands: Commands,
@@ -64,58 +87,6 @@ pub fn scored_system(
             // Fade out and deactivate the ball to prevent repeated scoring
             commands.entity(entity).insert(Fade::Out(0.0));
             break;
-        }
-    }
-}
-
-pub fn eliminated_animation_system(
-    mut commands: Commands,
-    mut goal_eliminated_reader: EventReader<GoalEliminated>,
-    balls_query: Query<(Entity, &Goal), (With<Paddle>, With<Active>)>,
-    walls_query: Query<(Entity, &Goal), (With<Wall>, Without<Active>)>,
-) {
-    for GoalEliminated(eliminated_goal) in goal_eliminated_reader.iter() {
-        for (entity, goal) in balls_query.iter() {
-            if goal == eliminated_goal {
-                commands.entity(entity).insert(Fade::Out(0.0));
-                break;
-            }
-        }
-
-        for (entity, goal) in walls_query.iter() {
-            if goal == eliminated_goal {
-                commands.entity(entity).insert(Fade::In(0.0));
-                break;
-            }
-        }
-    }
-}
-
-pub fn gameover_check_system(
-    mut game: ResMut<Game>,
-    mut state: ResMut<State<GameState>>,
-    mut goal_eliminated_reader: EventReader<GoalEliminated>,
-    players_query: Query<&Goal, (With<Paddle>, With<Player>)>,
-    enemies_query: Query<&Goal, (With<Paddle>, With<Enemy>)>,
-) {
-    for GoalEliminated(_) in goal_eliminated_reader.iter() {
-        // Player wins if all Enemy paddles have a score of zero
-        let has_player_won =
-            enemies_query.iter().all(|goal| game.scores[&goal] == 0);
-
-        // Player loses if all Player paddles have a score of zero
-        let has_player_lost =
-            players_query.iter().all(|goal| game.scores[&goal] == 0);
-
-        // Declare a winner and trigger gameover
-        if has_player_won || has_player_lost {
-            game.over = if has_player_won {
-                Some(GameOver::Won)
-            } else {
-                Some(GameOver::Lost)
-            };
-
-            state.set(GameState::GameOver).unwrap();
         }
     }
 }
