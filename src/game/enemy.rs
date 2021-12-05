@@ -40,7 +40,7 @@ pub fn paddle_control_system(
 
         // Predict the position where the paddle will stop if it immediately
         // begins decelerating.
-        let d = velocity.speed * velocity.speed / config.paddle_acceleration();
+        let d = velocity.speed * velocity.speed / velocity.acceleration;
         let stop_position = if velocity.speed > 0.0 {
             local.translation.x + d
         } else {

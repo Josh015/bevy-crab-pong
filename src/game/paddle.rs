@@ -3,7 +3,7 @@ use std::ops::{Add, Sub};
 
 use super::{
     fade::{Active, Fade},
-    Velocity,
+    Delta, Velocity,
 };
 use crate::GameConfig;
 
@@ -12,6 +12,32 @@ pub enum Paddle {
     Stop,
     Left,
     Right,
+}
+
+pub fn add_velocity_system(
+    mut commands: Commands,
+    config: Res<GameConfig>,
+    query: Query<Entity, (With<Paddle>, Added<Active>, Without<Velocity>)>,
+) {
+    for entity in query.iter() {
+        commands.entity(entity).insert(Velocity {
+            speed: 0.0,
+            direction: Vec3::X,
+            max_speed: config.paddle_max_speed,
+            acceleration: config.paddle_max_speed
+                / config.paddle_seconds_to_max_speed,
+            delta: Delta::Decelerating,
+        });
+    }
+}
+
+pub fn remove_velocity_system(
+    mut commands: Commands,
+    query: Query<Entity, (With<Paddle>, Without<Active>, With<Velocity>)>,
+) {
+    for entity in query.iter() {
+        commands.entity(entity).remove::<Velocity>();
+    }
 }
 
 pub fn step_fade_animation_system(
@@ -26,27 +52,15 @@ pub fn step_fade_animation_system(
 }
 
 pub fn acceleration_system(
-    config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut Velocity, &Paddle), With<Active>>,
 ) {
     for (mut transform, mut velocity, paddle) in query.iter_mut() {
-        // Accelerate the paddle
-        let delta_speed = config.paddle_acceleration() * time.delta_seconds();
-
-        if *paddle == Paddle::Stop {
-            let s = velocity.speed.abs().sub(delta_speed).max(0.0);
-            velocity.speed = velocity.speed.max(-s).min(s);
-        } else {
-            velocity.speed = velocity
-                .speed
-                .add(if *paddle == Paddle::Left {
-                    -delta_speed
-                } else {
-                    delta_speed
-                })
-                .clamp(-config.paddle_max_speed, config.paddle_max_speed);
-        }
+        velocity.delta = match *paddle {
+            Paddle::Stop => Delta::Decelerating,
+            Paddle::Left => Delta::Accelerating(-1.0),
+            Paddle::Right => Delta::Accelerating(1.0),
+        };
     }
 }
 
@@ -74,12 +88,3 @@ pub fn bounded_movement_system(
         }
     }
 }
-
-// TODO: Velocity here is more like Fade in that it will just build up speed
-// over time until it hits a maximum. For crabs, direction vector will stay the
-// same, but speed can be either positive or negative to control which
-// way they're moving and allow us to accelerate/decelerate. Can just keep
-// velocity
-
-// TODO: To help justify the more general Velocity, maybe balls can have a short
-// acceleration after they launch?

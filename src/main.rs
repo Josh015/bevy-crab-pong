@@ -28,6 +28,8 @@ fn main() {
         .add_system(fade::start_fade_system)
         .add_system(fade::step_fade_system)
         .add_system(goal::eliminated_animation_system)
+        .add_system(paddle::add_velocity_system)
+        .add_system(paddle::remove_velocity_system)
         .add_system(paddle::step_fade_animation_system)
         .add_system(score::update_scores_system)
         .add_system(swaying_camera::swaying_system)
@@ -60,7 +62,7 @@ fn main() {
                 .with_system(paddle::acceleration_system)
                 .with_system(paddle::bounded_movement_system)
                 .with_system(player::paddle_control_system)
-                .with_system(velocity::movement_system),
+                .with_system(velocity::acceleration_system),
         )
         .add_system_set(
             SystemSet::on_exit(GameState::Playing)

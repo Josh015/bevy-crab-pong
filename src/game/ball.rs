@@ -8,7 +8,7 @@ use super::{
     paddle::Paddle,
     velocity::Velocity,
     wall::Wall,
-    Game, GoalEliminated,
+    Delta, Game, GoalEliminated,
 };
 use crate::GameConfig;
 
@@ -79,8 +79,11 @@ pub fn reset_velocity_system(
         let angle = rng.gen_range(0.0..std::f32::consts::TAU);
 
         commands.entity(entity).insert(Velocity {
-            speed: config.ball_speed,
             direction: Vec3::new(angle.cos(), 0.0, angle.sin()),
+            speed: 0.0,
+            max_speed: config.ball_speed,
+            acceleration: 1.5,
+            delta: Delta::Accelerating(1.0),
         });
     }
 }
@@ -139,8 +142,11 @@ pub fn collision_system(
 
             let r = (d - (2.0 * (d.dot(n) * n))).normalize();
             commands.entity(entity).insert(Velocity {
-                speed: config.ball_speed,
                 direction: r,
+                speed: velocity.speed,
+                max_speed: velocity.max_speed,
+                acceleration: velocity.acceleration,
+                delta: velocity.delta,
             });
             break;
         }

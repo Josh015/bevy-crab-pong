@@ -74,10 +74,6 @@ pub struct GameConfig {
 }
 
 impl GameConfig {
-    pub fn paddle_acceleration(&self) -> f32 {
-        self.paddle_max_speed / self.paddle_seconds_to_max_speed
-    }
-
     pub fn ball_center_point(&self) -> Vec3 {
         let mut ball_center_point: Vec3 = self.beach_center_point.into();
         ball_center_point.y = self.ball_height;
@@ -251,10 +247,6 @@ pub fn setup(
                     .insert_bundle((
                         Paddle::Stop,
                         Fade::Out(1.0),
-                        Velocity {
-                            speed: 0.0,
-                            direction: Vec3::X,
-                        },
                         goal.clone(),
                     ));
 
