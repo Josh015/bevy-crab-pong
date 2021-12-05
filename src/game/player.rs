@@ -17,11 +17,11 @@ pub fn paddle_control_system(
 ) {
     for mut paddle in query.iter_mut() {
         paddle.movement = if keyboard_input.pressed(KeyCode::Left) {
-            Movement::Accelerating(-1.0)
+            Movement::Left
         } else if keyboard_input.pressed(KeyCode::Right) {
-            Movement::Accelerating(1.0)
+            Movement::Right
         } else {
-            Movement::Decelerating
+            Movement::Stopped
         };
     }
 }

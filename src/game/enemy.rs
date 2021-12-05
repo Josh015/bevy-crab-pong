@@ -57,11 +57,11 @@ pub fn paddle_control_system(
         if (stop_position - target_position).abs()
             < 0.7 * (config.paddle_scale.0 * 0.5)
         {
-            paddle.movement = Movement::Decelerating;
+            paddle.movement = Movement::Stopped;
         } else if target_position < local.translation.x {
-            paddle.movement = Movement::Accelerating(-1.0);
+            paddle.movement = Movement::Left;
         } else {
-            paddle.movement = Movement::Accelerating(1.0);
+            paddle.movement = Movement::Right;
         }
     }
 }
