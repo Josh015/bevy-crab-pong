@@ -22,7 +22,7 @@ fn main() {
         .insert_resource(config)
         .add_state(GameState::GameOver)
         .add_event::<GoalEliminated>()
-        .add_startup_system(setup)
+        .add_startup_system(game::setup)
         .add_system(animated_water::animation_system)
         .add_system(ball::step_fade_animation_system)
         .add_system(fade::start_fade_system)
@@ -35,19 +35,19 @@ fn main() {
         .add_system(wall::step_fade_animation_system)
         .add_system_set(
             SystemSet::on_enter(GameState::GameOver)
-                .with_system(show_gameover_ui),
+                .with_system(game::show_gameover_ui),
         )
         .add_system_set(
             SystemSet::on_update(GameState::GameOver)
-                .with_system(gameover_keyboard_system),
+                .with_system(game::gameover_keyboard_system),
         )
         .add_system_set(
             SystemSet::on_exit(GameState::GameOver)
-                .with_system(hide_gameover_ui),
+                .with_system(game::hide_gameover_ui),
         )
         .add_system_set(
             SystemSet::on_enter(GameState::Playing)
-                .with_system(reset_game_entities),
+                .with_system(game::reset_game_entities),
         )
         .add_system_set(
             SystemSet::on_update(GameState::Playing)
@@ -62,7 +62,8 @@ fn main() {
                 .with_system(velocity::movement_system),
         )
         .add_system_set(
-            SystemSet::on_exit(GameState::Playing).with_system(fade_out_balls),
+            SystemSet::on_exit(GameState::Playing)
+                .with_system(game::fade_out_balls),
         )
         .add_system(bevy::input::system::exit_on_esc_system)
         .run();
