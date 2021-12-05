@@ -77,10 +77,11 @@ pub fn reset_velocity_system(
 
         // Give the ball a random direction vector
         let angle = rng.gen_range(0.0..std::f32::consts::TAU);
-        let velocity =
-            config.ball_speed * Vec3::new(angle.cos(), 0.0, angle.sin());
 
-        commands.entity(entity).insert(Velocity(velocity));
+        commands.entity(entity).insert(Velocity {
+            speed: config.ball_speed,
+            direction: Vec3::new(angle.cos(), 0.0, angle.sin()),
+        });
     }
 }
 
@@ -99,7 +100,7 @@ pub fn collision_system(
         let ball_radius = config.ball_radius();
         let barrier_radius = 0.5 * config.barrier_width;
         let half_width = 0.5 * config.beach_width;
-        let d = velocity.0.normalize();
+        let d = velocity.direction;
         let radius_position = transform.translation + d * ball_radius;
 
         // TODO: Order these so that highest precedence collision type is at the
@@ -137,9 +138,10 @@ pub fn collision_system(
             }
 
             let r = (d - (2.0 * (d.dot(n) * n))).normalize();
-            commands
-                .entity(entity)
-                .insert(Velocity(r * config.ball_speed));
+            commands.entity(entity).insert(Velocity {
+                speed: config.ball_speed,
+                direction: r,
+            });
             break;
         }
     }
@@ -159,7 +161,7 @@ pub fn scored_system(
     for (entity, ball_transform, velocity) in balls_query.iter() {
         let ball_translation = ball_transform.translation;
         let ball_radius = config.ball_radius();
-        let d = velocity.0.normalize();
+        let d = velocity.direction;
         let radius_position = ball_translation + d * ball_radius;
 
         for (wall_transform, goal) in walls_query.iter() {

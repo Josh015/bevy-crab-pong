@@ -6,7 +6,6 @@ use super::{
     fade::{Active, Fade},
     paddle::Paddle,
     player::Player,
-    velocity::Velocity,
     wall::Wall,
 };
 
