@@ -59,7 +59,6 @@ fn main() {
                 .with_system(ball::scored_system)
                 .with_system(enemy::paddle_control_system)
                 .with_system(game::gameover_check_system)
-                .with_system(paddle::acceleration_system)
                 .with_system(paddle::bounded_movement_system)
                 .with_system(player::paddle_control_system)
                 .with_system(velocity::acceleration_system),

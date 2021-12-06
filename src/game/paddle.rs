@@ -4,11 +4,7 @@ use bevy::{ecs::prelude::*, prelude::*};
 use std::ops::{Add, Sub};
 
 #[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
-pub enum Paddle {
-    Stop,
-    Left,
-    Right,
-}
+pub struct Paddle;
 
 pub fn add_velocity_system(
     mut commands: Commands,
@@ -42,18 +38,6 @@ pub fn fade_animation_system(
     // Grow/Shrink paddles to show/hide them
     for (mut transform, fade) in query.iter_mut() {
         transform.scale = *PADDLE_SCALE * fade.opacity();
-    }
-}
-
-pub fn acceleration_system(
-    mut query: Query<(&mut Velocity, &Paddle), With<Active>>,
-) {
-    for (mut velocity, paddle) in query.iter_mut() {
-        velocity.delta = match *paddle {
-            Paddle::Stop => Delta::Decelerating,
-            Paddle::Left => Delta::Accelerating(-1.0),
-            Paddle::Right => Delta::Accelerating(1.0),
-        };
     }
 }
 

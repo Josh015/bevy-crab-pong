@@ -245,11 +245,7 @@ pub fn setup(
                         ),
                         ..Default::default()
                     })
-                    .insert_bundle((
-                        Paddle::Stop,
-                        Fade::Out(1.0),
-                        goal.clone(),
-                    ));
+                    .insert_bundle((Paddle, Fade::Out(1.0), goal.clone()));
 
                 // Wall
                 parent
