@@ -71,9 +71,11 @@ pub fn bounded_movement_system(
         if transform.translation.x > PADDLE_MAX_POSITION_X {
             transform.translation.x = PADDLE_MAX_POSITION_X;
             velocity.speed = 0.0;
+            velocity.delta = Delta::Decelerating;
         } else if transform.translation.x < -PADDLE_MAX_POSITION_X {
             transform.translation.x = -PADDLE_MAX_POSITION_X;
             velocity.speed = 0.0;
+            velocity.delta = Delta::Decelerating;
         }
     }
 }
