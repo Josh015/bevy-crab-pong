@@ -70,10 +70,8 @@ pub fn bounded_movement_system(
 ) {
     for (mut transform, mut velocity) in query.iter_mut() {
         // Limit paddle to open space between barriers
-        let extents = 0.5
-            * (config.beach_width
-                - config.barrier_width
-                - config.paddle_scale.0);
+        let extents =
+            0.5 * (ARENA_WIDTH - config.barrier_width - config.paddle_scale.0);
 
         if transform.translation.x > extents {
             transform.translation.x = extents;

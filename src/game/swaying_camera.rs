@@ -1,3 +1,4 @@
+use super::*;
 use crate::GameConfig;
 use bevy::{
     core::Time,
@@ -21,7 +22,7 @@ pub fn swaying_system(
 ) {
     // Slowly sway the camera back and forth
     let (mut transform, mut swaying_camera) = query.single_mut();
-    let x = swaying_camera.angle.sin() * 0.5 * config.beach_width;
+    let x = swaying_camera.angle.sin() * ARENA_HALF_WIDTH;
 
     *transform = Transform::from_xyz(x, 2.0, 1.5)
         .looking_at(config.beach_center_point.into(), Vec3::Y);

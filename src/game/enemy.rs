@@ -20,7 +20,7 @@ pub fn paddle_control_system(
 
         for ball_transform in balls_query.iter() {
             // Remap from ball's global space to paddle's local space
-            let ball_distance = goal.distance_to_ball(&config, ball_transform);
+            let ball_distance = goal.distance_to_ball(ball_transform);
             let ball_position = goal.map_ball_to_paddle_axis(ball_transform);
 
             if ball_distance < closest_ball_distance {

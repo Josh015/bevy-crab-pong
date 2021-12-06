@@ -7,7 +7,6 @@ use rand::prelude::*;
 pub struct Ball;
 
 pub fn step_fade_animation_system(
-    config: Res<GameConfig>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<
         (&Handle<StandardMaterial>, &mut Transform, &mut Fade),
@@ -35,7 +34,7 @@ pub fn step_fade_animation_system(
         //     .set_a(fade.opacity());
 
         // FIXME: Use scaling until we can get alpha-blending working
-        transform.scale = Vec3::splat(fade.opacity() * config.ball_size);
+        transform.scale = Vec3::splat(fade.opacity() * BALL_DIAMETER);
     }
 }
 
@@ -115,7 +114,7 @@ pub fn collision_system(
 
         // Wall collisions
         for goal in walls_query.iter() {
-            let ball_distance = goal.distance_to_ball(&config, ball_transform);
+            let ball_distance = goal.distance_to_ball(ball_transform);
             let axis = goal.axis();
 
             // Check that the ball is touching the wall and facing the goal
@@ -141,7 +140,6 @@ pub fn collision_system(
 
 pub fn scored_system(
     mut commands: Commands,
-    config: Res<GameConfig>,
     mut game: ResMut<Game>,
     mut goal_eliminated_writer: EventWriter<GoalEliminated>,
     balls_query: Query<
@@ -153,7 +151,7 @@ pub fn scored_system(
     for (entity, ball_transform) in balls_query.iter() {
         for goal in walls_query.iter() {
             // Score against the goal that's closest to this ball
-            let ball_distance = goal.distance_to_ball(&config, ball_transform);
+            let ball_distance = goal.distance_to_ball(ball_transform);
 
             if ball_distance > 0.0 {
                 continue;

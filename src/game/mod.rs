@@ -38,6 +38,11 @@ pub use velocity::*;
 pub mod wall;
 pub use wall::*;
 
+pub const ARENA_WIDTH: f32 = 1.0;
+pub const ARENA_HALF_WIDTH: f32 = 0.5 * ARENA_WIDTH;
+pub const BALL_DIAMETER: f32 = 0.1;
+pub const BALL_RADIUS: f32 = 0.5 * BALL_DIAMETER;
+
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum GameState {
     Playing,
@@ -59,12 +64,10 @@ pub struct GameConfig {
     pub swaying_camera_speed: f32,
     pub animated_water_speed: f32,
     pub beach_center_point: (f32, f32, f32),
-    pub beach_width: f32,
     pub paddle_max_speed: f32,
     pub paddle_seconds_to_max_speed: f32,
     pub paddle_scale: (f32, f32, f32),
     pub paddle_start_position: (f32, f32, f32),
-    pub ball_size: f32,
     pub ball_height: f32,
     pub ball_starting_speed: f32,
     pub ball_max_speed: f32,
@@ -82,10 +85,8 @@ impl GameConfig {
         ball_center_point
     }
 
-    pub fn ball_radius(&self) -> f32 { 0.5 * self.ball_size }
-
     pub fn wall_scale(&self) -> Vec3 {
-        Vec3::new(self.beach_width, self.wall_diameter, self.wall_diameter)
+        Vec3::new(ARENA_WIDTH, self.wall_diameter, self.wall_diameter)
     }
 }
 
@@ -138,7 +139,7 @@ pub fn setup(
         material: materials.add(Color::hex("C4BD99").unwrap().into()),
         transform: Transform::from_matrix(
             Mat4::from_scale_rotation_translation(
-                Vec3::splat(config.beach_width),
+                Vec3::splat(ARENA_WIDTH),
                 Quat::IDENTITY,
                 config.beach_center_point.into(),
             ),
@@ -160,7 +161,7 @@ pub fn setup(
                 material: ball_material.clone(),
                 transform: Transform::from_matrix(
                     Mat4::from_scale_rotation_translation(
-                        Vec3::splat(config.ball_size),
+                        Vec3::splat(BALL_DIAMETER),
                         Quat::IDENTITY,
                         config.ball_center_point(),
                     ),
@@ -223,11 +224,7 @@ pub fn setup(
                     std::f32::consts::TAU
                         * (i as f32 / goal_configs.len() as f32),
                 ))
-                .mul_transform(Transform::from_xyz(
-                    0.0,
-                    0.0,
-                    0.5 * config.beach_width,
-                )),
+                .mul_transform(Transform::from_xyz(0.0, 0.0, ARENA_HALF_WIDTH)),
                 ..Default::default()
             })
             .with_children(|parent| {
@@ -277,7 +274,7 @@ pub fn setup(
                             Mat4::from_scale_rotation_translation(
                                 Vec3::splat(config.barrier_width),
                                 Quat::IDENTITY,
-                                Vec3::new(0.5 * config.beach_width, 0.1, 0.0),
+                                Vec3::new(ARENA_HALF_WIDTH, 0.1, 0.0),
                             ),
                         ),
                         ..Default::default()
