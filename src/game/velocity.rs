@@ -27,7 +27,7 @@ pub fn acceleration_system(
         velocity.speed = match velocity.delta {
             Delta::Decelerating => {
                 let s = velocity.speed.abs().sub(delta_speed).max(0.0);
-                velocity.speed.max(-s).min(s)
+                velocity.speed.max(-s).min(s) // Can't clamp() due to panic when -s == s
             },
             Delta::Accelerating(direction) => velocity
                 .speed

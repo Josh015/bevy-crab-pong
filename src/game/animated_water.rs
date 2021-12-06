@@ -14,8 +14,8 @@ pub fn animation_system(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut AnimatedWater)>,
 ) {
-    // Translate the plane on the Z-axis, since we currently can't animate the
-    // texture coordinates.
+    // FIXME: Translate the plane on the Z-axis, since we currently can't
+    // animate the texture coordinates.
     let (mut transform, mut animated_water) = query.single_mut();
 
     *transform = Transform::from_xyz(0.0, -0.01, animated_water.scroll);
