@@ -1,12 +1,10 @@
 use super::*;
-use crate::GameConfig;
 use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct Enemy;
 
 pub fn paddle_control_system(
-    config: Res<GameConfig>,
     mut paddles_query: Query<
         (&Transform, &Goal, &mut Paddle, &Velocity),
         (With<Active>, With<Enemy>),
@@ -14,23 +12,21 @@ pub fn paddle_control_system(
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Active>)>,
 ) {
     for (transform, goal, mut paddle, velocity) in paddles_query.iter_mut() {
-        // Pick which ball is closest to this paddle's goal
+        // Get the relative position of the ball that's closest to this goal
         let mut closest_ball_distance = std::f32::MAX;
-        let mut target_position = config.paddle_start_position.0;
+        let mut target_position = PADDLE_START_POSITION.x;
 
         for ball_transform in balls_query.iter() {
-            // Remap from ball's global space to paddle's local space
             let ball_distance = goal.distance_to_ball(ball_transform);
-            let ball_position = goal.map_ball_to_paddle_axis(ball_transform);
 
             if ball_distance < closest_ball_distance {
-                target_position = ball_position;
                 closest_ball_distance = ball_distance;
+                target_position =
+                    goal.map_ball_position_to_paddle_range(ball_transform);
             }
         }
 
-        // Predict the position where the paddle will stop if it immediately
-        // begins decelerating.
+        // Predict the paddle's stop position if it begins decelerating now
         let d = velocity.speed * velocity.speed / velocity.acceleration;
         let stop_position = if velocity.speed > 0.0 {
             transform.translation.x + d
@@ -38,13 +34,11 @@ pub fn paddle_control_system(
             transform.translation.x - d
         };
 
-        // Begin decelerating if the ball will land within 70% of the paddle's
-        // middle at its predicted stop position. Otherwise go left/right
-        // depending on which side of the paddle it's approaching.
+        // Position the paddle so that the ball is above ~70% of its center
         let distance_from_paddle_center =
             (stop_position - target_position).abs();
 
-        if distance_from_paddle_center < 0.7 * (config.paddle_scale.0 * 0.5) {
+        if distance_from_paddle_center < 0.7 * PADDLE_HALF_WIDTH {
             *paddle = Paddle::Stop;
         } else if target_position < transform.translation.x {
             *paddle = Paddle::Left;

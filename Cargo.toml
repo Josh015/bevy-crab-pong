@@ -11,7 +11,7 @@ rust-version = "1.56"
 bevy = { git = 'https://github.com/bevyengine/bevy.git' }
 # bevy = { git = 'https://github.com/superdump/bevy.git', branch = "clustered-forward-rendering" }
 # bevy = "0.5.0"
-# lazy_static = "1.4.0"
+lazy_static = "1.4.0"
 rand = "0.8.4"
 ron = "0.7.0"
 serde = { version = "1.0.130", features = ["serde_derive"] }

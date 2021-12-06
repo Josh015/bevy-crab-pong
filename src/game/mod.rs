@@ -1,4 +1,5 @@
 use bevy::{ecs::prelude::*, prelude::*};
+use lazy_static::*;
 use serde::Deserialize;
 use std::collections::HashMap;
 
@@ -40,8 +41,27 @@ pub use wall::*;
 
 pub const ARENA_WIDTH: f32 = 1.0;
 pub const ARENA_HALF_WIDTH: f32 = 0.5 * ARENA_WIDTH;
+pub const BARRIER_WIDTH: f32 = 0.20;
+pub const BARRIER_HALF_WIDTH: f32 = 0.5 * BARRIER_WIDTH;
+pub const BALL_HEIGHT: f32 = 0.05;
 pub const BALL_DIAMETER: f32 = 0.1;
 pub const BALL_RADIUS: f32 = 0.5 * BALL_DIAMETER;
+pub const PADDLE_WIDTH: f32 = 0.2;
+pub const PADDLE_HALF_WIDTH: f32 = 0.5 * PADDLE_WIDTH;
+pub const PADDLE_MAX_POSITION_X: f32 =
+    ARENA_HALF_WIDTH - BARRIER_HALF_WIDTH - PADDLE_HALF_WIDTH;
+pub const WALL_DIAMETER: f32 = 0.05;
+pub const WALL_RADIUS: f32 = 0.5 * WALL_DIAMETER;
+
+lazy_static! {
+    pub static ref ARENA_CENTER_POINT: Vec3 = Vec3::ZERO;
+    pub static ref BALL_CENTER_POINT: Vec3 =
+        Vec3::new(ARENA_CENTER_POINT.x, BALL_HEIGHT, ARENA_CENTER_POINT.z);
+    pub static ref PADDLE_SCALE: Vec3 = Vec3::new(PADDLE_WIDTH, 0.1, 0.1);
+    pub static ref PADDLE_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
+    pub static ref WALL_SCALE: Vec3 =
+        Vec3::new(ARENA_WIDTH, WALL_DIAMETER, WALL_DIAMETER);
+}
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum GameState {
@@ -63,31 +83,13 @@ pub struct GameConfig {
     pub clear_color: Color,
     pub swaying_camera_speed: f32,
     pub animated_water_speed: f32,
-    pub beach_center_point: (f32, f32, f32),
     pub paddle_max_speed: f32,
     pub paddle_seconds_to_max_speed: f32,
-    pub paddle_scale: (f32, f32, f32),
-    pub paddle_start_position: (f32, f32, f32),
-    pub ball_height: f32,
     pub ball_starting_speed: f32,
     pub ball_max_speed: f32,
     pub ball_seconds_to_max_speed: f32,
-    pub barrier_width: f32,
     pub fade_speed: f32,
-    pub wall_diameter: f32,
     pub starting_score: u32,
-}
-
-impl GameConfig {
-    pub fn ball_center_point(&self) -> Vec3 {
-        let mut ball_center_point: Vec3 = self.beach_center_point.into();
-        ball_center_point.y = self.ball_height;
-        ball_center_point
-    }
-
-    pub fn wall_scale(&self) -> Vec3 {
-        Vec3::new(ARENA_WIDTH, self.wall_diameter, self.wall_diameter)
-    }
 }
 
 #[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
@@ -141,7 +143,7 @@ pub fn setup(
             Mat4::from_scale_rotation_translation(
                 Vec3::splat(ARENA_WIDTH),
                 Quat::IDENTITY,
-                config.beach_center_point.into(),
+                *ARENA_CENTER_POINT,
             ),
         ),
         ..Default::default()
@@ -163,7 +165,7 @@ pub fn setup(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(BALL_DIAMETER),
                         Quat::IDENTITY,
-                        config.ball_center_point(),
+                        *BALL_CENTER_POINT,
                     ),
                 ),
                 ..Default::default()
@@ -236,9 +238,9 @@ pub fn setup(
                         material: materials.add(color.clone().into()),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                config.paddle_scale.into(),
+                                *PADDLE_SCALE,
                                 Quat::IDENTITY,
-                                config.paddle_start_position.into(),
+                                *PADDLE_START_POSITION,
                             ),
                         ),
                         ..Default::default()
@@ -256,7 +258,7 @@ pub fn setup(
                         material: wall_material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                config.wall_scale(),
+                                *WALL_SCALE,
                                 Quat::IDENTITY,
                                 Vec3::new(0.0, 0.1, 0.0),
                             ),
@@ -272,7 +274,7 @@ pub fn setup(
                         material: barrier_material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                Vec3::splat(config.barrier_width),
+                                Vec3::splat(BARRIER_WIDTH),
                                 Quat::IDENTITY,
                                 Vec3::new(ARENA_HALF_WIDTH, 0.1, 0.0),
                             ),
@@ -362,8 +364,8 @@ pub fn reset_game_entities(
 
     // Reset paddles
     for (entity, mut transform) in paddles_query.iter_mut() {
+        transform.translation = *PADDLE_START_POSITION;
         commands.entity(entity).insert(Fade::In(0.4));
-        transform.translation = config.paddle_start_position.into();
     }
 
     // Reset walls

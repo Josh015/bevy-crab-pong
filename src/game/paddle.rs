@@ -37,21 +37,19 @@ pub fn remove_velocity_system(
 }
 
 pub fn step_fade_animation_system(
-    config: Res<GameConfig>,
     mut query: Query<(&mut Transform, &Fade), With<Paddle>>,
 ) {
     // Grow/Shrink paddles to show/hide them
     for (mut transform, fade) in query.iter_mut() {
-        transform.scale = config.paddle_scale.into();
-        transform.scale *= fade.opacity();
+        transform.scale = *PADDLE_SCALE * fade.opacity();
     }
 }
 
 pub fn acceleration_system(
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Velocity, &Paddle), With<Active>>,
+    mut query: Query<(&mut Velocity, &Paddle), With<Active>>,
 ) {
-    for (mut transform, mut velocity, paddle) in query.iter_mut() {
+    for (mut velocity, paddle) in query.iter_mut() {
         velocity.delta = match *paddle {
             Paddle::Stop => Delta::Decelerating,
             Paddle::Left => Delta::Accelerating(-1.0),
@@ -70,14 +68,11 @@ pub fn bounded_movement_system(
 ) {
     for (mut transform, mut velocity) in query.iter_mut() {
         // Limit paddle to open space between barriers
-        let extents =
-            0.5 * (ARENA_WIDTH - config.barrier_width - config.paddle_scale.0);
-
-        if transform.translation.x > extents {
-            transform.translation.x = extents;
+        if transform.translation.x > PADDLE_MAX_POSITION_X {
+            transform.translation.x = PADDLE_MAX_POSITION_X;
             velocity.speed = 0.0;
-        } else if transform.translation.x < -extents {
-            transform.translation.x = -extents;
+        } else if transform.translation.x < -PADDLE_MAX_POSITION_X {
+            transform.translation.x = -PADDLE_MAX_POSITION_X;
             velocity.speed = 0.0;
         }
     }

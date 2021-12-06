@@ -12,7 +12,7 @@ pub enum Goal {
 }
 
 impl Goal {
-    /// Perpendicular distance from a ball's edge to a given goal. Positive
+    /// Perpendicular distance from a given goal to a ball's edge. Positive
     /// distances for inside the arena, negative for out of bounds.
     pub fn distance_to_ball(&self, ball_transform: &GlobalTransform) -> f32 {
         let ball_translation = ball_transform.translation;
@@ -36,7 +36,7 @@ impl Goal {
     }
 
     /// Map a ball's global position to a paddle's local x-axis.
-    pub fn map_ball_to_paddle_axis(
+    pub fn map_ball_position_to_paddle_range(
         &self,
         ball_transform: &GlobalTransform,
     ) -> f32 {

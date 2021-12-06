@@ -40,14 +40,13 @@ pub fn step_fade_animation_system(
 
 pub fn reset_position_system(
     mut commands: Commands,
-    config: Res<GameConfig>,
     mut query: Query<
         (Entity, &mut Transform),
         (With<Ball>, Without<Fade>, Without<Active>),
     >,
 ) {
     for (entity, mut transform) in query.iter_mut() {
-        transform.translation = config.ball_center_point();
+        transform.translation = *BALL_CENTER_POINT;
         commands
             .entity(entity)
             .remove::<Velocity>()
@@ -81,7 +80,6 @@ pub fn reset_velocity_system(
 
 pub fn collision_system(
     mut commands: Commands,
-    config: Res<GameConfig>,
     balls_query: Query<
         (Entity, &GlobalTransform, &Velocity),
         (With<Ball>, With<Active>),
@@ -92,7 +90,6 @@ pub fn collision_system(
 ) {
     for (entity, ball_transform, velocity) in balls_query.iter() {
         let ball_direction = velocity.direction;
-        let wall_radius = 0.5 * config.wall_diameter;
 
         // TODO: Order these so that highest precedence collision type is at the
         // bottom, since it can overwrite others!
@@ -118,7 +115,7 @@ pub fn collision_system(
             let axis = goal.axis();
 
             // Check that the ball is touching the wall and facing the goal
-            if ball_distance > wall_radius || ball_direction.dot(axis) <= 0.0 {
+            if ball_distance > WALL_RADIUS || ball_direction.dot(axis) <= 0.0 {
                 continue;
             }
 
