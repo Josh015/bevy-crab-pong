@@ -80,9 +80,10 @@ pub fn reset_velocity_system(
 
         commands.entity(entity).insert(Velocity {
             direction: Vec3::new(angle.cos(), 0.0, angle.sin()),
-            speed: 0.0,
-            max_speed: config.ball_speed,
-            acceleration: 1.5,
+            speed: config.ball_starting_speed,
+            max_speed: config.ball_max_speed,
+            acceleration: config.ball_max_speed
+                / config.ball_seconds_to_max_speed,
             delta: Delta::Accelerating(1.0),
         });
     }
