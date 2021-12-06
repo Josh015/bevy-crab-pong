@@ -5,7 +5,7 @@ use bevy::{ecs::prelude::*, math::Vec3, prelude::Transform};
 #[derive(Component)]
 pub struct Wall;
 
-pub fn start_fade_system(
+pub fn begin_fade_system(
     mut commands: Commands,
     query: Query<(Entity, &Fade), (With<Wall>, Added<Fade>)>,
 ) {
@@ -17,7 +17,7 @@ pub fn start_fade_system(
     }
 }
 
-pub fn step_fade_animation_system(
+pub fn fade_animation_system(
     mut query: Query<(&mut Transform, &Fade), With<Wall>>,
 ) {
     // Wall shrinks along its width into a pancake and then vanishes

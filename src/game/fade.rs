@@ -19,7 +19,7 @@ impl Fade {
     }
 }
 
-pub fn start_fade_system(
+pub fn begin_fade_system(
     mut commands: Commands,
     query: Query<(Entity, &Fade), Added<Fade>>,
 ) {

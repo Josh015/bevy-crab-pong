@@ -388,8 +388,8 @@ pub fn gameover_check_system(
     mut game: ResMut<Game>,
     mut state: ResMut<State<GameState>>,
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
-    players_query: Query<&Goal, (With<Paddle>, With<Player>)>,
     enemies_query: Query<&Goal, (With<Paddle>, With<Enemy>)>,
+    players_query: Query<&Goal, (With<Paddle>, With<Player>)>,
 ) {
     for GoalEliminated(_) in goal_eliminated_reader.iter() {
         // Player wins if all Enemy paddles have a score of zero
@@ -429,9 +429,6 @@ pub fn fade_out_balls(
         }
     }
 }
-
-// TODO: To simplify porting, need to recent everything around (0.5, 0.5) rather
-// than (0.0, 0.0)!
 
 // TODO: Add event logging.
 

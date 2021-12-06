@@ -36,7 +36,7 @@ pub fn remove_velocity_system(
     }
 }
 
-pub fn step_fade_animation_system(
+pub fn fade_animation_system(
     mut query: Query<(&mut Transform, &Fade), With<Paddle>>,
 ) {
     // Grow/Shrink paddles to show/hide them
@@ -46,7 +46,6 @@ pub fn step_fade_animation_system(
 }
 
 pub fn acceleration_system(
-    time: Res<Time>,
     mut query: Query<(&mut Velocity, &Paddle), With<Active>>,
 ) {
     for (mut velocity, paddle) in query.iter_mut() {
@@ -59,8 +58,6 @@ pub fn acceleration_system(
 }
 
 pub fn bounded_movement_system(
-    config: Res<GameConfig>,
-    time: Res<Time>,
     mut query: Query<
         (&mut Transform, &mut Velocity),
         (With<Paddle>, With<Active>),

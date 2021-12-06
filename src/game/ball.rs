@@ -6,7 +6,7 @@ use rand::prelude::*;
 #[derive(Component)]
 pub struct Ball;
 
-pub fn step_fade_animation_system(
+pub fn fade_animation_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<
         (&Handle<StandardMaterial>, &mut Transform, &mut Fade),
@@ -14,18 +14,18 @@ pub fn step_fade_animation_system(
     >,
 ) {
     // Increase/Decrease balls' opacity to show/hide them
-    let mut is_prior_fading = false;
+    let mut is_prior_resetting = false;
 
     for (material, mut transform, mut fade) in query.iter_mut() {
-        let is_current_fading = matches!(*fade, Fade::In(_));
+        let is_current_resetting = matches!(*fade, Fade::In(_));
 
         // Force current ball to wait if other is also fading in
-        if is_prior_fading && is_current_fading {
+        if is_prior_resetting && is_current_resetting {
             *fade = Fade::In(0.0);
             continue;
         }
 
-        is_prior_fading = is_current_fading;
+        is_prior_resetting = is_current_resetting;
 
         // materials
         //     .get_mut(material)
