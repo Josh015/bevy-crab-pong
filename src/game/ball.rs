@@ -145,20 +145,14 @@ pub fn scored_system(
     mut game: ResMut<Game>,
     mut goal_eliminated_writer: EventWriter<GoalEliminated>,
     balls_query: Query<
-        (Entity, &GlobalTransform, &Velocity),
+        (Entity, &GlobalTransform),
         (With<Ball>, With<Active>, Without<Fade>),
     >,
-    walls_query: Query<(&GlobalTransform, &Goal), With<Wall>>,
+    walls_query: Query<&Goal, With<Wall>>,
 ) {
-    for (entity, ball_transform, velocity) in balls_query.iter() {
-        let ball_translation = ball_transform.translation;
-        let ball_radius = config.ball_radius();
-        let d = velocity.direction;
-        let radius_position = ball_translation + d * ball_radius;
-
-        for (wall_transform, goal) in walls_query.iter() {
+    for (entity, ball_transform) in balls_query.iter() {
+        for goal in walls_query.iter() {
             // Score against the goal that's closest to this ball
-            let goal_position = wall_transform.translation;
             let ball_distance = goal.distance_to_ball(&config, ball_transform);
 
             if ball_distance > 0.0 {
