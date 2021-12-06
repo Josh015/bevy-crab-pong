@@ -1,11 +1,7 @@
+use super::*;
+use crate::GameConfig;
 use bevy::{ecs::prelude::*, prelude::*};
 use std::ops::{Add, Sub};
-
-use super::{
-    fade::{Active, Fade},
-    Delta, Velocity,
-};
-use crate::GameConfig;
 
 #[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
 pub enum Paddle {
@@ -21,8 +17,8 @@ pub fn add_velocity_system(
 ) {
     for entity in query.iter() {
         commands.entity(entity).insert(Velocity {
-            speed: 0.0,
             direction: Vec3::X,
+            speed: 0.0,
             max_speed: config.paddle_max_speed,
             acceleration: config.paddle_max_speed
                 / config.paddle_seconds_to_max_speed,

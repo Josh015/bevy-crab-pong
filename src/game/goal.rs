@@ -1,13 +1,5 @@
+use super::*;
 use bevy::{ecs::prelude::*, prelude::*};
-
-use super::{
-    ball::Ball,
-    enemy::Enemy,
-    fade::{Active, Fade},
-    paddle::Paddle,
-    player::Player,
-    wall::Wall,
-};
 
 #[derive(Clone, Component, Copy, Eq, PartialEq, Debug, Hash)]
 pub enum Goal {

@@ -1,6 +1,5 @@
-use bevy::{ecs::prelude::*, prelude::*};
-
 use crate::GameConfig;
+use bevy::{ecs::prelude::*, prelude::*};
 
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub enum Fade {

@@ -1,16 +1,7 @@
+use super::*;
+use crate::GameConfig;
 use bevy::{ecs::prelude::*, prelude::*};
 use rand::prelude::*;
-
-use super::{
-    barrier::Barrier,
-    fade::{Active, Fade},
-    goal::Goal,
-    paddle::Paddle,
-    velocity::Velocity,
-    wall::Wall,
-    Delta, Game, GoalEliminated,
-};
-use crate::GameConfig;
 
 #[derive(Component)]
 pub struct Ball;

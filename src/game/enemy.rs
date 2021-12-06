@@ -1,8 +1,6 @@
-use bevy::prelude::{Component, GlobalTransform, Query, Res, Transform, With};
-
+use super::*;
 use crate::GameConfig;
-
-use super::{ball::Ball, fade::Active, goal::Goal, paddle::Paddle, Velocity};
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct Enemy;

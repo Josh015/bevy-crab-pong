@@ -1,11 +1,9 @@
+use super::*;
+use crate::Game;
 use bevy::{
     prelude::{Component, Query, Res, With},
     text::Text,
 };
-
-use crate::Game;
-
-use super::goal::Goal;
 
 #[derive(Component)]
 pub struct Score;

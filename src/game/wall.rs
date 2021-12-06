@@ -1,7 +1,6 @@
-use bevy::{ecs::prelude::*, math::Vec3, prelude::Transform};
-
-use super::fade::{Active, Fade};
+use super::*;
 use crate::GameConfig;
+use bevy::{ecs::prelude::*, math::Vec3, prelude::Transform};
 
 #[derive(Component)]
 pub struct Wall;

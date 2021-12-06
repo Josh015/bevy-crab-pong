@@ -431,17 +431,8 @@ pub fn fade_out_balls(
     }
 }
 
-// NOTE: Rules for which modules get which systems:
-// 1.) The component of the outermost query (eg. With<Ball>, With<Paddle>, etc.)
-// is where that system should live.
-// 2.) Especially the case if the system ultimately modifies that entity that
-// owns that component.
-// 3.) If it has multiple top-level queries, then it probably belongs in the
-// game module.
-
-// TODO: Go back through and remove un-needed imports.
-
-// TODO: Go back through and remove un-needed iter_mut() and mutability calls.
+// TODO: To simplify porting, need to recent everything around (0.5, 0.5) rather
+// than (0.0, 0.0)!
 
 // TODO: Add event logging.
 

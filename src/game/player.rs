@@ -1,9 +1,8 @@
+use super::*;
 use bevy::{
     input::Input,
     prelude::{Component, KeyCode, Query, Res, With},
 };
-
-use super::{fade::Active, paddle::Paddle};
 
 #[derive(Component)]
 pub struct Player;

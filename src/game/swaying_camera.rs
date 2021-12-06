@@ -1,11 +1,10 @@
+use crate::GameConfig;
 use bevy::{
     core::Time,
     math::Vec3,
     prelude::{Component, Query, Res, Transform, With},
     render::camera::PerspectiveProjection,
 };
-
-use crate::GameConfig;
 
 #[derive(Component, Default)]
 pub struct SwayingCamera {

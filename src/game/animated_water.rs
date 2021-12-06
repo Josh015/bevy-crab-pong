@@ -1,9 +1,8 @@
+use crate::GameConfig;
 use bevy::{
     core::Time,
     prelude::{Component, Query, Res, Transform},
 };
-
-use crate::GameConfig;
 
 #[derive(Component, Default)]
 pub struct AnimatedWater {

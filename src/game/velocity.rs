@@ -1,6 +1,5 @@
-use std::ops::{Add, Sub};
-
 use bevy::{ecs::prelude::*, prelude::*};
+use std::ops::{Add, Sub};
 
 #[derive(Component)]
 pub struct Velocity {

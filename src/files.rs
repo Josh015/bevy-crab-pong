@@ -1,7 +1,6 @@
-use std::{fs::File, path::PathBuf};
-
 use ron::de::from_reader;
 use serde::de::DeserializeOwned;
+use std::{fs::File, path::PathBuf};
 
 pub fn open_local_file(path: &str) -> File {
     let input_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(path);
