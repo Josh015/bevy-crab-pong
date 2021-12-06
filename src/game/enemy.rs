@@ -6,12 +6,12 @@ pub struct Enemy;
 
 pub fn paddle_control_system(
     mut paddles_query: Query<
-        (&Transform, &Goal, &mut Velocity),
+        (&Transform, &Goal, &mut Movement),
         (With<Paddle>, With<Active>, With<Enemy>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Active>)>,
 ) {
-    for (transform, goal, mut velocity) in paddles_query.iter_mut() {
+    for (transform, goal, mut movement) in paddles_query.iter_mut() {
         // Get the relative position of the ball that's closest to this goal
         let mut closest_ball_distance = std::f32::MAX;
         let mut target_position = PADDLE_START_POSITION.x;
@@ -27,8 +27,8 @@ pub fn paddle_control_system(
         }
 
         // Predict the paddle's stop position if it begins decelerating now
-        let d = velocity.speed * velocity.speed / velocity.acceleration;
-        let stop_position = if velocity.speed > 0.0 {
+        let d = movement.speed * movement.speed / movement.acceleration;
+        let stop_position = if movement.speed > 0.0 {
             transform.translation.x + d
         } else {
             transform.translation.x - d
@@ -38,13 +38,13 @@ pub fn paddle_control_system(
         let distance_from_paddle_center =
             (stop_position - target_position).abs();
 
-        velocity.delta =
+        movement.delta =
             if distance_from_paddle_center < 0.7 * PADDLE_HALF_WIDTH {
-                Delta::Decelerating
+                None
             } else if target_position < transform.translation.x {
-                Delta::Accelerating(-1.0) // Left
+                Some(Delta::Negative) // Left
             } else {
-                Delta::Accelerating(1.0) // Right
+                Some(Delta::Positive) // Right
             };
     }
 }

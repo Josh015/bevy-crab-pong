@@ -49,15 +49,15 @@ pub fn reset_position_system(
         transform.translation = *BALL_CENTER_POINT;
         commands
             .entity(entity)
-            .remove::<Velocity>()
+            .remove::<Movement>()
             .insert(Fade::In(0.0));
     }
 }
 
-pub fn reset_velocity_system(
+pub fn reset_movement_system(
     mut commands: Commands,
     config: Res<GameConfig>,
-    query: Query<Entity, (With<Ball>, Without<Velocity>, Added<Active>)>,
+    query: Query<Entity, (With<Ball>, Without<Movement>, Added<Active>)>,
 ) {
     for entity in query.iter() {
         // TODO: Move this into a global resource? Also, make a reusable uniform
@@ -67,13 +67,13 @@ pub fn reset_velocity_system(
         // Give the ball a random direction vector
         let angle = rng.gen_range(0.0..std::f32::consts::TAU);
 
-        commands.entity(entity).insert(Velocity {
+        commands.entity(entity).insert(Movement {
             direction: Vec3::new(angle.cos(), 0.0, angle.sin()),
             speed: config.ball_starting_speed,
             max_speed: config.ball_max_speed,
             acceleration: config.ball_max_speed
                 / config.ball_seconds_to_max_speed,
-            delta: Delta::Accelerating(1.0),
+            delta: Some(Delta::Positive),
         });
     }
 }
@@ -81,21 +81,21 @@ pub fn reset_velocity_system(
 pub fn collision_system(
     mut commands: Commands,
     balls_query: Query<
-        (Entity, &GlobalTransform, &Velocity),
+        (Entity, &GlobalTransform, &Movement),
         (With<Ball>, With<Active>),
     >,
     paddles_query: Query<&GlobalTransform, (With<Paddle>, With<Active>)>,
     barriers_query: Query<&GlobalTransform, With<Barrier>>,
     walls_query: Query<&Goal, (With<Wall>, With<Active>)>,
 ) {
-    for (entity, ball_transform, velocity) in balls_query.iter() {
-        let ball_direction = velocity.direction;
+    for (entity, ball_transform, movement) in balls_query.iter() {
+        let ball_direction = movement.direction;
 
         // TODO: Order these so that highest precedence collision type is at the
         // bottom, since it can overwrite others!
 
         // Ball collisions
-        for (entity2, transform2, velocity2) in balls_query.iter() {
+        for (entity2, transform2, movement2) in balls_query.iter() {
             break;
         }
 
@@ -123,12 +123,12 @@ pub fn collision_system(
             let r = (ball_direction
                 - (2.0 * (ball_direction.dot(axis) * axis)))
                 .normalize();
-            commands.entity(entity).insert(Velocity {
+            commands.entity(entity).insert(Movement {
                 direction: r,
-                speed: velocity.speed,
-                max_speed: velocity.max_speed,
-                acceleration: velocity.acceleration,
-                delta: velocity.delta,
+                speed: movement.speed,
+                max_speed: movement.max_speed,
+                acceleration: movement.acceleration,
+                delta: movement.delta,
             });
             break;
         }

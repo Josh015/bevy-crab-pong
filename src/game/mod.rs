@@ -21,6 +21,9 @@ pub use fade::*;
 pub mod goal;
 pub use goal::*;
 
+pub mod movement;
+pub use movement::*;
+
 pub mod paddle;
 pub use paddle::*;
 
@@ -32,9 +35,6 @@ pub use score::*;
 
 pub mod swaying_camera;
 pub use swaying_camera::*;
-
-pub mod velocity;
-pub use velocity::*;
 
 pub mod wall;
 pub use wall::*;

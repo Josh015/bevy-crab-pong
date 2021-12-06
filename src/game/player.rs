@@ -9,15 +9,15 @@ pub struct Player;
 
 pub fn paddle_control_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Velocity, (With<Paddle>, With<Active>, With<Player>)>,
+    mut query: Query<&mut Movement, (With<Paddle>, With<Active>, With<Player>)>,
 ) {
-    for mut velocity in query.iter_mut() {
-        velocity.delta = if keyboard_input.pressed(KeyCode::Left) {
-            Delta::Accelerating(-1.0)
+    for mut movement in query.iter_mut() {
+        movement.delta = if keyboard_input.pressed(KeyCode::Left) {
+            Some(Delta::Negative)
         } else if keyboard_input.pressed(KeyCode::Right) {
-            Delta::Accelerating(1.0)
+            Some(Delta::Positive)
         } else {
-            Delta::Decelerating
+            None
         };
     }
 }
