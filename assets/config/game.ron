@@ -18,6 +18,6 @@
   ball_max_speed: 0.5,
   ball_seconds_to_max_speed: 0.3,
   barrier_width: 0.20,
-  wall_radius: 0.05,
+  wall_diameter: 0.05,
   starting_score: 2,
 )

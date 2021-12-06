@@ -71,7 +71,7 @@ pub struct GameConfig {
     pub ball_seconds_to_max_speed: f32,
     pub barrier_width: f32,
     pub fade_speed: f32,
-    pub wall_radius: f32,
+    pub wall_diameter: f32,
     pub starting_score: u32,
 }
 
@@ -85,7 +85,7 @@ impl GameConfig {
     pub fn ball_radius(&self) -> f32 { 0.5 * self.ball_size }
 
     pub fn wall_scale(&self) -> Vec3 {
-        Vec3::new(self.beach_width, self.wall_radius, self.wall_radius)
+        Vec3::new(self.beach_width, self.wall_diameter, self.wall_diameter)
     }
 }
 

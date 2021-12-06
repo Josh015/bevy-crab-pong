@@ -89,14 +89,11 @@ pub fn collision_system(
     >,
     paddles_query: Query<&GlobalTransform, (With<Paddle>, With<Active>)>,
     barriers_query: Query<&GlobalTransform, With<Barrier>>,
-    walls_query: Query<(&GlobalTransform, &Goal), (With<Wall>, With<Active>)>,
+    walls_query: Query<&Goal, (With<Wall>, With<Active>)>,
 ) {
-    for (entity, transform, velocity) in balls_query.iter() {
-        let ball_radius = config.ball_radius();
-        let barrier_radius = 0.5 * config.barrier_width;
-        let half_width = 0.5 * config.beach_width;
-        let d = velocity.direction;
-        let radius_position = transform.translation + d * ball_radius;
+    for (entity, ball_transform, velocity) in balls_query.iter() {
+        let ball_direction = velocity.direction;
+        let wall_radius = 0.5 * config.wall_diameter;
 
         // TODO: Order these so that highest precedence collision type is at the
         // bottom, since it can overwrite others!
@@ -117,22 +114,19 @@ pub fn collision_system(
         }
 
         // Wall collisions
-        for (wall_transform, goal) in walls_query.iter() {
-            let wall_position = wall_transform.translation;
-            let (n, distance_to_goal) = match *goal {
-                Goal::Top => (-Vec3::Z, radius_position.z - wall_position.z),
-                Goal::Right => (Vec3::X, -radius_position.x + wall_position.x),
-                Goal::Bottom => (Vec3::Z, -radius_position.z + wall_position.z),
-                Goal::Left => (-Vec3::X, radius_position.x - wall_position.x),
-            };
+        for goal in walls_query.iter() {
+            let ball_distance = goal.distance_to_ball(&config, ball_transform);
+            let axis = goal.axis();
 
-            // Slight offset from the wall so the ball doesn't phase into it.
-            // Also prevents it from being treated as out of bounds.
-            if distance_to_goal > 0.01 {
+            // Check that the ball is touching the wall and facing the goal
+            if ball_distance > wall_radius || ball_direction.dot(axis) <= 0.0 {
                 continue;
             }
 
-            let r = (d - (2.0 * (d.dot(n) * n))).normalize();
+            // Deflect the ball away from the wall.
+            let r = (ball_direction
+                - (2.0 * (ball_direction.dot(axis) * axis)))
+                .normalize();
             commands.entity(entity).insert(Velocity {
                 direction: r,
                 speed: velocity.speed,
@@ -165,14 +159,9 @@ pub fn scored_system(
         for (wall_transform, goal) in walls_query.iter() {
             // Score against the goal that's closest to this ball
             let goal_position = wall_transform.translation;
-            let distance_to_goal = match *goal {
-                Goal::Top => radius_position.z - goal_position.z,
-                Goal::Right => -radius_position.x + goal_position.x,
-                Goal::Bottom => -radius_position.z + goal_position.z,
-                Goal::Left => radius_position.x - goal_position.x,
-            };
+            let ball_distance = goal.distance_to_ball(&config, ball_transform);
 
-            if distance_to_goal > 0.0 {
+            if ball_distance > 0.0 {
                 continue;
             }
 
