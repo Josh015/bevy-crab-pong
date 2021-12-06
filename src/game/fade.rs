@@ -1,6 +1,9 @@
 use crate::GameConfig;
 use bevy::{ecs::prelude::*, prelude::*};
 
+#[derive(Component)]
+pub struct Active;
+
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub enum Fade {
     In(f32),
@@ -15,9 +18,6 @@ impl Fade {
         }
     }
 }
-
-#[derive(Component)]
-pub struct Active;
 
 pub fn start_fade_system(
     mut commands: Commands,

@@ -1,6 +1,8 @@
 use super::*;
 use bevy::{ecs::prelude::*, prelude::*};
 
+pub struct GoalEliminated(pub Goal);
+
 #[derive(Clone, Component, Copy, Eq, PartialEq, Debug, Hash)]
 pub enum Goal {
     Top,
@@ -52,8 +54,6 @@ impl Goal {
         }
     }
 }
-
-pub struct GoalEliminated(pub Goal);
 
 pub fn eliminated_animation_system(
     mut commands: Commands,
