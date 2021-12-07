@@ -3,9 +3,13 @@ use crate::GameConfig;
 use bevy::{ecs::prelude::*, prelude::*};
 use std::ops::{Add, Sub};
 
+/// A component that makes a paddle that can deflect `Ball` entities and moves
+/// left->right and vice versa along a single axis when `Active`.
 #[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
 pub struct Paddle;
 
+/// Restores `Movement` to newly `Active` `Paddle` entities allowing them to
+/// be moved.
 pub fn add_movement_system(
     mut commands: Commands,
     config: Res<GameConfig>,
@@ -23,6 +27,7 @@ pub fn add_movement_system(
     }
 }
 
+/// Removes `Movement` from a recently deactivated `Paddle` entity.
 pub fn remove_movement_system(
     mut commands: Commands,
     query: Query<Entity, (With<Paddle>, Without<Active>, With<Movement>)>,
@@ -32,6 +37,8 @@ pub fn remove_movement_system(
     }
 }
 
+/// Handles the `Fade` animation for a `Paddle` entity by causing it to
+/// grow/shrink into/out of existence.
 pub fn fade_animation_system(
     mut query: Query<(&mut Transform, &Fade), With<Paddle>>,
 ) {
@@ -41,6 +48,8 @@ pub fn fade_animation_system(
     }
 }
 
+/// Restricts a `Paddle` entity to the space between the `Barrier` entities on
+/// either side of it.
 pub fn bounded_movement_system(
     mut query: Query<
         (&mut Transform, &mut Movement),

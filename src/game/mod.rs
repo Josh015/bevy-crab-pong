@@ -63,18 +63,21 @@ lazy_static! {
         Vec3::new(ARENA_WIDTH, WALL_DIAMETER, WALL_DIAMETER);
 }
 
+/// The current state of the game.
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum GameState {
     Playing,
     GameOver,
 }
 
+/// All global information for this game.
 #[derive(Default)]
 pub struct Game {
     pub scores: HashMap<Goal, u32>,
     pub over: Option<GameOver>,
 }
 
+/// Game settings read from a `*.ron` config file.
 #[derive(Debug, Deserialize)]
 pub struct GameConfig {
     pub title: String,
@@ -92,6 +95,7 @@ pub struct GameConfig {
     pub starting_score: u32,
 }
 
+/// Represents whether the player won or lost the last game.
 #[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
 pub enum GameOver {
     Won,
@@ -102,6 +106,8 @@ impl Default for GameOver {
     fn default() -> Self { Self::Won }
 }
 
+/// Handles setting up all the entities that will be needed for every screen of
+/// this game.
 pub fn setup(
     mut game: ResMut<Game>,
     config: Res<GameConfig>,
@@ -310,6 +316,8 @@ pub fn setup(
     }
 }
 
+/// When entering the gameover screen shows the corresponding UI and says
+/// whether the player won/lost.
 pub fn show_gameover_ui(game: Res<Game>) {
     if let Some(game_over) = game.over {
         if game_over == GameOver::Won {
@@ -323,6 +331,8 @@ pub fn show_gameover_ui(game: Res<Game>) {
     // TODO: new game text visible
 }
 
+/// Handles keyboard inputs and launching a new game when on the gameover
+/// screen.
 pub fn gameover_keyboard_system(
     mut state: ResMut<State<GameState>>,
     keyboard_input: Res<Input<KeyCode>>,
@@ -332,10 +342,12 @@ pub fn gameover_keyboard_system(
     }
 }
 
+/// Hides the gameover UI at the start of a new game.
 pub fn hide_gameover_ui() {
     // TODO: Hide message text
 }
 
+/// Resets the state of all the goals and their scores when starting a new game.
 pub fn reset_game_entities(
     mut commands: Commands,
     config: Res<GameConfig>,
@@ -380,6 +392,8 @@ pub fn reset_game_entities(
     }
 }
 
+/// When a goal is eliminated it checks if the current scores of all the goals
+/// have triggered a gameover.
 pub fn gameover_check_system(
     mut game: ResMut<Game>,
     mut state: ResMut<State<GameState>>,
@@ -409,6 +423,8 @@ pub fn gameover_check_system(
     }
 }
 
+/// Fades out and deactivates any `Ball` entities that are still in play at the
+/// beginning of a gameover.
 pub fn fade_out_balls(
     mut commands: Commands,
     query: Query<(Entity, Option<&Active>, Option<&Fade>), With<Ball>>,
@@ -427,8 +443,6 @@ pub fn fade_out_balls(
 }
 
 // TODO: Add event logging.
-
-// TODO: Need to document the hell out of this code.
 
 // TODO: Need to fix rare issue where restarting the game too quickly can make a
 // wall disappear, but it still deflects balls as though it was there. May be

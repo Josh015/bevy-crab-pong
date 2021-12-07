@@ -4,11 +4,13 @@ use bevy::{
     prelude::{Component, Query, Res, Transform},
 };
 
+/// A component for an animated textured water plane.
 #[derive(Component, Default)]
 pub struct AnimatedWater {
     scroll: f32,
 }
 
+/// Scrolls a material's texture.
 pub fn animation_system(
     config: Res<GameConfig>,
     time: Res<Time>,

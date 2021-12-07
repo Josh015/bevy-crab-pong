@@ -1,16 +1,27 @@
 use crate::GameConfig;
 use bevy::{ecs::prelude::*, prelude::*};
 
+/// A component that marks `Ball`, `Paddle`, and `Wall` entities as active for
+/// collision, scoring, etc.
+///
+/// The specific visual implementation of the fade out effect is left up to the
+/// compatible component.
 #[derive(Component)]
 pub struct Active;
 
+/// A component that handles fading an entity in/out of visibility and marking
+/// it as `Active`.
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub enum Fade {
+    /// Simulates a fade-in effect, using a weight in the range [0,1].
     In(f32),
+
+    /// Simulates a fade-out effect, using a weight in the range [0,1].
     Out(f32),
 }
 
 impl Fade {
+    /// Returns the opacity of the current `Fade` type.
     pub fn opacity(&self) -> f32 {
         match *self {
             Self::In(weight) => weight,
@@ -19,6 +30,8 @@ impl Fade {
     }
 }
 
+/// Immediately removes the `Active` component for entities that are `Fade::Out`
+/// to ensure they aren't in play while disappearing.
 pub fn begin_fade_system(
     mut commands: Commands,
     query: Query<(Entity, &Fade), Added<Fade>>,
@@ -30,13 +43,13 @@ pub fn begin_fade_system(
     }
 }
 
+/// Handles the transition from visible->invisible and vice versa over time.
 pub fn step_fade_system(
     mut commands: Commands,
     config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<(Entity, &mut Fade)>,
 ) {
-    // Simulates fade from visible->invisible and vice versa over time
     for (entity, mut fade) in query.iter_mut() {
         let step = config.fade_speed * time.delta_seconds();
 

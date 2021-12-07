@@ -1,10 +1,13 @@
 use super::*;
 use bevy::prelude::*;
 
+/// A component that works in tandem with `Paddle` to make AI-driven opponents.
 #[derive(Component)]
 pub struct Enemy;
 
-pub fn paddle_control_system(
+/// Applies AI control to `Paddle` entities, causing them to position
+/// themselves between their `Goal` and the closest `Ball`.
+pub fn ai_paddle_control_system(
     mut paddles_query: Query<
         (&Transform, &Goal, &mut Movement),
         (With<Paddle>, With<Active>, With<Enemy>),
@@ -12,7 +15,7 @@ pub fn paddle_control_system(
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Active>)>,
 ) {
     for (transform, goal, mut movement) in paddles_query.iter_mut() {
-        // Get the relative position of the ball that's closest to this goal
+        // Get the relative position of the ball that's closest to this goal.
         let mut closest_ball_distance = std::f32::MAX;
         let mut target_position = PADDLE_START_POSITION.x;
 
@@ -26,7 +29,7 @@ pub fn paddle_control_system(
             }
         }
 
-        // Predict the paddle's stop position if it begins decelerating now
+        // Predict the paddle's stop position if it begins decelerating now.
         let d = movement.speed * movement.speed / movement.acceleration;
         let stop_position = if movement.speed > 0.0 {
             transform.translation.x + d
@@ -34,7 +37,7 @@ pub fn paddle_control_system(
             transform.translation.x - d
         };
 
-        // Position the paddle so that the ball is above ~70% of its center
+        // Position the paddle so that the ball is above ~70% of its center.
         let distance_from_paddle_center =
             (stop_position - target_position).abs();
 

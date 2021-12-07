@@ -3,9 +3,13 @@ use crate::GameConfig;
 use bevy::{ecs::prelude::*, prelude::*};
 use rand::prelude::*;
 
+/// A component for a ball entity that must have inertia and be able to deflect
+/// upon collision when `Active`.
 #[derive(Component)]
 pub struct Ball;
 
+/// Handles the `Fade` animation for a `Ball` entity by causing its material to
+/// smoothly blend from opaque->transparent and vice versa.
 pub fn fade_animation_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<
@@ -13,7 +17,6 @@ pub fn fade_animation_system(
         With<Ball>,
     >,
 ) {
-    // Increase/Decrease balls' opacity to show/hide them
     let mut is_prior_resetting = false;
 
     for (material, mut transform, mut fade) in query.iter_mut() {
@@ -38,6 +41,8 @@ pub fn fade_animation_system(
     }
 }
 
+/// Takes a fully hidden `Ball`, disables its movement, moves it back to the
+/// center of the arena, and then slowly fades it back into view.
 pub fn reset_position_system(
     mut commands: Commands,
     mut query: Query<
@@ -54,6 +59,8 @@ pub fn reset_position_system(
     }
 }
 
+/// Takes a newly `Active` `Ball` and gives it `Movement` so that it starts it
+/// moving in a straight line in a random direction.
 pub fn reset_movement_system(
     mut commands: Commands,
     config: Res<GameConfig>,
@@ -63,8 +70,6 @@ pub fn reset_movement_system(
         // TODO: Move this into a global resource? Also, make a reusable uniform
         // for random rotation?
         let mut rng = rand::thread_rng();
-
-        // Give the ball a random direction vector
         let angle = rng.gen_range(0.0..std::f32::consts::TAU);
 
         commands.entity(entity).insert(Movement {
@@ -78,6 +83,8 @@ pub fn reset_movement_system(
     }
 }
 
+/// Checks if a `Ball` has collided with a compatible entity, and then deflects
+/// it away from the point of impact.
 pub fn collision_system(
     mut commands: Commands,
     balls_query: Query<
@@ -114,7 +121,7 @@ pub fn collision_system(
             let ball_distance = goal.distance_to_ball(ball_transform);
             let axis = goal.axis();
 
-            // Check that the ball is touching the wall and facing the goal
+            // Check that the ball is touching the wall and facing the goal.
             if ball_distance > WALL_RADIUS || ball_direction.dot(axis) <= 0.0 {
                 continue;
             }
@@ -135,6 +142,8 @@ pub fn collision_system(
     }
 }
 
+/// Checks if a `Ball` has scored against a `Goal` and then decrements the
+/// corresponding score.
 pub fn scored_system(
     mut commands: Commands,
     mut game: ResMut<Game>,
@@ -147,14 +156,14 @@ pub fn scored_system(
 ) {
     for (entity, ball_transform) in balls_query.iter() {
         for goal in walls_query.iter() {
-            // Score against the goal that's closest to this ball
+            // Score against the goal that's closest to this ball.
             let ball_distance = goal.distance_to_ball(ball_transform);
 
             if ball_distance > 0.0 {
                 continue;
             }
 
-            // Decrement the score and potentially eliminate the goal
+            // Decrement the score and potentially eliminate the goal.
             let score = game.scores.get_mut(goal).unwrap();
             *score = score.saturating_sub(1);
 
@@ -162,7 +171,7 @@ pub fn scored_system(
                 goal_eliminated_writer.send(GoalEliminated(*goal))
             }
 
-            // Fade out and deactivate the ball to prevent repeated scoring
+            // Fade out and deactivate the ball to prevent repeated scoring.
             commands.entity(entity).insert(Fade::Out(0.0));
             break;
         }

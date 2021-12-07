@@ -1,21 +1,36 @@
 use bevy::{ecs::prelude::*, prelude::*};
 use std::ops::{Add, Sub};
 
+/// A component that handles all acceleration-based movement for a given entity.
 #[derive(Component)]
 pub struct Movement {
+    /// The normalized direction vector along which the entity will move.
     pub direction: Vec3,
+
+    /// The current speed of the entity's movement which will largely be
+    /// controlled by the component.
     pub speed: f32,
+
+    /// The maximum speed this entity can reach after accelerating.
     pub max_speed: f32,
+
+    /// The `max_speed / seconds_to_reach_max_speed`.
     pub acceleration: f32,
+
+    /// Whether the entity has positive/negative acceleration, or is
+    /// decelerating if there is none.
     pub delta: Option<Delta>,
 }
 
+/// Represents whether the movement has positive or negative acceleration.
 #[derive(Clone, Copy, PartialEq)]
 pub enum Delta {
     Positive,
     Negative,
 }
 
+/// Handles calculating the actual acceleration/deceleration over time for the
+/// attached entity.
 pub fn acceleration_system(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut Movement)>,
@@ -25,6 +40,7 @@ pub fn acceleration_system(
         let delta_speed = movement.acceleration * delta_seconds;
 
         movement.speed = if let Some(delta) = movement.delta {
+            // Accelerate
             movement
                 .speed
                 .add(if delta == Delta::Positive {
@@ -34,6 +50,7 @@ pub fn acceleration_system(
                 })
                 .clamp(-movement.max_speed, movement.max_speed)
         } else {
+            // Decelerate
             let s = movement.speed.abs().sub(delta_speed).max(0.0);
             movement.speed.max(-s).min(s) // Can't clamp() due to panic when -s == s
         };

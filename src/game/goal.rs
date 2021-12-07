@@ -1,8 +1,12 @@
 use super::*;
 use bevy::{ecs::prelude::*, prelude::*};
 
+/// An event fired when a `Goal` has been eliminated from play after its score
+/// has reached zero.
 pub struct GoalEliminated(pub Goal);
 
+/// A component for marking `Paddle` and `Wall` entities as belonging to the
+/// same goal for a given side of the arena.
 #[derive(Clone, Component, Copy, Eq, PartialEq, Debug, Hash)]
 pub enum Goal {
     Top,
@@ -12,8 +16,9 @@ pub enum Goal {
 }
 
 impl Goal {
-    /// Perpendicular distance from a given goal to a ball's edge. Positive
-    /// distances for inside the arena, negative for out of bounds.
+    /// Perpendicular distance from a given goal to a ball's edge.
+    ///
+    /// Positive distances for inside the arena, negative for out of bounds.
     pub fn distance_to_ball(&self, ball_transform: &GlobalTransform) -> f32 {
         let ball_translation = ball_transform.translation;
 
@@ -49,6 +54,8 @@ impl Goal {
     }
 }
 
+/// Fades out the `Paddle` and fades in the `Wall` for this `Goal` when it's
+/// eliminated from play.
 pub fn eliminated_animation_system(
     mut commands: Commands,
     mut goal_eliminated_reader: EventReader<GoalEliminated>,

@@ -7,11 +7,14 @@ use bevy::{
     render::camera::PerspectiveProjection,
 };
 
+/// A component that causes a camera to sway back and forth in a slow
+/// reciprocating motion as it focuses on the origin.
 #[derive(Component, Default)]
 pub struct SwayingCamera {
     angle: f32,
 }
 
+/// Makes a `SwayingCamera` entity slowly sway back and forth.
 pub fn swaying_system(
     config: Res<GameConfig>,
     time: Res<Time>,
@@ -20,7 +23,6 @@ pub fn swaying_system(
         With<PerspectiveProjection>,
     >,
 ) {
-    // Slowly sway the camera back and forth
     let (mut transform, mut swaying_camera) = query.single_mut();
     let x = swaying_camera.angle.sin() * ARENA_HALF_WIDTH;
 

@@ -5,9 +5,13 @@ use bevy::{
     text::Text,
 };
 
+/// A component for marking a `Text` UI entity as displaying the score for an
+/// associated `Goal`.
 #[derive(Component)]
 pub struct Score;
 
+/// Updates a `Text` entity to display the current score of its associated
+/// `Goal`.
 pub fn update_scores_system(
     game: Res<Game>,
     mut query: Query<(&mut Text, &Goal), With<Score>>,
