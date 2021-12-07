@@ -125,9 +125,10 @@ pub fn collision_system(
             let ball_distance = goal.distance_to_ball(ball_transform);
             let ball_position =
                 goal.map_ball_position_to_paddle_range(ball_transform);
-            let distance_from_paddle_center =
-                (transform.translation.x - ball_position).abs();
+            let ball_to_paddle = transform.translation.x - ball_position;
+            let distance_from_paddle_center = (ball_to_paddle).abs();
 
+            // Check that the ball is touching the paddle and facing the goal.
             if ball_distance > PADDLE_HALF_DEPTH
                 || distance_from_paddle_center >= PADDLE_HALF_WIDTH
                 || ball_direction.dot(axis) <= 0.0
@@ -135,10 +136,14 @@ pub fn collision_system(
                 continue;
             }
 
-            // Deflect the ball away from the paddle.
-            let r = (ball_direction
-                - (2.0 * (ball_direction.dot(axis) * axis)))
-                .normalize();
+            // Reverse the ball's direction and rotate it outward based on how
+            // far its position is from the paddle's center.
+            let rotation_away_from_center = Quat::from_rotation_y(
+                std::f32::consts::FRAC_PI_4
+                    * (ball_to_paddle / PADDLE_HALF_WIDTH),
+            );
+            let r = rotation_away_from_center * -ball_direction;
+
             commands.entity(entity).insert(Movement {
                 direction: r,
                 speed: movement.speed,
@@ -146,9 +151,6 @@ pub fn collision_system(
                 acceleration: movement.acceleration,
                 delta: movement.delta,
             });
-
-            // TODO: The ball angle of reflection is wider the further it is
-            // from the center of the crab paddle.
             break;
         }
 
