@@ -19,11 +19,11 @@ pub fn swaying_system(
     config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<
-        (&mut Transform, &mut SwayingCamera),
+        (&mut SwayingCamera, &mut Transform),
         With<PerspectiveProjection>,
     >,
 ) {
-    let (mut transform, mut swaying_camera) = query.single_mut();
+    let (mut swaying_camera, mut transform) = query.single_mut();
     let x = swaying_camera.angle.sin() * ARENA_HALF_WIDTH;
 
     *transform = Transform::from_xyz(x, 2.0, 1.5)

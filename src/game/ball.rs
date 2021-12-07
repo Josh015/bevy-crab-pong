@@ -13,13 +13,13 @@ pub struct Ball;
 pub fn fade_animation_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<
-        (&Handle<StandardMaterial>, &mut Transform, &mut Fade),
+        (&mut Fade, &Handle<StandardMaterial>, &mut Transform),
         With<Ball>,
     >,
 ) {
     let mut is_prior_resetting = false;
 
-    for (material, mut transform, mut fade) in query.iter_mut() {
+    for (mut fade, material, mut transform) in query.iter_mut() {
         let is_current_resetting = matches!(*fade, Fade::In(_));
 
         // Force current ball to wait if other is also fading in

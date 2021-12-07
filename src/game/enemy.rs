@@ -10,7 +10,7 @@ pub struct Enemy;
 pub fn ai_paddle_control_system(
     mut paddles_query: Query<
         (&Transform, &Goal, &mut Movement),
-        (With<Paddle>, With<Active>, With<Enemy>),
+        (With<Enemy>, With<Paddle>, With<Active>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Active>)>,
 ) {

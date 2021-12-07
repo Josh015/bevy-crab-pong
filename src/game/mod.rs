@@ -430,9 +430,9 @@ pub fn gameover_check_system(
 /// beginning of a gameover.
 pub fn fade_out_balls(
     mut commands: Commands,
-    query: Query<(Entity, Option<&Active>, Option<&Fade>), With<Ball>>,
+    query: Query<(Entity, Option<&Fade>, Option<&Active>), With<Ball>>,
 ) {
-    for (entity, active, fade) in query.iter() {
+    for (entity, fade, active) in query.iter() {
         match fade {
             Some(Fade::In(weight)) => {
                 commands.entity(entity).insert(Fade::Out(1.0 - weight));

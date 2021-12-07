@@ -23,9 +23,9 @@ pub fn begin_fade_system(
 /// Handles `Wall` `Fade` animations by making them shrink along their width
 /// into a pancake just before vanishing entirely.
 pub fn fade_animation_system(
-    mut query: Query<(&mut Transform, &Fade), With<Wall>>,
+    mut query: Query<(&Fade, &mut Transform), With<Wall>>,
 ) {
-    for (mut transform, fade) in query.iter_mut() {
+    for (fade, mut transform) in query.iter_mut() {
         let x_mask = fade.opacity();
         let yz_mask = x_mask.powf(0.001);
 

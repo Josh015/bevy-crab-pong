@@ -11,9 +11,9 @@ pub struct Player;
 
 /// Makes a `Paddle` entity move left/right in response to the keyboard's
 /// corresponding arrows keys.
-pub fn paddle_control_system(
+pub fn keyboard_paddle_control_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Movement, (With<Paddle>, With<Active>, With<Player>)>,
+    mut query: Query<&mut Movement, (With<Player>, With<Paddle>, With<Active>)>,
 ) {
     for mut movement in query.iter_mut() {
         movement.delta = if keyboard_input.pressed(KeyCode::Left) {
