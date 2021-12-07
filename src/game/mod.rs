@@ -48,6 +48,8 @@ pub const BALL_DIAMETER: f32 = 0.1;
 pub const BALL_RADIUS: f32 = 0.5 * BALL_DIAMETER;
 pub const PADDLE_WIDTH: f32 = 0.2;
 pub const PADDLE_HALF_WIDTH: f32 = 0.5 * PADDLE_WIDTH;
+pub const PADDLE_DEPTH: f32 = 0.1;
+pub const PADDLE_HALF_DEPTH: f32 = 0.5 * PADDLE_DEPTH;
 pub const PADDLE_MAX_POSITION_X: f32 =
     ARENA_HALF_WIDTH - BARRIER_HALF_WIDTH - PADDLE_HALF_WIDTH;
 pub const WALL_DIAMETER: f32 = 0.05;
@@ -57,7 +59,8 @@ lazy_static! {
     pub static ref ARENA_CENTER_POINT: Vec3 = Vec3::ZERO;
     pub static ref BALL_CENTER_POINT: Vec3 =
         Vec3::new(ARENA_CENTER_POINT.x, BALL_HEIGHT, ARENA_CENTER_POINT.z);
-    pub static ref PADDLE_SCALE: Vec3 = Vec3::new(PADDLE_WIDTH, 0.1, 0.1);
+    pub static ref PADDLE_SCALE: Vec3 =
+        Vec3::new(PADDLE_WIDTH, PADDLE_DEPTH, PADDLE_DEPTH);
     pub static ref PADDLE_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
     pub static ref WALL_SCALE: Vec3 =
         Vec3::new(ARENA_WIDTH, WALL_DIAMETER, WALL_DIAMETER);
@@ -441,6 +444,10 @@ pub fn fade_out_balls(
         }
     }
 }
+
+// TODO: Widen the size of field so that balls have to go fully past paddles to
+// be considered out of bounds, rather than now where they can intersect halfway
+// through the paddle and be considered out of bounds.
 
 // TODO: Add event logging.
 

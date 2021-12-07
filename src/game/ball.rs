@@ -91,28 +91,73 @@ pub fn collision_system(
         (Entity, &GlobalTransform, &Movement),
         (With<Ball>, With<Active>),
     >,
-    paddles_query: Query<&GlobalTransform, (With<Paddle>, With<Active>)>,
+    paddles_query: Query<(&Transform, &Goal), (With<Paddle>, With<Active>)>,
     barriers_query: Query<&GlobalTransform, With<Barrier>>,
     walls_query: Query<&Goal, (With<Wall>, With<Active>)>,
 ) {
     for (entity, ball_transform, movement) in balls_query.iter() {
         let ball_direction = movement.direction;
 
-        // TODO: Order these so that highest precedence collision type is at the
-        // bottom, since it can overwrite others!
+        // TODO: Get these working as one big system, and then try splitting
+        // them up into component-specific systems.
+
+        // TODO: Get collision checks working, printing debug messages for each.
 
         // Ball collisions
         for (entity2, transform2, movement2) in balls_query.iter() {
-            break;
+            if entity == entity2 {
+                continue;
+            }
+
+            // TODO: if the sum of their radii is greater than the distance
+            // between them, then they've intersected. Also does a cosine check
+            // based on their velocity directions to avoid getting stuck.
+            if false {
+                println!("Ball collided");
+                // Use the normal from the point where they collide (vector
+                // between their centers), to reflect!
+            }
         }
 
         // Paddle collisions
-        for transform in paddles_query.iter() {
+        for (transform, goal) in paddles_query.iter() {
+            let axis = goal.axis();
+            let ball_distance = goal.distance_to_ball(ball_transform);
+            let ball_position =
+                goal.map_ball_position_to_paddle_range(ball_transform);
+            let distance_from_paddle_center =
+                (transform.translation.x - ball_position).abs();
+
+            if ball_distance > PADDLE_HALF_DEPTH
+                || distance_from_paddle_center >= PADDLE_HALF_WIDTH
+                || ball_direction.dot(axis) <= 0.0
+            {
+                continue;
+            }
+
+            // Deflect the ball away from the paddle.
+            let r = (ball_direction
+                - (2.0 * (ball_direction.dot(axis) * axis)))
+                .normalize();
+            commands.entity(entity).insert(Movement {
+                direction: r,
+                speed: movement.speed,
+                max_speed: movement.max_speed,
+                acceleration: movement.acceleration,
+                delta: movement.delta,
+            });
+
+            // TODO: The ball angle of reflection is wider the further it is
+            // from the center of the crab paddle.
             break;
         }
 
         // Barrier collisions
         for transform in barriers_query.iter() {
+            // TODO: Fill out
+            if false {
+                println!("Barrier collided");
+            }
             break;
         }
 

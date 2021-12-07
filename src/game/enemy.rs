@@ -37,7 +37,7 @@ pub fn ai_paddle_control_system(
             transform.translation.x - d
         };
 
-        // Position the paddle so that the ball is above ~70% of its center.
+        // Position the paddle so that the ball is above its middle 70%.
         let distance_from_paddle_center =
             (stop_position - target_position).abs();
 
