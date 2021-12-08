@@ -155,11 +155,36 @@ pub fn collision_system(
         }
 
         // Barrier collisions
-        for transform in barriers_query.iter() {
-            // TODO: Fill out
-            if false {
-                println!("Barrier collided");
+        for barrier_transform in barriers_query.iter() {
+            let ball_to_barrier_distance = ball_transform
+                .translation
+                .distance(barrier_transform.translation);
+
+            // Prevent balls from deflecting through the floor.
+            let mut axis =
+                barrier_transform.translation - ball_transform.translation;
+
+            axis.y = 0.0;
+            axis = axis.normalize();
+
+            // Check that the ball is touching the barrier and facing it.
+            if ball_to_barrier_distance > BARRIER_RADIUS + BALL_RADIUS
+                || ball_direction.dot(axis) <= 0.0
+            {
+                continue;
             }
+
+            // Deflect the ball away from the barrier.
+            let r = (ball_direction
+                - (2.0 * (ball_direction.dot(axis) * axis)))
+                .normalize();
+            commands.entity(entity).insert(Movement {
+                direction: r,
+                speed: movement.speed,
+                max_speed: movement.max_speed,
+                acceleration: movement.acceleration,
+                delta: movement.delta,
+            });
             break;
         }
 

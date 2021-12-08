@@ -41,8 +41,8 @@ pub use wall::*;
 
 pub const ARENA_WIDTH: f32 = 1.0;
 pub const ARENA_HALF_WIDTH: f32 = 0.5 * ARENA_WIDTH;
-pub const BARRIER_WIDTH: f32 = 0.20;
-pub const BARRIER_HALF_WIDTH: f32 = 0.5 * BARRIER_WIDTH;
+pub const BARRIER_DIAMETER: f32 = 0.20;
+pub const BARRIER_RADIUS: f32 = 0.5 * BARRIER_DIAMETER;
 pub const BALL_HEIGHT: f32 = 0.05;
 pub const BALL_DIAMETER: f32 = 0.1;
 pub const BALL_RADIUS: f32 = 0.5 * BALL_DIAMETER;
@@ -51,7 +51,7 @@ pub const PADDLE_HALF_WIDTH: f32 = 0.5 * PADDLE_WIDTH;
 pub const PADDLE_DEPTH: f32 = 0.1;
 pub const PADDLE_HALF_DEPTH: f32 = 0.5 * PADDLE_DEPTH;
 pub const PADDLE_MAX_POSITION_X: f32 =
-    ARENA_HALF_WIDTH - BARRIER_HALF_WIDTH - PADDLE_HALF_WIDTH;
+    ARENA_HALF_WIDTH - BARRIER_RADIUS - PADDLE_HALF_WIDTH;
 pub const WALL_DIAMETER: f32 = 0.05;
 pub const WALL_RADIUS: f32 = 0.5 * WALL_DIAMETER;
 
@@ -279,7 +279,7 @@ pub fn setup(
                         material: barrier_material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                Vec3::splat(BARRIER_WIDTH),
+                                Vec3::splat(BARRIER_DIAMETER),
                                 Quat::IDENTITY,
                                 Vec3::new(ARENA_HALF_WIDTH, 0.1, 0.0),
                             ),
