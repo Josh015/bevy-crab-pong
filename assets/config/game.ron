@@ -11,5 +11,5 @@
   ball_starting_speed: 0.0,
   ball_max_speed: 0.5,
   ball_seconds_to_max_speed: 0.3,
-  starting_score: 2,
+  starting_score: 10,
 )

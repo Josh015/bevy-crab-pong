@@ -453,11 +453,6 @@ pub fn reset_game_entities(
     // Reset scores
     for (goal, score) in game.scores.iter_mut() {
         *score = config.starting_score;
-
-        // HACK: Makes debugging simpler for now
-        if *goal == Goal::Bottom {
-            *score = 99;
-        }
     }
 }
 
