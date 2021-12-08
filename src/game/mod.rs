@@ -380,23 +380,26 @@ pub fn show_gameover_ui(
     mut query: Query<&mut Text, With<GameoverMessage>>,
 ) {
     let mut text = query.single_mut();
+    let mut message = String::new();
 
-    text.sections[0].value = String::new();
-
+    // Win/Lose-specific message.
     if let Some(game_over) = game.over {
         if game_over == GameOver::Won {
-            text.sections[0].value.push_str("You win!\n");
+            message.push_str("You win!\n");
         } else {
-            text.sections[0].value.push_str("You lose.\n");
+            message.push_str("You lose.\n");
         }
 
-        text.sections[0].value.push_str("\n");
+        message.push_str("\n");
     }
 
-    text.sections[0].value.push_str(
+    // General new game message.
+    message.push_str(
         "Press ENTER for a new game\nPress ESC to quit\n(Use left and right \
          to move)",
     );
+
+    text.sections[0].value = message;
 }
 
 /// Handles keyboard inputs and launching a new game when on the gameover
