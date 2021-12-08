@@ -24,9 +24,9 @@ pub fn swaying_system(
     >,
 ) {
     let (mut swaying_camera, mut transform) = query.single_mut();
-    let x = swaying_camera.angle.sin() * 0.5 * ARENA_HALF_WIDTH;
+    let x = swaying_camera.angle.sin() * ARENA_HALF_WIDTH;
 
-    *transform = Transform::from_xyz(x, 2.0, 1.5)
+    *transform = Transform::from_xyz(x * 0.5, 2.0, 1.5)
         .looking_at(*ARENA_CENTER_POINT, Vec3::Y);
 
     swaying_camera.angle += config.swaying_camera_speed * time.delta_seconds();
