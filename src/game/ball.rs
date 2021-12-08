@@ -105,18 +105,37 @@ pub fn collision_system(
 
         // Ball collisions
         for (entity2, transform2, movement2) in balls_query.iter() {
+            // Prevent balls from colliding with themselves.
             if entity == entity2 {
                 continue;
             }
 
-            // TODO: if the sum of their radii is greater than the distance
-            // between them, then they've intersected. Also does a cosine check
-            // based on their velocity directions to avoid getting stuck.
-            if false {
-                println!("Ball collided");
-                // Use the normal from the point where they collide (vector
-                // between their centers), to reflect!
+            let ball_to_ball_distance =
+                ball_transform.translation.distance(transform2.translation);
+
+            // Prevent balls from deflecting through the floor.
+            let axis = (transform2.translation - ball_transform.translation)
+                .normalize();
+
+            // Check that the ball is touching the barrier and facing it.
+            if ball_to_ball_distance > BALL_RADIUS + BALL_RADIUS
+                || ball_direction.dot(axis) <= 0.0
+            {
+                continue;
             }
+
+            // Deflect the ball away from the barrier.
+            let r = (ball_direction
+                - (2.0 * (ball_direction.dot(axis) * axis)))
+                .normalize();
+            commands.entity(entity).insert(Movement {
+                direction: r,
+                speed: movement.speed,
+                max_speed: movement.max_speed,
+                acceleration: movement.acceleration,
+                delta: movement.delta,
+            });
+            break;
         }
 
         // Paddle collisions
