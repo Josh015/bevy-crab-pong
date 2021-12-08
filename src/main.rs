@@ -59,9 +59,9 @@ fn main() {
                 .with_system(ball::scored_system)
                 .with_system(enemy::ai_paddle_control_system)
                 .with_system(game::gameover_check_system)
+                .with_system(movement::acceleration_system)
                 .with_system(paddle::bounded_movement_system)
-                .with_system(player::keyboard_paddle_control_system)
-                .with_system(movement::acceleration_system),
+                .with_system(player::keyboard_paddle_control_system),
         )
         .add_system_set(
             SystemSet::on_exit(GameState::Playing)

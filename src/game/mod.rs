@@ -506,10 +506,6 @@ pub fn fade_out_balls(
     }
 }
 
-// TODO: Move scores closer to the paddles.
-
-// TODO: Add win/lose messages.
-
 // TODO: Widen the size of field so that balls have to go fully past paddles to
 // be considered out of bounds, rather than now where they can intersect halfway
 // through the paddle and be considered out of bounds.
