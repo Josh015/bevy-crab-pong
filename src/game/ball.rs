@@ -117,7 +117,7 @@ pub fn collision_system(
                 continue;
             }
 
-            // Deflect the ball away from the barrier.
+            // Deflect the ball away from the other ball.
             let r = reflect(ball_direction, axis);
             commands.entity(entity).insert(Movement {
                 direction: r,
@@ -201,7 +201,7 @@ pub fn collision_system(
             let ball_distance = goal.distance_to_ball(ball_transform);
             let axis = goal.axis();
 
-            // Check that the ball is touching the wall and facing the goal.
+            // Check that the ball is touching and facing the wall.
             if ball_distance > WALL_RADIUS || ball_direction.dot(axis) <= 0.0 {
                 continue;
             }
@@ -237,7 +237,7 @@ pub fn scored_system(
             // Score against the goal that's closest to this ball.
             let ball_distance = goal.distance_to_ball(ball_transform);
 
-            if ball_distance > 0.0 {
+            if ball_distance > -PADDLE_HALF_DEPTH {
                 continue;
             }
 
