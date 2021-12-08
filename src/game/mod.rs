@@ -509,9 +509,7 @@ pub fn fade_out_balls(
     }
 }
 
-// TODO: Widen the size of field so that balls have to go fully past paddles to
-// be considered out of bounds, rather than now where they can intersect halfway
-// through the paddle and be considered out of bounds.
+// TODO: Try to mimic the in-world text of the original with a RT texture?
 
 // TODO: Add event logging.
 

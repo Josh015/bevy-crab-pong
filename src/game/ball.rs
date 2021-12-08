@@ -67,8 +67,6 @@ pub fn reset_movement_system(
     query: Query<Entity, (With<Ball>, Without<Movement>, Added<Active>)>,
 ) {
     for entity in query.iter() {
-        // TODO: Move this into a global resource? Also, make a reusable uniform
-        // for random rotation?
         let mut rng = rand::thread_rng();
         let angle = rng.gen_range(0.0..std::f32::consts::TAU);
 
@@ -234,7 +232,8 @@ pub fn scored_system(
 ) {
     for (entity, ball_transform) in balls_query.iter() {
         for goal in walls_query.iter() {
-            // Score against the goal that's closest to this ball.
+            // A ball will score against the goal it's closest to once it is
+            // fully past said goal's paddle.
             let ball_distance = goal.distance_to_ball(ball_transform);
 
             if ball_distance > -PADDLE_HALF_DEPTH {
@@ -256,6 +255,7 @@ pub fn scored_system(
     }
 }
 
+/// A basic reflect function that also normalizes the result.
 fn reflect(d: Vec3, n: Vec3) -> Vec3 {
     (d - (2.0 * (d.dot(n) * n))).normalize()
 }
