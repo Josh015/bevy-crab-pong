@@ -98,11 +98,6 @@ pub fn collision_system(
     for (entity, ball_transform, movement) in balls_query.iter() {
         let ball_direction = movement.direction;
 
-        // TODO: Get these working as one big system, and then try splitting
-        // them up into component-specific systems.
-
-        // TODO: Get collision checks working, printing debug messages for each.
-
         // Ball collisions
         for (entity2, transform2, movement2) in balls_query.iter() {
             // Prevent balls from colliding with themselves.

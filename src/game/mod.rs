@@ -18,6 +18,9 @@ pub use enemy::*;
 pub mod fade;
 pub use fade::*;
 
+pub mod gameover_message;
+pub use gameover_message::*;
+
 pub mod goal;
 pub use goal::*;
 
@@ -118,6 +121,7 @@ pub fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let unit_plane = meshes.add(Mesh::from(shape::Plane { size: 1.0 }));
 
@@ -183,7 +187,7 @@ pub fn setup(
     }
 
     // Goals
-    let font = asset_server.load("fonts/FiraSans-Bold.ttf");
+    let font: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
     let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
     let wall_material = materials.add(Color::hex("00A400").unwrap().into());
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
@@ -193,7 +197,7 @@ pub fn setup(
             Goal::Bottom,
             Rect {
                 bottom: Val::Px(5.0),
-                right: Val::Px(5.0),
+                right: Val::Px(400.0),
                 ..Default::default()
             },
         ),
@@ -201,7 +205,7 @@ pub fn setup(
             Color::BLUE,
             Goal::Right,
             Rect {
-                top: Val::Px(5.0),
+                top: Val::Px(400.0),
                 right: Val::Px(5.0),
                 ..Default::default()
             },
@@ -211,7 +215,7 @@ pub fn setup(
             Goal::Top,
             Rect {
                 top: Val::Px(5.0),
-                left: Val::Px(5.0),
+                left: Val::Px(400.0),
                 ..Default::default()
             },
         ),
@@ -219,7 +223,7 @@ pub fn setup(
             Color::PURPLE,
             Goal::Left,
             Rect {
-                bottom: Val::Px(5.0),
+                bottom: Val::Px(400.0),
                 left: Val::Px(5.0),
                 ..Default::default()
             },
@@ -317,21 +321,82 @@ pub fn setup(
 
         game.scores.insert(goal.clone(), 0);
     }
+
+    // Gameover message
+    commands
+        .spawn_bundle(NodeBundle {
+            style: Style {
+                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                justify_content: JustifyContent::SpaceBetween,
+                ..Default::default()
+            },
+            material: color_materials.add(Color::NONE.into()),
+            ..Default::default()
+        })
+        .with_children(|parent| {
+            parent
+                .spawn_bundle(NodeBundle {
+                    style: Style {
+                        size: Size::new(
+                            Val::Percent(100.0),
+                            Val::Percent(100.0),
+                        ),
+                        position_type: PositionType::Absolute,
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::Center,
+                        ..Default::default()
+                    },
+                    material: color_materials.add(Color::NONE.into()),
+                    ..Default::default()
+                })
+                .with_children(|parent| {
+                    parent
+                        .spawn_bundle(TextBundle {
+                            style: Style {
+                                margin: Rect::all(Val::Px(5.0)),
+                                ..Default::default()
+                            },
+                            text: Text::with_section(
+                                "",
+                                TextStyle {
+                                    font: asset_server
+                                        .load("fonts/FiraSans-Bold.ttf"),
+                                    font_size: 30.0,
+                                    color: Color::RED,
+                                },
+                                Default::default(),
+                            ),
+                            ..Default::default()
+                        })
+                        .insert(GameoverMessage);
+                });
+        });
 }
 
 /// When entering the gameover screen shows the corresponding UI and says
 /// whether the player won/lost.
-pub fn show_gameover_ui(game: Res<Game>) {
+pub fn show_gameover_ui(
+    game: Res<Game>,
+    mut query: Query<&mut Text, With<GameoverMessage>>,
+) {
+    let mut text = query.single_mut();
+
+    text.sections[0].value = String::new();
+
     if let Some(game_over) = game.over {
         if game_over == GameOver::Won {
-            // TODO: Add win text
+            text.sections[0].value.push_str("You win!\n");
         } else {
-            // TODO: Add loss text
+            text.sections[0].value.push_str("You lose.\n");
         }
+
+        text.sections[0].value.push_str("\n");
     }
 
-    // Show instructions for new game
-    // TODO: new game text visible
+    text.sections[0].value.push_str(
+        "Press ENTER for a new game\nPress ESC to quit\n(Use left and right \
+         to move)",
+    );
 }
 
 /// Handles keyboard inputs and launching a new game when on the gameover
@@ -346,8 +411,9 @@ pub fn gameover_keyboard_system(
 }
 
 /// Hides the gameover UI at the start of a new game.
-pub fn hide_gameover_ui() {
-    // TODO: Hide message text
+pub fn hide_gameover_ui(mut query: Query<&mut Text, With<GameoverMessage>>) {
+    let mut text = query.single_mut();
+    text.sections[0].value = "".to_owned();
 }
 
 /// Resets the state of all the goals and their scores when starting a new game.
@@ -444,6 +510,10 @@ pub fn fade_out_balls(
         }
     }
 }
+
+// TODO: Move scores closer to the paddles.
+
+// TODO: Add win/lose messages.
 
 // TODO: Widen the size of field so that balls have to go fully past paddles to
 // be considered out of bounds, rather than now where they can intersect halfway
