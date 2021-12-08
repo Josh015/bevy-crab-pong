@@ -2,6 +2,13 @@
   title: "Bevy Crab Pong",
   width: 800,
   height: 800,
+  gameover_win_message: "You win!\n",
+  gameover_lose_message: "You lose.\n",
+  new_game_message: "
+Press ENTER for a new game
+Press ESC to quit
+(Use left and right to move)
+  ",
   clear_color: Rgba(red: 0.7, green: 0.9, blue: 1.0, alpha: 1.0),
   swaying_camera_speed: 0.2,
   animated_water_speed: 0.01,

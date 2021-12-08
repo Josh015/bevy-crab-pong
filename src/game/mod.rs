@@ -89,6 +89,9 @@ pub struct GameConfig {
     pub title: String,
     pub width: u32,
     pub height: u32,
+    pub gameover_win_message: String,
+    pub gameover_lose_message: String,
+    pub new_game_message: String,
     pub clear_color: Color,
     pub swaying_camera_speed: f32,
     pub animated_water_speed: f32,
@@ -376,6 +379,7 @@ pub fn setup(
 /// When entering the gameover screen shows the corresponding UI and says
 /// whether the player won/lost.
 pub fn show_gameover_ui(
+    config: Res<GameConfig>,
     game: Res<Game>,
     mut query: Query<&mut Text, With<GameoverMessage>>,
 ) {
@@ -385,19 +389,14 @@ pub fn show_gameover_ui(
     // Win/Lose-specific message.
     if let Some(game_over) = game.over {
         if game_over == GameOver::Won {
-            message.push_str("You win!\n");
+            message.push_str(&config.gameover_win_message);
         } else {
-            message.push_str("You lose.\n");
+            message.push_str(&config.gameover_lose_message);
         }
-
-        message.push_str("\n");
     }
 
     // General new game message.
-    message.push_str(
-        "Press ENTER for a new game\nPress ESC to quit\n(Use left and right \
-         to move)",
-    );
+    message.push_str(&config.new_game_message);
 
     text.sections[0].value = message;
 }
