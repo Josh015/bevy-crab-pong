@@ -10,6 +10,10 @@ To compile and run, use [cargo](https://www.rust-lang.org/learn/get-started):
 cargo run --release
 ```
 
+## Screenshot
+
+![Bevy Crab Pong](screenshots/screenshot.jpg)
+
 ## TODO
 
 - [x] Set up a basic Bevy engine project.
