@@ -6,10 +6,10 @@
   swaying_camera_speed: 0.2,
   animated_water_speed: 0.01,
   paddle_max_speed: 2.0,
-  paddle_seconds_to_max_speed: 1.0,
+  paddle_seconds_to_max_speed: 0.7,
   fade_speed: 0.75,
-  ball_starting_speed: 0.0,
+  ball_starting_speed: 0.4,
   ball_max_speed: 0.5,
-  ball_seconds_to_max_speed: 0.3,
+  ball_seconds_to_max_speed: 2.0,
   starting_score: 10,
 )
