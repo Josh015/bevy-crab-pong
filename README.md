@@ -34,10 +34,10 @@ cargo run --release
 - [x] Add acceleration to crab movement.
 - [x] Add crabs AI.
 - [x] Get balls bouncing around inside 4 walls.
-- [ ] Get balls bouncing off of 4 barriers.
-- [ ] Get balls bouncing off of 4 crabs.
-- [ ] Get balls bouncing off each other.
-- [ ] Add new game and game over messages UI.
+- [x] Get balls bouncing off of 4 barriers.
+- [x] Get balls bouncing off of 4 crabs.
+- [x] Get balls bouncing off each other.
+- [x] Add new game and game over messages UI.
 - [ ] Try to mimic the lighting of the original.
 - [ ] Switch balls to opacity and alpha-blending for fading from view.
 - [ ] Add a Ferris model (eg. [Ferris the Crab](https://cults3d.com/en/3d-model/art/ferris-the-crab))
