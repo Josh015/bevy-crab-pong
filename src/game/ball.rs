@@ -112,12 +112,10 @@ pub fn collision_system(
 
             let ball_to_ball_distance =
                 ball_transform.translation.distance(transform2.translation);
-
-            // Prevent balls from deflecting through the floor.
             let axis = (transform2.translation - ball_transform.translation)
                 .normalize();
 
-            // Check that the ball is touching the barrier and facing it.
+            // Check that the ball is touching the other ball and facing it.
             if ball_to_ball_distance > BALL_RADIUS + BALL_RADIUS
                 || ball_direction.dot(axis) <= 0.0
             {
@@ -125,9 +123,7 @@ pub fn collision_system(
             }
 
             // Deflect the ball away from the barrier.
-            let r = (ball_direction
-                - (2.0 * (ball_direction.dot(axis) * axis)))
-                .normalize();
+            let r = reflect(ball_direction, axis);
             commands.entity(entity).insert(Movement {
                 direction: r,
                 speed: movement.speed,
@@ -194,9 +190,7 @@ pub fn collision_system(
             }
 
             // Deflect the ball away from the barrier.
-            let r = (ball_direction
-                - (2.0 * (ball_direction.dot(axis) * axis)))
-                .normalize();
+            let r = reflect(ball_direction, axis);
             commands.entity(entity).insert(Movement {
                 direction: r,
                 speed: movement.speed,
@@ -218,9 +212,7 @@ pub fn collision_system(
             }
 
             // Deflect the ball away from the wall.
-            let r = (ball_direction
-                - (2.0 * (ball_direction.dot(axis) * axis)))
-                .normalize();
+            let r = reflect(ball_direction, axis);
             commands.entity(entity).insert(Movement {
                 direction: r,
                 speed: movement.speed,
@@ -267,4 +259,8 @@ pub fn scored_system(
             break;
         }
     }
+}
+
+fn reflect(d: Vec3, n: Vec3) -> Vec3 {
+    (d - (2.0 * (d.dot(n) * n))).normalize()
 }
