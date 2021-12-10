@@ -1,5 +1,4 @@
-use bevy::{ecs::prelude::*, prelude::*};
-use lazy_static::*;
+use bevy::{ecs::prelude::*, math::const_vec3, prelude::*};
 use serde::Deserialize;
 use std::collections::HashMap;
 
@@ -57,17 +56,13 @@ pub const PADDLE_MAX_POSITION_X: f32 =
     ARENA_HALF_WIDTH - BARRIER_RADIUS - PADDLE_HALF_WIDTH;
 pub const WALL_DIAMETER: f32 = 0.05;
 pub const WALL_RADIUS: f32 = 0.5 * WALL_DIAMETER;
-
-lazy_static! {
-    pub static ref ARENA_CENTER_POINT: Vec3 = Vec3::ZERO;
-    pub static ref BALL_CENTER_POINT: Vec3 =
-        Vec3::new(ARENA_CENTER_POINT.x, BALL_HEIGHT, ARENA_CENTER_POINT.z);
-    pub static ref PADDLE_SCALE: Vec3 =
-        Vec3::new(PADDLE_WIDTH, PADDLE_DEPTH, PADDLE_DEPTH);
-    pub static ref PADDLE_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
-    pub static ref WALL_SCALE: Vec3 =
-        Vec3::new(ARENA_WIDTH, WALL_DIAMETER, WALL_DIAMETER);
-}
+pub const ARENA_CENTER_POINT: Vec3 = Vec3::ZERO;
+pub const BALL_CENTER_POINT: Vec3 = const_vec3!([0.0, BALL_HEIGHT, 0.0]); // const_vec3!([ARENA_CENTER_POINT.x, BALL_HEIGHT, ARENA_CENTER_POINT.z]);
+pub const PADDLE_SCALE: Vec3 =
+    const_vec3!([PADDLE_WIDTH, PADDLE_DEPTH, PADDLE_DEPTH]);
+pub const PADDLE_START_POSITION: Vec3 = const_vec3!([0.0, 0.05, 0.0]);
+pub const WALL_SCALE: Vec3 =
+    const_vec3!([ARENA_WIDTH, WALL_DIAMETER, WALL_DIAMETER]);
 
 /// The current state of the game.
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
@@ -159,7 +154,7 @@ pub fn setup(
             Mat4::from_scale_rotation_translation(
                 Vec3::splat(ARENA_WIDTH),
                 Quat::IDENTITY,
-                *ARENA_CENTER_POINT,
+                ARENA_CENTER_POINT,
             ),
         ),
         ..Default::default()
@@ -181,7 +176,7 @@ pub fn setup(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(BALL_DIAMETER),
                         Quat::IDENTITY,
-                        *BALL_CENTER_POINT,
+                        BALL_CENTER_POINT,
                     ),
                 ),
                 ..Default::default()
@@ -254,9 +249,9 @@ pub fn setup(
                         material: materials.add(color.clone().into()),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                *PADDLE_SCALE,
+                                PADDLE_SCALE,
                                 Quat::IDENTITY,
-                                *PADDLE_START_POSITION,
+                                PADDLE_START_POSITION,
                             ),
                         ),
                         ..Default::default()
@@ -270,7 +265,7 @@ pub fn setup(
                         material: wall_material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                *WALL_SCALE,
+                                WALL_SCALE,
                                 Quat::IDENTITY,
                                 Vec3::new(0.0, 0.1, 0.0),
                             ),
@@ -443,7 +438,7 @@ pub fn reset_game_entities(
 
     // Reset paddles
     for (entity, mut transform) in paddles_query.iter_mut() {
-        transform.translation = *PADDLE_START_POSITION;
+        transform.translation = PADDLE_START_POSITION;
         commands.entity(entity).insert(Fade::In(0.4));
     }
 

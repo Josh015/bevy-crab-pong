@@ -27,7 +27,7 @@ pub fn swaying_system(
     let x = swaying_camera.angle.sin() * ARENA_HALF_WIDTH;
 
     *transform = Transform::from_xyz(x * 0.5, 2.0, 1.5)
-        .looking_at(*ARENA_CENTER_POINT, Vec3::Y);
+        .looking_at(ARENA_CENTER_POINT, Vec3::Y);
 
     swaying_camera.angle += config.swaying_camera_speed * time.delta_seconds();
     swaying_camera.angle %= std::f32::consts::TAU;

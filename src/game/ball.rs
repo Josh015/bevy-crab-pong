@@ -51,7 +51,7 @@ pub fn reset_position_system(
     >,
 ) {
     for (entity, mut transform) in query.iter_mut() {
-        transform.translation = *BALL_CENTER_POINT;
+        transform.translation = BALL_CENTER_POINT;
         commands
             .entity(entity)
             .remove::<Movement>()

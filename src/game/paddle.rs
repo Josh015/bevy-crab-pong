@@ -44,7 +44,7 @@ pub fn fade_animation_system(
 ) {
     // Grow/Shrink paddles to show/hide them
     for (mut transform, fade) in query.iter_mut() {
-        transform.scale = *PADDLE_SCALE * fade.opacity();
+        transform.scale = PADDLE_SCALE * fade.opacity();
     }
 }
 

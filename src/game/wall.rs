@@ -29,6 +29,6 @@ pub fn fade_animation_system(
         let x_mask = fade.opacity();
         let yz_mask = x_mask.powf(0.001);
 
-        transform.scale = *WALL_SCALE * Vec3::new(x_mask, yz_mask, yz_mask);
+        transform.scale = WALL_SCALE * Vec3::new(x_mask, yz_mask, yz_mask);
     }
 }

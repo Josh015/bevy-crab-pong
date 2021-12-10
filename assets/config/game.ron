@@ -12,7 +12,7 @@ Press ESC to quit
   clear_color: Rgba(red: 0.7, green: 0.9, blue: 1.0, alpha: 1.0),
   swaying_camera_speed: 0.2,
   animated_water_speed: 0.01,
-  paddle_max_speed: 2.2,
+  paddle_max_speed: 2,
   paddle_seconds_to_max_speed: 0.6, // 0.65
   fade_speed: 0.75,
   ball_starting_speed: 0.4,
