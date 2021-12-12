@@ -116,7 +116,6 @@ impl Default for GameOver {
 /// this game.
 pub fn setup(
     mut game: ResMut<Game>,
-    config: Res<GameConfig>,
     asset_server: Res<AssetServer>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -458,7 +457,7 @@ pub fn reset_game_entities(
     }
 
     // Reset scores
-    for (goal, score) in game.scores.iter_mut() {
+    for (_, score) in game.scores.iter_mut() {
         *score = config.starting_score;
     }
 }

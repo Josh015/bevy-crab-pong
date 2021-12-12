@@ -1,6 +1,5 @@
 use super::*;
 use crate::GameConfig;
-use bevy::{ecs::prelude::*, prelude::*};
 use rand::prelude::*;
 
 /// A component for a ball entity that must have inertia and be able to deflect
@@ -96,7 +95,7 @@ pub fn collision_system(
         let ball_direction = movement.direction;
 
         // Ball collisions
-        for (entity2, transform2, movement2) in balls_query.iter() {
+        for (entity2, transform2, _) in balls_query.iter() {
             // Prevent balls from colliding with themselves.
             if entity == entity2 {
                 continue;
