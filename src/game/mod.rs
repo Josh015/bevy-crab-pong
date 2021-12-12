@@ -366,8 +366,7 @@ pub fn setup(
                             text: Text::with_section(
                                 "",
                                 TextStyle {
-                                    font: asset_server
-                                        .load("fonts/FiraSans-Bold.ttf"),
+                                    font: font.clone(),
                                     font_size: 30.0,
                                     color: Color::RED,
                                 },

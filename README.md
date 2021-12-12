@@ -39,12 +39,13 @@ cargo run --release
 - [x] Get balls bouncing off each other.
 - [x] Add new game and game over messages UI.
 - [x] Switch balls to opacity and alpha-blending for fading from view.
-- [ ] Try to mimic the lighting of the original.
-- [ ] Add a Ferris model (eg. [Ferris the Crab](https://cults3d.com/en/3d-model/art/ferris-the-crab))
-- [ ] Adjust model textures to support color tinting.
+- [ ] Switch to RT-based in-world UI.
 - [ ] Add "reflections" in the water via mirrored geometry and water blending.
+- [ ] Add a Ferris model (eg. [Ferris the Crab](https://sketchfab.com/3d-models/ferris-the-crab-e9bc16e19d1c4880b30d2aa5fd174887))
+- [ ] Adjust model textures to support color tinting.
+- [ ] Use updated scene textures rather than the originals?
 - [ ] Add water texture scrolling.
-- [ ] Use updated textures rather than the originals?
-- [ ] Use a Rust gear logo texture?
+- [ ] Try to mimic the lighting of the original.
 - [ ] Add shadowed directional light for the sun?
-- [ ] Add 3D text instructions and scores? (eg. [Bevy Text Mesh](https://github.com/blaind/bevy_text_mesh))
+- [ ] Use a Rust gear logo texture?
+- [ ] Add proper mesh text for in-world UI? (eg. [Bevy Text Mesh](https://github.com/blaind/bevy_text_mesh))
