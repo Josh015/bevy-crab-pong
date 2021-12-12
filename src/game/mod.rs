@@ -167,13 +167,13 @@ pub fn setup(
         radius: 0.5,
         subdivisions: 2,
     }));
-    let ball_material = materials.add(Color::WHITE.into());
 
     for _ in 0..2 {
+        // Multiple material instances to allow different blending per-ball.
         commands
             .spawn_bundle(PbrBundle {
                 mesh: unit_sphere.clone(),
-                material: ball_material.clone(),
+                material: materials.add(Color::WHITE.into()),
                 transform: Transform::from_matrix(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(BALL_DIAMETER),

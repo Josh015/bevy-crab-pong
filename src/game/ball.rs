@@ -13,13 +13,13 @@ pub struct Ball;
 pub fn fade_animation_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<
-        (&mut Fade, &Handle<StandardMaterial>, &mut Transform),
+        (&mut Fade, &mut Visible, &Handle<StandardMaterial>),
         With<Ball>,
     >,
 ) {
     let mut is_prior_resetting = false;
 
-    for (mut fade, material, mut transform) in query.iter_mut() {
+    for (mut fade, mut visible, material) in query.iter_mut() {
         let is_current_resetting = matches!(*fade, Fade::In(_));
 
         // Force current ball to wait if other is also fading in
@@ -30,14 +30,13 @@ pub fn fade_animation_system(
 
         is_prior_resetting = is_current_resetting;
 
-        // materials
-        //     .get_mut(material)
-        //     .unwrap()
-        //     .base_color
-        //     .set_a(fade.opacity());
-
-        // FIXME: Use scaling until we can get alpha-blending working
-        transform.scale = Vec3::splat(fade.opacity() * BALL_DIAMETER);
+        // Alpha-blend the balls only when necessary.
+        visible.is_transparent = fade.opacity() < 1.0;
+        materials
+            .get_mut(material)
+            .unwrap()
+            .base_color
+            .set_a(fade.opacity());
     }
 }
 
