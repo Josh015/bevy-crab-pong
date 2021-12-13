@@ -1,6 +1,13 @@
 use bevy::{ecs::prelude::*, prelude::*};
 use std::ops::{Add, Sub};
 
+/// Represents whether the movement has positive or negative acceleration.
+#[derive(Clone, Copy, PartialEq)]
+pub enum Delta {
+    Positive,
+    Negative,
+}
+
 /// A component that handles all acceleration-based movement for a given entity.
 #[derive(Component)]
 pub struct Movement {
@@ -22,11 +29,12 @@ pub struct Movement {
     pub delta: Option<Delta>,
 }
 
-/// Represents whether the movement has positive or negative acceleration.
-#[derive(Clone, Copy, PartialEq)]
-pub enum Delta {
-    Positive,
-    Negative,
+impl Movement {
+    /// Removes acceleration and immediately sets speed to zero.
+    pub fn dead_stop(&mut self) {
+        self.delta = None;
+        self.speed = 0.0;
+    }
 }
 
 /// Handles calculating the actual acceleration/deceleration over time for the

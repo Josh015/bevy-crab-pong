@@ -6,32 +6,12 @@ use crate::GameConfig;
 #[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
 pub struct Paddle;
 
-/// Restores `Movement` to newly `Active` `Paddle` entities allowing them to
-/// be moved.
-pub fn add_movement_system(
-    mut commands: Commands,
-    config: Res<GameConfig>,
-    query: Query<Entity, (With<Paddle>, Added<Active>, Without<Movement>)>,
+/// Immediately stops `Movement` for a recently deactivated `Paddle` entity.
+pub fn stop_when_inactive_system(
+    mut query: Query<&mut Movement, (With<Paddle>, Without<Active>)>,
 ) {
-    for entity in query.iter() {
-        commands.entity(entity).insert(Movement {
-            direction: Vec3::X,
-            speed: 0.0,
-            max_speed: config.paddle_max_speed,
-            acceleration: config.paddle_max_speed
-                / config.paddle_seconds_to_max_speed,
-            delta: None,
-        });
-    }
-}
-
-/// Removes `Movement` from a recently deactivated `Paddle` entity.
-pub fn remove_movement_system(
-    mut commands: Commands,
-    query: Query<Entity, (With<Paddle>, Without<Active>, With<Movement>)>,
-) {
-    for entity in query.iter() {
-        commands.entity(entity).remove::<Movement>();
+    for mut movement in query.iter_mut() {
+        movement.dead_stop();
     }
 }
 
@@ -58,12 +38,10 @@ pub fn bounded_movement_system(
         // Limit paddle to open space between barriers
         if transform.translation.x > PADDLE_MAX_POSITION_X {
             transform.translation.x = PADDLE_MAX_POSITION_X;
-            movement.speed = 0.0;
-            movement.delta = None;
+            movement.dead_stop();
         } else if transform.translation.x < -PADDLE_MAX_POSITION_X {
             transform.translation.x = -PADDLE_MAX_POSITION_X;
-            movement.speed = 0.0;
-            movement.delta = None;
+            movement.dead_stop();
         }
     }
 }

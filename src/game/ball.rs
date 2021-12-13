@@ -41,41 +41,38 @@ pub fn fade_animation_system(
 
 /// Takes a fully hidden `Ball`, disables its movement, moves it back to the
 /// center of the arena, and then slowly fades it back into view.
-pub fn reset_position_system(
+pub fn inactive_ball_reset_system(
     mut commands: Commands,
     mut query: Query<
-        (Entity, &mut Transform),
+        (Entity, &mut Transform, &mut Movement),
         (With<Ball>, Without<Fade>, Without<Active>),
     >,
 ) {
-    for (entity, mut transform) in query.iter_mut() {
+    for (entity, mut transform, mut movement) in query.iter_mut() {
         transform.translation = BALL_CENTER_POINT;
-        commands
-            .entity(entity)
-            .remove::<Movement>()
-            .insert(Fade::In(0.0));
+        movement.dead_stop();
+        commands.entity(entity).insert(Fade::In(0.0));
+        // info!("({:?}) -> Resetting", entity);
     }
 }
 
 /// Takes a newly `Active` `Ball` and gives it `Movement` so that it starts it
 /// moving in a straight line in a random direction.
-pub fn reset_movement_system(
-    mut commands: Commands,
+pub fn reactivated_ball_launch_system(
     config: Res<GameConfig>,
-    query: Query<Entity, (With<Ball>, Without<Movement>, Added<Active>)>,
+    mut query: Query<
+        (Entity, &mut Movement),
+        (With<Ball>, Without<Fade>, Added<Active>),
+    >,
 ) {
-    for entity in query.iter() {
+    for (entity, mut movement) in query.iter_mut() {
         let mut rng = rand::thread_rng();
         let angle = rng.gen_range(0.0..std::f32::consts::TAU);
 
-        commands.entity(entity).insert(Movement {
-            direction: Vec3::new(angle.cos(), 0.0, angle.sin()),
-            speed: config.ball_starting_speed,
-            max_speed: config.ball_max_speed,
-            acceleration: config.ball_max_speed
-                / config.ball_seconds_to_max_speed,
-            delta: Some(Delta::Positive),
-        });
+        movement.direction = Vec3::new(angle.cos(), 0.0, angle.sin());
+        movement.speed = config.ball_starting_speed;
+        movement.delta = Some(Delta::Positive);
+        // info!("({:?}) -> Launched", entity);
     }
 }
 
@@ -218,7 +215,7 @@ pub fn collision_system(
 
 /// Checks if a `Ball` has scored against a `Goal` and then decrements the
 /// corresponding score.
-pub fn scored_system(
+pub fn goal_scored_system(
     mut commands: Commands,
     mut game: ResMut<Game>,
     mut goal_eliminated_writer: EventWriter<GoalEliminated>,

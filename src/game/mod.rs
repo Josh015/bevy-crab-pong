@@ -115,6 +115,7 @@ impl Default for GameOver {
 /// Handles setting up all the entities that will be needed for every screen of
 /// this game.
 pub fn setup(
+    config: Res<GameConfig>,
     mut game: ResMut<Game>,
     asset_server: Res<AssetServer>,
     mut commands: Commands,
@@ -182,7 +183,18 @@ pub fn setup(
                 ),
                 ..Default::default()
             })
-            .insert_bundle((Ball, Fade::Out(1.0)));
+            .insert_bundle((
+                Ball,
+                Fade::Out(1.0),
+                Movement {
+                    direction: Vec3::ZERO,
+                    speed: 0.0,
+                    max_speed: config.ball_max_speed,
+                    acceleration: config.ball_max_speed
+                        / config.ball_seconds_to_max_speed,
+                    delta: None,
+                },
+            ));
     }
 
     // Goals
@@ -257,7 +269,19 @@ pub fn setup(
                         ),
                         ..Default::default()
                     })
-                    .insert_bundle((Paddle, Fade::Out(1.0), goal.clone()));
+                    .insert_bundle((
+                        Paddle,
+                        Fade::Out(1.0),
+                        goal.clone(),
+                        Movement {
+                            direction: Vec3::X,
+                            speed: 0.0,
+                            max_speed: config.paddle_max_speed,
+                            acceleration: config.paddle_max_speed
+                                / config.paddle_seconds_to_max_speed,
+                            delta: None,
+                        },
+                    ));
 
                 // Wall
                 parent
