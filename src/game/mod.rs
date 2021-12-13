@@ -2,6 +2,9 @@ use bevy::{ecs::prelude::*, math::const_vec3, prelude::*};
 use serde::Deserialize;
 use std::collections::HashMap;
 
+pub mod active;
+pub use active::*;
+
 pub mod animated_water;
 pub use animated_water::*;
 
