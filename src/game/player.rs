@@ -1,5 +1,4 @@
 use super::*;
-use bevy::prelude::*;
 
 /// A component for marking a `Paddle` entity as being controller by player
 /// input.

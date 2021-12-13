@@ -52,7 +52,7 @@ pub fn inactive_ball_reset_system(
         transform.translation = BALL_CENTER_POINT;
         movement.dead_stop();
         commands.entity(entity).insert(Fade::In(0.0));
-        // info!("({:?}) -> Resetting", entity);
+        info!("Ball({:?}) -> Resetting", entity);
     }
 }
 
@@ -72,7 +72,7 @@ pub fn reactivated_ball_launch_system(
         movement.direction = Vec3::new(angle.cos(), 0.0, angle.sin());
         movement.speed = config.ball_starting_speed;
         movement.delta = Some(Delta::Positive);
-        // info!("({:?}) -> Launched", entity);
+        info!("Ball({:?}) -> Launched", entity);
     }
 }
 
@@ -119,6 +119,7 @@ pub fn collision_system(
                 acceleration: movement.acceleration,
                 delta: movement.delta,
             });
+            info!("Ball({:?}) -> Collided Ball({:?})", entity, entity2);
             break;
         }
 
@@ -154,6 +155,7 @@ pub fn collision_system(
                 acceleration: movement.acceleration,
                 delta: movement.delta,
             });
+            info!("Ball({:?}) -> Collided Paddle({:?})", entity, goal);
             break;
         }
 
@@ -186,6 +188,7 @@ pub fn collision_system(
                 acceleration: movement.acceleration,
                 delta: movement.delta,
             });
+            info!("Ball({:?}) -> Collided Barrier", entity);
             break;
         }
 
@@ -208,6 +211,7 @@ pub fn collision_system(
                 acceleration: movement.acceleration,
                 delta: movement.delta,
             });
+            info!("Ball({:?}) -> Collided Wall({:?})", entity, goal);
             break;
         }
     }
@@ -237,10 +241,13 @@ pub fn goal_scored_system(
 
             // Decrement the score and potentially eliminate the goal.
             let score = game.scores.get_mut(goal).unwrap();
+
             *score = score.saturating_sub(1);
+            info!("Ball({:?}) -> Scored {:?}", entity, goal);
 
             if *score == 0 {
-                goal_eliminated_writer.send(GoalEliminated(*goal))
+                goal_eliminated_writer.send(GoalEliminated(*goal));
+                info!("Ball({:?}) -> Eliminated {:?}", entity, goal);
             }
 
             // Fade out and deactivate the ball to prevent repeated scoring.

@@ -483,6 +483,8 @@ pub fn reset_game_entities(
     for (_, score) in game.scores.iter_mut() {
         *score = config.starting_score;
     }
+
+    info!("New Game");
 }
 
 /// When a goal is eliminated it checks if the current scores of all the goals
@@ -512,6 +514,7 @@ pub fn gameover_check_system(
             };
 
             state.set(GameState::GameOver).unwrap();
+            info!("Game Over -> Player {:?}", game.over.unwrap());
         }
     }
 }
