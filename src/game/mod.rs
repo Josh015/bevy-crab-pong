@@ -26,6 +26,9 @@ pub use gameover_message::*;
 pub mod goal;
 pub use goal::*;
 
+pub mod mirror;
+pub use mirror::*;
+
 pub mod movement;
 pub use movement::*;
 
@@ -145,8 +148,12 @@ pub fn setup(
     commands
         .spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Plane { size: 100.0 })),
-            material: materials.add(Color::hex("257AFF").unwrap().into()),
+            material: materials.add(Color::hex("257AFFAA").unwrap().into()),
             transform: Transform::from_xyz(0.0, -0.01, 0.0),
+            visible: Visible {
+                is_transparent: true,
+                ..Default::default()
+            },
             ..Default::default()
         })
         .insert(AnimatedWater::default());
@@ -172,11 +179,14 @@ pub fn setup(
     }));
 
     for _ in 0..2 {
-        // Multiple material instances to allow different blending per-ball.
-        commands
+        // Share material between original and mirrored, but not between balls
+        // since we need them to have independent opacities.
+        let material = materials.add(Color::WHITE.into());
+
+        let mirrored_entity = commands
             .spawn_bundle(PbrBundle {
                 mesh: unit_sphere.clone(),
-                material: materials.add(Color::WHITE.into()),
+                material: material.clone(),
                 transform: Transform::from_matrix(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(BALL_DIAMETER),
@@ -197,7 +207,23 @@ pub fn setup(
                         / config.ball_seconds_to_max_speed,
                     delta: None,
                 },
-            ));
+            ))
+            .id();
+
+        commands
+            .spawn_bundle(PbrBundle {
+                mesh: unit_sphere.clone(),
+                material: material.clone(),
+                transform: Transform::from_matrix(
+                    Mat4::from_scale_rotation_translation(
+                        Vec3::splat(BALL_DIAMETER),
+                        Quat::IDENTITY,
+                        BALL_CENTER_POINT,
+                    ),
+                ),
+                ..Default::default()
+            })
+            .insert(Mirror(mirrored_entity));
     }
 
     // Goals
@@ -259,10 +285,12 @@ pub fn setup(
             .with_children(|parent| {
                 // Paddle
                 // NOTE: Treat it as the center of the goal
-                parent
+                let material = materials.add(color.clone().into());
+
+                let mirrored_entity = parent
                     .spawn_bundle(PbrBundle {
                         mesh: unit_cube.clone(),
-                        material: materials.add(color.clone().into()),
+                        material: material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
                                 PADDLE_SCALE,
@@ -284,9 +312,41 @@ pub fn setup(
                                 / config.paddle_seconds_to_max_speed,
                             delta: None,
                         },
-                    ));
+                    ))
+                    .id();
+
+                parent
+                    .spawn_bundle(PbrBundle {
+                        mesh: unit_cube.clone(),
+                        material: material.clone(),
+                        transform: Transform::from_matrix(
+                            Mat4::from_scale_rotation_translation(
+                                PADDLE_SCALE,
+                                Quat::IDENTITY,
+                                PADDLE_START_POSITION,
+                            ),
+                        ),
+                        ..Default::default()
+                    })
+                    .insert(Mirror(mirrored_entity));
 
                 // Wall
+                let mirrored_entity = parent
+                    .spawn_bundle(PbrBundle {
+                        mesh: unit_cube.clone(),
+                        material: wall_material.clone(),
+                        transform: Transform::from_matrix(
+                            Mat4::from_scale_rotation_translation(
+                                WALL_SCALE,
+                                Quat::IDENTITY,
+                                Vec3::new(0.0, WALL_HEIGHT, 0.0),
+                            ),
+                        ),
+                        ..Default::default()
+                    })
+                    .insert_bundle((Wall, Active, goal.clone()))
+                    .id();
+
                 parent
                     .spawn_bundle(PbrBundle {
                         mesh: unit_cube.clone(),
@@ -300,9 +360,33 @@ pub fn setup(
                         ),
                         ..Default::default()
                     })
-                    .insert_bundle((Wall, Active, goal.clone()));
+                    .insert(Mirror(mirrored_entity));
 
                 // Barrier
+                let mirrored_entity = parent
+                    .spawn_bundle(PbrBundle {
+                        mesh: unit_cube.clone(),
+                        material: barrier_material.clone(),
+                        transform: Transform::from_matrix(
+                            Mat4::from_scale_rotation_translation(
+                                Vec3::new(
+                                    BARRIER_DIAMETER,
+                                    BARRIER_HEIGHT,
+                                    BARRIER_DIAMETER,
+                                ),
+                                Quat::IDENTITY,
+                                Vec3::new(
+                                    ARENA_HALF_WIDTH,
+                                    0.5 * BARRIER_HEIGHT,
+                                    0.0,
+                                ),
+                            ),
+                        ),
+                        ..Default::default()
+                    })
+                    .insert(Barrier)
+                    .id();
+
                 parent
                     .spawn_bundle(PbrBundle {
                         mesh: unit_cube.clone(),
@@ -324,7 +408,7 @@ pub fn setup(
                         ),
                         ..Default::default()
                     })
-                    .insert(Barrier);
+                    .insert(Mirror(mirrored_entity));
             });
 
         // Score

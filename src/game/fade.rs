@@ -1,6 +1,5 @@
 use super::*;
 use crate::GameConfig;
-use bevy::{ecs::prelude::*, prelude::*};
 
 /// A component that handles fading an entity in/out of visibility and marking
 /// it as `Active`.

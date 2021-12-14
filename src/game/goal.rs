@@ -55,7 +55,7 @@ impl Goal {
 
 /// Fades out the `Paddle` and fades in the `Wall` for this `Goal` when it's
 /// eliminated from play.
-pub fn eliminated_animation_system(
+pub fn eliminated_system(
     mut commands: Commands,
     mut goal_eliminated_reader: EventReader<GoalEliminated>,
     balls_query: Query<(Entity, &Goal), (With<Paddle>, With<Active>)>,
