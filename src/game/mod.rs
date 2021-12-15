@@ -127,7 +127,6 @@ pub fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut color_materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let unit_plane = meshes.add(Mesh::from(shape::Plane { size: 1.0 }));
 
@@ -148,12 +147,12 @@ pub fn setup(
     commands
         .spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Plane { size: 100.0 })),
-            material: materials.add(Color::hex("257AFFAA").unwrap().into()),
-            transform: Transform::from_xyz(0.0, -0.01, 0.0),
-            visible: Visible {
-                is_transparent: true,
+            material: materials.add(StandardMaterial {
+                base_color: Color::hex("257AFFCC").unwrap(),
+                alpha_mode: AlphaMode::Blend,
                 ..Default::default()
-            },
+            }),
+            transform: Transform::from_xyz(0.0, -0.01, 0.0),
             ..Default::default()
         })
         .insert(AnimatedWater::default());
@@ -448,7 +447,7 @@ pub fn setup(
                 justify_content: JustifyContent::SpaceBetween,
                 ..Default::default()
             },
-            material: color_materials.add(Color::NONE.into()),
+            color: Color::NONE.into(),
             ..Default::default()
         })
         .with_children(|parent| {
@@ -464,7 +463,7 @@ pub fn setup(
                         justify_content: JustifyContent::Center,
                         ..Default::default()
                     },
-                    material: color_materials.add(Color::NONE.into()),
+                    color: Color::NONE.into(),
                     ..Default::default()
                 })
                 .with_children(|parent| {

@@ -11,14 +11,11 @@ pub struct Ball;
 /// smoothly blend from opaque->transparent and vice versa.
 pub fn fade_animation_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut query: Query<
-        (&mut Fade, &mut Visible, &Handle<StandardMaterial>),
-        With<Ball>,
-    >,
+    mut query: Query<(&mut Fade, &Handle<StandardMaterial>), With<Ball>>,
 ) {
     let mut is_prior_resetting = false;
 
-    for (mut fade, mut visible, material) in query.iter_mut() {
+    for (mut fade, material) in query.iter_mut() {
         let is_current_resetting = matches!(*fade, Fade::In(_));
 
         // Force current ball to wait if other is also fading in
@@ -30,12 +27,15 @@ pub fn fade_animation_system(
         is_prior_resetting = is_current_resetting;
 
         // Alpha-blend the balls only when necessary.
-        visible.is_transparent = fade.opacity() < 1.0;
-        materials
-            .get_mut(material)
-            .unwrap()
-            .base_color
-            .set_a(fade.opacity());
+        let material = materials.get_mut(material).unwrap();
+        let opacity = fade.opacity();
+
+        material.base_color.set_a(opacity);
+        material.alpha_mode = if opacity < 1.0 {
+            AlphaMode::Blend
+        } else {
+            AlphaMode::Opaque
+        };
     }
 }
 
