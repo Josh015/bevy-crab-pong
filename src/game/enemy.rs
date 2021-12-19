@@ -29,7 +29,7 @@ pub fn ai_paddle_control_system(
         }
 
         // Predict the paddle's stop position if it begins decelerating now.
-        let d = movement.speed * movement.speed / movement.acceleration;
+        let d = movement.speed.powi(2) / movement.acceleration;
         let stop_position = if movement.speed > 0.0 {
             transform.translation.x + d
         } else {
