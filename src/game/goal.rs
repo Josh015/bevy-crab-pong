@@ -22,10 +22,12 @@ impl Goal {
         let ball_translation = ball_transform.translation;
 
         match *self {
-            Self::Top => ARENA_HALF_WIDTH + ball_translation.z - BALL_RADIUS,
-            Self::Right => ARENA_HALF_WIDTH - ball_translation.x - BALL_RADIUS,
-            Self::Bottom => ARENA_HALF_WIDTH - ball_translation.z - BALL_RADIUS,
-            Self::Left => ARENA_HALF_WIDTH + ball_translation.x - BALL_RADIUS,
+            Self::Top => ARENA_HALF_WIDTH + ball_translation.z - Ball::RADIUS,
+            Self::Right => ARENA_HALF_WIDTH - ball_translation.x - Ball::RADIUS,
+            Self::Bottom => {
+                ARENA_HALF_WIDTH - ball_translation.z - Ball::RADIUS
+            },
+            Self::Left => ARENA_HALF_WIDTH + ball_translation.x - Ball::RADIUS,
         }
     }
 

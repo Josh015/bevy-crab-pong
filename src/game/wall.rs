@@ -6,6 +6,14 @@ use bevy::{math::Vec3, prelude::Transform};
 #[derive(Component)]
 pub struct Wall;
 
+impl Wall {
+    pub const DIAMETER: f32 = 0.05;
+    pub const HEIGHT: f32 = 0.1;
+    pub const RADIUS: f32 = 0.5 * Wall::DIAMETER;
+    pub const SCALE: Vec3 =
+        const_vec3!([ARENA_WIDTH, Wall::DIAMETER, Wall::DIAMETER]);
+}
+
 /// Makes a `Wall` entity `Active` at the very start of a `Fade::In` so that it
 /// can immediately deflect balls before its animation has finished.
 pub fn begin_fade_system(
@@ -28,6 +36,6 @@ pub fn fade_animation_system(
         let x_mask = fade.opacity();
         let yz_mask = x_mask.powf(0.001);
 
-        transform.scale = WALL_SCALE * Vec3::new(x_mask, yz_mask, yz_mask);
+        transform.scale = Wall::SCALE * Vec3::new(x_mask, yz_mask, yz_mask);
     }
 }

@@ -7,6 +7,13 @@ use rand::prelude::*;
 #[derive(Component)]
 pub struct Ball;
 
+impl Ball {
+    pub const CENTER_POINT: Vec3 = const_vec3!([0.0, Ball::HEIGHT, 0.0]);
+    pub const DIAMETER: f32 = 0.08;
+    pub const HEIGHT: f32 = 0.05;
+    pub const RADIUS: f32 = 0.5 * Ball::DIAMETER; // const_vec3!([ARENA_CENTER_POINT.x, Ball::HEIGHT, ARENA_CENTER_POINT.z]);
+}
+
 /// Handles the `Fade` animation for a `Ball` entity by causing its material to
 /// smoothly blend from opaque->transparent and vice versa.
 pub fn fade_animation_system(
@@ -49,7 +56,7 @@ pub fn inactive_ball_reset_system(
     >,
 ) {
     for (entity, mut transform, mut movement) in query.iter_mut() {
-        transform.translation = BALL_CENTER_POINT;
+        transform.translation = Ball::CENTER_POINT;
         movement.dead_stop();
         commands.entity(entity).insert(Fade::In(0.0));
         info!("Ball({:?}) -> Resetting", entity);
@@ -104,7 +111,7 @@ pub fn collision_system(
                 .normalize();
 
             // Check that the ball is touching the other ball and facing it.
-            if ball_to_ball_distance > BALL_RADIUS + BALL_RADIUS
+            if ball_to_ball_distance > Ball::RADIUS + Ball::RADIUS
                 || ball_direction.dot(axis) <= 0.0
             {
                 continue;
@@ -133,8 +140,8 @@ pub fn collision_system(
             let distance_from_paddle_center = (ball_to_paddle).abs();
 
             // Check that the ball is touching the paddle and facing the goal.
-            if ball_distance > PADDLE_HALF_DEPTH
-                || distance_from_paddle_center >= PADDLE_HALF_WIDTH
+            if ball_distance > Paddle::HALF_DEPTH
+                || distance_from_paddle_center >= Paddle::HALF_WIDTH
                 || ball_direction.dot(axis) <= 0.0
             {
                 continue;
@@ -144,7 +151,7 @@ pub fn collision_system(
             // far its position is from the paddle's center.
             let rotation_away_from_center = Quat::from_rotation_y(
                 std::f32::consts::FRAC_PI_4
-                    * (ball_to_paddle / PADDLE_HALF_WIDTH),
+                    * (ball_to_paddle / Paddle::HALF_WIDTH),
             );
             let r = rotation_away_from_center * -ball_direction;
 
@@ -173,7 +180,7 @@ pub fn collision_system(
             axis = axis.normalize();
 
             // Check that the ball is touching the barrier and facing it.
-            if ball_to_barrier_distance > BARRIER_RADIUS + BALL_RADIUS
+            if ball_to_barrier_distance > Barrier::RADIUS + Ball::RADIUS
                 || ball_direction.dot(axis) <= 0.0
             {
                 continue;
@@ -198,7 +205,7 @@ pub fn collision_system(
             let axis = goal.axis();
 
             // Check that the ball is touching and facing the wall.
-            if ball_distance > WALL_RADIUS || ball_direction.dot(axis) <= 0.0 {
+            if ball_distance > Wall::RADIUS || ball_direction.dot(axis) <= 0.0 {
                 continue;
             }
 
@@ -235,7 +242,7 @@ pub fn goal_scored_system(
             // fully past said goal's paddle.
             let ball_distance = goal.distance_to_ball(ball_transform);
 
-            if ball_distance > -PADDLE_HALF_DEPTH {
+            if ball_distance > -Paddle::HALF_DEPTH {
                 continue;
             }
 

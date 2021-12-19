@@ -49,28 +49,7 @@ pub use wall::*;
 
 pub const ARENA_WIDTH: f32 = 1.0;
 pub const ARENA_HALF_WIDTH: f32 = 0.5 * ARENA_WIDTH;
-pub const BARRIER_DIAMETER: f32 = 0.12;
-pub const BARRIER_RADIUS: f32 = 0.5 * BARRIER_DIAMETER;
-pub const BARRIER_HEIGHT: f32 = 0.2;
-pub const BALL_HEIGHT: f32 = 0.05;
-pub const BALL_DIAMETER: f32 = 0.08;
-pub const BALL_RADIUS: f32 = 0.5 * BALL_DIAMETER;
-pub const PADDLE_WIDTH: f32 = 0.2;
-pub const PADDLE_HALF_WIDTH: f32 = 0.5 * PADDLE_WIDTH;
-pub const PADDLE_DEPTH: f32 = 0.1;
-pub const PADDLE_HALF_DEPTH: f32 = 0.5 * PADDLE_DEPTH;
-pub const PADDLE_MAX_POSITION_X: f32 =
-    ARENA_HALF_WIDTH - BARRIER_RADIUS - PADDLE_HALF_WIDTH;
-pub const WALL_DIAMETER: f32 = 0.05;
-pub const WALL_HEIGHT: f32 = 0.1;
-pub const WALL_RADIUS: f32 = 0.5 * WALL_DIAMETER;
 pub const ARENA_CENTER_POINT: Vec3 = Vec3::ZERO;
-pub const BALL_CENTER_POINT: Vec3 = const_vec3!([0.0, BALL_HEIGHT, 0.0]); // const_vec3!([ARENA_CENTER_POINT.x, BALL_HEIGHT, ARENA_CENTER_POINT.z]);
-pub const PADDLE_SCALE: Vec3 =
-    const_vec3!([PADDLE_WIDTH, PADDLE_DEPTH, PADDLE_DEPTH]);
-pub const PADDLE_START_POSITION: Vec3 = const_vec3!([0.0, 0.05, 0.0]);
-pub const WALL_SCALE: Vec3 =
-    const_vec3!([ARENA_WIDTH, WALL_DIAMETER, WALL_DIAMETER]);
 
 /// The current state of the game.
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
@@ -208,9 +187,9 @@ pub fn setup(
                 material: material.clone(),
                 transform: Transform::from_matrix(
                     Mat4::from_scale_rotation_translation(
-                        Vec3::splat(BALL_DIAMETER),
+                        Vec3::splat(Ball::DIAMETER),
                         Quat::IDENTITY,
-                        BALL_CENTER_POINT,
+                        Ball::CENTER_POINT,
                     ),
                 ),
                 ..Default::default()
@@ -235,9 +214,9 @@ pub fn setup(
                 material: material.clone(),
                 transform: Transform::from_matrix(
                     Mat4::from_scale_rotation_translation(
-                        Vec3::splat(BALL_DIAMETER),
+                        Vec3::splat(Ball::DIAMETER),
                         Quat::IDENTITY,
-                        BALL_CENTER_POINT,
+                        Ball::CENTER_POINT,
                     ),
                 ),
                 ..Default::default()
@@ -312,9 +291,9 @@ pub fn setup(
                         material: material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                PADDLE_SCALE,
+                                Paddle::SCALE,
                                 Quat::IDENTITY,
-                                PADDLE_START_POSITION,
+                                Paddle::START_POSITION,
                             ),
                         ),
                         ..Default::default()
@@ -340,9 +319,9 @@ pub fn setup(
                         material: material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                PADDLE_SCALE,
+                                Paddle::SCALE,
                                 Quat::IDENTITY,
-                                PADDLE_START_POSITION,
+                                Paddle::START_POSITION,
                             ),
                         ),
                         ..Default::default()
@@ -356,9 +335,9 @@ pub fn setup(
                         material: wall_material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                WALL_SCALE,
+                                Wall::SCALE,
                                 Quat::IDENTITY,
-                                Vec3::new(0.0, WALL_HEIGHT, 0.0),
+                                Vec3::new(0.0, Wall::HEIGHT, 0.0),
                             ),
                         ),
                         ..Default::default()
@@ -372,9 +351,9 @@ pub fn setup(
                         material: wall_material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
-                                WALL_SCALE,
+                                Wall::SCALE,
                                 Quat::IDENTITY,
-                                Vec3::new(0.0, WALL_HEIGHT, 0.0),
+                                Vec3::new(0.0, Wall::HEIGHT, 0.0),
                             ),
                         ),
                         ..Default::default()
@@ -389,14 +368,14 @@ pub fn setup(
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
                                 Vec3::new(
-                                    BARRIER_DIAMETER,
-                                    BARRIER_HEIGHT,
-                                    BARRIER_DIAMETER,
+                                    Barrier::DIAMETER,
+                                    Barrier::HEIGHT,
+                                    Barrier::DIAMETER,
                                 ),
                                 Quat::IDENTITY,
                                 Vec3::new(
                                     ARENA_HALF_WIDTH,
-                                    0.5 * BARRIER_HEIGHT,
+                                    0.5 * Barrier::HEIGHT,
                                     0.0,
                                 ),
                             ),
@@ -413,14 +392,14 @@ pub fn setup(
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
                                 Vec3::new(
-                                    BARRIER_DIAMETER,
-                                    BARRIER_HEIGHT,
-                                    BARRIER_DIAMETER,
+                                    Barrier::DIAMETER,
+                                    Barrier::HEIGHT,
+                                    Barrier::DIAMETER,
                                 ),
                                 Quat::IDENTITY,
                                 Vec3::new(
                                     ARENA_HALF_WIDTH,
-                                    0.5 * BARRIER_HEIGHT,
+                                    0.5 * Barrier::HEIGHT,
                                     0.0,
                                 ),
                             ),
@@ -576,7 +555,7 @@ pub fn reset_game_entities(
 
     // Reset paddles
     for (entity, mut transform) in paddles_query.iter_mut() {
-        transform.translation = PADDLE_START_POSITION;
+        transform.translation = Paddle::START_POSITION;
         commands.entity(entity).insert(Fade::In(0.4));
     }
 

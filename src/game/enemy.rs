@@ -16,7 +16,7 @@ pub fn ai_paddle_control_system(
     for (transform, goal, mut movement) in paddles_query.iter_mut() {
         // Get the relative position of the ball that's closest to this goal.
         let mut closest_ball_distance = std::f32::MAX;
-        let mut target_position = PADDLE_START_POSITION.x;
+        let mut target_position = Paddle::START_POSITION.x;
 
         for ball_transform in balls_query.iter() {
             let ball_distance = goal.distance_to_ball(ball_transform);
@@ -41,7 +41,7 @@ pub fn ai_paddle_control_system(
             (stop_position - target_position).abs();
 
         movement.delta =
-            if distance_from_paddle_center < 0.7 * PADDLE_HALF_WIDTH {
+            if distance_from_paddle_center < 0.7 * Paddle::HALF_WIDTH {
                 None
             } else if target_position < transform.translation.x {
                 Some(Delta::Negative) // Left
