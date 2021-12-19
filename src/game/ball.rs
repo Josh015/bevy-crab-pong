@@ -8,10 +8,10 @@ use rand::prelude::*;
 pub struct Ball;
 
 impl Ball {
-    pub const CENTER_POINT: Vec3 = const_vec3!([0.0, Ball::HEIGHT, 0.0]);
     pub const DIAMETER: f32 = 0.08;
     pub const HEIGHT: f32 = 0.05;
-    pub const RADIUS: f32 = 0.5 * Ball::DIAMETER; // const_vec3!([ARENA_CENTER_POINT.x, Ball::HEIGHT, ARENA_CENTER_POINT.z]);
+    pub const RADIUS: f32 = 0.5 * Ball::DIAMETER;
+    pub const STARTING_POSITION: Vec3 = const_vec3!([0.0, Ball::HEIGHT, 0.0]); // const_vec3!([ARENA_CENTER_POINT.x, Ball::HEIGHT, ARENA_CENTER_POINT.z]);
 }
 
 /// Handles the `Fade` animation for a `Ball` entity by causing its material to
@@ -56,7 +56,7 @@ pub fn inactive_ball_reset_system(
     >,
 ) {
     for (entity, mut transform, mut movement) in query.iter_mut() {
-        transform.translation = Ball::CENTER_POINT;
+        transform.translation = Ball::STARTING_POSITION;
         movement.dead_stop();
         commands.entity(entity).insert(Fade::In(0.0));
         info!("Ball({:?}) -> Resetting", entity);

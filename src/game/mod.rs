@@ -189,7 +189,7 @@ pub fn setup(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(Ball::DIAMETER),
                         Quat::IDENTITY,
-                        Ball::CENTER_POINT,
+                        Ball::STARTING_POSITION,
                     ),
                 ),
                 ..Default::default()
@@ -216,7 +216,7 @@ pub fn setup(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(Ball::DIAMETER),
                         Quat::IDENTITY,
-                        Ball::CENTER_POINT,
+                        Ball::STARTING_POSITION,
                     ),
                 ),
                 ..Default::default()
