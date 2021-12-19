@@ -138,8 +138,28 @@ pub fn setup(
     commands.spawn_bundle(UiCameraBundle::default());
 
     // Light
-    commands.spawn_bundle(PointLightBundle {
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
+    let light_transform = Mat4::from_euler(
+        EulerRot::ZYX,
+        0.0,
+        std::f32::consts::FRAC_PI_4,
+        -std::f32::consts::FRAC_PI_4,
+    );
+    commands.spawn_bundle(DirectionalLightBundle {
+        directional_light: DirectionalLight {
+            illuminance: 10000.0,
+            shadow_projection: OrthographicProjection {
+                left: -10.0,
+                right: 10.0,
+                bottom: -10.0,
+                top: 10.0,
+                near: -50.0,
+                far: 50.0,
+                ..Default::default()
+            },
+            // shadows_enabled: true,
+            ..Default::default()
+        },
+        transform: Transform::from_matrix(light_transform),
         ..Default::default()
     });
 
