@@ -250,11 +250,11 @@ pub fn goal_scored_system(
             let score = game.scores.get_mut(goal).unwrap();
 
             *score = score.saturating_sub(1);
-            info!("Ball({:?}) -> Scored {:?}", entity, goal);
+            info!("Ball({:?}) -> Scored Goal({:?})", entity, goal);
 
             if *score == 0 {
                 goal_eliminated_writer.send(GoalEliminated(*goal));
-                info!("Ball({:?}) -> Eliminated {:?}", entity, goal);
+                info!("Ball({:?}) -> Eliminated Goal({:?})", entity, goal);
             }
 
             // Fade out and deactivate the ball to prevent repeated scoring.
