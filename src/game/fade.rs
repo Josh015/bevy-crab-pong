@@ -5,10 +5,10 @@ use crate::GameConfig;
 /// it as `Active`.
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub enum Fade {
-    /// Simulates a fade-in effect, using a weight in the range [0,1].
+    /// Simulates a fade-in effect, using a weight in the range \[0,1\].
     In(f32),
 
-    /// Simulates a fade-out effect, using a weight in the range [0,1].
+    /// Simulates a fade-out effect, using a weight in the range \[0,1\].
     Out(f32),
 }
 
