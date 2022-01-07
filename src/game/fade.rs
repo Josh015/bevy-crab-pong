@@ -3,6 +3,9 @@ use crate::GameConfig;
 
 /// A component that handles fading an entity in/out of visibility and marking
 /// it as `Active`.
+///
+/// The component-specific visual implementation of the fade in/out effect is
+/// the responsibility of said component.
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub enum Fade {
     /// Simulates a fade-in effect, using a weight in the range \[0,1\].
