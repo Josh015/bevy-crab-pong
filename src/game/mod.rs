@@ -625,8 +625,6 @@ pub fn fade_out_balls(
 
 // TODO: Try to mimic the in-world text of the original with a RT texture?
 
-// TODO: Add event logging.
-
 // TODO: Need to fix rare issue where restarting the game too quickly can make a
 // wall disappear, but it still deflects balls as though it was there. May be
 // related to it being the last goal before gameover?
