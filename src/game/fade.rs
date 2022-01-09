@@ -7,6 +7,7 @@ use crate::GameConfig;
 /// The component-specific visual implementation of the fade in/out effect is
 /// the responsibility of said component.
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
+#[component(storage = "SparseSet")]
 pub enum Fade {
     /// Simulates a fade-in effect, using a weight in the range \[0,1\].
     In(f32),
