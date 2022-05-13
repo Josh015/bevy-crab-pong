@@ -70,7 +70,6 @@ fn main() {
         .insert_resource(config)
         .add_state(GameState::GameOver)
         .add_event::<GoalEliminated>()
-        .add_startup_system(setup)
         .add_system(score::update_scores_system)
         .add_system_set(
             SystemSet::new()
@@ -147,6 +146,7 @@ fn main() {
                 .with_system(game::fade_out_balls),
         )
         .add_system(bevy::input::system::exit_on_esc_system)
+        .add_startup_system(setup)
         .run();
 }
 
@@ -565,3 +565,9 @@ pub fn setup(
 // but wide cube (to allow both to be visible if they overlap) that matches the
 // paddle's hit box dimensions and is positioned where the paddle predicts it
 // will stop. One of each per goal so we can spawn them in advance.
+
+// TODO: Make something akin to ForState that specifies whether an entity should
+// fade in/out based on the current state?
+
+// TODO: Should swaying camera be considered part of the arena since it moves in
+// relation to it?
