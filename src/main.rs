@@ -2,6 +2,7 @@ mod active;
 mod animated_water;
 mod ball;
 mod barrier;
+mod config;
 mod enemy;
 mod fade;
 mod files;
@@ -21,6 +22,7 @@ pub mod prelude {
     pub use crate::animated_water::*;
     pub use crate::ball::*;
     pub use crate::barrier::*;
+    pub use crate::config::*;
     pub use crate::enemy::*;
     pub use crate::fade::*;
     pub use crate::game::*;
