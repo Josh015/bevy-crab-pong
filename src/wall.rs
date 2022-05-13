@@ -1,5 +1,4 @@
-use super::*;
-use bevy::{math::Vec3, prelude::Transform};
+use crate::prelude::*;
 
 /// A component that makes an entity a wall in a `Goal` that can deflect `Ball`
 /// entities away from the entire goal when `Active`.

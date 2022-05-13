@@ -1,9 +1,4 @@
-use super::*;
-use crate::Game;
-use bevy::{
-    prelude::{Component, Query, Res, With},
-    text::Text,
-};
+use crate::prelude::*;
 
 /// A component for marking a `Text` UI entity as displaying the score for an
 /// associated `Goal`.

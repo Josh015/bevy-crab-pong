@@ -1,11 +1,4 @@
-use super::*;
-use crate::GameConfig;
-use bevy::{
-    core::Time,
-    math::Vec3,
-    prelude::{Component, Query, Res, Transform, With},
-    render::camera::PerspectiveProjection,
-};
+use crate::prelude::*;
 
 /// A component that causes a camera to sway back and forth in a slow
 /// reciprocating motion as it focuses on the origin.

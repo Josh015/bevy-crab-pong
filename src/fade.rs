@@ -1,5 +1,4 @@
-use super::*;
-use crate::GameConfig;
+use crate::prelude::*;
 
 /// A component that handles fading an entity in/out of visibility and marking
 /// it as `Active`.

@@ -1,4 +1,4 @@
-use super::*;
+use crate::prelude::*;
 
 /// An event fired when a `Goal` has been eliminated from play after its score
 /// has reached zero.

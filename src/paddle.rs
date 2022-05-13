@@ -1,4 +1,4 @@
-use super::*;
+use crate::prelude::*;
 
 /// A component that makes a paddle that can deflect `Ball` entities and moves
 /// left->right and vice versa along a single axis when `Active`.

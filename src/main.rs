@@ -1,8 +1,44 @@
+mod active;
+mod animated_water;
+mod ball;
+mod barrier;
+mod enemy;
+mod fade;
 mod files;
 mod game;
+mod gameover_message;
+mod goal;
+mod mirror;
+mod movement;
+mod paddle;
+mod player;
+mod score;
+mod swaying_camera;
+mod wall;
 
-use bevy::{ecs::prelude::*, prelude::*};
-use game::*;
+pub mod prelude {
+    pub use crate::active::*;
+    pub use crate::animated_water::*;
+    pub use crate::ball::*;
+    pub use crate::barrier::*;
+    pub use crate::enemy::*;
+    pub use crate::fade::*;
+    pub use crate::game::*;
+    pub use crate::gameover_message::*;
+    pub use crate::goal::*;
+    pub use crate::mirror::*;
+    pub use crate::movement::*;
+    pub use crate::paddle::*;
+    pub use crate::player::*;
+    pub use crate::score::*;
+    pub use crate::swaying_camera::*;
+    pub use crate::wall::*;
+    pub use bevy::math::*;
+    pub use bevy::prelude::*;
+    pub use rand::prelude::*;
+}
+
+use crate::prelude::*;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, SystemLabel)]
 enum GameSystems {

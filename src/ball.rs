@@ -1,6 +1,4 @@
-use super::*;
-use crate::GameConfig;
-use rand::prelude::*;
+use crate::prelude::*;
 
 /// A component for a ball entity that must have inertia and be able to deflect
 /// upon collision when `Active`.

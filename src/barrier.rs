@@ -1,4 +1,4 @@
-use bevy::prelude::Component;
+use crate::prelude::*;
 
 /// A component for a corner barrier entity that exists only to deflect `Ball`
 /// entities.

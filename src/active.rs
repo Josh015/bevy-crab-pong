@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use crate::prelude::*;
 
 /// A component that marks `Ball`, `Paddle`, and `Wall` entities as active for
 /// collision, scoring, etc.

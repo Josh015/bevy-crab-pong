@@ -1,51 +1,6 @@
-use bevy::{ecs::prelude::*, math::const_vec3, prelude::*};
+use crate::prelude::*;
 use serde::Deserialize;
 use std::collections::HashMap;
-
-pub mod active;
-pub use active::*;
-
-pub mod animated_water;
-pub use animated_water::*;
-
-pub mod ball;
-pub use ball::*;
-
-pub mod barrier;
-pub use barrier::*;
-
-pub mod enemy;
-pub use enemy::*;
-
-pub mod fade;
-pub use fade::*;
-
-pub mod gameover_message;
-pub use gameover_message::*;
-
-pub mod goal;
-pub use goal::*;
-
-pub mod mirror;
-pub use mirror::*;
-
-pub mod movement;
-pub use movement::*;
-
-pub mod paddle;
-pub use paddle::*;
-
-pub mod player;
-pub use player::*;
-
-pub mod score;
-pub use score::*;
-
-pub mod swaying_camera;
-pub use swaying_camera::*;
-
-pub mod wall;
-pub use wall::*;
 
 pub const ARENA_WIDTH: f32 = 1.0;
 pub const ARENA_HALF_WIDTH: f32 = 0.5 * ARENA_WIDTH;
@@ -94,7 +49,9 @@ pub enum GameOver {
 }
 
 impl Default for GameOver {
-    fn default() -> Self { Self::Won }
+    fn default() -> Self {
+        Self::Won
+    }
 }
 
 /// Handles setting up all the entities that will be needed for every screen of

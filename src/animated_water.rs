@@ -1,8 +1,4 @@
-use crate::GameConfig;
-use bevy::{
-    core::Time,
-    prelude::{Component, Query, Res, Transform},
-};
+use crate::prelude::*;
 
 /// A component for an animated textured water plane.
 #[derive(Component, Default)]

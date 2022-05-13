@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use crate::prelude::*;
 
 /// A component placed on an entity that must mirror another entity's
 /// `Transform` state.

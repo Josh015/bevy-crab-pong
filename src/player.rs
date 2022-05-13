@@ -1,4 +1,4 @@
-use super::*;
+use crate::prelude::*;
 
 /// A component for marking a `Paddle` entity as being controller by player
 /// input.
