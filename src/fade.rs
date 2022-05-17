@@ -57,14 +57,15 @@ impl Fade {
 
     /// Makes this entity fade out and then despawn itself.
     pub fn fade_out_and_despawn(&mut self) {
-        // If interrupting a fade-in start with its weight to minimize popping.
-        let mut fade_out_weight = 0.0;
-
-        if let Some(FadeState::In(fade_in_weight)) = self.state {
-            fade_out_weight = 1.0 - fade_in_weight;
-        }
-
-        self.state = Some(FadeState::Out(fade_out_weight));
+        // If interrupting a fade-in then start the fade-out with its inverse
+        // weight to minimize visual popping.
+        self.state = Some(FadeState::Out(
+            if let Some(FadeState::In(weight)) = self.state {
+                1.0 - weight
+            } else {
+                0.0
+            },
+        ));
     }
 
     /// Get the current fade state, or lack thereof.
