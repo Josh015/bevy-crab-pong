@@ -98,53 +98,50 @@ pub fn fade_animation_system(
     let step = config.fade_speed * time.delta_seconds();
 
     for (entity, mut transform, mut fade, material) in query.iter_mut() {
-        match fade.state {
-            Some(state) => {
-                // Apply effect animation.
-                let opacity = state.opacity();
+        if let Some(state) = fade.state {
+            // Apply effect animation.
+            let opacity = state.opacity();
 
-                match fade.effect {
-                    FadeEffect::Scale {
-                        max_scale,
-                        axis_mask,
-                    } => {
-                        transform.scale = (max_scale * axis_mask) * opacity
-                            + (Vec3::ONE - axis_mask);
-                    },
-                    FadeEffect::Translucent => {
-                        let material = materials.get_mut(material).unwrap();
+            match fade.effect {
+                FadeEffect::Scale {
+                    max_scale,
+                    axis_mask,
+                } => {
+                    transform.scale = (max_scale * axis_mask) * opacity
+                        + (Vec3::ONE - axis_mask);
+                },
+                FadeEffect::Translucent => {
+                    let material = materials.get_mut(material).unwrap();
 
-                        material.base_color.set_a(opacity);
-                        material.alpha_mode = if opacity < 1.0 {
-                            AlphaMode::Blend
-                        } else {
-                            AlphaMode::Opaque
-                        };
-                    },
-                }
+                    material.base_color.set_a(opacity);
+                    material.alpha_mode = if opacity < 1.0 {
+                        AlphaMode::Blend
+                    } else {
+                        AlphaMode::Opaque
+                    };
+                },
+            }
 
-                // Update progress of the effect.
-                match state {
-                    FadeState::In(weight) => {
-                        if weight < 1.0 {
-                            fade.state =
-                                Some(FadeState::In(weight.max(0.0) + step));
-                        } else {
-                            fade.state = None;
-                        }
-                    },
-                    FadeState::Out(weight) => {
-                        if weight < 1.0 {
-                            fade.state =
-                                Some(FadeState::Out(weight.max(0.0) + step));
-                        } else {
-                            fade.state = None;
-                            commands.entity(entity).despawn_recursive();
-                        }
-                    },
-                }
-            },
-            _ => {},
+            // Update progress of the effect.
+            match state {
+                FadeState::In(weight) => {
+                    if weight < 1.0 {
+                        fade.state =
+                            Some(FadeState::In(weight.max(0.0) + step));
+                    } else {
+                        fade.state = None;
+                    }
+                },
+                FadeState::Out(weight) => {
+                    if weight < 1.0 {
+                        fade.state =
+                            Some(FadeState::Out(weight.max(0.0) + step));
+                    } else {
+                        fade.state = None;
+                        commands.entity(entity).despawn_recursive();
+                    }
+                },
+            }
         }
     }
 }
