@@ -31,6 +31,8 @@ pub fn text_ui_fade_out_system(
     }
 }
 
+// TODO: Move UI systems to arena and goal after we make them text meshes?
+
 /// Updates a `Text` entity to display the current life of its associated
 /// `Goal`.
 pub fn goal_hit_points_ui_system(

@@ -2,9 +2,11 @@ use crate::prelude::*;
 
 // TODO: Go around and replace all GoalSide clone() calls since it is copyable?
 
+pub const GOAL_WIDTH: f32 = 1.0;
+pub const GOAL_HALF_WIDTH: f32 = 0.5 * GOAL_WIDTH;
 pub const GOAL_PADDLE_START_POSITION: Vec3 = const_vec3!([0.0, 0.05, 0.0]);
 pub const GOAL_PADDLE_MAX_POSITION_X: f32 =
-    ARENA_HALF_WIDTH - BARRIER_RADIUS - PADDLE_HALF_WIDTH;
+    GOAL_HALF_WIDTH - BARRIER_RADIUS - PADDLE_HALF_WIDTH;
 
 /// An event fired when a `Wall` needs to be spawned.
 pub struct SpawnWallEvent {
@@ -44,10 +46,10 @@ impl GoalSide {
         let ball_translation = ball_transform.translation;
 
         match *self {
-            Self::Top => ARENA_HALF_WIDTH + ball_translation.z - BALL_RADIUS,
-            Self::Right => ARENA_HALF_WIDTH - ball_translation.x - BALL_RADIUS,
-            Self::Bottom => ARENA_HALF_WIDTH - ball_translation.z - BALL_RADIUS,
-            Self::Left => ARENA_HALF_WIDTH + ball_translation.x - BALL_RADIUS,
+            Self::Top => GOAL_HALF_WIDTH + ball_translation.z - BALL_RADIUS,
+            Self::Right => GOAL_HALF_WIDTH - ball_translation.x - BALL_RADIUS,
+            Self::Bottom => GOAL_HALF_WIDTH - ball_translation.z - BALL_RADIUS,
+            Self::Left => GOAL_HALF_WIDTH + ball_translation.x - BALL_RADIUS,
         }
     }
 

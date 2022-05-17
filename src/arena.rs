@@ -1,7 +1,5 @@
 use crate::prelude::*;
 
-pub const ARENA_WIDTH: f32 = 1.0;
-pub const ARENA_HALF_WIDTH: f32 = 0.5 * ARENA_WIDTH;
 pub const ARENA_CENTER_POINT: Vec3 = Vec3::ZERO;
 pub const BALL_SPAWNER_POSITION: Vec3 = const_vec3!([0.0, BALL_HEIGHT, 0.0]);
 
@@ -81,7 +79,7 @@ pub fn spawn_arena(
         material: materials.add(Color::hex("C4BD99").unwrap().into()),
         transform: Transform::from_matrix(
             Mat4::from_scale_rotation_translation(
-                Vec3::splat(ARENA_WIDTH),
+                Vec3::splat(GOAL_WIDTH),
                 Quat::IDENTITY,
                 ARENA_CENTER_POINT,
             ),
@@ -142,7 +140,7 @@ pub fn spawn_arena(
                     std::f32::consts::TAU
                         * (i as f32 / goal_configs.len() as f32),
                 ))
-                .mul_transform(Transform::from_xyz(0.0, 0.0, ARENA_HALF_WIDTH)),
+                .mul_transform(Transform::from_xyz(0.0, 0.0, GOAL_HALF_WIDTH)),
                 ..Default::default()
             })
             .insert(Goal {
@@ -163,7 +161,7 @@ pub fn spawn_arena(
                                 ),
                                 Quat::IDENTITY,
                                 Vec3::new(
-                                    ARENA_HALF_WIDTH,
+                                    GOAL_HALF_WIDTH,
                                     0.5 * BARRIER_HEIGHT,
                                     0.0,
                                 ),
@@ -216,7 +214,7 @@ pub fn arena_swaying_camera_system(
     >,
 ) {
     let (mut swaying_camera, mut transform) = query.single_mut();
-    let x = swaying_camera.angle.sin() * ARENA_HALF_WIDTH;
+    let x = swaying_camera.angle.sin() * GOAL_HALF_WIDTH;
 
     *transform = Transform::from_xyz(x * 0.5, 2.0, 1.5)
         .looking_at(ARENA_CENTER_POINT, Vec3::Y);
