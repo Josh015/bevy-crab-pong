@@ -3,17 +3,20 @@ use crate::prelude::*;
 /// The type of fade effect animation to use.
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum FadeEffect {
+    /// Effect that uses material opacity and alpha blending.
     Translucent,
+
+    /// Effect that controls the transform scale of the entity.
     Scale { max_scale: Vec3, axis_mask: Vec3 },
 }
 
 /// Whether the effect is currently fading in or out.
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum FadeState {
-    /// Simulates a fade-in effect, using a weight in the range \[0,1\].
+    /// Simulates a fade-in effect using a weight in the range \[0,1\].
     In(f32),
 
-    /// Simulates a fade-out effect, using a weight in the range \[0,1\].
+    /// Simulates a fade-out effect using a weight in the range \[0,1\].
     Out(f32),
 }
 
@@ -39,10 +42,12 @@ pub struct Fade {
 }
 
 impl Fade {
+    /// Creates a new `Fade` component.
     pub fn new(effect: FadeEffect) -> Self {
         Self::new_with_state(effect, Some(FadeState::In(0.0)))
     }
 
+    /// Creates a new `Fade` component and specifies its starting state.
     pub fn new_with_state(
         effect: FadeEffect,
         state: Option<FadeState>,
@@ -50,10 +55,12 @@ impl Fade {
         Self { effect, state }
     }
 
+    /// Makes this entity fade out and then despawn itself.
     pub fn fade_out_and_despawn(&mut self) {
         self.state = Some(FadeState::Out(0.0));
     }
 
+    /// Get the current fade state, or lack thereof.
     pub fn state(&self) -> Option<FadeState> {
         self.state
     }

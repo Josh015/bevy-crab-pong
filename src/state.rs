@@ -1,6 +1,7 @@
 use crate::prelude::*;
 use std::collections::HashMap;
 
+/// Current state of the app.
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
 pub enum AppState {
     StartMenu,
@@ -14,6 +15,8 @@ pub struct ForState<T> {
     pub states: Vec<T>,
 }
 
+/// When entering a new state this despawns `ForState` entities that aren't
+/// configured for it.
 pub fn app_state_enter_despawn(
     mut commands: Commands,
     state: Res<State<AppState>>,
