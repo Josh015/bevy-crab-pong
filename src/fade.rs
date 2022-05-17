@@ -37,7 +37,7 @@ pub struct Fade {
     /// The type of fade effect.
     effect: FadeEffect,
 
-    /// The current state of the fade of effect.
+    /// The current state of the fade effect.
     state: Option<FadeState>,
 }
 
@@ -57,7 +57,14 @@ impl Fade {
 
     /// Makes this entity fade out and then despawn itself.
     pub fn fade_out_and_despawn(&mut self) {
-        self.state = Some(FadeState::Out(0.0));
+        // If interrupting a fade-in start with its weight to minimize popping.
+        let mut fade_out_weight = 0.0;
+
+        if let Some(FadeState::In(fade_in_weight)) = self.state {
+            fade_out_weight = 1.0 - fade_in_weight;
+        }
+
+        self.state = Some(FadeState::Out(fade_out_weight));
     }
 
     /// Get the current fade state, or lack thereof.
