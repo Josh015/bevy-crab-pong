@@ -1,34 +1,22 @@
 mod arena;
-mod ball;
-mod barrier;
-mod collider;
+mod components;
 mod config;
-mod enemy;
 mod fade;
 mod files;
 mod goal;
 mod movement;
-mod paddle;
-mod player;
 mod state;
 mod ui;
-mod wall;
 
 pub mod prelude {
     pub use crate::arena::*;
-    pub use crate::ball::*;
-    pub use crate::barrier::*;
-    pub use crate::collider::*;
+    pub use crate::components::*;
     pub use crate::config::*;
-    pub use crate::enemy::*;
     pub use crate::fade::*;
     pub use crate::goal::*;
     pub use crate::movement::*;
-    pub use crate::paddle::*;
-    pub use crate::player::*;
     pub use crate::state::*;
     pub use crate::ui::*;
-    pub use crate::wall::*;
     pub use bevy::math::*;
     pub use bevy::prelude::*;
     pub use rand::prelude::*;
