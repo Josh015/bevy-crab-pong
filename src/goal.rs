@@ -263,11 +263,13 @@ pub fn goal_paddle_ai_control_system(
         for ball_transform in balls_query.iter() {
             let ball_distance = goal_side.distance_to_ball(ball_transform);
 
-            if ball_distance < closest_ball_distance {
-                closest_ball_distance = ball_distance;
-                target_position =
-                    goal_side.map_ball_position_to_paddle_range(ball_transform);
+            if ball_distance >= closest_ball_distance {
+                continue;
             }
+
+            closest_ball_distance = ball_distance;
+            target_position =
+                goal_side.map_ball_position_to_paddle_range(ball_transform);
         }
 
         // Predict the paddle's stop position if it begins decelerating now.

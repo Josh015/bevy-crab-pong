@@ -101,18 +101,18 @@ pub fn fade_animation_system(
         match fade.state {
             Some(state) => {
                 // Apply effect animation.
+                let opacity = state.opacity();
+
                 match fade.effect {
                     FadeEffect::Scale {
                         max_scale,
                         axis_mask,
                     } => {
-                        transform.scale = (max_scale * axis_mask)
-                            * state.opacity()
+                        transform.scale = (max_scale * axis_mask) * opacity
                             + (Vec3::ONE - axis_mask);
                     },
                     FadeEffect::Translucent => {
                         let material = materials.get_mut(material).unwrap();
-                        let opacity = state.opacity();
 
                         material.base_color.set_a(opacity);
                         material.alpha_mode = if opacity < 1.0 {

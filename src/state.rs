@@ -23,12 +23,14 @@ pub fn app_state_enter_despawn(
     mut query: Query<(Entity, &ForState<AppState>, Option<&mut Fade>)>,
 ) {
     for (entity, for_state, fade) in &mut query.iter_mut() {
-        if !for_state.states.contains(state.current()) {
-            if let Some(mut fade) = fade {
-                fade.fade_out_and_despawn();
-            } else {
-                commands.entity(entity).despawn_recursive();
-            }
+        if for_state.states.contains(state.current()) {
+            continue;
+        }
+
+        if let Some(mut fade) = fade {
+            fade.fade_out_and_despawn();
+        } else {
+            commands.entity(entity).despawn_recursive();
         }
     }
 }
@@ -121,8 +123,7 @@ pub fn reset_hit_points(
     }
 }
 
-/// When a goal is eliminated it checks if the current scores of all the goals
-/// have triggered a game over.
+/// Checks for conditions that would trigger a game over.
 pub fn game_over_check_system(
     mut run_state: ResMut<RunState>,
     mut state: ResMut<State<AppState>>,
@@ -131,26 +132,27 @@ pub fn game_over_check_system(
     players_query: Query<&Paddle, With<Player>>,
 ) {
     for GoalEliminatedEvent(_) in event_reader.iter() {
-        // Player wins if all Enemy paddles have zero HP.
+        // See if player or enemies have lost enough paddles for a game over.
         let has_player_won = enemies_query
             .iter()
             .all(|paddle| run_state.goals_hit_points[&paddle.goal_side] == 0);
 
-        // Player loses if all Player paddles have zero HP.
         let has_player_lost = players_query
             .iter()
             .all(|paddle| run_state.goals_hit_points[&paddle.goal_side] == 0);
 
-        // Declare a winner and trigger game over
-        if has_player_won || has_player_lost {
-            run_state.game_over = if has_player_won {
-                Some(GameOver::Won)
-            } else {
-                Some(GameOver::Lost)
-            };
-
-            state.set(AppState::StartMenu).unwrap();
-            info!("Game Over -> Player {:?}", run_state.game_over.unwrap());
+        if !has_player_won && !has_player_lost {
+            continue;
         }
+
+        // Declare a winner and navigate back to the Start Menu.
+        run_state.game_over = if has_player_won {
+            Some(GameOver::Won)
+        } else {
+            Some(GameOver::Lost)
+        };
+
+        state.set(AppState::StartMenu).unwrap();
+        info!("Game Over -> Player {:?}", run_state.game_over.unwrap());
     }
 }

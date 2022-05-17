@@ -275,38 +275,40 @@ pub fn arena_ball_spawner_system(
     }
 
     // Spawn new balls until max is reached.
-    if query.iter().count() < config.max_ball_count {
-        // TODO: Figure out how to give each ball own material without constantly creating more?
-        let material = materials.add(StandardMaterial {
-            alpha_mode: AlphaMode::Blend,
-            base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),
-            ..Default::default()
-        });
-
-        let entity = commands
-            .spawn_bundle(PbrBundle {
-                mesh: run_state.ball_mesh_handle.clone(),
-                material: material.clone(),
-                transform: Transform::from_matrix(
-                    Mat4::from_scale_rotation_translation(
-                        Vec3::splat(BALL_DIAMETER),
-                        Quat::IDENTITY,
-                        BALL_SPAWNER_POSITION,
-                    ),
-                ),
-                ..Default::default()
-            })
-            .insert_bundle((
-                Ball,
-                ForState {
-                    states: vec![AppState::Game, AppState::Pause],
-                },
-                Fade::new(FadeEffect::Translucent),
-            ))
-            .id();
-
-        info!("Ball({:?}) -> Spawning", entity);
+    if query.iter().count() >= config.max_ball_count {
+        return;
     }
+
+    // TODO: Figure out how to give each ball own material without constantly creating more?
+    let material = materials.add(StandardMaterial {
+        alpha_mode: AlphaMode::Blend,
+        base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),
+        ..Default::default()
+    });
+
+    let entity = commands
+        .spawn_bundle(PbrBundle {
+            mesh: run_state.ball_mesh_handle.clone(),
+            material: material.clone(),
+            transform: Transform::from_matrix(
+                Mat4::from_scale_rotation_translation(
+                    Vec3::splat(BALL_DIAMETER),
+                    Quat::IDENTITY,
+                    BALL_SPAWNER_POSITION,
+                ),
+            ),
+            ..Default::default()
+        })
+        .insert_bundle((
+            Ball,
+            ForState {
+                states: vec![AppState::Game, AppState::Pause],
+            },
+            Fade::new(FadeEffect::Translucent),
+        ))
+        .id();
+
+    info!("Ball({:?}) -> Spawning", entity);
 }
 
 /// Checks if a `Ball` has collided with a compatible entity, and then deflects
