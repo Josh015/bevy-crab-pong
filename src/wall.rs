@@ -19,9 +19,8 @@ pub fn wall_fade_animation_system(
     mut query: Query<(&Fade, &mut Transform), With<Wall>>,
 ) {
     for (fade, mut transform) in query.iter_mut() {
-        let x_mask = fade.opacity();
-        let yz_mask = x_mask.powf(0.001);
+        let opacity = fade.opacity();
 
-        transform.scale = WALL_SCALE * Vec3::new(x_mask, yz_mask, yz_mask);
+        transform.scale = WALL_SCALE * Vec3::new(1.0, opacity, opacity);
     }
 }
