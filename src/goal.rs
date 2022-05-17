@@ -193,7 +193,7 @@ pub fn spawn_wall_event(
                             goal_side: goal_side.clone(),
                         },
                         Collider,
-                        Fade::new_with_starting_state(
+                        Fade::new_with_state(
                             FadeEffect::Scale {
                                 max_scale: WALL_SCALE,
                                 axis_mask: Vec3::new(0.0, 1.0, 1.0),

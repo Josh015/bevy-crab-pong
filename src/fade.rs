@@ -40,10 +40,10 @@ pub struct Fade {
 
 impl Fade {
     pub fn new(effect: FadeEffect) -> Self {
-        Self::new_with_starting_state(effect, Some(FadeState::In(0.0)))
+        Self::new_with_state(effect, Some(FadeState::In(0.0)))
     }
 
-    pub fn new_with_starting_state(
+    pub fn new_with_state(
         effect: FadeEffect,
         state: Option<FadeState>,
     ) -> Self {

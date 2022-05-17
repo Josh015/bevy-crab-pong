@@ -7,11 +7,6 @@ pub struct MessageUiEvent {
     screen: AppState,
 }
 
-/// A component for marking a `Text` UI entity as displaying a relevant message
-/// in the center of the screen.
-#[derive(Component)]
-pub struct MessageUi;
-
 /// A component for marking a `Text` UI entity as displaying the hit points for
 /// an associated `Goal`.
 #[derive(Component)]
