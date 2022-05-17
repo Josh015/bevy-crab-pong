@@ -360,9 +360,9 @@ pub fn arena_collision_system(
             let goal_side = paddle.goal_side;
             let axis = goal_side.axis();
             let ball_distance = goal_side.distance_to_ball(ball_transform);
-            let ball_position =
-                goal_side.map_ball_position_to_paddle_range(ball_transform);
-            let ball_to_paddle = transform.translation.x - ball_position;
+            let ball_local_position = goal_side
+                .map_ball_position_to_paddle_local_space(ball_transform);
+            let ball_to_paddle = transform.translation.x - ball_local_position;
             let distance_from_paddle_center = (ball_to_paddle).abs();
 
             // Check that the ball is touching the paddle and facing the goal.

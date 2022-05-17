@@ -37,6 +37,13 @@ impl Movement {
     }
 }
 
+/// Calculate a new reduced speed value based on delta speed and clamping
+/// to zero.
+pub fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
+    let s = speed.abs().sub(delta_speed).max(0.0);
+    speed.max(-s).min(s) // clamp() panics when min == max.
+}
+
 /// Handles calculating the actual acceleration/deceleration over time for a
 /// `Movement` entity.
 pub fn movement_system(
@@ -59,8 +66,7 @@ pub fn movement_system(
                 .clamp(-movement.max_speed, movement.max_speed)
         } else {
             // Decelerate
-            let s = movement.speed.abs().sub(delta_speed).max(0.0);
-            movement.speed.max(-s).min(s) // clamp() panics when min == max.
+            decelerate_speed(movement.speed, delta_speed)
         };
 
         transform.translation +=

@@ -81,7 +81,7 @@ impl GoalSide {
     }
 
     /// Map a ball's global position to a paddle's local x-axis.
-    pub fn map_ball_position_to_paddle_range(
+    pub fn map_ball_position_to_paddle_local_space(
         &self,
         ball_transform: &GlobalTransform,
     ) -> f32 {
@@ -248,9 +248,9 @@ pub fn goal_paddle_collision_system(
     }
 }
 
-/// Applies AI control to `Paddle` entities, causing them to position
-/// themselves between their `Goal` and the closest `Ball`.
+/// AI control for `Paddle` entities.
 pub fn goal_paddle_ai_control_system(
+    time: Res<Time>,
     mut paddles_query: Query<(&Paddle, &Transform, &mut Movement), With<Enemy>>,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
 ) {
@@ -258,40 +258,49 @@ pub fn goal_paddle_ai_control_system(
         // Get the relative position of the ball that's closest to this goal.
         let goal_side = paddle.goal_side;
         let mut closest_ball_distance = std::f32::MAX;
-        let mut target_position = GOAL_PADDLE_START_POSITION.x;
+        let mut ball_local_position = GOAL_PADDLE_START_POSITION.x;
 
         for ball_transform in balls_query.iter() {
-            let ball_distance = goal_side.distance_to_ball(ball_transform);
+            let ball_distance_to_goal =
+                goal_side.distance_to_ball(ball_transform);
 
-            if ball_distance >= closest_ball_distance {
+            if ball_distance_to_goal >= closest_ball_distance {
                 continue;
             }
 
-            closest_ball_distance = ball_distance;
-            target_position =
-                goal_side.map_ball_position_to_paddle_range(ball_transform);
+            closest_ball_distance = ball_distance_to_goal;
+            ball_local_position = goal_side
+                .map_ball_position_to_paddle_local_space(ball_transform);
         }
 
         // Predict the paddle's stop position if it begins decelerating now.
-        let d = movement.speed.powi(2) / movement.acceleration;
-        let stop_position = if movement.speed > 0.0 {
-            transform.translation.x + d
-        } else {
-            transform.translation.x - d
-        };
+        let delta_seconds = time.delta_seconds();
+        let delta_speed = movement.acceleration * delta_seconds;
+        let mut current_speed = movement.speed;
+        let mut paddle_stop_position = transform.translation.x;
 
-        // Position the paddle so that the ball is above its middle 70%.
+        while current_speed.abs() > 0.0 {
+            paddle_stop_position += current_speed * delta_seconds;
+            current_speed = decelerate_speed(current_speed, delta_speed);
+        }
+
+        // Controls how much the paddle tries to get its center under the ball.
+        // Lower values improve the catch rate, but also reduce how widely it
+        // will deflect the ball for near misses. Range (0,1].
+        let percent_from_center = 0.60;
+
         let distance_from_paddle_center =
-            (stop_position - target_position).abs();
+            (paddle_stop_position - ball_local_position).abs();
 
-        movement.delta =
-            if distance_from_paddle_center < 0.7 * PADDLE_HALF_WIDTH {
-                None
-            } else if target_position < transform.translation.x {
-                Some(Delta::Negative) // Left
-            } else {
-                Some(Delta::Positive) // Right
-            };
+        movement.delta = if distance_from_paddle_center
+            < percent_from_center * PADDLE_HALF_WIDTH
+        {
+            None
+        } else if ball_local_position < transform.translation.x {
+            Some(Delta::Negative) // Left
+        } else {
+            Some(Delta::Positive) // Right
+        };
     }
 }
 
