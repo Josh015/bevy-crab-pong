@@ -245,40 +245,37 @@ pub fn arena_ball_spawner_system(
     run_state: Res<RunState>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    existing_balls_query: Query<Entity, With<Ball>>,
-    new_balls_query: Query<(Entity, &Fade), With<Ball>>,
+    query: Query<(Entity, &Fade), With<Ball>>,
 ) {
-    // Allow new ball to become fully opaque before it starts moving/colliding.
-    let mut is_ball_fading_in = false;
+    // Check for any new balls that are currently fading in.
+    for (entity, fade) in query.iter() {
+        if let Some(FadeState::In(weight)) = fade.state() {
+            // Pause the spawning process until the new ball is fully opaque.
+            if weight < 1.0 {
+                return;
+            }
 
-    for (entity, fade) in new_balls_query.iter() {
-        is_ball_fading_in = matches!(fade, Fade::In(_));
+            // Allow the new ball to start moving/colliding.
+            let mut rng = rand::thread_rng();
+            let angle = rng.gen_range(0.0..std::f32::consts::TAU);
 
-        if !is_ball_fading_in || fade.opacity() < 1.0 {
-            continue;
+            commands.entity(entity).insert_bundle((
+                Collider,
+                Movement {
+                    direction: Vec3::new(angle.cos(), 0.0, angle.sin()),
+                    speed: config.ball_starting_speed,
+                    max_speed: config.ball_max_speed,
+                    acceleration: config.ball_max_speed
+                        / config.ball_seconds_to_max_speed,
+                    delta: Some(Delta::Positive),
+                },
+            ));
+            info!("Ball({:?}) -> Launched", entity);
         }
-
-        let mut rng = rand::thread_rng();
-        let angle = rng.gen_range(0.0..std::f32::consts::TAU);
-
-        commands.entity(entity).insert_bundle((
-            Collider,
-            Movement {
-                direction: Vec3::new(angle.cos(), 0.0, angle.sin()),
-                speed: config.ball_starting_speed,
-                max_speed: config.ball_max_speed,
-                acceleration: config.ball_max_speed
-                    / config.ball_seconds_to_max_speed,
-                delta: Some(Delta::Positive),
-            },
-        ));
-        info!("Ball({:?}) -> Launched", entity);
     }
 
-    // Only spawn up to max balls, and only when one isn't currently fading in.
-    if !is_ball_fading_in
-        && existing_balls_query.iter().count() < config.max_ball_count
-    {
+    // Spawn new balls until max is reached.
+    if query.iter().count() < config.max_ball_count {
         // TODO: Figure out how to give each ball own material without constantly creating more?
         let material = materials.add(StandardMaterial {
             alpha_mode: AlphaMode::Blend,
@@ -304,7 +301,7 @@ pub fn arena_ball_spawner_system(
                 ForState {
                     states: vec![AppState::Game, AppState::Pause],
                 },
-                Fade::In(0.0),
+                Fade::new(FadeEffect::Translucent),
             ))
             .id();
 

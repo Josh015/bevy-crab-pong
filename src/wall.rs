@@ -12,15 +12,3 @@ pub const WALL_SCALE: Vec3 =
 pub struct Wall {
     pub goal_side: GoalSide,
 }
-
-/// Handles `Wall` `Fade` animations by making them shrink along their width
-/// into a pancake just before vanishing entirely.
-pub fn wall_fade_animation_system(
-    mut query: Query<(&Fade, &mut Transform), With<Wall>>,
-) {
-    for (fade, mut transform) in query.iter_mut() {
-        let opacity = fade.opacity();
-
-        transform.scale = WALL_SCALE * Vec3::new(1.0, opacity, opacity);
-    }
-}

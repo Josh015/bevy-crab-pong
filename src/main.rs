@@ -99,11 +99,7 @@ fn main() {
         .add_system(spawn_wall_event)
         .add_system(arena_animated_water_system)
         .add_system(arena_swaying_camera_system)
-        .add_system(step_fade_system)
-        .add_system(text_ui_fade_out_system.after(step_fade_system))
-        .add_system(ball_fade_animation_system.after(step_fade_system))
-        .add_system(paddle_fade_animation_system.after(step_fade_system))
-        .add_system(wall_fade_animation_system.after(step_fade_system))
+        .add_system(fade_animation_system)
         .add_startup_system(spawn_arena)
         .add_startup_system(reset_hit_points)
         .run();

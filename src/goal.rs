@@ -82,7 +82,7 @@ pub fn spawn_paddles(
     config: Res<GameConfig>,
     run_state: Res<RunState>,
     mut commands: Commands,
-    paddles_query: Query<Entity, With<Paddle>>,
+    mut paddles_query: Query<(Entity, &mut Fade), With<Paddle>>,
     goals_query: Query<(Entity, &Goal)>,
 ) {
     let goal_configs = [
@@ -93,11 +93,12 @@ pub fn spawn_paddles(
     ];
 
     // Fade out existing paddles so new ones can spawn at starting positions.
-    for entity in paddles_query.iter() {
+    for (entity, mut fade) in paddles_query.iter_mut() {
         commands
             .entity(entity)
             .remove::<Movement>()
-            .insert(Fade::Out(0.0));
+            .remove::<Collider>();
+        fade.fade_out_and_despawn();
     }
 
     // TODO: Figure out why using goals_query alone only hits first item?
@@ -139,7 +140,10 @@ pub fn spawn_paddles(
                             / config.paddle_seconds_to_max_speed,
                         ..Default::default()
                     },
-                    Fade::In(0.0),
+                    Fade::new(FadeEffect::Scale {
+                        max_scale: PADDLE_SCALE,
+                        axis_mask: Vec3::ONE,
+                    }),
                 ));
 
                 // TODO: Come up with a more configurable way to do this!
@@ -189,7 +193,17 @@ pub fn spawn_wall_event(
                             goal_side: goal_side.clone(),
                         },
                         Collider,
-                        Fade::In(if *is_instant { 1.0 } else { 0.0 }),
+                        Fade::new_with_starting_state(
+                            FadeEffect::Scale {
+                                max_scale: WALL_SCALE,
+                                axis_mask: Vec3::new(0.0, 1.0, 1.0),
+                            },
+                            Some(FadeState::In(if *is_instant {
+                                1.0
+                            } else {
+                                0.0
+                            })),
+                        ),
                     ));
             });
             break;
@@ -316,12 +330,14 @@ pub fn goal_scored_check_system(
 pub fn goal_scored_event(
     mut commands: Commands,
     mut event_reader: EventReader<GoalScoredEvent>,
+    mut query: Query<&mut Fade, With<Ball>>,
 ) {
     for GoalScoredEvent { ball_entity } in event_reader.iter() {
-        commands
-            .entity(*ball_entity)
-            .remove::<Collider>()
-            .insert(Fade::Out(0.0));
+        commands.entity(*ball_entity).remove::<Collider>();
+
+        if let Ok(mut fade) = query.get_component_mut::<Fade>(*ball_entity) {
+            fade.fade_out_and_despawn();
+        }
     }
 }
 
@@ -330,11 +346,11 @@ pub fn goal_eliminated_event(
     mut commands: Commands,
     mut event_reader: EventReader<GoalEliminatedEvent>,
     mut spawn_wall_events: EventWriter<SpawnWallEvent>,
-    mut paddles_query: Query<(Entity, &Paddle), With<Collider>>,
+    mut paddles_query: Query<(Entity, &Paddle, &mut Fade), With<Collider>>,
 ) {
     for GoalEliminatedEvent(eliminated_goal) in event_reader.iter() {
         // Fade out the paddle for the eliminated goal.
-        for (entity, paddle) in paddles_query.iter_mut() {
+        for (entity, paddle, mut fade) in paddles_query.iter_mut() {
             if paddle.goal_side != *eliminated_goal {
                 continue;
             }
@@ -343,8 +359,8 @@ pub fn goal_eliminated_event(
             commands
                 .entity(entity)
                 .remove::<Movement>()
-                .remove::<Collider>()
-                .insert(Fade::Out(0.0));
+                .remove::<Collider>();
+            fade.fade_out_and_despawn();
             break;
         }
 
@@ -359,9 +375,10 @@ pub fn goal_eliminated_event(
 /// Fades out any existing `Wall` entities.
 pub fn goal_despawn_walls(
     mut commands: Commands,
-    query: Query<Entity, With<Wall>>,
+    mut query: Query<(Entity, &mut Fade), With<Wall>>,
 ) {
-    for entity in query.iter() {
-        commands.entity(entity).insert(Fade::Out(0.0));
+    for (entity, mut fade) in query.iter_mut() {
+        commands.entity(entity).remove::<Collider>();
+        fade.fade_out_and_despawn();
     }
 }

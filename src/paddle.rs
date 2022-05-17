@@ -13,14 +13,3 @@ pub const PADDLE_SCALE: Vec3 =
 pub struct Paddle {
     pub goal_side: GoalSide,
 }
-
-/// Handles the `Fade` animation for a `Paddle` entity by causing it to
-/// grow/shrink into/out of existence.
-pub fn paddle_fade_animation_system(
-    mut query: Query<(&mut Transform, &Fade), With<Paddle>>,
-) {
-    // Grow/Shrink paddles to show/hide them
-    for (mut transform, fade) in query.iter_mut() {
-        transform.scale = PADDLE_SCALE * fade.opacity();
-    }
-}

@@ -19,18 +19,6 @@ pub struct HitPointsUi {
     pub goal_side: GoalSide,
 }
 
-pub fn text_ui_fade_out_system(
-    mut commands: Commands,
-    query: Query<(Entity, &Fade), (Added<Fade>, With<Node>)>,
-) {
-    for (entity, fade) in query.iter() {
-        // Immediately despawn text.
-        if matches!(*fade, Fade::Out(_)) {
-            commands.entity(entity).despawn_recursive();
-        }
-    }
-}
-
 // TODO: Move UI systems to arena and goal after we make them text meshes?
 
 /// Updates a `Text` entity to display the current life of its associated
