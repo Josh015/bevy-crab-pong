@@ -9,7 +9,7 @@ pub enum Delta {
 }
 
 /// A component that handles all acceleration-based movement for a given entity.
-#[derive(Component)]
+#[derive(Component, Clone, Default)]
 pub struct Movement {
     /// The normalized direction vector along which the entity will move.
     pub direction: Vec3,
@@ -31,15 +31,15 @@ pub struct Movement {
 
 impl Movement {
     /// Removes acceleration and immediately sets speed to zero.
-    pub fn dead_stop(&mut self) {
+    pub fn stop(&mut self) {
         self.delta = None;
         self.speed = 0.0;
     }
 }
 
-/// Handles calculating the actual acceleration/deceleration over time for the
-/// attached entity.
-pub fn acceleration_system(
+/// Handles calculating the actual acceleration/deceleration over time for a
+/// `Movement` entity.
+pub fn movement_system(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut Movement)>,
 ) {
@@ -60,7 +60,7 @@ pub fn acceleration_system(
         } else {
             // Decelerate
             let s = movement.speed.abs().sub(delta_speed).max(0.0);
-            movement.speed.max(-s).min(s) // Can't clamp() due to panic when -s == s
+            movement.speed.max(-s).min(s) // clamp() panics when min == max.
         };
 
         transform.translation +=

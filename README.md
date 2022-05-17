@@ -40,7 +40,7 @@ cargo run --release
 - [x] Add new game and game over messages UI.
 - [x] Switch balls to opacity and alpha-blending for fading from view.
 - [x] Added logging for game events and systems.
-- [x] Add "reflections" in the water via mirrored geometry and water blending.
+- [ ] Add "reflections" in the water via mirrored geometry and water blending.
 - [ ] Switch to RT-based in-world UI.
 - [ ] Add a Ferris model (eg. [Ferris the Crab](https://sketchfab.com/3d-models/ferris-the-crab-e9bc16e19d1c4880b30d2aa5fd174887))
 - [ ] Adjust model textures to support color tinting.

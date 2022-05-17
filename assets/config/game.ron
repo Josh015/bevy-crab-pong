@@ -2,12 +2,13 @@
   title: "Bevy Crab Pong",
   width: 800,
   height: 800,
-  gameover_win_message: "You win!\n",
-  gameover_lose_message: "You lose.\n",
+  pause_message: "PAUSED",
+  game_over_win_message: "You win!\n",
+  game_over_lose_message: "You lose.\n",
   new_game_message: "
 Press ENTER for a new game
 Press ESC to quit
-(Use left and right to move)
+(Use LEFT and RIGHT arrows to move)
   ",
   clear_color: Rgba(red: 0.7, green: 0.9, blue: 1.0, alpha: 1.0),
   swaying_camera_speed: 0.2,
@@ -15,8 +16,9 @@ Press ESC to quit
   paddle_max_speed: 2,
   paddle_seconds_to_max_speed: 0.6, // 0.65
   fade_speed: 0.75,
+  max_ball_count: 2,
   ball_starting_speed: 0.4,
   ball_max_speed: 0.5,
   ball_seconds_to_max_speed: 2.0,
-  starting_score: 10,
+  starting_hit_points: 1,
 )

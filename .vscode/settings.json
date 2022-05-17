@@ -5,8 +5,11 @@
   "editor.guides.bracketPairs": true,
   "cSpell.words": [
     "consts",
+    "despawn",
+    "despawning",
+    "despawns",
     "fira",
-    "gameover",
+    "gameplay",
     "icosphere",
     "lerp",
     "msaa",

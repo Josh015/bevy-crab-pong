@@ -5,7 +5,7 @@
       "name": "(Windows) Launch",
       "type": "cppvsdbg",
       "request": "launch",
-      "program": "${workspaceRoot}/target/debug/cubism-demo-rs.exe",
+      "program": "${workspaceRoot}/target/debug/bevy-crab-pong.exe",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceRoot}",
@@ -16,7 +16,7 @@
       "name": "(OSX) Launch",
       "type": "lldb",
       "request": "launch",
-      "program": "${workspaceRoot}/target/debug/cubism-demo-rs",
+      "program": "${workspaceRoot}/target/debug/bevy-crab-pong",
       "args": [],
       "cwd": "${workspaceRoot}"
     }
