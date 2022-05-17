@@ -21,7 +21,7 @@ pub enum FadeState {
 }
 
 impl FadeState {
-    /// Returns the opacity of the current `Fade` type.
+    /// Returns the opacity of the current state.
     pub fn opacity(&self) -> f32 {
         match *self {
             Self::In(weight) => weight,

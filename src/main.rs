@@ -89,7 +89,7 @@ fn main() {
         .add_system(arena_swaying_camera_system)
         .add_system(fade_animation_system)
         .add_startup_system(spawn_arena)
-        .add_startup_system(reset_hit_points)
+        .add_startup_system(reset_hit_points.after(spawn_arena))
         .run();
 }
 
