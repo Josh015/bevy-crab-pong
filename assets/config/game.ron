@@ -20,5 +20,5 @@ Press ESC to quit
   ball_starting_speed: 0.4,
   ball_max_speed: 0.5,
   ball_seconds_to_max_speed: 2.0,
-  starting_hit_points: 10,
+  starting_hit_points: 5,
 )
