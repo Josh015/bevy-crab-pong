@@ -291,7 +291,6 @@ pub fn goal_paddle_ai_control_system(
         // Lower values improve the catch rate, but also reduce how widely it
         // will deflect the ball for near misses. Range (0,1].
         let percent_from_center = 0.60;
-
         let distance_from_paddle_center =
             (paddle_stop_position - ball_local_position).abs();
 

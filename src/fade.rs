@@ -45,7 +45,8 @@ impl Fade {
     /// Makes this entity fade out and then despawn itself.
     pub fn fade_out_and_despawn(&mut self) {
         // If interrupting a fade-in then start the fade-out with its inverse
-        // weight to minimize visual popping.
+        // weight to minimize visual popping. If already fading out it will
+        // just restart it, but that's too much of an edge case to bother.
         self.state = Some(FadeState::Out(
             if let Some(FadeState::In(weight)) = self.state {
                 1.0 - weight
@@ -80,7 +81,7 @@ pub fn fade_animation_system(
         &Handle<StandardMaterial>,
     )>,
 ) {
-    // Need to pause animations so balls launch correctly.
+    // Prevent fade animations from running when game is paused.
     if *state.current() == AppState::Pause {
         return;
     }
