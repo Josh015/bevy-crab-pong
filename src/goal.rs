@@ -157,10 +157,13 @@ pub fn spawn_paddles(
                             / config.paddle_seconds_to_max_speed,
                         ..Default::default()
                     },
-                    Fade::new(FadeEffect::Scale {
-                        max_scale: PADDLE_SCALE,
-                        axis_mask: Vec3::ONE,
-                    }),
+                    Fade {
+                        effect: FadeEffect::Scale {
+                            max_scale: PADDLE_SCALE,
+                            axis_mask: Vec3::ONE,
+                        },
+                        ..Default::default()
+                    },
                 ));
 
                 // TODO: Come up with a more configurable way to do this!
@@ -210,17 +213,17 @@ pub fn spawn_wall_event(
                             goal_side: goal_side.clone(),
                         },
                         Collider,
-                        Fade::new_with_state(
-                            FadeEffect::Scale {
+                        Fade {
+                            effect: FadeEffect::Scale {
                                 max_scale: WALL_SCALE,
                                 axis_mask: Vec3::new(0.0, 1.0, 1.0),
                             },
-                            Some(FadeState::In(if *is_instant {
+                            state: Some(FadeState::In(if *is_instant {
                                 1.0
                             } else {
                                 0.0
                             })),
-                        ),
+                        },
                     ));
             });
             break;

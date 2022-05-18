@@ -35,26 +35,13 @@ impl FadeState {
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub struct Fade {
     /// The type of fade effect.
-    effect: FadeEffect,
+    pub effect: FadeEffect,
 
     /// The current state of the fade effect.
-    state: Option<FadeState>,
+    pub state: Option<FadeState>,
 }
 
 impl Fade {
-    /// Creates a new `Fade` component with a default fade-in.
-    pub fn new(effect: FadeEffect) -> Self {
-        Self::new_with_state(effect, Some(FadeState::In(0.0)))
-    }
-
-    /// Creates a new `Fade` component with a custom starting state.
-    pub fn new_with_state(
-        effect: FadeEffect,
-        state: Option<FadeState>,
-    ) -> Self {
-        Self { effect, state }
-    }
-
     /// Makes this entity fade out and then despawn itself.
     pub fn fade_out_and_despawn(&mut self) {
         // If interrupting a fade-in then start the fade-out with its inverse
@@ -67,10 +54,14 @@ impl Fade {
             },
         ));
     }
+}
 
-    /// Returns whether the entity is currently fading either in or out.
-    pub fn is_fading(&self) -> bool {
-        self.state.is_some()
+impl Default for Fade {
+    fn default() -> Self {
+        Self {
+            effect: FadeEffect::Translucent,
+            state: Some(FadeState::In(0.0)),
+        }
     }
 }
 

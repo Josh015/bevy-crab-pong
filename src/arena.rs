@@ -251,7 +251,7 @@ pub fn arena_ball_spawner_system(
     // Check for any non-moving new balls.
     for (entity, fade) in new_balls_query.iter() {
         // Pause the spawning process until the new ball finishes fading in.
-        if fade.is_fading() {
+        if fade.state.is_some() {
             return;
         }
 
@@ -303,7 +303,10 @@ pub fn arena_ball_spawner_system(
             ForState {
                 states: vec![AppState::Game, AppState::Pause],
             },
-            Fade::new(FadeEffect::Translucent),
+            Fade {
+                effect: FadeEffect::Translucent,
+                ..Default::default()
+            },
         ))
         .id();
 
