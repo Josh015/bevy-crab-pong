@@ -267,7 +267,7 @@ pub fn arena_ball_spawner_system(
                 max_speed: config.ball_max_speed,
                 acceleration: config.ball_max_speed
                     / config.ball_seconds_to_max_speed,
-                delta: Some(Delta::Positive),
+                delta: Some(MovementDelta::Positive),
             },
         ));
         info!("Ball({:?}) -> Launched", entity);

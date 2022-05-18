@@ -3,7 +3,7 @@ use std::ops::{Add, Sub};
 
 /// Represents whether the movement has positive or negative acceleration.
 #[derive(Clone, Copy, PartialEq)]
-pub enum Delta {
+pub enum MovementDelta {
     Positive,
     Negative,
 }
@@ -26,7 +26,7 @@ pub struct Movement {
 
     /// Whether the entity has positive/negative acceleration, or is
     /// decelerating if there is none.
-    pub delta: Option<Delta>,
+    pub delta: Option<MovementDelta>,
 }
 
 impl Movement {
@@ -58,7 +58,7 @@ pub fn movement_system(
             // Accelerate
             movement
                 .speed
-                .add(if delta == Delta::Positive {
+                .add(if delta == MovementDelta::Positive {
                     delta_speed
                 } else {
                     -delta_speed

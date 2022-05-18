@@ -139,9 +139,9 @@ pub fn user_input_system(
         // keyboard's corresponding arrows keys.
         for mut movement in query.iter_mut() {
             movement.delta = if keyboard_input.pressed(KeyCode::Left) {
-                Some(Delta::Negative)
+                Some(MovementDelta::Negative)
             } else if keyboard_input.pressed(KeyCode::Right) {
-                Some(Delta::Positive)
+                Some(MovementDelta::Positive)
             } else {
                 None
             };

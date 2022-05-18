@@ -297,9 +297,9 @@ pub fn goal_paddle_ai_control_system(
         {
             None
         } else if ball_local_position < transform.translation.x {
-            Some(Delta::Negative) // Left
+            Some(MovementDelta::Negative) // Left
         } else {
-            Some(Delta::Positive) // Right
+            Some(MovementDelta::Positive) // Right
         };
     }
 }
