@@ -4,6 +4,7 @@
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": true,
   "cSpell.words": [
+    "collidable",
     "consts",
     "despawn",
     "despawning",

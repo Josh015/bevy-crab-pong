@@ -251,11 +251,11 @@ pub fn arena_ball_spawner_system(
     // Check for any non-moving new balls.
     for (entity, fade) in new_balls_query.iter() {
         // Pause the spawning process until the new ball finishes fading in.
-        if fade.state().is_some() {
+        if fade.is_fading() {
             return;
         }
 
-        // Allow the new ball to start moving/colliding.
+        // Make the ball collidable and launch it in a random direction.
         let mut rng = rand::thread_rng();
         let angle = rng.gen_range(0.0..std::f32::consts::TAU);
 

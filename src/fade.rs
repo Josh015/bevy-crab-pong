@@ -68,9 +68,9 @@ impl Fade {
         ));
     }
 
-    /// Get the current fade state, or lack thereof.
-    pub fn state(&self) -> Option<FadeState> {
-        self.state
+    /// Returns whether the entity is currently fading either in or out.
+    pub fn is_fading(&self) -> bool {
+        self.state.is_some()
     }
 }
 
