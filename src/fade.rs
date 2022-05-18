@@ -42,12 +42,12 @@ pub struct Fade {
 }
 
 impl Fade {
-    /// Creates a new `Fade` component.
+    /// Creates a new `Fade` component with a default fade-in.
     pub fn new(effect: FadeEffect) -> Self {
         Self::new_with_state(effect, Some(FadeState::In(0.0)))
     }
 
-    /// Creates a new `Fade` component and specifies its starting state.
+    /// Creates a new `Fade` component with a custom starting state.
     pub fn new_with_state(
         effect: FadeEffect,
         state: Option<FadeState>,
