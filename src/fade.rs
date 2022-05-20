@@ -20,16 +20,6 @@ pub enum Fade {
     Out(f32),
 }
 
-impl Fade {
-    /// Returns the opacity of the current state.
-    pub fn opacity(&self) -> f32 {
-        match *self {
-            Self::In(weight) => weight,
-            Self::Out(weight) => 1.0 - weight,
-        }
-    }
-}
-
 /// Progresses a `Fade` component to completion before either removing it or
 /// despawning the entity.
 pub fn fade_system(
@@ -81,7 +71,10 @@ pub fn fade_animation_system(
     // Animate the entity.
     for (mut transform, material, fade_effect, fade) in query.iter_mut() {
         // Apply effect animation.
-        let opacity = fade.opacity();
+        let opacity = match *fade {
+            Fade::In(weight) => weight,
+            Fade::Out(weight) => 1.0 - weight,
+        };
 
         match *fade_effect {
             FadeAnimation::Scaling {
