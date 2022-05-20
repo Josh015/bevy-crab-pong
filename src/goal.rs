@@ -52,7 +52,7 @@ pub fn spawn_paddles(
     mut commands: Commands,
     paddles_query: Query<
         Entity,
-        (With<Paddle>, With<FadeEffect>, Without<Fade>),
+        (With<Paddle>, With<FadeAnimation>, Without<Fade>),
     >,
     goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
@@ -105,7 +105,7 @@ pub fn spawn_paddles(
                             / config.paddle_seconds_to_max_speed,
                         ..Default::default()
                     },
-                    FadeEffect::Scale {
+                    FadeAnimation::Scaling {
                         max_scale: PADDLE_SCALE,
                         axis_mask: Vec3::ONE,
                     },
@@ -154,7 +154,7 @@ pub fn spawn_wall_event(
                         side.clone(),
                         Wall,
                         Collider,
-                        FadeEffect::Scale {
+                        FadeAnimation::Scaling {
                             max_scale: WALL_SCALE,
                             axis_mask: Vec3::new(0.0, 1.0, 1.0),
                         },
@@ -306,7 +306,7 @@ pub fn goal_eliminated_event(
         (
             With<Paddle>,
             With<Collider>,
-            With<FadeEffect>,
+            With<FadeAnimation>,
             Without<Fade>,
         ),
     >,
@@ -338,7 +338,7 @@ pub fn goal_eliminated_event(
 /// Fades out any existing `Wall` entities.
 pub fn goal_despawn_walls(
     mut commands: Commands,
-    query: Query<Entity, (With<Wall>, With<FadeEffect>, Without<Fade>)>,
+    query: Query<Entity, (With<Wall>, With<FadeAnimation>, Without<Fade>)>,
 ) {
     for entity in query.iter() {
         commands

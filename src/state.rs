@@ -21,7 +21,7 @@ pub fn app_state_enter_despawn(
     mut commands: Commands,
     state: Res<State<AppState>>,
     mut query: Query<
-        (Entity, &ForState<AppState>, Option<&mut FadeEffect>),
+        (Entity, &ForState<AppState>, Option<&mut FadeAnimation>),
         Without<Fade>,
     >,
 ) {

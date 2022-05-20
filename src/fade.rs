@@ -2,12 +2,12 @@ use crate::prelude::*;
 
 /// A component that specifies the entity's fade effect animation.
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
-pub enum FadeEffect {
+pub enum FadeAnimation {
     /// Effect that uses material opacity and alpha blending.
-    Translucent,
+    Translucency,
 
     /// Effect that controls the transform scale of the entity.
-    Scale { max_scale: Vec3, axis_mask: Vec3 },
+    Scaling { max_scale: Vec3, axis_mask: Vec3 },
 }
 
 /// A component that makes an entity fade in/out and then despawn if needed.
@@ -37,7 +37,7 @@ pub fn fade_system(
     config: Res<GameConfig>,
     time: Res<Time>,
     state: Res<State<AppState>>,
-    mut query: Query<(Entity, &mut Fade), With<FadeEffect>>,
+    mut query: Query<(Entity, &mut Fade), With<FadeAnimation>>,
 ) {
     // Prevent fade animations from running when game is paused.
     if *state.current() == AppState::Pause {
@@ -74,7 +74,7 @@ pub fn fade_animation_system(
     mut query: Query<(
         &mut Transform,
         &Handle<StandardMaterial>,
-        &FadeEffect,
+        &FadeAnimation,
         &Fade,
     )>,
 ) {
@@ -84,14 +84,14 @@ pub fn fade_animation_system(
         let opacity = fade.opacity();
 
         match *fade_effect {
-            FadeEffect::Scale {
+            FadeAnimation::Scaling {
                 max_scale,
                 axis_mask,
             } => {
                 transform.scale =
                     (max_scale * axis_mask) * opacity + (Vec3::ONE - axis_mask);
             },
-            FadeEffect::Translucent => {
+            FadeAnimation::Translucency => {
                 let material = materials.get_mut(material).unwrap();
 
                 material.base_color.set_a(opacity);

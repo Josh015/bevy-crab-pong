@@ -302,7 +302,7 @@ pub fn arena_ball_spawner_system(
             ForState {
                 states: vec![AppState::Game, AppState::Pause],
             },
-            FadeEffect::Translucent,
+            FadeAnimation::Translucency,
             Fade::In(0.0),
         ))
         .id();
