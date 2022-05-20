@@ -51,14 +51,14 @@ impl Default for GameOver {
 /// All global information for this game.
 #[derive(Debug)]
 pub struct RunState {
-    pub goals_hit_points: HashMap<GoalSide, u32>,
+    pub goals_hit_points: HashMap<Side, u32>,
     pub game_over: Option<GameOver>,
     pub next_ball_material_index: usize,
 
     // Store the most used asset handles.
     pub font_handle: Handle<Font>,
     pub paddle_mesh_handle: Handle<Mesh>,
-    pub paddle_material_handles: HashMap<GoalSide, Handle<StandardMaterial>>,
+    pub paddle_material_handles: HashMap<Side, Handle<StandardMaterial>>,
     pub ball_mesh_handle: Handle<Mesh>,
     pub wall_mesh_handle: Handle<Mesh>,
     pub wall_material_handle: Handle<StandardMaterial>,
@@ -91,10 +91,10 @@ impl FromWorld for RunState {
             (
                 materials.add(Color::hex("00A400").unwrap().into()),
                 HashMap::from([
-                    (GoalSide::Bottom, materials.add(Color::RED.into())),
-                    (GoalSide::Right, materials.add(Color::BLUE.into())),
-                    (GoalSide::Top, materials.add(Color::ORANGE.into())),
-                    (GoalSide::Left, materials.add(Color::PURPLE.into())),
+                    (Side::Bottom, materials.add(Color::RED.into())),
+                    (Side::Right, materials.add(Color::BLUE.into())),
+                    (Side::Top, materials.add(Color::ORANGE.into())),
+                    (Side::Left, materials.add(Color::PURPLE.into())),
                 ]),
             )
         };
@@ -128,18 +128,18 @@ pub fn game_over_check_system(
     mut run_state: ResMut<RunState>,
     mut state: ResMut<State<AppState>>,
     mut event_reader: EventReader<GoalEliminatedEvent>,
-    enemies_query: Query<&Paddle, With<Enemy>>,
-    players_query: Query<&Paddle, With<Player>>,
+    enemies_query: Query<&Side, (With<Paddle>, With<Enemy>)>,
+    players_query: Query<&Side, (With<Paddle>, With<Player>)>,
 ) {
     for GoalEliminatedEvent(_) in event_reader.iter() {
         // See if player or enemies have lost enough paddles for a game over.
         let has_player_won = enemies_query
             .iter()
-            .all(|paddle| run_state.goals_hit_points[&paddle.goal_side] == 0);
+            .all(|side| run_state.goals_hit_points[side] == 0);
 
         let has_player_lost = players_query
             .iter()
-            .all(|paddle| run_state.goals_hit_points[&paddle.goal_side] == 0);
+            .all(|side| run_state.goals_hit_points[side] == 0);
 
         if !has_player_won && !has_player_lost {
             continue;

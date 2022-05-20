@@ -10,9 +10,7 @@ pub struct MessageUiEvent {
 /// A component for marking a `Text` UI entity as displaying the hit points for
 /// an associated `Goal`.
 #[derive(Component)]
-pub struct HitPointsUi {
-    pub goal_side: GoalSide,
-}
+pub struct HitPointsUi;
 
 // TODO: Move UI systems to arena and goal after we make them text meshes?
 
@@ -20,10 +18,10 @@ pub struct HitPointsUi {
 /// `Goal`.
 pub fn goal_hit_points_ui_system(
     game: Res<RunState>,
-    mut query: Query<(&HitPointsUi, &mut Text)>,
+    mut query: Query<(&Side, &mut Text), With<HitPointsUi>>,
 ) {
-    for (hp, mut text) in query.iter_mut() {
-        let hit_points = game.goals_hit_points[&hp.goal_side];
+    for (side, mut text) in query.iter_mut() {
+        let hit_points = game.goals_hit_points[side];
         text.sections[0].value = hit_points.to_string();
     }
 }

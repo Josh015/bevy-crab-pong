@@ -5,6 +5,7 @@ mod fade;
 mod files;
 mod goal;
 mod movement;
+mod side;
 mod state;
 mod ui;
 
@@ -15,6 +16,7 @@ pub mod prelude {
     pub use crate::fade::*;
     pub use crate::goal::*;
     pub use crate::movement::*;
+    pub use crate::side::*;
     pub use crate::state::*;
     pub use crate::ui::*;
     pub use bevy::math::*;

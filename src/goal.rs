@@ -27,7 +27,7 @@ pub const PADDLE_SCALE: Vec3 =
 
 /// An event fired when a `Wall` needs to be spawned.
 pub struct SpawnWallEvent {
-    pub goal_side: GoalSide,
+    pub side: Side,
     pub is_instant: bool,
 }
 
@@ -38,61 +38,12 @@ pub struct GoalScoredEvent {
 
 /// An event fired when a `Goal` has been eliminated from play after its HP has
 /// reached zero.
-pub struct GoalEliminatedEvent(pub GoalSide);
-
-#[derive(Component)]
-pub struct Goal {
-    pub side: GoalSide,
-}
+pub struct GoalEliminatedEvent(pub Side);
 
 /// Marks a `Goal` entity so that `Paddle` and `Wall` entities can use it as a
 /// parent, and so `Ball` entities can score against it.
-#[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
-pub enum GoalSide {
-    Top,
-    Right,
-    Bottom,
-    Left,
-}
-
-impl GoalSide {
-    /// Perpendicular distance from a given goal to a ball's edge.
-    ///
-    /// Positive distances for inside the arena, negative for out of bounds.
-    pub fn distance_to_ball(&self, ball_transform: &GlobalTransform) -> f32 {
-        let ball_translation = ball_transform.translation;
-
-        match *self {
-            Self::Top => GOAL_HALF_WIDTH + ball_translation.z - BALL_RADIUS,
-            Self::Right => GOAL_HALF_WIDTH - ball_translation.x - BALL_RADIUS,
-            Self::Bottom => GOAL_HALF_WIDTH - ball_translation.z - BALL_RADIUS,
-            Self::Left => GOAL_HALF_WIDTH + ball_translation.x - BALL_RADIUS,
-        }
-    }
-
-    /// Get the (+/-)(X/Z) axis the goal occupies.
-    pub fn axis(&self) -> Vec3 {
-        match *self {
-            Self::Top => -Vec3::Z,
-            Self::Right => Vec3::X,
-            Self::Bottom => Vec3::Z,
-            Self::Left => -Vec3::X,
-        }
-    }
-
-    /// Map a ball's global position to a paddle's local x-axis.
-    pub fn map_ball_position_to_paddle_local_space(
-        &self,
-        ball_transform: &GlobalTransform,
-    ) -> f32 {
-        match *self {
-            Self::Top => -ball_transform.translation.x,
-            Self::Right => -ball_transform.translation.z,
-            Self::Bottom => ball_transform.translation.x,
-            Self::Left => ball_transform.translation.z,
-        }
-    }
-}
+#[derive(Component)]
+pub struct Goal;
 
 /// Spawns `Paddle` entities for their corresponding goals.
 pub fn spawn_paddles(
@@ -100,14 +51,9 @@ pub fn spawn_paddles(
     run_state: Res<RunState>,
     mut commands: Commands,
     mut paddles_query: Query<(Entity, &mut Fade), With<Paddle>>,
-    goals_query: Query<(Entity, &Goal)>,
+    goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
-    let goal_configs = [
-        GoalSide::Bottom,
-        GoalSide::Right,
-        GoalSide::Top,
-        GoalSide::Left,
-    ];
+    let goal_configs = [Side::Bottom, Side::Right, Side::Top, Side::Left];
 
     // Fade out existing paddles so new ones can spawn at starting positions.
     for (entity, mut fade) in paddles_query.iter_mut() {
@@ -122,16 +68,16 @@ pub fn spawn_paddles(
     // Does the iterator become invalid once we add children?
 
     // Give every paddle a parent so we can use relative transforms.
-    for (i, paddle_goal) in goal_configs.iter().enumerate() {
-        for (entity, goal) in goals_query.iter() {
-            if goal.side != *paddle_goal {
+    for (i, paddle_side) in goal_configs.iter().enumerate() {
+        for (entity, side) in goals_query.iter() {
+            if *side != *paddle_side {
                 continue;
             }
 
             commands.entity(entity).with_children(|parent| {
                 let mut paddle = parent.spawn_bundle(PbrBundle {
                     mesh: run_state.paddle_mesh_handle.clone(),
-                    material: run_state.paddle_material_handles[paddle_goal]
+                    material: run_state.paddle_material_handles[paddle_side]
                         .clone(),
                     transform: Transform::from_matrix(
                         Mat4::from_scale_rotation_translation(
@@ -146,9 +92,8 @@ pub fn spawn_paddles(
                 // TODO: Combine with above statement after player selection
                 // is fixed.
                 paddle.insert_bundle((
-                    Paddle {
-                        goal_side: paddle_goal.clone(),
-                    },
+                    paddle_side.clone(),
+                    Paddle,
                     Collider,
                     Movement {
                         direction: Vec3::X,
@@ -182,15 +127,11 @@ pub fn spawn_wall_event(
     run_state: Res<RunState>,
     mut commands: Commands,
     mut event_reader: EventReader<SpawnWallEvent>,
-    goals_query: Query<(Entity, &Goal)>,
+    goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
-    for SpawnWallEvent {
-        goal_side,
-        is_instant,
-    } in event_reader.iter()
-    {
-        for (entity, matching_goal) in goals_query.iter() {
-            if *goal_side != matching_goal.side {
+    for SpawnWallEvent { side, is_instant } in event_reader.iter() {
+        for (entity, matching_side) in goals_query.iter() {
+            if *side != *matching_side {
                 continue;
             }
 
@@ -209,9 +150,8 @@ pub fn spawn_wall_event(
                         ..Default::default()
                     })
                     .insert_bundle((
-                        Wall {
-                            goal_side: goal_side.clone(),
-                        },
+                        side.clone(),
+                        Wall,
                         Collider,
                         Fade {
                             effect: FadeEffect::Scale {
@@ -254,26 +194,27 @@ pub fn goal_paddle_collision_system(
 /// AI control for `Paddle` entities.
 pub fn goal_paddle_ai_control_system(
     time: Res<Time>,
-    mut paddles_query: Query<(&Paddle, &Transform, &mut Movement), With<Enemy>>,
+    mut paddles_query: Query<
+        (&Side, &Transform, &mut Movement),
+        (With<Paddle>, With<Enemy>),
+    >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
 ) {
-    for (paddle, transform, mut movement) in paddles_query.iter_mut() {
+    for (side, transform, mut movement) in paddles_query.iter_mut() {
         // Get the relative position of the ball that's closest to this goal.
-        let goal_side = paddle.goal_side;
         let mut closest_ball_distance = std::f32::MAX;
         let mut ball_local_position = GOAL_PADDLE_START_POSITION.x;
 
         for ball_transform in balls_query.iter() {
-            let ball_distance_to_goal =
-                goal_side.distance_to_ball(ball_transform);
+            let ball_distance_to_goal = side.distance_to_ball(ball_transform);
 
             if ball_distance_to_goal >= closest_ball_distance {
                 continue;
             }
 
             closest_ball_distance = ball_distance_to_goal;
-            ball_local_position = goal_side
-                .map_ball_position_to_paddle_local_space(ball_transform);
+            ball_local_position =
+                side.map_ball_position_to_paddle_local_space(ball_transform);
         }
 
         // Predict the paddle's stop position if it begins decelerating now.
@@ -318,37 +259,28 @@ pub fn goal_scored_check_system(
     >,
 ) {
     // TODO: Make this shareable.
-    let goal_sides = [
-        GoalSide::Top,
-        GoalSide::Right,
-        GoalSide::Bottom,
-        GoalSide::Left,
-    ];
+    let sides = [Side::Top, Side::Right, Side::Bottom, Side::Left];
 
     for (ball_entity, global_transform) in balls_query.iter() {
-        for goal_side in goal_sides {
+        for side in sides {
             // A ball will score against the goal it's closest to once it's
             // fully past the goal's paddle.
-            let ball_distance = goal_side.distance_to_ball(global_transform);
+            let ball_distance = side.distance_to_ball(global_transform);
 
             if ball_distance > -PADDLE_HALF_DEPTH {
                 continue;
             }
 
             // Decrement the goal's HP and potentially eliminate it.
-            let hit_points =
-                run_state.goals_hit_points.get_mut(&goal_side).unwrap();
+            let hit_points = run_state.goals_hit_points.get_mut(&side).unwrap();
 
             *hit_points = hit_points.saturating_sub(1);
             goal_scored_writer.send(GoalScoredEvent { ball_entity });
-            info!("Ball({:?}) -> Scored Goal({:?})", ball_entity, goal_side);
+            info!("Ball({:?}) -> Scored Goal({:?})", ball_entity, side);
 
             if *hit_points == 0 {
-                goal_eliminated_writer.send(GoalEliminatedEvent(goal_side));
-                info!(
-                    "Ball({:?}) -> Eliminated Goal({:?})",
-                    ball_entity, goal_side
-                );
+                goal_eliminated_writer.send(GoalEliminatedEvent(side));
+                info!("Ball({:?}) -> Eliminated Goal({:?})", ball_entity, side);
             }
             break;
         }
@@ -376,12 +308,15 @@ pub fn goal_eliminated_event(
     mut commands: Commands,
     mut event_reader: EventReader<GoalEliminatedEvent>,
     mut spawn_wall_events: EventWriter<SpawnWallEvent>,
-    mut paddles_query: Query<(Entity, &Paddle, &mut Fade), With<Collider>>,
+    mut paddles_query: Query<
+        (Entity, &Side, &mut Fade),
+        (With<Paddle>, With<Collider>),
+    >,
 ) {
-    for GoalEliminatedEvent(eliminated_goal) in event_reader.iter() {
+    for GoalEliminatedEvent(eliminated_side) in event_reader.iter() {
         // Fade out the paddle for the eliminated goal.
-        for (entity, paddle, mut fade) in paddles_query.iter_mut() {
-            if paddle.goal_side != *eliminated_goal {
+        for (entity, side, mut fade) in paddles_query.iter_mut() {
+            if *side != *eliminated_side {
                 continue;
             }
 
@@ -396,7 +331,7 @@ pub fn goal_eliminated_event(
 
         // Fade in the wall for the eliminated goal.
         spawn_wall_events.send(SpawnWallEvent {
-            goal_side: eliminated_goal.clone(),
+            side: eliminated_side.clone(),
             is_instant: false,
         });
     }

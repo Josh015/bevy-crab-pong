@@ -92,7 +92,7 @@ pub fn spawn_arena(
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
     let goal_configs = [
         (
-            GoalSide::Bottom,
+            Side::Bottom,
             Rect {
                 bottom: Val::Px(5.0),
                 right: Val::Px(400.0),
@@ -100,7 +100,7 @@ pub fn spawn_arena(
             },
         ),
         (
-            GoalSide::Right,
+            Side::Right,
             Rect {
                 top: Val::Px(400.0),
                 right: Val::Px(5.0),
@@ -108,7 +108,7 @@ pub fn spawn_arena(
             },
         ),
         (
-            GoalSide::Top,
+            Side::Top,
             Rect {
                 top: Val::Px(5.0),
                 left: Val::Px(400.0),
@@ -116,7 +116,7 @@ pub fn spawn_arena(
             },
         ),
         (
-            GoalSide::Left,
+            Side::Left,
             Rect {
                 bottom: Val::Px(400.0),
                 left: Val::Px(5.0),
@@ -125,10 +125,10 @@ pub fn spawn_arena(
         ),
     ];
 
-    for (i, (goal_side, rect)) in goal_configs.iter().enumerate() {
+    for (i, (side, rect)) in goal_configs.iter().enumerate() {
         // Walls
         spawn_wall_events.send(SpawnWallEvent {
-            goal_side: goal_side.clone(),
+            side: side.clone(),
             is_instant: true,
         });
 
@@ -143,9 +143,7 @@ pub fn spawn_arena(
                 .mul_transform(Transform::from_xyz(0.0, 0.0, GOAL_HALF_WIDTH)),
                 ..Default::default()
             })
-            .insert(Goal {
-                side: goal_side.clone(),
-            })
+            .insert_bundle((Goal, side.clone()))
             .with_children(|parent| {
                 // Barrier
                 parent
@@ -196,11 +194,9 @@ pub fn spawn_arena(
                 ),
                 ..Default::default()
             })
-            .insert(HitPointsUi {
-                goal_side: goal_side.clone(),
-            });
+            .insert_bundle((side.clone(), HitPointsUi));
 
-        run_state.goals_hit_points.insert(goal_side.clone(), 0);
+        run_state.goals_hit_points.insert(side.clone(), 0);
     }
 }
 
@@ -321,9 +317,9 @@ pub fn arena_collision_system(
         (Entity, &GlobalTransform, &Movement),
         (With<Ball>, With<Collider>),
     >,
-    paddles_query: Query<(&Paddle, &Transform), With<Collider>>,
+    paddles_query: Query<(&Side, &Transform), (With<Paddle>, With<Collider>)>,
     barriers_query: Query<&GlobalTransform, (With<Barrier>, With<Collider>)>,
-    walls_query: Query<&Wall, With<Collider>>,
+    walls_query: Query<&Side, (With<Wall>, With<Collider>)>,
 ) {
     for (entity, ball_transform, movement) in balls_query.iter() {
         let ball_direction = movement.direction;
@@ -358,12 +354,11 @@ pub fn arena_collision_system(
         }
 
         // Paddle collisions
-        for (paddle, transform) in paddles_query.iter() {
-            let goal_side = paddle.goal_side;
-            let axis = goal_side.axis();
-            let ball_distance = goal_side.distance_to_ball(ball_transform);
-            let ball_local_position = goal_side
-                .map_ball_position_to_paddle_local_space(ball_transform);
+        for (side, transform) in paddles_query.iter() {
+            let axis = side.axis();
+            let ball_distance = side.distance_to_ball(ball_transform);
+            let ball_local_position =
+                side.map_ball_position_to_paddle_local_space(ball_transform);
             let ball_to_paddle = transform.translation.x - ball_local_position;
             let distance_from_paddle_center = (ball_to_paddle).abs();
 
@@ -387,7 +382,7 @@ pub fn arena_collision_system(
                 rotation_away_from_center * -ball_direction;
             commands.entity(entity).insert(new_movement);
 
-            info!("Ball({:?}) -> Collided Paddle({:?})", entity, goal_side);
+            info!("Ball({:?}) -> Collided Paddle({:?})", entity, side);
             break;
         }
 
@@ -422,10 +417,9 @@ pub fn arena_collision_system(
         }
 
         // Wall collisions
-        for wall in walls_query.iter() {
-            let goal = wall.goal_side;
-            let ball_distance = goal.distance_to_ball(ball_transform);
-            let axis = goal.axis();
+        for side in walls_query.iter() {
+            let ball_distance = side.distance_to_ball(ball_transform);
+            let axis = side.axis();
 
             // Check that the ball is touching and facing the wall.
             if ball_distance > WALL_RADIUS || ball_direction.dot(axis) <= 0.0 {
@@ -438,7 +432,7 @@ pub fn arena_collision_system(
             new_movement.direction = reflect(ball_direction, axis);
             commands.entity(entity).insert(new_movement);
 
-            info!("Ball({:?}) -> Collided Wall({:?})", entity, goal);
+            info!("Ball({:?}) -> Collided Wall({:?})", entity, side);
             break;
         }
     }

@@ -16,9 +16,7 @@ pub struct Enemy;
 /// A component that makes a paddle that can deflect `Ball` entities and moves
 /// left->right and vice versa along a single axis when `Collider`.
 #[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
-pub struct Paddle {
-    pub goal_side: GoalSide,
-}
+pub struct Paddle;
 
 /// A component for a corner barrier entity that exists only to deflect `Ball`
 /// entities.
@@ -33,6 +31,4 @@ pub struct Ball;
 /// A component that makes an entity a wall in a `Goal` that can deflect `Ball`
 /// entities away from the entire goal when `Collider`.
 #[derive(Component)]
-pub struct Wall {
-    pub goal_side: GoalSide,
-}
+pub struct Wall;
