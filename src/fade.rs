@@ -1,22 +1,39 @@
 use crate::prelude::*;
 
+pub const MIN_FADE_PROGRESS: f32 = 0.0;
+pub const MAX_FADE_PROGRESS: f32 = 1.0;
+
 /// A component that specifies the entity's fade effect animation.
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub enum FadeAnimation {
     /// Effect that uses material opacity and alpha blending.
+    ///
+    /// When paired with `Fade::In` the entity's `StandardMaterial` must first
+    /// be set to `AlphaMode::Blend` and have its color alpha set to zero to
+    /// avoid visual popping.
     Translucency,
 
     /// Effect that controls the transform scale of the entity.
-    Scaling { max_scale: Vec3, axis_mask: Vec3 },
+    ///
+    /// When paired with `Fade::In` the entity's `Transform` scale must first
+    /// be set to EPSILON to avoid visual popping. We can't use zero since that
+    /// prevents it from appearing at all.
+    Scaling {
+        /// The maximum scale to start/end with when fading out/in.
+        max_scale: Vec3,
+
+        /// Use either 0/1 to remove/mark an axis for the scale effect.
+        axis_mask: Vec3,
+    },
 }
 
 /// A component that makes an entity fade in/out and then despawn if needed.
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub enum Fade {
-    /// Simulates a fade-in effect using a weight in the range \[0,1\].
+    /// Applies a fade-in effect via a progress value \[0,1\].
     In(f32),
 
-    /// Simulates a fade-out effect using a weight in the range \[0,1\].
+    /// Applies a fade-out effect via a progress value \[0,1\].
     Out(f32),
 }
 
@@ -39,16 +56,16 @@ pub fn fade_system(
 
     for (entity, mut fade) in query.iter_mut() {
         match *fade {
-            Fade::In(weight) => {
-                if weight < 1.0 {
-                    *fade = Fade::In(weight.max(0.0) + step);
+            Fade::In(progress) => {
+                if progress < MAX_FADE_PROGRESS {
+                    *fade = Fade::In(progress.max(MIN_FADE_PROGRESS) + step);
                 } else {
                     commands.entity(entity).remove::<Fade>();
                 }
             },
-            Fade::Out(weight) => {
-                if weight < 1.0 {
-                    *fade = Fade::Out(weight.max(0.0) + step);
+            Fade::Out(progress) => {
+                if progress < MAX_FADE_PROGRESS {
+                    *fade = Fade::Out(progress.max(MIN_FADE_PROGRESS) + step);
                 } else {
                     commands.entity(entity).despawn_recursive();
                 }
@@ -68,12 +85,11 @@ pub fn fade_animation_system(
         &Fade,
     )>,
 ) {
-    // Animate the entity.
+    // Apply effect animation to the entity.
     for (mut transform, material, fade_effect, fade) in query.iter_mut() {
-        // Apply effect animation.
-        let opacity = match *fade {
-            Fade::In(weight) => weight,
-            Fade::Out(weight) => 1.0 - weight,
+        let weight = match *fade {
+            Fade::In(progress) => progress,
+            Fade::Out(progress) => 1.0 - progress,
         };
 
         match *fade_effect {
@@ -82,13 +98,13 @@ pub fn fade_animation_system(
                 axis_mask,
             } => {
                 transform.scale =
-                    (max_scale * axis_mask) * opacity + (Vec3::ONE - axis_mask);
+                    (max_scale * axis_mask) * weight + (Vec3::ONE - axis_mask);
             },
             FadeAnimation::Translucency => {
                 let material = materials.get_mut(material).unwrap();
 
-                material.base_color.set_a(opacity);
-                material.alpha_mode = if opacity < 1.0 {
+                material.base_color.set_a(weight);
+                material.alpha_mode = if weight < 1.0 {
                     AlphaMode::Blend
                 } else {
                     AlphaMode::Opaque
