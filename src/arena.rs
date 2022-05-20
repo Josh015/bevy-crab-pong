@@ -241,13 +241,16 @@ pub fn arena_ball_spawner_system(
     run_state: Res<RunState>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    new_balls_query: Query<(Entity, &Fade), (With<Ball>, Without<Movement>)>,
+    new_balls_query: Query<
+        (Entity, Option<&Fade>),
+        (With<Ball>, Without<Movement>),
+    >,
     all_balls_query: Query<&Ball>,
 ) {
     // Check for any non-moving new balls.
     for (entity, fade) in new_balls_query.iter() {
         // Pause the spawning process until the new ball finishes fading in.
-        if fade.state.is_some() {
+        if fade.is_some() {
             return;
         }
 
@@ -299,10 +302,8 @@ pub fn arena_ball_spawner_system(
             ForState {
                 states: vec![AppState::Game, AppState::Pause],
             },
-            Fade {
-                effect: FadeEffect::Translucent,
-                ..Default::default()
-            },
+            FadeEffect::Translucent,
+            Fade::In(0.0),
         ))
         .id();
 
