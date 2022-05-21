@@ -50,10 +50,7 @@ pub fn spawn_paddles(
     config: Res<GameConfig>,
     run_state: Res<RunState>,
     mut commands: Commands,
-    paddles_query: Query<
-        Entity,
-        (With<Paddle>, With<FadeAnimation>, Without<Fade>),
-    >,
+    paddles_query: Query<Entity, (With<Paddle>, Without<Fade>)>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
     // Fade out existing paddles so new ones can spawn at starting positions.
