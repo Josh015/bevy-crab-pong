@@ -46,7 +46,7 @@ pub struct GoalEliminatedEvent(pub Side);
 pub struct Goal;
 
 /// Spawns `Paddle` entities for their corresponding goals.
-pub fn spawn_paddles(
+pub fn spawn_paddles_system(
     config: Res<GameConfig>,
     run_state: Res<RunState>,
     mut commands: Commands,
@@ -104,7 +104,7 @@ pub fn spawn_paddles(
     }
 }
 
-pub fn spawn_wall_event(
+pub fn spawn_wall_event_system(
     run_state: Res<RunState>,
     mut commands: Commands,
     mut event_reader: EventReader<SpawnWallEvent>,
@@ -264,7 +264,7 @@ pub fn goal_scored_check_system(
 
 /// Fades out a `Ball` entity when it scores in a 'Goal' and prevents it from
 /// repeatedly scoring/colliding as it fades.
-pub fn goal_scored_event(
+pub fn goal_scored_event_system(
     mut commands: Commands,
     mut event_reader: EventReader<GoalScoredEvent>,
 ) {
@@ -274,7 +274,7 @@ pub fn goal_scored_event(
 }
 
 /// Disables a given `Goal` to remove it from play.
-pub fn goal_eliminated_event(
+pub fn goal_eliminated_event_system(
     mut commands: Commands,
     mut event_reader: EventReader<GoalEliminatedEvent>,
     mut spawn_wall_events: EventWriter<SpawnWallEvent>,
@@ -304,7 +304,7 @@ pub fn goal_eliminated_event(
 }
 
 /// Fades out any existing `Wall` entities.
-pub fn goal_despawn_walls(
+pub fn goal_despawn_walls_system(
     mut commands: Commands,
     query: Query<Entity, (With<Wall>, Without<Fade>)>,
 ) {

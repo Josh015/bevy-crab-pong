@@ -17,7 +17,7 @@ pub struct ForState<T> {
 
 /// When entering a new state this despawns `ForState` entities that aren't
 /// configured for it.
-pub fn app_state_enter_despawn(
+pub fn app_state_enter_despawn_system(
     mut commands: Commands,
     state: Res<State<AppState>>,
     mut query: Query<
@@ -117,7 +117,7 @@ impl FromWorld for RunState {
 }
 
 /// Resets all goal HP fields to their starting value.
-pub fn reset_hit_points(
+pub fn reset_hit_points_system(
     config: Res<GameConfig>,
     mut run_state: ResMut<RunState>,
 ) {

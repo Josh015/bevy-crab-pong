@@ -17,7 +17,7 @@ pub struct AnimatedWater {
 }
 
 /// Handles setting up the static arena entities.
-pub fn spawn_arena(
+pub fn spawn_arena_system(
     mut run_state: ResMut<RunState>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,

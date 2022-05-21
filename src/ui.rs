@@ -26,7 +26,7 @@ pub fn goal_hit_points_ui_system(
     }
 }
 
-pub fn spawn_ui_message_event(
+pub fn spawn_ui_message_event_system(
     run_state: Res<RunState>,
     mut commands: Commands,
     mut event_reader: EventReader<MessageUiEvent>,
@@ -83,7 +83,7 @@ pub fn spawn_ui_message_event(
     }
 }
 
-pub fn spawn_start_menu_ui(
+pub fn spawn_start_menu_ui_system(
     config: Res<GameConfig>,
     run_state: Res<RunState>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
@@ -105,7 +105,7 @@ pub fn spawn_start_menu_ui(
     });
 }
 
-pub fn spawn_pause_ui(
+pub fn spawn_pause_ui_system(
     config: Res<GameConfig>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {

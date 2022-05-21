@@ -49,18 +49,18 @@ fn main() {
         .add_state(AppState::StartMenu)
         .add_system_set(
             SystemSet::on_enter(AppState::StartMenu)
-                .with_system(spawn_start_menu_ui)
-                .with_system(app_state_enter_despawn),
+                .with_system(spawn_start_menu_ui_system)
+                .with_system(app_state_enter_despawn_system),
         )
         .add_system_set(
             SystemSet::on_exit(AppState::StartMenu)
-                .with_system(reset_hit_points)
-                .with_system(goal_despawn_walls)
-                .with_system(spawn_paddles),
+                .with_system(reset_hit_points_system)
+                .with_system(goal_despawn_walls_system)
+                .with_system(spawn_paddles_system),
         )
         .add_system_set(
             SystemSet::on_enter(AppState::Game)
-                .with_system(app_state_enter_despawn),
+                .with_system(app_state_enter_despawn_system),
         )
         .add_system_set(
             SystemSet::on_update(AppState::Game)
@@ -70,29 +70,32 @@ fn main() {
                 .with_system(goal_paddle_ai_control_system)
                 .with_system(arena_ball_spawner_system)
                 .with_system(goal_scored_check_system)
-                .with_system(goal_scored_event.after(goal_scored_check_system))
                 .with_system(
-                    goal_eliminated_event.after(goal_scored_check_system),
+                    goal_scored_event_system.after(goal_scored_check_system),
                 )
                 .with_system(
-                    game_over_check_system.after(goal_eliminated_event),
+                    goal_eliminated_event_system
+                        .after(goal_scored_check_system),
+                )
+                .with_system(
+                    game_over_check_system.after(goal_eliminated_event_system),
                 ),
         )
         .add_system_set(
             SystemSet::on_enter(AppState::Pause)
-                .with_system(spawn_pause_ui)
-                .with_system(app_state_enter_despawn),
+                .with_system(spawn_pause_ui_system)
+                .with_system(app_state_enter_despawn_system),
         )
         .add_system(user_input_system)
-        .add_system(spawn_ui_message_event)
+        .add_system(spawn_ui_message_event_system)
         .add_system(goal_hit_points_ui_system)
-        .add_system(spawn_wall_event)
+        .add_system(spawn_wall_event_system)
         .add_system(arena_animated_water_system)
         .add_system(arena_swaying_camera_system)
         .add_system(fade_system)
         .add_system(fade_animation_system.after(fade_system))
-        .add_startup_system(spawn_arena)
-        .add_startup_system(reset_hit_points.after(spawn_arena))
+        .add_startup_system(spawn_arena_system)
+        .add_startup_system(reset_hit_points_system.after(spawn_arena_system))
         .run();
 }
 
