@@ -56,8 +56,6 @@ pub fn spawn_paddles(
     >,
     goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
-    let goal_configs = [Side::Bottom, Side::Right, Side::Top, Side::Left];
-
     // Fade out existing paddles so new ones can spawn at starting positions.
     for entity in paddles_query.iter() {
         commands
@@ -67,60 +65,49 @@ pub fn spawn_paddles(
             .insert(Fade::Out(0.0));
     }
 
-    // TODO: Figure out why using goals_query alone only hits first item?
-    // Does the iterator become invalid once we add children?
-
     // Give every paddle a parent so we can use relative transforms.
-    for (i, paddle_side) in goal_configs.iter().enumerate() {
-        for (entity, side) in goals_query.iter() {
-            if *side != *paddle_side {
-                continue;
-            }
-
-            commands.entity(entity).with_children(|parent| {
-                let mut paddle = parent.spawn_bundle(PbrBundle {
-                    mesh: run_state.paddle_mesh_handle.clone(),
-                    material: run_state.paddle_material_handles[paddle_side]
-                        .clone(),
-                    transform: Transform::from_matrix(
-                        Mat4::from_scale_rotation_translation(
-                            Vec3::splat(f32::EPSILON),
-                            Quat::IDENTITY,
-                            GOAL_PADDLE_START_POSITION,
-                        ),
+    for (i, (entity, side)) in goals_query.iter().enumerate() {
+        commands.entity(entity).with_children(|parent| {
+            let mut paddle = parent.spawn_bundle(PbrBundle {
+                mesh: run_state.paddle_mesh_handle.clone(),
+                material: run_state.paddle_material_handles[side].clone(),
+                transform: Transform::from_matrix(
+                    Mat4::from_scale_rotation_translation(
+                        Vec3::splat(f32::EPSILON),
+                        Quat::IDENTITY,
+                        GOAL_PADDLE_START_POSITION,
                     ),
-                    ..Default::default()
-                });
-
-                // TODO: Combine with above statement after player selection
-                // is fixed.
-                paddle.insert_bundle((
-                    paddle_side.clone(),
-                    Paddle,
-                    Collider,
-                    Movement {
-                        direction: Vec3::X,
-                        max_speed: config.paddle_max_speed,
-                        acceleration: config.paddle_max_speed
-                            / config.paddle_seconds_to_max_speed,
-                        ..Default::default()
-                    },
-                    FadeAnimation::Scaling {
-                        max_scale: PADDLE_SCALE,
-                        axis_mask: Vec3::ONE,
-                    },
-                    Fade::In(0.0),
-                ));
-
-                // TODO: Come up with a more configurable way to do this!
-                if i == 0 {
-                    paddle.insert(Player);
-                } else {
-                    paddle.insert(Enemy);
-                }
+                ),
+                ..Default::default()
             });
-            break;
-        }
+
+            // TODO: Combine with above statement after player selection
+            // is fixed.
+            paddle.insert_bundle((
+                side.clone(),
+                Paddle,
+                Collider,
+                Movement {
+                    direction: Vec3::X,
+                    max_speed: config.paddle_max_speed,
+                    acceleration: config.paddle_max_speed
+                        / config.paddle_seconds_to_max_speed,
+                    ..Default::default()
+                },
+                FadeAnimation::Scaling {
+                    max_scale: PADDLE_SCALE,
+                    axis_mask: Vec3::ONE,
+                },
+                Fade::In(0.0),
+            ));
+
+            // TODO: Come up with a more configurable way to do this!
+            if i == 0 {
+                paddle.insert(Player);
+            } else {
+                paddle.insert(Enemy);
+            }
+        });
     }
 }
 
