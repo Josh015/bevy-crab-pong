@@ -113,3 +113,20 @@ pub fn fade_animation_system(
         }
     }
 }
+
+/// Makes an entity stop moving & colliding before fading out.
+pub fn fade_out_and_stop_entity(commands: &mut Commands, entity: Entity) {
+    commands
+        .entity(entity)
+        .remove::<Movement>()
+        .remove::<Collider>()
+        .insert(Fade::Out(0.0));
+}
+
+/// Makes an entity stop colliding before fading out.
+pub fn fade_out_entity(commands: &mut Commands, entity: Entity) {
+    commands
+        .entity(entity)
+        .remove::<Collider>()
+        .insert(Fade::Out(0.0));
+}
