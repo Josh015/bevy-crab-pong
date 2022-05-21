@@ -287,12 +287,7 @@ pub fn goal_eliminated_event(
     mut spawn_wall_events: EventWriter<SpawnWallEvent>,
     paddles_query: Query<
         (Entity, &Side),
-        (
-            With<Paddle>,
-            With<Collider>,
-            With<FadeAnimation>,
-            Without<Fade>,
-        ),
+        (With<Paddle>, With<Collider>, Without<Fade>),
     >,
 ) {
     for GoalEliminatedEvent(eliminated_side) in event_reader.iter() {
