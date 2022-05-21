@@ -55,11 +55,7 @@ pub fn spawn_paddles(
 ) {
     // Fade out existing paddles so new ones can spawn at starting positions.
     for entity in paddles_query.iter() {
-        commands
-            .entity(entity)
-            .remove::<Movement>()
-            .remove::<Collider>()
-            .insert(Fade::Out(0.0));
+        stop_and_fade_out_entity(&mut commands, entity);
     }
 
     // Give every paddle a parent so we can use relative transforms.
@@ -273,10 +269,7 @@ pub fn goal_scored_event(
     mut event_reader: EventReader<GoalScoredEvent>,
 ) {
     for GoalScoredEvent { ball_entity } in event_reader.iter() {
-        commands
-            .entity(*ball_entity)
-            .remove::<Collider>()
-            .insert(Fade::Out(0.0));
+        fade_out_entity(&mut commands, *ball_entity);
     }
 }
 
@@ -298,11 +291,7 @@ pub fn goal_eliminated_event(
             }
 
             // Stop the paddle from moving and colliding.
-            commands
-                .entity(entity)
-                .remove::<Movement>()
-                .remove::<Collider>()
-                .insert(Fade::Out(0.0));
+            stop_and_fade_out_entity(&mut commands, entity);
             break;
         }
 
@@ -320,9 +309,23 @@ pub fn goal_despawn_walls(
     query: Query<Entity, (With<Wall>, Without<Fade>)>,
 ) {
     for entity in query.iter() {
-        commands
-            .entity(entity)
-            .remove::<Collider>()
-            .insert(Fade::Out(0.0));
+        fade_out_entity(&mut commands, entity);
     }
+}
+
+/// Makes an entity stop moving & colliding before fading out.
+pub fn stop_and_fade_out_entity(commands: &mut Commands, entity: Entity) {
+    commands
+        .entity(entity)
+        .remove::<Movement>()
+        .remove::<Collider>()
+        .insert(Fade::Out(0.0));
+}
+
+/// Makes an entity stop colliding before fading out.
+pub fn fade_out_entity(commands: &mut Commands, entity: Entity) {
+    commands
+        .entity(entity)
+        .remove::<Collider>()
+        .insert(Fade::Out(0.0));
 }
