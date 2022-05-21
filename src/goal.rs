@@ -322,7 +322,7 @@ pub fn goal_eliminated_event(
 /// Fades out any existing `Wall` entities.
 pub fn goal_despawn_walls(
     mut commands: Commands,
-    query: Query<Entity, (With<Wall>, With<FadeAnimation>, Without<Fade>)>,
+    query: Query<Entity, (With<Wall>, Without<Fade>)>,
 ) {
     for entity in query.iter() {
         commands
