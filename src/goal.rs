@@ -87,7 +87,7 @@ pub fn spawn_paddles_system(
                         / config.paddle_seconds_to_max_speed,
                     ..Default::default()
                 },
-                FadeAnimation::Scaling {
+                FadeAnimation::Scale {
                     max_scale: PADDLE_SCALE,
                     axis_mask: Vec3::ONE,
                 },
@@ -134,7 +134,7 @@ pub fn spawn_wall_event_system(
                         side.clone(),
                         Wall,
                         Collider,
-                        FadeAnimation::Scaling {
+                        FadeAnimation::Scale {
                             max_scale: WALL_SCALE,
                             axis_mask: Vec3::new(0.0, 1.0, 1.0),
                         },

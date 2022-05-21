@@ -6,19 +6,19 @@ pub const MAX_FADE_PROGRESS: f32 = 1.0;
 /// A component that specifies the entity's fade effect animation.
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub enum FadeAnimation {
-    /// Effect that uses material opacity and alpha blending.
+    /// Uses `StandardMaterial` color and alpha blending to show/hide entity.
     ///
     /// When paired with `Fade::In` the entity's `StandardMaterial` must first
     /// be set to `AlphaMode::Blend` and have its color alpha set to zero to
     /// avoid visual popping.
-    Translucency,
+    Opacity,
 
-    /// Effect that controls the transform scale of the entity.
+    /// Uses `Transform` scale to grow/shrink the entity.
     ///
     /// When paired with `Fade::In` the entity's `Transform` scale must first
     /// be set to EPSILON to avoid visual popping. We can't use zero since that
     /// prevents it from appearing at all.
-    Scaling {
+    Scale {
         /// The maximum scale to start/end with when fading out/in.
         max_scale: Vec3,
 
@@ -93,14 +93,14 @@ pub fn fade_animation_system(
         };
 
         match *fade_effect {
-            FadeAnimation::Scaling {
+            FadeAnimation::Scale {
                 max_scale,
                 axis_mask,
             } => {
                 transform.scale =
                     (max_scale * axis_mask) * weight + (Vec3::ONE - axis_mask);
             },
-            FadeAnimation::Translucency => {
+            FadeAnimation::Opacity => {
                 let material = materials.get_mut(material).unwrap();
 
                 material.base_color.set_a(weight);
