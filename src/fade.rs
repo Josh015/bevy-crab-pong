@@ -46,15 +46,15 @@ pub fn fade_system(
     state: Res<State<AppState>>,
     mut query: Query<(Entity, &mut Fade), With<FadeAnimation>>,
 ) {
-    // Prevent fade animations from running when game is paused.
-    if *state.current() == AppState::Pause {
-        return;
-    }
-
-    // Progress the fade effect.
-    let step = config.fade_speed * time.delta_seconds();
-
     for (entity, mut fade) in query.iter_mut() {
+        // Prevent fade animations from running when game is paused.
+        if *state.current() == AppState::Pause {
+            return;
+        }
+
+        // Progress the fade effect.
+        let step = config.fade_speed * time.delta_seconds();
+
         match *fade {
             Fade::In(ref mut progress) => {
                 if *progress < FADE_PROGRESS_MAX {
