@@ -42,10 +42,10 @@ impl Default for FadeAnimation {
 /// A component that makes an entity fade in/out and then despawn if needed.
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub enum Fade {
-    /// Applies a fade-in effect via a progress value \[0,1\].
+    /// Fade-in effect with a progress value in the range \[0,1\].
     In(f32),
 
-    /// Applies a fade-out effect via a progress value \[0,1\].
+    /// Fade-out effect with a progress value in the range \[0,1\].
     Out(f32),
 }
 

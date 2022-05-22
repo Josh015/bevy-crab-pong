@@ -31,7 +31,7 @@ pub fn app_state_enter_despawn_system(
         }
 
         if fade.is_some() {
-            commands.entity(entity).insert(Fade::Out(0.0));
+            fade_out_and_stop_entity(&mut commands, entity);
         } else {
             commands.entity(entity).despawn_recursive();
         }
