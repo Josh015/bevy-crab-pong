@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
-pub const MIN_FADE_PROGRESS: f32 = 0.0;
-pub const MAX_FADE_PROGRESS: f32 = 1.0;
+pub const FADE_PROGRESS_MIN: f32 = 0.0;
+pub const FADE_PROGRESS_MAX: f32 = 1.0;
 
 /// A component that specifies the entity's fade effect animation.
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
@@ -57,15 +57,15 @@ pub fn fade_system(
     for (entity, mut fade) in query.iter_mut() {
         match *fade {
             Fade::In(ref mut progress) => {
-                if *progress < MAX_FADE_PROGRESS {
-                    *progress = progress.max(MIN_FADE_PROGRESS) + step;
+                if *progress < FADE_PROGRESS_MAX {
+                    *progress = progress.max(FADE_PROGRESS_MIN) + step;
                 } else {
                     commands.entity(entity).remove::<Fade>();
                 }
             },
             Fade::Out(ref mut progress) => {
-                if *progress < MAX_FADE_PROGRESS {
-                    *progress = progress.max(MIN_FADE_PROGRESS) + step;
+                if *progress < FADE_PROGRESS_MAX {
+                    *progress = progress.max(FADE_PROGRESS_MIN) + step;
                 } else {
                     commands.entity(entity).despawn_recursive();
                 }
