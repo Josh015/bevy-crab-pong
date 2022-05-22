@@ -56,16 +56,16 @@ pub fn fade_system(
 
     for (entity, mut fade) in query.iter_mut() {
         match *fade {
-            Fade::In(progress) => {
-                if progress < MAX_FADE_PROGRESS {
-                    *fade = Fade::In(progress.max(MIN_FADE_PROGRESS) + step);
+            Fade::In(ref mut progress) => {
+                if *progress < MAX_FADE_PROGRESS {
+                    *progress = progress.max(MIN_FADE_PROGRESS) + step;
                 } else {
                     commands.entity(entity).remove::<Fade>();
                 }
             },
-            Fade::Out(progress) => {
-                if progress < MAX_FADE_PROGRESS {
-                    *fade = Fade::Out(progress.max(MIN_FADE_PROGRESS) + step);
+            Fade::Out(ref mut progress) => {
+                if *progress < MAX_FADE_PROGRESS {
+                    *progress = progress.max(MIN_FADE_PROGRESS) + step;
                 } else {
                     commands.entity(entity).despawn_recursive();
                 }
