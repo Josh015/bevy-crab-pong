@@ -47,15 +47,19 @@ pub struct Goal;
 
 /// Spawns `Paddle` entities for their corresponding goals.
 pub fn spawn_paddles_system(
+    mut commands: Commands,
     config: Res<GameConfig>,
     run_state: Res<RunState>,
-    mut commands: Commands,
+    mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     paddles_query: Query<Entity, (With<Paddle>, Without<Fade>)>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
     // Fade out existing paddles so new ones can spawn at starting positions.
     for entity in paddles_query.iter() {
-        fade_out_and_stop_entity(&mut commands, entity);
+        fade_out_entity_events.send(FadeOutEntityEvent {
+            entity,
+            is_stopped: true,
+        });
     }
 
     // Give every paddle a parent so we can use relative transforms.
@@ -266,18 +270,21 @@ pub fn goal_scored_check_system(
 /// Fades out a `Ball` entity when it scores in a 'Goal' and prevents it from
 /// repeatedly scoring/colliding as it fades.
 pub fn goal_scored_event_system(
-    mut commands: Commands,
     mut event_reader: EventReader<GoalScoredEvent>,
+    mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
 ) {
     for GoalScoredEvent { ball_entity } in event_reader.iter() {
-        fade_out_entity(&mut commands, *ball_entity);
+        fade_out_entity_events.send(FadeOutEntityEvent {
+            entity: *ball_entity,
+            is_stopped: false,
+        });
     }
 }
 
 /// Disables a given `Goal` to remove it from play.
 pub fn goal_eliminated_event_system(
-    mut commands: Commands,
     mut event_reader: EventReader<GoalEliminatedEvent>,
+    mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     mut spawn_wall_events: EventWriter<SpawnWallEvent>,
     paddles_query: Query<
         (Entity, &Side),
@@ -292,7 +299,10 @@ pub fn goal_eliminated_event_system(
             }
 
             // Stop the paddle from moving and colliding.
-            fade_out_and_stop_entity(&mut commands, entity);
+            fade_out_entity_events.send(FadeOutEntityEvent {
+                entity,
+                is_stopped: true,
+            });
             break;
         }
 
@@ -306,10 +316,13 @@ pub fn goal_eliminated_event_system(
 
 /// Fades out any existing `Wall` entities.
 pub fn goal_despawn_walls_system(
-    mut commands: Commands,
+    mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     query: Query<Entity, (With<Wall>, Without<Fade>)>,
 ) {
     for entity in query.iter() {
-        fade_out_entity(&mut commands, entity);
+        fade_out_entity_events.send(FadeOutEntityEvent {
+            entity,
+            is_stopped: false,
+        });
     }
 }

@@ -3,6 +3,11 @@ use crate::prelude::*;
 pub const FADE_PROGRESS_MIN: f32 = 0.0;
 pub const FADE_PROGRESS_MAX: f32 = 1.0;
 
+pub struct FadeOutEntityEvent {
+    pub entity: Entity,
+    pub is_stopped: bool,
+}
+
 #[derive(Bundle, Default)]
 pub struct FadeBundle {
     pub fade_animation: FadeAnimation,
@@ -132,19 +137,31 @@ pub fn fade_animation_system(
     }
 }
 
-/// Makes an entity stop moving & colliding before fading out.
-pub fn fade_out_and_stop_entity(commands: &mut Commands, entity: Entity) {
-    commands
-        .entity(entity)
-        .remove::<Movement>()
-        .remove::<Collider>()
-        .insert(Fade::Out(0.0));
-}
+/// Makes a `FadeAnimation` entity start its animation to fade out and despawn.
+pub fn fade_out_entity_event_system(
+    mut commands: Commands,
+    query: Query<(Entity, &Fade)>,
+    mut event_reader: EventReader<FadeOutEntityEvent>,
+) {
+    for FadeOutEntityEvent { entity, is_stopped } in event_reader.iter() {
+        // If interrupting Fade::In then start with its inverse progress to
+        // avoid visual popping. If it's Fade::Out, just let it run until done.
+        let fade_out_progress = match query.get_component::<Fade>(*entity) {
+            Ok(Fade::In(progress)) => 1.0 - *progress,
+            Ok(Fade::Out(_)) => continue,
+            _ => 0.0,
+        };
 
-/// Makes an entity stop colliding before fading out.
-pub fn fade_out_entity(commands: &mut Commands, entity: Entity) {
-    commands
-        .entity(entity)
-        .remove::<Collider>()
-        .insert(Fade::Out(0.0));
+        // Remove Movement and Collider to stop entity and prevent repeated
+        // collisions and/or scoring.
+        let mut entity_commands = commands.entity(*entity);
+
+        if *is_stopped {
+            entity_commands.remove::<Movement>();
+        }
+
+        entity_commands
+            .remove::<Collider>()
+            .insert(Fade::Out(fade_out_progress));
+    }
 }

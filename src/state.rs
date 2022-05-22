@@ -20,6 +20,7 @@ pub struct ForState<T> {
 pub fn app_state_enter_despawn_system(
     mut commands: Commands,
     state: Res<State<AppState>>,
+    mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     mut query: Query<(Entity, &ForState<AppState>, Option<&mut FadeAnimation>)>,
 ) {
     for (entity, for_state, fade_animation) in &mut query.iter_mut() {
@@ -28,7 +29,10 @@ pub fn app_state_enter_despawn_system(
         }
 
         if fade_animation.is_some() {
-            fade_out_and_stop_entity(&mut commands, entity);
+            fade_out_entity_events.send(FadeOutEntityEvent {
+                entity,
+                is_stopped: true,
+            });
         } else {
             commands.entity(entity).despawn_recursive();
         }
