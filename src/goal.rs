@@ -76,23 +76,26 @@ pub fn spawn_paddles_system(
 
             // TODO: Combine with above statement after player selection
             // is fixed.
-            paddle.insert_bundle((
-                side.clone(),
-                Paddle,
-                Collider,
-                Movement {
-                    direction: Vec3::X,
-                    max_speed: config.paddle_max_speed,
-                    acceleration: config.paddle_max_speed
-                        / config.paddle_seconds_to_max_speed,
+            paddle
+                .insert_bundle(FadeBundle {
+                    fade_animation: FadeAnimation::Scale {
+                        max_scale: PADDLE_SCALE,
+                        axis_mask: Vec3::ONE,
+                    },
                     ..Default::default()
-                },
-                FadeAnimation::Scale {
-                    max_scale: PADDLE_SCALE,
-                    axis_mask: Vec3::ONE,
-                },
-                Fade::In(0.0),
-            ));
+                })
+                .insert_bundle((
+                    side.clone(),
+                    Paddle,
+                    Collider,
+                    Movement {
+                        direction: Vec3::X,
+                        max_speed: config.paddle_max_speed,
+                        acceleration: config.paddle_max_speed
+                            / config.paddle_seconds_to_max_speed,
+                        ..Default::default()
+                    },
+                ));
 
             // TODO: Come up with a more configurable way to do this!
             if i == 0 {
@@ -130,16 +133,14 @@ pub fn spawn_wall_event_system(
                         ),
                         ..Default::default()
                     })
-                    .insert_bundle((
-                        side.clone(),
-                        Wall,
-                        Collider,
-                        FadeAnimation::Scale {
+                    .insert_bundle(FadeBundle {
+                        fade_animation: FadeAnimation::Scale {
                             max_scale: WALL_SCALE,
                             axis_mask: Vec3::new(0.0, 1.0, 1.0),
                         },
-                        Fade::In(if *is_instant { 1.0 } else { 0.0 }),
-                    ));
+                        fade: Fade::In(if *is_instant { 1.0 } else { 0.0 }),
+                    })
+                    .insert_bundle((side.clone(), Wall, Collider));
             });
             break;
         }

@@ -297,13 +297,12 @@ pub fn arena_ball_spawner_system(
             ),
             ..Default::default()
         })
+        .insert_bundle(FadeBundle::default())
         .insert_bundle((
             Ball,
             ForState {
                 states: vec![AppState::Game, AppState::Pause],
             },
-            FadeAnimation::Opacity,
-            Fade::In(0.0),
         ))
         .id();
 

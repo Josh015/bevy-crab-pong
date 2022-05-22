@@ -3,6 +3,12 @@ use crate::prelude::*;
 pub const FADE_PROGRESS_MIN: f32 = 0.0;
 pub const FADE_PROGRESS_MAX: f32 = 1.0;
 
+#[derive(Bundle, Default)]
+pub struct FadeBundle {
+    pub fade_animation: FadeAnimation,
+    pub fade: Fade,
+}
+
 /// A component that specifies the entity's fade effect animation.
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub enum FadeAnimation {
@@ -27,6 +33,12 @@ pub enum FadeAnimation {
     },
 }
 
+impl Default for FadeAnimation {
+    fn default() -> Self {
+        Self::Opacity
+    }
+}
+
 /// A component that makes an entity fade in/out and then despawn if needed.
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub enum Fade {
@@ -35,6 +47,12 @@ pub enum Fade {
 
     /// Applies a fade-out effect via a progress value \[0,1\].
     Out(f32),
+}
+
+impl Default for Fade {
+    fn default() -> Self {
+        Self::In(0.0)
+    }
 }
 
 /// Progresses a `Fade` component to completion before either removing it or
