@@ -20,17 +20,14 @@ pub struct ForState<T> {
 pub fn app_state_enter_despawn_system(
     mut commands: Commands,
     state: Res<State<AppState>>,
-    mut query: Query<
-        (Entity, &ForState<AppState>, Option<&mut FadeAnimation>),
-        Without<Fade>,
-    >,
+    mut query: Query<(Entity, &ForState<AppState>, Option<&mut FadeAnimation>)>,
 ) {
-    for (entity, for_state, fade) in &mut query.iter_mut() {
+    for (entity, for_state, fade_animation) in &mut query.iter_mut() {
         if for_state.states.contains(state.current()) {
             continue;
         }
 
-        if fade.is_some() {
+        if fade_animation.is_some() {
             fade_out_and_stop_entity(&mut commands, entity);
         } else {
             commands.entity(entity).despawn_recursive();
