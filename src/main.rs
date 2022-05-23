@@ -43,7 +43,6 @@ fn main() {
         .add_event::<FadeOutEntityEvent>()
         .add_event::<MessageUiEvent>()
         .add_event::<SpawnWallEvent>()
-        .add_event::<GoalScoredEvent>()
         .add_event::<GoalEliminatedEvent>()
         .insert_resource(config)
         .init_resource::<RunState>()
@@ -71,9 +70,6 @@ fn main() {
                 .with_system(goal_paddle_ai_control_system)
                 .with_system(arena_ball_spawner_system)
                 .with_system(goal_scored_check_system)
-                .with_system(
-                    goal_scored_event_system.after(goal_scored_check_system),
-                )
                 .with_system(
                     goal_eliminated_event_system
                         .after(goal_scored_check_system),

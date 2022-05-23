@@ -31,11 +31,6 @@ pub struct SpawnWallEvent {
     pub is_instant: bool,
 }
 
-/// An event fired when a `Ball` entity has scored inside a 'Goal'.
-pub struct GoalScoredEvent {
-    pub ball_entity: Entity,
-}
-
 /// An event fired when a `Goal` has been eliminated from play after its HP has
 /// reached zero.
 pub struct GoalEliminatedEvent(pub Side);
@@ -231,18 +226,16 @@ pub fn goal_paddle_ai_control_system(
 /// corresponding score.
 pub fn goal_scored_check_system(
     mut run_state: ResMut<RunState>,
-    mut goal_scored_writer: EventWriter<GoalScoredEvent>,
+    mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     mut goal_eliminated_writer: EventWriter<GoalEliminatedEvent>,
     balls_query: Query<
         (Entity, &GlobalTransform),
         (With<Ball>, With<Collider>),
     >,
+    goals_query: Query<&Side, With<Goal>>,
 ) {
-    // TODO: Make this shareable.
-    let sides = [Side::Top, Side::Right, Side::Bottom, Side::Left];
-
-    for (ball_entity, global_transform) in balls_query.iter() {
-        for side in sides {
+    for (entity, global_transform) in balls_query.iter() {
+        for side in goals_query.iter() {
             // A ball will score against the goal it's closest to once it's
             // fully past the goal's paddle.
             let ball_distance = side.distance_to_ball(global_transform);
@@ -252,32 +245,23 @@ pub fn goal_scored_check_system(
             }
 
             // Decrement the goal's HP and potentially eliminate it.
-            let hit_points = run_state.goals_hit_points.get_mut(&side).unwrap();
+            let hit_points = run_state.goals_hit_points.get_mut(side).unwrap();
 
             *hit_points = hit_points.saturating_sub(1);
-            goal_scored_writer.send(GoalScoredEvent { ball_entity });
-            info!("Ball({:?}) -> Scored Goal({:?})", ball_entity, side);
+            info!("Ball({:?}) -> Scored Goal({:?})", entity, side);
 
             if *hit_points == 0 {
-                goal_eliminated_writer.send(GoalEliminatedEvent(side));
-                info!("Ball({:?}) -> Eliminated Goal({:?})", ball_entity, side);
+                goal_eliminated_writer.send(GoalEliminatedEvent(*side));
+                info!("Ball({:?}) -> Eliminated Goal({:?})", entity, side);
             }
+
+            // Start fading out the ball to prevent repeated scoring.
+            fade_out_entity_events.send(FadeOutEntityEvent {
+                entity,
+                is_stopped: false,
+            });
             break;
         }
-    }
-}
-
-/// Fades out a `Ball` entity when it scores in a 'Goal' and prevents it from
-/// repeatedly scoring/colliding as it fades.
-pub fn goal_scored_event_system(
-    mut event_reader: EventReader<GoalScoredEvent>,
-    mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
-) {
-    for GoalScoredEvent { ball_entity } in event_reader.iter() {
-        fade_out_entity_events.send(FadeOutEntityEvent {
-            entity: *ball_entity,
-            is_stopped: false,
-        });
     }
 }
 
