@@ -83,6 +83,7 @@ pub fn fade_system(
                 if *progress < FADE_PROGRESS_MAX {
                     *progress = progress.max(FADE_PROGRESS_MIN) + step;
                 } else {
+                    info!("Entity({:?}) -> Ready", entity);
                     commands.entity(entity).remove::<Fade>();
                 }
             },
@@ -90,6 +91,7 @@ pub fn fade_system(
                 if *progress < FADE_PROGRESS_MAX {
                     *progress = progress.max(FADE_PROGRESS_MIN) + step;
                 } else {
+                    info!("Entity({:?}) -> Despawning", entity);
                     commands.entity(entity).despawn_recursive();
                 }
             },
@@ -163,5 +165,6 @@ pub fn fade_out_entity_event_system(
         entity_commands
             .remove::<Collider>()
             .insert(Fade::Out(fade_out_progress));
+        info!("Entity({:?}) -> Fading Out", entity);
     }
 }

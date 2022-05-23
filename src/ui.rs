@@ -130,6 +130,7 @@ pub fn user_input_system(
         && keyboard_input.just_pressed(KeyCode::Back)
     {
         state.set(AppState::StartMenu).unwrap();
+        info!("Start Menu");
     }
 
     if state.current() == &AppState::Game {
@@ -147,14 +148,17 @@ pub fn user_input_system(
 
         if keyboard_input.just_pressed(KeyCode::Space) {
             state.set(AppState::Pause).unwrap();
+            info!("Paused");
         }
     } else if state.current() == &AppState::Pause {
         if keyboard_input.just_pressed(KeyCode::Space) {
             state.set(AppState::Game).unwrap();
+            info!("Unpaused");
         }
     } else if state.current() == &AppState::StartMenu {
         if keyboard_input.just_pressed(KeyCode::Return) {
             state.set(AppState::Game).unwrap();
+            info!("New Game");
         }
     }
 }
