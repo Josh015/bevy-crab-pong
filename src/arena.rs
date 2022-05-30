@@ -255,7 +255,7 @@ pub fn arena_ball_spawner_system(
         }
 
         // Make the ball collidable and launch it in a random direction.
-        let mut rng = rand::thread_rng();
+        let mut rng = SmallRng::from_entropy();
         let angle = rng.gen_range(0.0..std::f32::consts::TAU);
 
         commands.entity(entity).insert_bundle((
