@@ -17,18 +17,18 @@ pub struct FadeBundle {
 /// A component that specifies the entity's fade effect animation.
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
 pub enum FadeAnimation {
-    /// Uses `StandardMaterial` color and alpha blending to show/hide entity.
+    /// Uses [`StandardMaterial`] color and alpha blending to show/hide entity.
     ///
-    /// When paired with `Fade::In` the entity's `StandardMaterial` must first
-    /// be set to `AlphaMode::Blend` and have its color alpha set to zero to
-    /// avoid visual popping.
+    /// When paired with [`Fade::In`] the entity's [`StandardMaterial`] must
+    /// first be set to [`AlphaMode::Blend`] and have its color alpha set to
+    /// zero to avoid visual popping.
     Opacity,
 
-    /// Uses `Transform` scale to grow/shrink the entity.
+    /// Uses [`Transform`] scale to grow/shrink the entity.
     ///
-    /// When paired with `Fade::In` the entity's `Transform` scale must first
-    /// be set to EPSILON to avoid visual popping. We can't use zero since that
-    /// prevents it from appearing at all.
+    /// When paired with [`Fade::In`] the entity's [`Transform`] scale must
+    /// first be set to EPSILON to avoid visual popping. We can't use zero
+    /// since that prevents it from appearing at all.
     Scale {
         /// The maximum scale to start/end with when fading out/in.
         max_scale: Vec3,
@@ -60,7 +60,7 @@ impl Default for Fade {
     }
 }
 
-/// Progresses a `Fade` component to completion before either removing it or
+/// Progresses a [`Fade`] component to completion before either removing it or
 /// despawning the entity.
 pub fn fade_system(
     mut commands: Commands,
@@ -99,8 +99,8 @@ pub fn fade_system(
     }
 }
 
-/// Handles `FadeEffect` animations and the transition from
-/// visible->invisible and vice versa over time.
+/// Handles [`Fade`] animations and the transition from visible->invisible and
+/// vice versa over time.
 pub fn fade_animation_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<(
@@ -139,7 +139,8 @@ pub fn fade_animation_system(
     }
 }
 
-/// Makes a `FadeAnimation` entity start its animation to fade out and despawn.
+/// Makes a [`FadeAnimation`] entity start its animation to fade out and
+/// despawn.
 pub fn fade_out_entity_event_system(
     mut commands: Commands,
     query: Query<(Entity, &Fade)>,

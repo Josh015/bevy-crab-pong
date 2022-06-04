@@ -1,21 +1,21 @@
 use crate::prelude::*;
 use bevy::app::AppExit;
 
-/// An event fired when spawning a `UiMessage`.
+/// An event fired when spawning a message UI.
 pub struct MessageUiEvent {
     message: String,
     screen: AppState,
 }
 
-/// A component for marking a `Text` UI entity as displaying the hit points for
-/// an associated `Goal`.
+/// A component for marking a [`Text`] UI entity as displaying the hit points
+/// for an associated [`Goal`].
 #[derive(Component)]
 pub struct HitPointsUi;
 
 // TODO: Move UI systems to arena and goal after we make them text meshes?
 
-/// Updates a `Text` entity to display the current life of its associated
-/// `Goal`.
+/// Updates a [`Text`] entity to display the current life of its associated
+/// [`Goal`].
 pub fn goal_hit_points_ui_system(
     game: Res<RunState>,
     mut query: Query<(&Side, &mut Text), With<HitPointsUi>>,

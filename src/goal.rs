@@ -25,22 +25,22 @@ pub const PADDLE_HALF_DEPTH: f32 = 0.5 * PADDLE_DEPTH;
 pub const PADDLE_SCALE: Vec3 =
     const_vec3!([PADDLE_WIDTH, PADDLE_DEPTH, PADDLE_DEPTH]);
 
-/// An event fired when a `Wall` needs to be spawned.
+/// An event fired when a [`Wall`] needs to be spawned.
 pub struct SpawnWallEvent {
     pub side: Side,
     pub is_instant: bool,
 }
 
-/// An event fired when a `Goal` has been eliminated from play after its HP has
-/// reached zero.
+/// An event fired when a [`Goal`] has been eliminated from play after its HP
+/// has reached zero.
 pub struct GoalEliminatedEvent(pub Side);
 
-/// Marks a `Goal` entity so that `Paddle` and `Wall` entities can use it as a
-/// parent, and so `Ball` entities can score against it.
+/// Marks a [`Goal`] entity so that [`Paddle`] and [`Wall`] entities can use it
+/// as a parent, and so [`Ball`] entities can score against it.
 #[derive(Component)]
 pub struct Goal;
 
-/// Spawns `Paddle` entities for their corresponding goals.
+/// Spawns [`Paddle`] entities for their corresponding goals.
 pub fn spawn_paddles_system(
     mut commands: Commands,
     config: Res<GameConfig>,
@@ -146,8 +146,8 @@ pub fn spawn_wall_event_system(
     }
 }
 
-/// Restricts a `Paddle` entity to the space between the `Barrier` entities on
-/// either side of its `Goal`.
+/// Restricts a [`Paddle`] entity to the space between the [`Barrier`] entities
+/// on either side of its [`Goal`].
 pub fn goal_paddle_collision_system(
     mut query: Query<
         (&mut Transform, &mut Movement),
@@ -166,7 +166,7 @@ pub fn goal_paddle_collision_system(
     }
 }
 
-/// AI control for `Paddle` entities.
+/// AI control for [`Paddle`] entities.
 pub fn goal_paddle_ai_control_system(
     time: Res<Time>,
     mut paddles_query: Query<
@@ -222,7 +222,7 @@ pub fn goal_paddle_ai_control_system(
     }
 }
 
-/// Checks if a `Ball` has scored against a `Goal` and then decrements the
+/// Checks if a [`Ball`] has scored against a [`Goal`] and then decrements the
 /// corresponding score.
 pub fn goal_scored_check_system(
     mut run_state: ResMut<RunState>,
@@ -265,7 +265,7 @@ pub fn goal_scored_check_system(
     }
 }
 
-/// Disables a given `Goal` to remove it from play.
+/// Disables a given [`Goal`] to remove it from play.
 pub fn goal_eliminated_event_system(
     mut event_reader: EventReader<GoalEliminatedEvent>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
@@ -298,7 +298,7 @@ pub fn goal_eliminated_event_system(
     }
 }
 
-/// Fades out any existing `Wall` entities.
+/// Fades out any existing [`Wall`] entities.
 pub fn goal_despawn_walls_system(
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     query: Query<Entity, (With<Wall>, Without<Fade>)>,

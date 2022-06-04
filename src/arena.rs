@@ -200,7 +200,7 @@ pub fn spawn_arena_system(
     }
 }
 
-/// Makes a `SwayingCamera` entity slowly sway back and forth.
+/// Makes a [`SwayingCamera`] entity slowly sway back and forth.
 pub fn arena_swaying_camera_system(
     config: Res<GameConfig>,
     time: Res<Time>,
@@ -235,7 +235,7 @@ pub fn arena_animated_water_system(
     animated_water.scroll %= 1.0;
 }
 
-/// Automatically spawns `Ball` entities from the center of the arena.
+/// Automatically spawns [`Ball`] entities from the center of the arena.
 pub fn arena_ball_spawner_system(
     config: Res<GameConfig>,
     run_state: Res<RunState>,
@@ -309,8 +309,8 @@ pub fn arena_ball_spawner_system(
     info!("Ball({:?}) -> Spawning", entity);
 }
 
-/// Checks if a `Ball` has collided with a compatible entity, and then deflects
-/// it away from the point of impact.
+/// Checks if a [`Ball`] has collided with a compatible entity, and then
+/// deflects it away from the point of impact.
 pub fn arena_collision_system(
     mut commands: Commands,
     balls_query: Query<

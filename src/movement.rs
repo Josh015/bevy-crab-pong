@@ -45,7 +45,7 @@ pub fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
 }
 
 /// Handles calculating the actual acceleration/deceleration over time for a
-/// `Movement` entity.
+/// [`Movement`] entity.
 pub fn movement_system(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut Movement)>,

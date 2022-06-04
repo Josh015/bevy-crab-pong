@@ -15,7 +15,7 @@ pub struct ForState<T> {
     pub states: Vec<T>,
 }
 
-/// When entering a new state this despawns `ForState` entities that aren't
+/// When entering a new state this despawns [`ForState`] entities that aren't
 /// configured for it.
 pub fn app_state_enter_despawn_system(
     mut commands: Commands,
