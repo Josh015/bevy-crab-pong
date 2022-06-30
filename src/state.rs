@@ -40,16 +40,11 @@ pub fn app_state_enter_despawn_system(
 }
 
 /// Represents whether the player won or lost the last game.
-#[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
+#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash)]
 pub enum GameOver {
+    #[default]
     Won,
     Lost,
-}
-
-impl Default for GameOver {
-    fn default() -> Self {
-        Self::Won
-    }
 }
 
 /// All global information for this game.

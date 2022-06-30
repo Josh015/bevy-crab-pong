@@ -15,13 +15,14 @@ pub struct FadeBundle {
 }
 
 /// A component that specifies the entity's fade effect animation.
-#[derive(Clone, Component, Copy, PartialEq, Debug)]
+#[derive(Clone, Component, Copy, Default, PartialEq, Debug)]
 pub enum FadeAnimation {
     /// Uses [`StandardMaterial`] color and alpha blending to show/hide entity.
     ///
     /// When paired with [`Fade::In`] the entity's [`StandardMaterial`] must
     /// first be set to [`AlphaMode::Blend`] and have its color alpha set to
     /// zero to avoid visual popping.
+    #[default]
     Opacity,
 
     /// Uses [`Transform`] scale to grow/shrink the entity.
@@ -36,12 +37,6 @@ pub enum FadeAnimation {
         /// Use either 0/1 to remove/mark an axis for the scale effect.
         axis_mask: Vec3,
     },
-}
-
-impl Default for FadeAnimation {
-    fn default() -> Self {
-        Self::Opacity
-    }
 }
 
 /// A component that makes an entity fade in/out and then despawn if needed.
