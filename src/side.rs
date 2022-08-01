@@ -14,7 +14,7 @@ impl Side {
     ///
     /// Positive distances for inside the arena, negative for out of bounds.
     pub fn distance_to_ball(&self, ball_transform: &GlobalTransform) -> f32 {
-        let ball_translation = ball_transform.translation;
+        let ball_translation = ball_transform.translation();
 
         match *self {
             Self::Top => GOAL_HALF_WIDTH + ball_translation.z - BALL_RADIUS,
@@ -40,10 +40,10 @@ impl Side {
         ball_transform: &GlobalTransform,
     ) -> f32 {
         match *self {
-            Self::Top => -ball_transform.translation.x,
-            Self::Right => -ball_transform.translation.z,
-            Self::Bottom => ball_transform.translation.x,
-            Self::Left => ball_transform.translation.z,
+            Self::Top => -ball_transform.translation().x,
+            Self::Right => -ball_transform.translation().z,
+            Self::Bottom => ball_transform.translation().x,
+            Self::Left => ball_transform.translation().z,
         }
     }
 }

@@ -35,7 +35,7 @@ fn main() {
             title: config.title.clone(),
             width: config.width as f32,
             height: config.height as f32,
-            ..Default::default()
+            ..default()
         })
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(ClearColor(config.clear_color))

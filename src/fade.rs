@@ -64,7 +64,7 @@ pub fn fade_system(
     state: Res<State<AppState>>,
     mut query: Query<(Entity, &mut Fade), With<FadeAnimation>>,
 ) {
-    for (entity, mut fade) in query.iter_mut() {
+    for (entity, mut fade) in &mut query {
         // Prevent fade animations from running when game is paused.
         if *state.current() == AppState::Pause {
             return;
@@ -106,7 +106,7 @@ pub fn fade_animation_system(
     )>,
 ) {
     // Apply effect animation to the entity.
-    for (mut transform, material, fade_effect, fade) in query.iter_mut() {
+    for (mut transform, material, fade_effect, fade) in &mut query {
         let weight = match *fade {
             Fade::In(progress) => progress,
             Fade::Out(progress) => 1.0 - progress,

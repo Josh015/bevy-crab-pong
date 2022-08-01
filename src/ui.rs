@@ -20,7 +20,7 @@ pub fn goal_hit_points_ui_system(
     game: Res<RunState>,
     mut query: Query<(&Side, &mut Text), With<HitPointsUi>>,
 ) {
-    for (side, mut text) in query.iter_mut() {
+    for (side, mut text) in &mut query {
         let hit_points = game.goals_hit_points[side];
         text.sections[0].value = hit_points.to_string();
     }
@@ -37,10 +37,10 @@ pub fn spawn_ui_message_event_system(
                 style: Style {
                     size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
                     justify_content: JustifyContent::SpaceBetween,
-                    ..Default::default()
+                    ..default()
                 },
                 color: Color::NONE.into(),
-                ..Default::default()
+                ..default()
             })
             .insert(ForState {
                 states: vec![screen.clone()],
@@ -56,27 +56,26 @@ pub fn spawn_ui_message_event_system(
                             position_type: PositionType::Absolute,
                             align_items: AlignItems::Center,
                             justify_content: JustifyContent::Center,
-                            ..Default::default()
+                            ..default()
                         },
                         color: Color::NONE.into(),
-                        ..Default::default()
+                        ..default()
                     })
                     .with_children(|parent| {
                         parent.spawn_bundle(TextBundle {
                             style: Style {
-                                margin: Rect::all(Val::Px(5.0)),
-                                ..Default::default()
+                                margin: UiRect::all(Val::Px(5.0)),
+                                ..default()
                             },
-                            text: Text::with_section(
+                            text: Text::from_section(
                                 message.clone(),
                                 TextStyle {
                                     font: run_state.font_handle.clone(),
                                     font_size: 30.0,
                                     color: Color::RED,
                                 },
-                                Default::default(),
                             ),
-                            ..Default::default()
+                            ..default()
                         });
                     });
             });
@@ -136,7 +135,7 @@ pub fn user_input_system(
     if state.current() == &AppState::Game {
         // Makes a Paddle entity move left/right in response to the
         // keyboard's corresponding arrows keys.
-        for mut movement in query.iter_mut() {
+        for mut movement in &mut query {
             movement.delta = if keyboard_input.pressed(KeyCode::Left) {
                 Some(MovementDelta::Negative)
             } else if keyboard_input.pressed(KeyCode::Right) {

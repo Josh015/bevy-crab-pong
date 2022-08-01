@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 pub const ARENA_CENTER_POINT: Vec3 = Vec3::ZERO;
-pub const BALL_SPAWNER_POSITION: Vec3 = const_vec3!([0.0, BALL_HEIGHT, 0.0]);
+pub const BALL_SPAWNER_POSITION: Vec3 = Vec3::new(0.0, BALL_HEIGHT, 0.0);
 
 /// A component that causes a camera to sway back and forth in a slow
 /// reciprocating motion as it focuses on the origin.
@@ -28,10 +28,8 @@ pub fn spawn_arena_system(
 
     // Cameras
     commands
-        .spawn_bundle(PerspectiveCameraBundle::default())
+        .spawn_bundle(Camera3dBundle::default())
         .insert(SwayingCamera::default());
-
-    commands.spawn_bundle(UiCameraBundle::default());
 
     // Light
     let light_transform = Mat4::from_euler(
@@ -50,13 +48,13 @@ pub fn spawn_arena_system(
                 top: 10.0,
                 near: -50.0,
                 far: 50.0,
-                ..Default::default()
+                ..default()
             },
             // shadows_enabled: true,
-            ..Default::default()
+            ..default()
         },
         transform: Transform::from_matrix(light_transform),
-        ..Default::default()
+        ..default()
     });
 
     // Ocean
@@ -66,10 +64,10 @@ pub fn spawn_arena_system(
             material: materials.add(StandardMaterial {
                 base_color: Color::hex("257AFFCC").unwrap(),
                 alpha_mode: AlphaMode::Blend,
-                ..Default::default()
+                ..default()
             }),
             transform: Transform::from_xyz(0.0, -0.01, 0.0),
-            ..Default::default()
+            ..default()
         })
         .insert(AnimatedWater::default());
 
@@ -84,7 +82,7 @@ pub fn spawn_arena_system(
                 ARENA_CENTER_POINT,
             ),
         ),
-        ..Default::default()
+        ..default()
     });
 
     // Goals
@@ -93,34 +91,34 @@ pub fn spawn_arena_system(
     let goal_configs = [
         (
             Side::Bottom,
-            Rect {
+            UiRect {
                 bottom: Val::Px(5.0),
                 right: Val::Px(400.0),
-                ..Default::default()
+                ..default()
             },
         ),
         (
             Side::Right,
-            Rect {
+            UiRect {
                 top: Val::Px(400.0),
                 right: Val::Px(5.0),
-                ..Default::default()
+                ..default()
             },
         ),
         (
             Side::Top,
-            Rect {
+            UiRect {
                 top: Val::Px(5.0),
                 left: Val::Px(400.0),
-                ..Default::default()
+                ..default()
             },
         ),
         (
             Side::Left,
-            Rect {
+            UiRect {
                 bottom: Val::Px(400.0),
                 left: Val::Px(5.0),
-                ..Default::default()
+                ..default()
             },
         ),
     ];
@@ -141,7 +139,7 @@ pub fn spawn_arena_system(
                         * (i as f32 / goal_configs.len() as f32),
                 ))
                 .mul_transform(Transform::from_xyz(0.0, 0.0, GOAL_HALF_WIDTH)),
-                ..Default::default()
+                ..default()
             })
             .insert_bundle((Goal, side.clone()))
             .with_children(|parent| {
@@ -165,7 +163,7 @@ pub fn spawn_arena_system(
                                 ),
                             ),
                         ),
-                        ..Default::default()
+                        ..default()
                     })
                     .insert_bundle((Barrier, Collider));
             });
@@ -178,21 +176,17 @@ pub fn spawn_arena_system(
                     position_type: PositionType::Absolute,
                     justify_content: JustifyContent::Center,
                     position: *rect,
-                    ..Default::default()
+                    ..default()
                 },
-                text: Text::with_section(
+                text: Text::from_section(
                     "",
                     TextStyle {
                         font: run_state.font_handle.clone(),
                         font_size: 50.0,
                         color: Color::RED,
                     },
-                    TextAlignment {
-                        horizontal: HorizontalAlign::Center,
-                        vertical: VerticalAlign::Center,
-                    },
                 ),
-                ..Default::default()
+                ..default()
             })
             .insert_bundle((side.clone(), HitPointsUi));
 
@@ -204,10 +198,7 @@ pub fn spawn_arena_system(
 pub fn arena_swaying_camera_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<
-        (&mut SwayingCamera, &mut Transform),
-        With<PerspectiveProjection>,
-    >,
+    mut query: Query<(&mut SwayingCamera, &mut Transform), With<Camera3d>>,
 ) {
     let (mut swaying_camera, mut transform) = query.single_mut();
     let x = swaying_camera.angle.sin() * GOAL_HALF_WIDTH;
@@ -248,7 +239,7 @@ pub fn arena_ball_spawner_system(
     all_balls_query: Query<&Ball>,
 ) {
     // Check for any non-moving new balls.
-    for (entity, fade) in new_balls_query.iter() {
+    for (entity, fade) in &new_balls_query {
         // Pause the spawning process until the new ball finishes fading in.
         if fade.is_some() {
             return;
@@ -281,7 +272,7 @@ pub fn arena_ball_spawner_system(
     let material = materials.add(StandardMaterial {
         alpha_mode: AlphaMode::Blend,
         base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),
-        ..Default::default()
+        ..default()
     });
 
     let entity = commands
@@ -295,7 +286,7 @@ pub fn arena_ball_spawner_system(
                     BALL_SPAWNER_POSITION,
                 ),
             ),
-            ..Default::default()
+            ..default()
         })
         .insert_bundle(FadeBundle::default())
         .insert_bundle((
@@ -321,20 +312,22 @@ pub fn arena_collision_system(
     barriers_query: Query<&GlobalTransform, (With<Barrier>, With<Collider>)>,
     walls_query: Query<&Side, (With<Wall>, With<Collider>)>,
 ) {
-    for (entity, ball_transform, movement) in balls_query.iter() {
+    for (entity, ball_transform, movement) in &balls_query {
         let ball_direction = movement.direction;
 
         // Ball collisions
-        for (entity2, transform2, _) in balls_query.iter() {
+        for (entity2, transform2, _) in &balls_query {
             // Prevent balls from colliding with themselves.
             if entity == entity2 {
                 continue;
             }
 
-            let ball_to_ball_distance =
-                ball_transform.translation.distance(transform2.translation);
-            let axis = (transform2.translation - ball_transform.translation)
-                .normalize();
+            let ball_to_ball_distance = ball_transform
+                .translation()
+                .distance(transform2.translation());
+            let axis = (transform2.translation()
+                - ball_transform.translation())
+            .normalize();
 
             // Check that the ball is touching the other ball and facing it.
             if ball_to_ball_distance > BALL_RADIUS + BALL_RADIUS
@@ -354,7 +347,7 @@ pub fn arena_collision_system(
         }
 
         // Paddle collisions
-        for (side, transform) in paddles_query.iter() {
+        for (side, transform) in &paddles_query {
             let axis = side.axis();
             let ball_distance = side.distance_to_ball(ball_transform);
             let ball_local_position =
@@ -387,14 +380,14 @@ pub fn arena_collision_system(
         }
 
         // Barrier collisions
-        for barrier_transform in barriers_query.iter() {
+        for barrier_transform in &barriers_query {
             let ball_to_barrier_distance = ball_transform
-                .translation
-                .distance(barrier_transform.translation);
+                .translation()
+                .distance(barrier_transform.translation());
 
             // Prevent balls from deflecting through the floor.
             let mut axis =
-                barrier_transform.translation - ball_transform.translation;
+                barrier_transform.translation() - ball_transform.translation();
 
             axis.y = 0.0;
             axis = axis.normalize();
@@ -417,7 +410,7 @@ pub fn arena_collision_system(
         }
 
         // Wall collisions
-        for side in walls_query.iter() {
+        for side in &walls_query {
             let ball_distance = side.distance_to_ball(ball_transform);
             let axis = side.axis();
 

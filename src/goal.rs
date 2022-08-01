@@ -4,14 +4,14 @@ use crate::prelude::*;
 
 pub const GOAL_WIDTH: f32 = 1.0;
 pub const GOAL_HALF_WIDTH: f32 = 0.5 * GOAL_WIDTH;
-pub const GOAL_PADDLE_START_POSITION: Vec3 = const_vec3!([0.0, 0.05, 0.0]);
+pub const GOAL_PADDLE_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
 pub const GOAL_PADDLE_MAX_POSITION_X: f32 =
     GOAL_HALF_WIDTH - BARRIER_RADIUS - PADDLE_HALF_WIDTH;
 pub const WALL_DIAMETER: f32 = 0.05;
 pub const WALL_HEIGHT: f32 = 0.1;
 pub const WALL_RADIUS: f32 = 0.5 * WALL_DIAMETER;
 pub const WALL_SCALE: Vec3 =
-    const_vec3!([GOAL_WIDTH, WALL_DIAMETER, WALL_DIAMETER]);
+    Vec3::new(GOAL_WIDTH, WALL_DIAMETER, WALL_DIAMETER);
 pub const BALL_DIAMETER: f32 = 0.08;
 pub const BALL_HEIGHT: f32 = 0.05;
 pub const BALL_RADIUS: f32 = 0.5 * BALL_DIAMETER;
@@ -23,7 +23,7 @@ pub const PADDLE_DEPTH: f32 = 0.1;
 pub const PADDLE_HALF_WIDTH: f32 = 0.5 * PADDLE_WIDTH;
 pub const PADDLE_HALF_DEPTH: f32 = 0.5 * PADDLE_DEPTH;
 pub const PADDLE_SCALE: Vec3 =
-    const_vec3!([PADDLE_WIDTH, PADDLE_DEPTH, PADDLE_DEPTH]);
+    Vec3::new(PADDLE_WIDTH, PADDLE_DEPTH, PADDLE_DEPTH);
 
 /// An event fired when a [`Wall`] needs to be spawned.
 pub struct SpawnWallEvent {
@@ -50,7 +50,7 @@ pub fn spawn_paddles_system(
     goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
     // Fade out existing paddles so new ones can spawn at starting positions.
-    for entity in paddles_query.iter() {
+    for entity in &paddles_query {
         fade_out_entity_events.send(FadeOutEntityEvent {
             entity,
             is_stopped: true,
@@ -70,7 +70,7 @@ pub fn spawn_paddles_system(
                         GOAL_PADDLE_START_POSITION,
                     ),
                 ),
-                ..Default::default()
+                ..default()
             });
 
             // TODO: Combine with above statement after player selection
@@ -81,7 +81,7 @@ pub fn spawn_paddles_system(
                         max_scale: PADDLE_SCALE,
                         axis_mask: Vec3::ONE,
                     },
-                    ..Default::default()
+                    ..default()
                 })
                 .insert_bundle((
                     side.clone(),
@@ -92,7 +92,7 @@ pub fn spawn_paddles_system(
                         max_speed: config.paddle_max_speed,
                         acceleration: config.paddle_max_speed
                             / config.paddle_seconds_to_max_speed,
-                        ..Default::default()
+                        ..default()
                     },
                 ));
 
@@ -113,7 +113,7 @@ pub fn spawn_wall_event_system(
     goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
     for SpawnWallEvent { side, is_instant } in event_reader.iter() {
-        for (entity, matching_side) in goals_query.iter() {
+        for (entity, matching_side) in &goals_query {
             if *side != *matching_side {
                 continue;
             }
@@ -130,7 +130,7 @@ pub fn spawn_wall_event_system(
                                 Vec3::new(0.0, WALL_HEIGHT, 0.0),
                             ),
                         ),
-                        ..Default::default()
+                        ..default()
                     })
                     .insert_bundle(FadeBundle {
                         fade_animation: FadeAnimation::Scale {
@@ -154,7 +154,7 @@ pub fn goal_paddle_collision_system(
         (With<Paddle>, With<Collider>),
     >,
 ) {
-    for (mut transform, mut movement) in query.iter_mut() {
+    for (mut transform, mut movement) in &mut query {
         // Limit paddle to open space between barriers
         if transform.translation.x > GOAL_PADDLE_MAX_POSITION_X {
             transform.translation.x = GOAL_PADDLE_MAX_POSITION_X;
@@ -175,12 +175,12 @@ pub fn goal_paddle_ai_control_system(
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
 ) {
-    for (side, transform, mut movement) in paddles_query.iter_mut() {
+    for (side, transform, mut movement) in &mut paddles_query {
         // Get the relative position of the ball that's closest to this goal.
         let mut closest_ball_distance = std::f32::MAX;
         let mut ball_local_position = GOAL_PADDLE_START_POSITION.x;
 
-        for ball_transform in balls_query.iter() {
+        for ball_transform in &balls_query {
             let ball_distance_to_goal = side.distance_to_ball(ball_transform);
 
             if ball_distance_to_goal >= closest_ball_distance {
@@ -234,8 +234,8 @@ pub fn goal_scored_check_system(
     >,
     goals_query: Query<&Side, With<Goal>>,
 ) {
-    for (entity, global_transform) in balls_query.iter() {
-        for side in goals_query.iter() {
+    for (entity, global_transform) in &balls_query {
+        for side in &goals_query {
             // A ball will score against the goal it's closest to once it's
             // fully past the goal's paddle.
             let ball_distance = side.distance_to_ball(global_transform);
@@ -277,7 +277,7 @@ pub fn goal_eliminated_event_system(
 ) {
     for GoalEliminatedEvent(eliminated_side) in event_reader.iter() {
         // Fade out the paddle for the eliminated goal.
-        for (entity, side) in paddles_query.iter() {
+        for (entity, side) in &paddles_query {
             if *side != *eliminated_side {
                 continue;
             }
@@ -303,7 +303,7 @@ pub fn goal_despawn_walls_system(
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     query: Query<Entity, (With<Wall>, Without<Fade>)>,
 ) {
-    for entity in query.iter() {
+    for entity in &query {
         fade_out_entity_events.send(FadeOutEntityEvent {
             entity,
             is_stopped: false,

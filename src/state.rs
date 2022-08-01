@@ -23,7 +23,7 @@ pub fn app_state_enter_despawn_system(
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     mut query: Query<(Entity, &ForState<AppState>, Option<&mut FadeAnimation>)>,
 ) {
-    for (entity, for_state, fade_animation) in &mut query.iter_mut() {
+    for (entity, for_state, fade_animation) in &mut query {
         if for_state.states.contains(state.current()) {
             continue;
         }
@@ -117,7 +117,7 @@ pub fn reset_hit_points_system(
     config: Res<GameConfig>,
     mut run_state: ResMut<RunState>,
 ) {
-    for (_, hit_points) in run_state.goals_hit_points.iter_mut() {
+    for (_, hit_points) in &mut run_state.goals_hit_points {
         *hit_points = config.starting_hit_points;
     }
 }

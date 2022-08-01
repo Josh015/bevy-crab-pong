@@ -50,7 +50,7 @@ pub fn movement_system(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &mut Movement)>,
 ) {
-    for (mut transform, mut movement) in query.iter_mut() {
+    for (mut transform, mut movement) in &mut query {
         let delta_seconds = time.delta_seconds();
         let delta_speed = movement.acceleration * delta_seconds;
 
