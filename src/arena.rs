@@ -6,9 +6,7 @@ pub const BALL_SPAWNER_POSITION: Vec3 = Vec3::new(0.0, BALL_HEIGHT, 0.0);
 /// A component that causes a camera to sway back and forth in a slow
 /// reciprocating motion as it focuses on the origin.
 #[derive(Component, Default)]
-pub struct SwayingCamera {
-    pub angle: f32,
-}
+pub struct SwayingCamera;
 
 /// A component for an animated textured water plane.
 #[derive(Component, Default)]
@@ -198,16 +196,16 @@ pub fn spawn_arena_system(
 pub fn arena_swaying_camera_system(
     config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut SwayingCamera, &mut Transform), With<Camera3d>>,
+    mut query: Query<&mut Transform, (With<Camera3d>, With<SwayingCamera>)>,
 ) {
-    let (mut swaying_camera, mut transform) = query.single_mut();
-    let x = swaying_camera.angle.sin() * GOAL_HALF_WIDTH;
+    let mut transform = query.single_mut();
+    let x = (time.time_since_startup().as_secs_f32()
+        * config.swaying_camera_speed)
+        .sin()
+        * GOAL_HALF_WIDTH;
 
     *transform = Transform::from_xyz(x * 0.5, 2.0, 1.5)
         .looking_at(ARENA_CENTER_POINT, Vec3::Y);
-
-    swaying_camera.angle += config.swaying_camera_speed * time.delta_seconds();
-    swaying_camera.angle %= std::f32::consts::TAU;
 }
 
 /// Scrolls a material's texture.
@@ -330,7 +328,7 @@ pub fn arena_collision_system(
             .normalize();
 
             // Check that the ball is touching the other ball and facing it.
-            if ball_to_ball_distance > BALL_RADIUS + BALL_RADIUS
+            if ball_to_ball_distance > 2.0 * BALL_RADIUS
                 || ball_direction.dot(axis) <= 0.0
             {
                 continue;
