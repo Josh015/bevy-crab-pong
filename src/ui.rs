@@ -89,12 +89,11 @@ pub fn spawn_start_menu_ui_system(
 ) {
     let mut message = String::new();
 
-    if let Some(game_over) = run_state.game_over {
-        message.push_str(match game_over {
-            GameOver::Won => &config.game_over_win_message,
-            GameOver::Lost => &config.game_over_lose_message,
-        });
-    }
+    message.push_str(match run_state.game_over {
+        Some(GameOver::Won) => &config.game_over_win_message,
+        Some(GameOver::Lost) => &config.game_over_lose_message,
+        _ => "",
+    });
 
     message.push_str(&config.new_game_message);
 
