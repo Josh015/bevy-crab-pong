@@ -10,17 +10,11 @@ mod state;
 mod ui;
 
 pub mod prelude {
-    pub use crate::arena::*;
-    pub use crate::components::*;
-    pub use crate::config::*;
-    pub use crate::fade::*;
-    pub use crate::goal::*;
-    pub use crate::movement::*;
-    pub use crate::side::*;
-    pub use crate::state::*;
-    pub use crate::ui::*;
-    pub use bevy::math::*;
-    pub use bevy::prelude::*;
+    pub use crate::{
+        arena::*, components::*, config::*, fade::*, goal::*, movement::*,
+        side::*, state::*, ui::*,
+    };
+    pub use bevy::{math::*, prelude::*};
     pub use rand::prelude::*;
 }
 

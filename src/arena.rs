@@ -264,7 +264,8 @@ pub fn arena_ball_spawner_system(
         return;
     }
 
-    // TODO: Figure out how to give each ball own material without constantly creating more?
+    // TODO: Figure out how to give each ball own material without constantly
+    // creating more?
     let material = materials.add(StandardMaterial {
         alpha_mode: AlphaMode::Blend,
         base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),

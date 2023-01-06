@@ -50,9 +50,7 @@ pub enum Fade {
 }
 
 impl Default for Fade {
-    fn default() -> Self {
-        Self::In(0.0)
-    }
+    fn default() -> Self { Self::In(0.0) }
 }
 
 /// Progresses a [`Fade`] component to completion before either removing it or
