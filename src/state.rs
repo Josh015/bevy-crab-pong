@@ -48,7 +48,7 @@ pub enum GameOver {
 }
 
 /// All global information for this game.
-#[derive(Debug)]
+#[derive(Debug, Resource)]
 pub struct RunState {
     pub goals_hit_points: HashMap<Side, u32>,
     pub game_over: Option<GameOver>,

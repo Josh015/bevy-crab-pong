@@ -60,7 +60,7 @@ pub fn spawn_paddles_system(
     // Give every paddle a parent so we can use relative transforms.
     for (i, (entity, side)) in goals_query.iter().enumerate() {
         commands.entity(entity).with_children(|parent| {
-            let mut paddle = parent.spawn_bundle(PbrBundle {
+            let mut paddle = parent.spawn(PbrBundle {
                 mesh: run_state.paddle_mesh_handle.clone(),
                 material: run_state.paddle_material_handles[side].clone(),
                 transform: Transform::from_matrix(
@@ -76,14 +76,14 @@ pub fn spawn_paddles_system(
             // TODO: Combine with above statement after player selection
             // is fixed.
             paddle
-                .insert_bundle(FadeBundle {
+                .insert(FadeBundle {
                     fade_animation: FadeAnimation::Scale {
                         max_scale: PADDLE_SCALE,
                         axis_mask: Vec3::ONE,
                     },
                     ..default()
                 })
-                .insert_bundle((
+                .insert((
                     side.clone(),
                     Paddle,
                     Collider,
@@ -120,7 +120,7 @@ pub fn spawn_wall_event_system(
 
             commands.entity(entity).with_children(|parent| {
                 parent
-                    .spawn_bundle(PbrBundle {
+                    .spawn(PbrBundle {
                         mesh: run_state.wall_mesh_handle.clone(),
                         material: run_state.wall_material_handle.clone(),
                         transform: Transform::from_matrix(
@@ -132,14 +132,14 @@ pub fn spawn_wall_event_system(
                         ),
                         ..default()
                     })
-                    .insert_bundle(FadeBundle {
+                    .insert(FadeBundle {
                         fade_animation: FadeAnimation::Scale {
                             max_scale: WALL_SCALE,
                             axis_mask: Vec3::new(0.0, 1.0, 1.0),
                         },
                         fade: Fade::In(if *is_instant { 1.0 } else { 0.0 }),
                     })
-                    .insert_bundle((side.clone(), Wall, Collider));
+                    .insert((side.clone(), Wall, Collider));
             });
             break;
         }

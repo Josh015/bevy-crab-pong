@@ -24,6 +24,8 @@ pub mod prelude {
     pub use rand::prelude::*;
 }
 
+use bevy::window::PresentMode;
+
 use crate::prelude::*;
 
 fn main() {
@@ -31,15 +33,18 @@ fn main() {
         files::load_config_from_file("assets/config/game.ron");
 
     App::new()
-        .insert_resource(WindowDescriptor {
-            title: config.title.clone(),
-            width: config.width as f32,
-            height: config.height as f32,
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            window: WindowDescriptor {
+                title: config.title.clone(),
+                width: config.width as f32,
+                height: config.height as f32,
+                present_mode: PresentMode::AutoVsync,
+                ..default()
+            },
             ..default()
-        })
+        }))
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(ClearColor(config.clear_color))
-        .add_plugins(DefaultPlugins)
         .add_event::<FadeOutEntityEvent>()
         .add_event::<MessageUiEvent>()
         .add_event::<SpawnWallEvent>()

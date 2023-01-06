@@ -2,7 +2,7 @@ use crate::prelude::*;
 use serde::Deserialize;
 
 /// Game settings read from a `*.ron` config file.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Resource)]
 pub struct GameConfig {
     pub title: String,
     pub width: u32,

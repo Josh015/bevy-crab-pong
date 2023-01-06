@@ -26,7 +26,7 @@ pub fn spawn_arena_system(
 
     // Cameras
     commands
-        .spawn_bundle(Camera3dBundle::default())
+        .spawn(Camera3dBundle::default())
         .insert(SwayingCamera::default());
 
     // Light
@@ -36,7 +36,7 @@ pub fn spawn_arena_system(
         std::f32::consts::FRAC_PI_4,
         -std::f32::consts::FRAC_PI_4,
     );
-    commands.spawn_bundle(DirectionalLightBundle {
+    commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 10000.0,
             shadow_projection: OrthographicProjection {
@@ -57,7 +57,7 @@ pub fn spawn_arena_system(
 
     // Ocean
     commands
-        .spawn_bundle(PbrBundle {
+        .spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Plane { size: 100.0 })),
             material: materials.add(StandardMaterial {
                 base_color: Color::hex("257AFFCC").unwrap(),
@@ -70,7 +70,7 @@ pub fn spawn_arena_system(
         .insert(AnimatedWater::default());
 
     // Beach
-    commands.spawn_bundle(PbrBundle {
+    commands.spawn(PbrBundle {
         mesh: unit_plane.clone(),
         material: materials.add(Color::hex("C4BD99").unwrap().into()),
         transform: Transform::from_matrix(
@@ -130,7 +130,7 @@ pub fn spawn_arena_system(
 
         // Goals
         commands
-            .spawn_bundle(PbrBundle {
+            .spawn(PbrBundle {
                 transform: Transform::from_rotation(Quat::from_axis_angle(
                     Vec3::Y,
                     std::f32::consts::TAU
@@ -139,11 +139,11 @@ pub fn spawn_arena_system(
                 .mul_transform(Transform::from_xyz(0.0, 0.0, GOAL_HALF_WIDTH)),
                 ..default()
             })
-            .insert_bundle((Goal, side.clone()))
+            .insert((Goal, side.clone()))
             .with_children(|parent| {
                 // Barrier
                 parent
-                    .spawn_bundle(PbrBundle {
+                    .spawn(PbrBundle {
                         mesh: unit_cube.clone(),
                         material: barrier_material.clone(),
                         transform: Transform::from_matrix(
@@ -163,12 +163,12 @@ pub fn spawn_arena_system(
                         ),
                         ..default()
                     })
-                    .insert_bundle((Barrier, Collider));
+                    .insert((Barrier, Collider));
             });
 
         // Score
         commands
-            .spawn_bundle(TextBundle {
+            .spawn(TextBundle {
                 style: Style {
                     align_self: AlignSelf::FlexEnd,
                     position_type: PositionType::Absolute,
@@ -186,7 +186,7 @@ pub fn spawn_arena_system(
                 ),
                 ..default()
             })
-            .insert_bundle((side.clone(), HitPointsUi));
+            .insert((side.clone(), HitPointsUi));
 
         run_state.goals_hit_points.insert(side.clone(), 0);
     }
@@ -199,9 +199,7 @@ pub fn arena_swaying_camera_system(
     mut query: Query<&mut Transform, (With<Camera3d>, With<SwayingCamera>)>,
 ) {
     let mut transform = query.single_mut();
-    let x = (time.time_since_startup().as_secs_f32()
-        * config.swaying_camera_speed)
-        .sin()
+    let x = (time.elapsed_seconds() * config.swaying_camera_speed).sin()
         * GOAL_HALF_WIDTH;
 
     *transform = Transform::from_xyz(x * 0.5, 2.0, 1.5)
@@ -247,7 +245,7 @@ pub fn arena_ball_spawner_system(
         let mut rng = SmallRng::from_entropy();
         let angle = rng.gen_range(0.0..std::f32::consts::TAU);
 
-        commands.entity(entity).insert_bundle((
+        commands.entity(entity).insert((
             Collider,
             Movement {
                 direction: Vec3::new(angle.cos(), 0.0, angle.sin()),
@@ -274,7 +272,7 @@ pub fn arena_ball_spawner_system(
     });
 
     let entity = commands
-        .spawn_bundle(PbrBundle {
+        .spawn(PbrBundle {
             mesh: run_state.ball_mesh_handle.clone(),
             material: material.clone(),
             transform: Transform::from_matrix(
@@ -286,8 +284,8 @@ pub fn arena_ball_spawner_system(
             ),
             ..default()
         })
-        .insert_bundle(FadeBundle::default())
-        .insert_bundle((
+        .insert(FadeBundle::default())
+        .insert((
             Ball,
             ForState {
                 states: vec![AppState::Game, AppState::Pause],

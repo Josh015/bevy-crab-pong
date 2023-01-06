@@ -33,13 +33,13 @@ pub fn spawn_ui_message_event_system(
 ) {
     for MessageUiEvent { message, screen } in event_reader.iter() {
         commands
-            .spawn_bundle(NodeBundle {
+            .spawn(NodeBundle {
                 style: Style {
                     size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
                     justify_content: JustifyContent::SpaceBetween,
                     ..default()
                 },
-                color: Color::NONE.into(),
+                background_color: Color::NONE.into(),
                 ..default()
             })
             .insert(ForState {
@@ -47,7 +47,7 @@ pub fn spawn_ui_message_event_system(
             })
             .with_children(|parent| {
                 parent
-                    .spawn_bundle(NodeBundle {
+                    .spawn(NodeBundle {
                         style: Style {
                             size: Size::new(
                                 Val::Percent(100.0),
@@ -58,11 +58,11 @@ pub fn spawn_ui_message_event_system(
                             justify_content: JustifyContent::Center,
                             ..default()
                         },
-                        color: Color::NONE.into(),
+                        background_color: Color::NONE.into(),
                         ..default()
                     })
                     .with_children(|parent| {
-                        parent.spawn_bundle(TextBundle {
+                        parent.spawn(TextBundle {
                             style: Style {
                                 margin: UiRect::all(Val::Px(5.0)),
                                 ..default()
