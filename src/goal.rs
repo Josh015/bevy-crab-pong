@@ -225,6 +225,7 @@ pub fn goal_paddle_ai_control_system(
 /// Checks if a [`Ball`] has scored against a [`Goal`] and then decrements the
 /// corresponding score.
 pub fn goal_scored_check_system(
+    mut commands: Commands,
     mut run_state: ResMut<RunState>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     mut goal_eliminated_writer: EventWriter<GoalEliminatedEvent>,
@@ -243,6 +244,10 @@ pub fn goal_scored_check_system(
             if ball_distance > -PADDLE_HALF_DEPTH {
                 continue;
             }
+
+            // HACK: Remove the Collision component here to prevent repeated
+            // scoring, since fade handler doesn't seem to be fast enough.
+            commands.entity(entity).remove::<Collider>();
 
             // Decrement the goal's HP and potentially eliminate it.
             let hit_points = run_state.goals_hit_points.get_mut(side).unwrap();
