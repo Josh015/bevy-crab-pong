@@ -25,9 +25,7 @@ pub fn spawn_arena_system(
     let unit_plane = meshes.add(Mesh::from(shape::Plane { size: 1.0 }));
 
     // Cameras
-    commands
-        .spawn(Camera3dBundle::default())
-        .insert(SwayingCamera::default());
+    commands.spawn((SwayingCamera::default(), Camera3dBundle::default()));
 
     // Light
     let light_transform = Mat4::from_euler(
@@ -56,8 +54,9 @@ pub fn spawn_arena_system(
     });
 
     // Ocean
-    commands
-        .spawn(PbrBundle {
+    commands.spawn((
+        AnimatedWater::default(),
+        PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Plane { size: 100.0 })),
             material: materials.add(StandardMaterial {
                 base_color: Color::hex("257AFFCC").unwrap(),
@@ -66,8 +65,8 @@ pub fn spawn_arena_system(
             }),
             transform: Transform::from_xyz(0.0, -0.01, 0.0),
             ..default()
-        })
-        .insert(AnimatedWater::default());
+        },
+    ));
 
     // Beach
     commands.spawn(PbrBundle {
@@ -130,20 +129,29 @@ pub fn spawn_arena_system(
 
         // Goals
         commands
-            .spawn(PbrBundle {
-                transform: Transform::from_rotation(Quat::from_axis_angle(
-                    Vec3::Y,
-                    std::f32::consts::TAU
-                        * (i as f32 / goal_configs.len() as f32),
-                ))
-                .mul_transform(Transform::from_xyz(0.0, 0.0, GOAL_HALF_WIDTH)),
-                ..default()
-            })
-            .insert((Goal, side.clone()))
+            .spawn((
+                Goal,
+                side.clone(),
+                PbrBundle {
+                    transform: Transform::from_rotation(Quat::from_axis_angle(
+                        Vec3::Y,
+                        std::f32::consts::TAU
+                            * (i as f32 / goal_configs.len() as f32),
+                    ))
+                    .mul_transform(Transform::from_xyz(
+                        0.0,
+                        0.0,
+                        GOAL_HALF_WIDTH,
+                    )),
+                    ..default()
+                },
+            ))
             .with_children(|parent| {
                 // Barrier
-                parent
-                    .spawn(PbrBundle {
+                parent.spawn((
+                    Barrier,
+                    Collider,
+                    PbrBundle {
                         mesh: unit_cube.clone(),
                         material: barrier_material.clone(),
                         transform: Transform::from_matrix(
@@ -162,13 +170,15 @@ pub fn spawn_arena_system(
                             ),
                         ),
                         ..default()
-                    })
-                    .insert((Barrier, Collider));
+                    },
+                ));
             });
 
         // Score
-        commands
-            .spawn(TextBundle {
+        commands.spawn((
+            HitPointsUi,
+            side.clone(),
+            TextBundle {
                 style: Style {
                     align_self: AlignSelf::FlexEnd,
                     position_type: PositionType::Absolute,
@@ -185,8 +195,8 @@ pub fn spawn_arena_system(
                     },
                 ),
                 ..default()
-            })
-            .insert((side.clone(), HitPointsUi));
+            },
+        ));
 
         run_state.goals_hit_points.insert(side.clone(), 0);
     }
@@ -270,23 +280,23 @@ pub fn arena_ball_spawner_system(
     });
 
     let entity = commands
-        .spawn(PbrBundle {
-            mesh: run_state.ball_mesh_handle.clone(),
-            material: material.clone(),
-            transform: Transform::from_matrix(
-                Mat4::from_scale_rotation_translation(
-                    Vec3::splat(BALL_DIAMETER),
-                    Quat::IDENTITY,
-                    BALL_SPAWNER_POSITION,
-                ),
-            ),
-            ..default()
-        })
-        .insert(FadeBundle::default())
-        .insert((
+        .spawn((
             Ball,
             ForState {
                 states: vec![AppState::Game, AppState::Pause],
+            },
+            FadeBundle::default(),
+            PbrBundle {
+                mesh: run_state.ball_mesh_handle.clone(),
+                material: material.clone(),
+                transform: Transform::from_matrix(
+                    Mat4::from_scale_rotation_translation(
+                        Vec3::splat(BALL_DIAMETER),
+                        Quat::IDENTITY,
+                        BALL_SPAWNER_POSITION,
+                    ),
+                ),
+                ..default()
             },
         ))
         .id();

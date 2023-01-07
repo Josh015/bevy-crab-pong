@@ -60,48 +60,45 @@ pub fn spawn_paddles_system(
     // Give every paddle a parent so we can use relative transforms.
     for (i, (entity, side)) in goals_query.iter().enumerate() {
         commands.entity(entity).with_children(|parent| {
-            let mut paddle = parent.spawn(PbrBundle {
-                mesh: run_state.paddle_mesh_handle.clone(),
-                material: run_state.paddle_material_handles[side].clone(),
-                transform: Transform::from_matrix(
-                    Mat4::from_scale_rotation_translation(
-                        Vec3::splat(f32::EPSILON),
-                        Quat::IDENTITY,
-                        GOAL_PADDLE_START_POSITION,
-                    ),
-                ),
-                ..default()
-            });
-
-            // TODO: Combine with above statement after player selection
-            // is fixed.
-            paddle
-                .insert(FadeBundle {
+            let mut paddle = parent.spawn((
+                Paddle,
+                side.clone(),
+                Collider,
+                FadeBundle {
                     fade_animation: FadeAnimation::Scale {
                         max_scale: PADDLE_SCALE,
                         axis_mask: Vec3::ONE,
                     },
                     ..default()
-                })
-                .insert((
-                    side.clone(),
-                    Paddle,
-                    Collider,
-                    AccelerationBundle {
-                        velocity: VelocityBundle {
-                            heading: Heading(Vec3::X),
-                            ..default()
-                        },
-                        max_speed: MaxSpeed(config.paddle_max_speed),
-                        acceleration: Acceleration(
-                            config.paddle_max_speed
-                                / config.paddle_seconds_to_max_speed,
-                        ),
+                },
+                AccelerationBundle {
+                    velocity: VelocityBundle {
+                        heading: Heading(Vec3::X),
                         ..default()
                     },
-                ));
+                    max_speed: MaxSpeed(config.paddle_max_speed),
+                    acceleration: Acceleration(
+                        config.paddle_max_speed
+                            / config.paddle_seconds_to_max_speed,
+                    ),
+                    ..default()
+                },
+                PbrBundle {
+                    mesh: run_state.paddle_mesh_handle.clone(),
+                    material: run_state.paddle_material_handles[side].clone(),
+                    transform: Transform::from_matrix(
+                        Mat4::from_scale_rotation_translation(
+                            Vec3::splat(f32::EPSILON),
+                            Quat::IDENTITY,
+                            GOAL_PADDLE_START_POSITION,
+                        ),
+                    ),
+                    ..default()
+                },
+            ));
 
-            // TODO: Come up with a more configurable way to do this!
+            // TODO: Combine with above statement after player selection
+            // is fixed.
             if i == 0 {
                 paddle.insert(Player);
             } else {
@@ -124,8 +121,18 @@ pub fn spawn_wall_event_system(
             }
 
             commands.entity(entity).with_children(|parent| {
-                parent
-                    .spawn(PbrBundle {
+                parent.spawn((
+                    Wall,
+                    side.clone(),
+                    Collider,
+                    FadeBundle {
+                        fade_animation: FadeAnimation::Scale {
+                            max_scale: WALL_SCALE,
+                            axis_mask: Vec3::new(0.0, 1.0, 1.0),
+                        },
+                        fade: Fade::In(if *is_instant { 1.0 } else { 0.0 }),
+                    },
+                    PbrBundle {
                         mesh: run_state.wall_mesh_handle.clone(),
                         material: run_state.wall_material_handle.clone(),
                         transform: Transform::from_matrix(
@@ -136,15 +143,8 @@ pub fn spawn_wall_event_system(
                             ),
                         ),
                         ..default()
-                    })
-                    .insert(FadeBundle {
-                        fade_animation: FadeAnimation::Scale {
-                            max_scale: WALL_SCALE,
-                            axis_mask: Vec3::new(0.0, 1.0, 1.0),
-                        },
-                        fade: Fade::In(if *is_instant { 1.0 } else { 0.0 }),
-                    })
-                    .insert((side.clone(), Wall, Collider));
+                    },
+                ));
             });
             break;
         }

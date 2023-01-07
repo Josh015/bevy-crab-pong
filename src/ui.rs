@@ -33,18 +33,23 @@ pub fn spawn_ui_message_event_system(
 ) {
     for MessageUiEvent { message, screen } in event_reader.iter() {
         commands
-            .spawn(NodeBundle {
-                style: Style {
-                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-                    justify_content: JustifyContent::SpaceBetween,
+            .spawn((
+                ForState {
+                    states: vec![screen.clone()],
+                },
+                NodeBundle {
+                    style: Style {
+                        size: Size::new(
+                            Val::Percent(100.0),
+                            Val::Percent(100.0),
+                        ),
+                        justify_content: JustifyContent::SpaceBetween,
+                        ..default()
+                    },
+                    background_color: Color::NONE.into(),
                     ..default()
                 },
-                background_color: Color::NONE.into(),
-                ..default()
-            })
-            .insert(ForState {
-                states: vec![screen.clone()],
-            })
+            ))
             .with_children(|parent| {
                 parent
                     .spawn(NodeBundle {
