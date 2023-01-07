@@ -116,7 +116,7 @@ pub fn user_input_system(
     keyboard_input: Res<Input<KeyCode>>,
     mut state: ResMut<State<AppState>>,
     mut app_exit_events: EventWriter<AppExit>,
-    mut query: Query<&mut Movement, (With<Player>, With<Paddle>)>,
+    mut query: Query<&mut Force, (With<Player>, With<Paddle>)>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
         app_exit_events.send(AppExit);
@@ -132,17 +132,17 @@ pub fn user_input_system(
     if state.current() == &AppState::Game {
         // Makes a Paddle entity move left/right in response to the
         // keyboard's corresponding arrows keys.
-        for mut movement in &mut query {
-            movement.force = if keyboard_input.pressed(KeyCode::Left)
+        for mut force in &mut query {
+            *force = if keyboard_input.pressed(KeyCode::Left)
                 || keyboard_input.pressed(KeyCode::A)
             {
-                Some(Force::Negative)
+                Force::Negative
             } else if keyboard_input.pressed(KeyCode::Right)
                 || keyboard_input.pressed(KeyCode::D)
             {
-                Some(Force::Positive)
+                Force::Positive
             } else {
-                None
+                Force::Zero
             };
         }
 

@@ -1,19 +1,13 @@
 use crate::prelude::*;
 use std::ops::{Add, Sub};
 
-/// Positive or negative force affecting acceleration.
-#[derive(Clone, Copy, PartialEq)]
+/// Whether the entity has positive, negative, or zero force acting on it.
+#[derive(Component, Clone, Copy, Default, PartialEq)]
 pub enum Force {
+    #[default]
+    Zero,
     Positive,
     Negative,
-}
-
-/// A component that handles all acceleration-based movement for a given entity.
-#[derive(Component, Clone, Default)]
-pub struct Movement {
-    /// Whether the entity has positive/negative acceleration, or is
-    /// decelerating if there is none.
-    pub force: Option<Force>,
 }
 
 /// The normalized direction vector along which the entity will move.
@@ -41,8 +35,8 @@ pub struct MovementBundle {
 #[derive(Bundle, Default)]
 pub struct AccelerationBundle {
     #[bundle]
-    pub movement2: MovementBundle,
-    pub movement: Movement,
+    pub movement: MovementBundle,
+    pub force: Force,
     pub max_speed: MaxSpeed,
     pub acceleration: Acceleration,
 }
@@ -55,27 +49,24 @@ pub fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
 }
 
 /// Handles calculating the actual acceleration/deceleration over time for a
-/// [`Movement`] entity.
+/// [`Force`] entity.
 pub fn acceleration_system(
     time: Res<Time>,
-    mut query: Query<(&Movement, &mut Speed, &MaxSpeed, &Acceleration)>,
+    mut query: Query<(&mut Speed, &Force, &MaxSpeed, &Acceleration)>,
 ) {
-    for (movement, mut speed, max_speed, acceleration) in &mut query {
+    for (mut speed, force, max_speed, acceleration) in &mut query {
         let delta_speed = acceleration.0 * time.delta_seconds();
 
-        speed.0 = if let Some(force) = movement.force {
-            // Accelerate
-            speed
+        speed.0 = match force {
+            Force::Zero => decelerate_speed(speed.0, delta_speed),
+            _ => speed
                 .0
-                .add(if force == Force::Positive {
+                .add(if *force == Force::Positive {
                     delta_speed
                 } else {
                     -delta_speed
                 })
-                .clamp(-max_speed.0, max_speed.0)
-        } else {
-            // Decelerate
-            decelerate_speed(speed.0, delta_speed)
+                .clamp(-max_speed.0, max_speed.0),
         };
     }
 }

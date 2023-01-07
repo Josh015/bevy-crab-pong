@@ -53,7 +53,7 @@ pub fn spawn_paddles_system(
     for entity in &paddles_query {
         commands
             .entity(entity)
-            .remove::<Movement>()
+            .remove::<Speed>()
             .remove::<Collider>();
         fade_out_entity_events.send(FadeOutEntityEvent(entity));
     }
@@ -89,11 +89,10 @@ pub fn spawn_paddles_system(
                     Paddle,
                     Collider,
                     AccelerationBundle {
-                        movement2: MovementBundle {
+                        movement: MovementBundle {
                             heading: Heading(Vec3::X),
                             ..default()
                         },
-                        movement: Movement { ..default() },
                         max_speed: MaxSpeed(config.paddle_max_speed),
                         acceleration: Acceleration(
                             config.paddle_max_speed
@@ -157,11 +156,11 @@ pub fn spawn_wall_event_system(
 /// on either side of its [`Goal`].
 pub fn goal_paddle_collision_system(
     mut query: Query<
-        (&mut Transform, &mut Movement, &mut Speed),
+        (&mut Transform, &mut Force, &mut Speed),
         (With<Paddle>, With<Collider>),
     >,
 ) {
-    for (mut transform, mut movement, mut speed) in &mut query {
+    for (mut transform, mut force, mut speed) in &mut query {
         // Limit paddle to open space between barriers
         if !(-GOAL_PADDLE_MAX_POSITION_X..=GOAL_PADDLE_MAX_POSITION_X)
             .contains(&transform.translation.x)
@@ -170,7 +169,7 @@ pub fn goal_paddle_collision_system(
                 .translation
                 .x
                 .clamp(-GOAL_PADDLE_MAX_POSITION_X, GOAL_PADDLE_MAX_POSITION_X);
-            movement.force = None;
+            *force = Force::Zero;
             speed.0 = 0.0;
         }
     }
@@ -179,15 +178,14 @@ pub fn goal_paddle_collision_system(
 /// AI control for [`Paddle`] entities.
 pub fn goal_paddle_ai_control_system(
     mut paddles_query: Query<
-        (&Side, &Transform, &mut Movement, &Speed, &Acceleration),
+        (&Side, &Transform, &mut Force, &Speed, &Acceleration),
         (With<Paddle>, With<Enemy>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
 ) {
     // We want the paddle to follow and try to stay under the moving ball
     // rather than going straight to where it will cross the goal.
-    for (side, transform, mut movement, speed, acceleration) in
-        &mut paddles_query
+    for (side, transform, mut force, speed, acceleration) in &mut paddles_query
     {
         // Get the relative position of the ball that's closest to this goal.
         let mut closest_ball_distance = std::f32::MAX;
@@ -224,14 +222,14 @@ pub fn goal_paddle_ai_control_system(
         let distance_from_paddle_center =
             (paddle_stop_position - ball_local_position).abs();
 
-        movement.force = if distance_from_paddle_center
+        *force = if distance_from_paddle_center
             < percent_from_center * PADDLE_HALF_WIDTH
         {
-            None
+            Force::Zero
         } else if ball_local_position < transform.translation.x {
-            Some(Force::Negative) // Left
+            Force::Negative // Left
         } else {
-            Some(Force::Positive) // Right
+            Force::Positive // Right
         };
     }
 }
@@ -301,7 +299,7 @@ pub fn goal_eliminated_event_system(
             commands
                 .entity(entity)
                 .remove::<Collider>()
-                .remove::<Movement>();
+                .remove::<Speed>();
             fade_out_entity_events.send(FadeOutEntityEvent(entity));
             break;
         }
