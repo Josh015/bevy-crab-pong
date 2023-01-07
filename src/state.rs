@@ -21,7 +21,7 @@ pub fn app_state_enter_despawn_system(
     mut commands: Commands,
     state: Res<State<AppState>>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
-    mut query: Query<(Entity, &ForState<AppState>, Option<&mut FadeAnimation>)>,
+    mut query: Query<(Entity, &ForState<AppState>, Option<&FadeAnimation>)>,
 ) {
     for (entity, for_state, fade_animation) in &mut query {
         if for_state.states.contains(state.current()) {
