@@ -1,9 +1,9 @@
 use crate::prelude::*;
 use std::ops::{Add, Sub};
 
-/// Represents whether the movement has positive or negative acceleration.
+/// Positive or negative force affecting acceleration.
 #[derive(Clone, Copy, PartialEq)]
-pub enum MovementDelta {
+pub enum Force {
     Positive,
     Negative,
 }
@@ -16,7 +16,7 @@ pub struct Movement {
 
     /// Whether the entity has positive/negative acceleration, or is
     /// decelerating if there is none.
-    pub delta: Option<MovementDelta>,
+    pub force: Option<Force>,
 }
 
 /// The current speed of this entity.
@@ -55,11 +55,11 @@ pub fn acceleration_system(
     for (movement, mut speed, max_speed, acceleration) in &mut query {
         let delta_speed = acceleration.0 * time.delta_seconds();
 
-        speed.0 = if let Some(delta) = movement.delta {
+        speed.0 = if let Some(force) = movement.force {
             // Accelerate
             speed
                 .0
-                .add(if delta == MovementDelta::Positive {
+                .add(if force == Force::Positive {
                     delta_speed
                 } else {
                     -delta_speed

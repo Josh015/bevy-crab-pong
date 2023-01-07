@@ -250,7 +250,7 @@ pub fn arena_ball_spawner_system(
             MovementBundle {
                 movement: Movement {
                     direction: Vec3::new(angle.cos(), 0.0, angle.sin()),
-                    delta: Some(MovementDelta::Positive),
+                    force: Some(Force::Positive),
                 },
                 speed: Speed(config.ball_starting_speed),
                 max_speed: MaxSpeed(config.ball_max_speed),

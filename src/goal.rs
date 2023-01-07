@@ -164,11 +164,11 @@ pub fn goal_paddle_collision_system(
         // Limit paddle to open space between barriers
         if transform.translation.x > GOAL_PADDLE_MAX_POSITION_X {
             transform.translation.x = GOAL_PADDLE_MAX_POSITION_X;
-            movement.delta = None;
+            movement.force = None;
             speed.0 = 0.0;
         } else if transform.translation.x < -GOAL_PADDLE_MAX_POSITION_X {
             transform.translation.x = -GOAL_PADDLE_MAX_POSITION_X;
-            movement.delta = None;
+            movement.force = None;
             speed.0 = 0.0;
         }
     }
@@ -222,14 +222,14 @@ pub fn goal_paddle_ai_control_system(
         let distance_from_paddle_center =
             (paddle_stop_position - ball_local_position).abs();
 
-        movement.delta = if distance_from_paddle_center
+        movement.force = if distance_from_paddle_center
             < percent_from_center * PADDLE_HALF_WIDTH
         {
             None
         } else if ball_local_position < transform.translation.x {
-            Some(MovementDelta::Negative) // Left
+            Some(Force::Negative) // Left
         } else {
-            Some(MovementDelta::Positive) // Right
+            Some(Force::Positive) // Right
         };
     }
 }
