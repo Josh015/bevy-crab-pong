@@ -81,7 +81,7 @@ pub fn fade_system(
                 if *progress < FADE_PROGRESS_MAX {
                     *progress = progress.max(FADE_PROGRESS_MIN) + step;
                 } else {
-                    info!("Entity({:?}) -> Despawning", entity);
+                    info!("Entity({:?}) -> Despawned", entity);
                     commands.entity(entity).despawn_recursive();
                 }
             },
