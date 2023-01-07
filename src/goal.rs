@@ -307,7 +307,7 @@ pub fn goal_eliminated_event_system(
 pub fn goal_despawn_walls_system(
     mut commands: Commands,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
-    query: Query<Entity, (With<Wall>, Without<Fade>)>,
+    query: Query<Entity, With<Wall>>,
 ) {
     for entity in &query {
         commands.entity(entity).remove::<Collider>();
