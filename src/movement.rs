@@ -48,21 +48,12 @@ pub fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
 
 /// Handles calculating the actual acceleration/deceleration over time for a
 /// [`Movement`] entity.
-pub fn movement_system(
+pub fn acceleration_system(
     time: Res<Time>,
-    mut query: Query<(
-        &mut Transform,
-        &Movement,
-        &mut Speed,
-        &MaxSpeed,
-        &Acceleration,
-    )>,
+    mut query: Query<(&Movement, &mut Speed, &MaxSpeed, &Acceleration)>,
 ) {
-    for (mut transform, movement, mut speed, max_speed, acceleration) in
-        &mut query
-    {
-        let delta_seconds = time.delta_seconds();
-        let delta_speed = acceleration.0 * delta_seconds;
+    for (movement, mut speed, max_speed, acceleration) in &mut query {
+        let delta_speed = acceleration.0 * time.delta_seconds();
 
         speed.0 = if let Some(delta) = movement.delta {
             // Accelerate
@@ -78,7 +69,16 @@ pub fn movement_system(
             // Decelerate
             decelerate_speed(speed.0, delta_speed)
         };
+    }
+}
 
-        transform.translation += movement.direction * (speed.0 * delta_seconds);
+/// Handles moving entities with [`Movement`] and [`Speed`].
+pub fn movement_system(
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &Movement, &Speed)>,
+) {
+    for (mut transform, movement, speed) in &mut query {
+        transform.translation +=
+            movement.direction * (speed.0 * time.delta_seconds());
     }
 }
