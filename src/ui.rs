@@ -133,9 +133,13 @@ pub fn user_input_system(
         // Makes a Paddle entity move left/right in response to the
         // keyboard's corresponding arrows keys.
         for mut movement in &mut query {
-            movement.delta = if keyboard_input.pressed(KeyCode::Left) {
+            movement.delta = if keyboard_input.pressed(KeyCode::Left)
+                || keyboard_input.pressed(KeyCode::A)
+            {
                 Some(MovementDelta::Negative)
-            } else if keyboard_input.pressed(KeyCode::Right) {
+            } else if keyboard_input.pressed(KeyCode::Right)
+                || keyboard_input.pressed(KeyCode::D)
+            {
                 Some(MovementDelta::Positive)
             } else {
                 None

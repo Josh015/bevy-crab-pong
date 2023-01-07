@@ -8,7 +8,7 @@
   new_game_message: "
 Press ENTER for a new game
 Press ESC to quit
-(Use LEFT and RIGHT arrows to move)
+(Use A/LEFT and D/RIGHT to move the paddle)
   ",
   clear_color: Rgba(red: 0.7, green: 0.9, blue: 1.0, alpha: 1.0),
   swaying_camera_speed: 0.2,
