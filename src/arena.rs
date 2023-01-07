@@ -249,9 +249,9 @@ pub fn arena_ball_spawner_system(
             Collider,
             MovementBundle {
                 movement: Movement {
-                    direction: Vec3::new(angle.cos(), 0.0, angle.sin()),
                     force: Some(Force::Positive),
                 },
+                heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
                 speed: Speed(config.ball_starting_speed),
                 max_speed: MaxSpeed(config.ball_max_speed),
                 acceleration: Acceleration(
@@ -306,16 +306,14 @@ pub fn arena_ball_spawner_system(
 pub fn arena_collision_system(
     mut commands: Commands,
     balls_query: Query<
-        (Entity, &GlobalTransform, &Movement),
+        (Entity, &GlobalTransform, &Heading),
         (With<Ball>, With<Collider>),
     >,
     paddles_query: Query<(&Side, &Transform), (With<Paddle>, With<Collider>)>,
     barriers_query: Query<&GlobalTransform, (With<Barrier>, With<Collider>)>,
     walls_query: Query<&Side, (With<Wall>, With<Collider>)>,
 ) {
-    for (entity, ball_transform, movement) in &balls_query {
-        let ball_direction = movement.direction;
-
+    for (entity, ball_transform, ball_heading) in &balls_query {
         // Ball collisions
         for (entity2, transform2, _) in &balls_query {
             // Prevent balls from colliding with themselves.
@@ -332,16 +330,15 @@ pub fn arena_collision_system(
 
             // Check that the ball is touching the other ball and facing it.
             if ball_to_ball_distance > 2.0 * BALL_RADIUS
-                || ball_direction.dot(axis) <= 0.0
+                || ball_heading.0.dot(axis) <= 0.0
             {
                 continue;
             }
 
             // Deflect the ball away from the other ball.
-            let mut new_movement = movement.clone();
-
-            new_movement.direction = reflect(ball_direction, axis);
-            commands.entity(entity).insert(new_movement);
+            commands
+                .entity(entity)
+                .insert(Heading(reflect(ball_heading.0, axis)));
 
             info!("Ball({:?}) -> Collided Ball({:?})", entity, entity2);
             break;
@@ -359,7 +356,7 @@ pub fn arena_collision_system(
             // Check that the ball is touching the paddle and facing the goal.
             if ball_distance > PADDLE_HALF_DEPTH
                 || distance_from_paddle_center >= PADDLE_HALF_WIDTH
-                || ball_direction.dot(axis) <= 0.0
+                || ball_heading.0.dot(axis) <= 0.0
             {
                 continue;
             }
@@ -370,11 +367,9 @@ pub fn arena_collision_system(
                 std::f32::consts::FRAC_PI_4
                     * (ball_to_paddle / PADDLE_HALF_WIDTH),
             );
-            let mut new_movement = movement.clone();
-
-            new_movement.direction =
-                rotation_away_from_center * -ball_direction;
-            commands.entity(entity).insert(new_movement);
+            commands
+                .entity(entity)
+                .insert(Heading(rotation_away_from_center * -ball_heading.0));
 
             info!("Ball({:?}) -> Collided Paddle({:?})", entity, side);
             break;
@@ -395,16 +390,15 @@ pub fn arena_collision_system(
 
             // Check that the ball is touching the barrier and facing it.
             if ball_to_barrier_distance > BARRIER_RADIUS + BALL_RADIUS
-                || ball_direction.dot(axis) <= 0.0
+                || ball_heading.0.dot(axis) <= 0.0
             {
                 continue;
             }
 
             // Deflect the ball away from the barrier.
-            let mut new_movement = movement.clone();
-
-            new_movement.direction = reflect(ball_direction, axis);
-            commands.entity(entity).insert(new_movement);
+            commands
+                .entity(entity)
+                .insert(Heading(reflect(ball_heading.0, axis)));
 
             info!("Ball({:?}) -> Collided Barrier", entity);
             break;
@@ -416,15 +410,14 @@ pub fn arena_collision_system(
             let axis = side.axis();
 
             // Check that the ball is touching and facing the wall.
-            if ball_distance > WALL_RADIUS || ball_direction.dot(axis) <= 0.0 {
+            if ball_distance > WALL_RADIUS || ball_heading.0.dot(axis) <= 0.0 {
                 continue;
             }
 
             // Deflect the ball away from the wall.
-            let mut new_movement = movement.clone();
-
-            new_movement.direction = reflect(ball_direction, axis);
-            commands.entity(entity).insert(new_movement);
+            commands
+                .entity(entity)
+                .insert(Heading(reflect(ball_heading.0, axis)));
 
             info!("Ball({:?}) -> Collided Wall({:?})", entity, side);
             break;

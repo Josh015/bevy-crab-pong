@@ -11,13 +11,14 @@ pub enum Force {
 /// A component that handles all acceleration-based movement for a given entity.
 #[derive(Component, Clone, Default)]
 pub struct Movement {
-    /// The normalized direction vector along which the entity will move.
-    pub direction: Vec3,
-
     /// Whether the entity has positive/negative acceleration, or is
     /// decelerating if there is none.
     pub force: Option<Force>,
 }
+
+/// The normalized direction vector along which the entity will move.
+#[derive(Component, Clone, Default)]
+pub struct Heading(pub Vec3);
 
 /// The current speed of this entity.
 #[derive(Component, Clone, Default)]
@@ -34,6 +35,7 @@ pub struct Acceleration(pub f32);
 #[derive(Bundle, Default)]
 pub struct MovementBundle {
     pub movement: Movement,
+    pub heading: Heading,
     pub speed: Speed,
     pub max_speed: MaxSpeed,
     pub acceleration: Acceleration,
@@ -72,13 +74,12 @@ pub fn acceleration_system(
     }
 }
 
-/// Handles moving entities with [`Movement`] and [`Speed`].
+/// Handles moving entities with [`Heading`] and [`Speed`].
 pub fn movement_system(
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &Movement, &Speed)>,
+    mut query: Query<(&mut Transform, &Heading, &Speed)>,
 ) {
-    for (mut transform, movement, speed) in &mut query {
-        transform.translation +=
-            movement.direction * (speed.0 * time.delta_seconds());
+    for (mut transform, direction, speed) in &mut query {
+        transform.translation += direction.0 * (speed.0 * time.delta_seconds());
     }
 }
