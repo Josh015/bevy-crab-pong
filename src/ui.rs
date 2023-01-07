@@ -87,9 +87,7 @@ pub fn spawn_start_menu_ui_system(
     run_state: Res<RunState>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
-    let mut message = String::new();
-
-    message.push_str(match run_state.game_over {
+    let mut message = String::from(match run_state.game_over {
         Some(GameOver::Won) => &config.game_over_win_message,
         Some(GameOver::Lost) => &config.game_over_lose_message,
         _ => "",
