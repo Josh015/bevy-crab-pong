@@ -17,7 +17,6 @@ pub struct GameConfig {
     pub paddle_max_speed: f32,
     pub paddle_seconds_to_max_speed: f32,
     pub max_ball_count: usize,
-    pub ball_starting_speed: f32,
     pub ball_max_speed: f32,
     pub ball_seconds_to_max_speed: f32,
     pub fade_speed: f32,
