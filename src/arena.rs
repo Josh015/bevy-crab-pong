@@ -247,13 +247,16 @@ pub fn arena_ball_spawner_system(
 
         commands.entity(entity).insert((
             Collider,
-            Movement {
-                direction: Vec3::new(angle.cos(), 0.0, angle.sin()),
-                speed: config.ball_starting_speed,
-                max_speed: config.ball_max_speed,
-                acceleration: config.ball_max_speed
-                    / config.ball_seconds_to_max_speed,
-                delta: Some(MovementDelta::Positive),
+            MovementBundle {
+                movement: Movement {
+                    direction: Vec3::new(angle.cos(), 0.0, angle.sin()),
+                    speed: config.ball_starting_speed,
+                    delta: Some(MovementDelta::Positive),
+                },
+                max_speed: MaxSpeed(config.ball_max_speed),
+                acceleration: Acceleration(
+                    config.ball_max_speed / config.ball_seconds_to_max_speed,
+                ),
             },
         ));
         info!("Ball({:?}) -> Launched", entity);

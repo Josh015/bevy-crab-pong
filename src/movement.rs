@@ -18,15 +18,24 @@ pub struct Movement {
     /// controlled by the component.
     pub speed: f32,
 
-    /// The maximum speed this entity can reach after accelerating.
-    pub max_speed: f32,
-
-    /// The `max_speed / seconds_to_reach_max_speed`.
-    pub acceleration: f32,
-
     /// Whether the entity has positive/negative acceleration, or is
     /// decelerating if there is none.
     pub delta: Option<MovementDelta>,
+}
+
+/// The maximum speed this entity can reach after accelerating.
+#[derive(Component, Clone, Default)]
+pub struct MaxSpeed(pub f32);
+
+/// The `max_speed / seconds_to_reach_max_speed`.
+#[derive(Component, Clone, Default)]
+pub struct Acceleration(pub f32);
+
+#[derive(Bundle, Default)]
+pub struct MovementBundle {
+    pub movement: Movement,
+    pub max_speed: MaxSpeed,
+    pub acceleration: Acceleration,
 }
 
 impl Movement {
@@ -48,11 +57,11 @@ pub fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
 /// [`Movement`] entity.
 pub fn movement_system(
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Movement)>,
+    mut query: Query<(&mut Transform, &mut Movement, &MaxSpeed, &Acceleration)>,
 ) {
-    for (mut transform, mut movement) in &mut query {
+    for (mut transform, mut movement, max_speed, acceleration) in &mut query {
         let delta_seconds = time.delta_seconds();
-        let delta_speed = movement.acceleration * delta_seconds;
+        let delta_speed = acceleration.0 * delta_seconds;
 
         movement.speed = if let Some(delta) = movement.delta {
             // Accelerate
@@ -63,7 +72,7 @@ pub fn movement_system(
                 } else {
                     -delta_speed
                 })
-                .clamp(-movement.max_speed, movement.max_speed)
+                .clamp(-max_speed.0, max_speed.0)
         } else {
             // Decelerate
             decelerate_speed(movement.speed, delta_speed)
