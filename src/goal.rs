@@ -163,12 +163,13 @@ pub fn goal_paddle_collision_system(
 ) {
     for (mut transform, mut movement, mut speed) in &mut query {
         // Limit paddle to open space between barriers
-        if transform.translation.x > GOAL_PADDLE_MAX_POSITION_X {
-            transform.translation.x = GOAL_PADDLE_MAX_POSITION_X;
-            movement.force = None;
-            speed.0 = 0.0;
-        } else if transform.translation.x < -GOAL_PADDLE_MAX_POSITION_X {
-            transform.translation.x = -GOAL_PADDLE_MAX_POSITION_X;
+        if !(-GOAL_PADDLE_MAX_POSITION_X..=GOAL_PADDLE_MAX_POSITION_X)
+            .contains(&transform.translation.x)
+        {
+            transform.translation.x = transform
+                .translation
+                .x
+                .clamp(-GOAL_PADDLE_MAX_POSITION_X, GOAL_PADDLE_MAX_POSITION_X);
             movement.force = None;
             speed.0 = 0.0;
         }
