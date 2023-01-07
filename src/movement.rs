@@ -14,14 +14,14 @@ pub struct Movement {
     /// The normalized direction vector along which the entity will move.
     pub direction: Vec3,
 
-    /// The current speed of the entity's movement which will largely be
-    /// controlled by the component.
-    pub speed: f32,
-
     /// Whether the entity has positive/negative acceleration, or is
     /// decelerating if there is none.
     pub delta: Option<MovementDelta>,
 }
+
+/// The current speed of this entity.
+#[derive(Component, Clone, Default)]
+pub struct Speed(pub f32);
 
 /// The maximum speed this entity can reach after accelerating.
 #[derive(Component, Clone, Default)]
@@ -34,16 +34,9 @@ pub struct Acceleration(pub f32);
 #[derive(Bundle, Default)]
 pub struct MovementBundle {
     pub movement: Movement,
+    pub speed: Speed,
     pub max_speed: MaxSpeed,
     pub acceleration: Acceleration,
-}
-
-impl Movement {
-    /// Removes acceleration and immediately sets speed to zero.
-    pub fn stop(&mut self) {
-        self.delta = None;
-        self.speed = 0.0;
-    }
 }
 
 /// Calculate a new reduced speed value based on delta speed and clamping
@@ -57,16 +50,24 @@ pub fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
 /// [`Movement`] entity.
 pub fn movement_system(
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &mut Movement, &MaxSpeed, &Acceleration)>,
+    mut query: Query<(
+        &mut Transform,
+        &Movement,
+        &mut Speed,
+        &MaxSpeed,
+        &Acceleration,
+    )>,
 ) {
-    for (mut transform, mut movement, max_speed, acceleration) in &mut query {
+    for (mut transform, movement, mut speed, max_speed, acceleration) in
+        &mut query
+    {
         let delta_seconds = time.delta_seconds();
         let delta_speed = acceleration.0 * delta_seconds;
 
-        movement.speed = if let Some(delta) = movement.delta {
+        speed.0 = if let Some(delta) = movement.delta {
             // Accelerate
-            movement
-                .speed
+            speed
+                .0
                 .add(if delta == MovementDelta::Positive {
                     delta_speed
                 } else {
@@ -75,10 +76,9 @@ pub fn movement_system(
                 .clamp(-max_speed.0, max_speed.0)
         } else {
             // Decelerate
-            decelerate_speed(movement.speed, delta_speed)
+            decelerate_speed(speed.0, delta_speed)
         };
 
-        transform.translation +=
-            movement.direction * (movement.speed * delta_seconds);
+        transform.translation += movement.direction * (speed.0 * delta_seconds);
     }
 }

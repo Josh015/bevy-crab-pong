@@ -250,13 +250,14 @@ pub fn arena_ball_spawner_system(
             MovementBundle {
                 movement: Movement {
                     direction: Vec3::new(angle.cos(), 0.0, angle.sin()),
-                    speed: config.ball_starting_speed,
                     delta: Some(MovementDelta::Positive),
                 },
+                speed: Speed(config.ball_starting_speed),
                 max_speed: MaxSpeed(config.ball_max_speed),
                 acceleration: Acceleration(
                     config.ball_max_speed / config.ball_seconds_to_max_speed,
                 ),
+                ..default()
             },
         ));
         info!("Ball({:?}) -> Launched", entity);

@@ -98,6 +98,7 @@ pub fn spawn_paddles_system(
                             config.paddle_max_speed
                                 / config.paddle_seconds_to_max_speed,
                         ),
+                        ..default()
                     },
                 ));
 
@@ -155,18 +156,20 @@ pub fn spawn_wall_event_system(
 /// on either side of its [`Goal`].
 pub fn goal_paddle_collision_system(
     mut query: Query<
-        (&mut Transform, &mut Movement),
+        (&mut Transform, &mut Movement, &mut Speed),
         (With<Paddle>, With<Collider>),
     >,
 ) {
-    for (mut transform, mut movement) in &mut query {
+    for (mut transform, mut movement, mut speed) in &mut query {
         // Limit paddle to open space between barriers
         if transform.translation.x > GOAL_PADDLE_MAX_POSITION_X {
             transform.translation.x = GOAL_PADDLE_MAX_POSITION_X;
-            movement.stop();
+            movement.delta = None;
+            speed.0 = 0.0;
         } else if transform.translation.x < -GOAL_PADDLE_MAX_POSITION_X {
             transform.translation.x = -GOAL_PADDLE_MAX_POSITION_X;
-            movement.stop();
+            movement.delta = None;
+            speed.0 = 0.0;
         }
     }
 }
@@ -174,14 +177,16 @@ pub fn goal_paddle_collision_system(
 /// AI control for [`Paddle`] entities.
 pub fn goal_paddle_ai_control_system(
     mut paddles_query: Query<
-        (&Side, &Transform, &mut Movement, &Acceleration),
+        (&Side, &Transform, &mut Movement, &Speed, &Acceleration),
         (With<Paddle>, With<Enemy>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
 ) {
     // We want the paddle to follow and try to stay under the moving ball
     // rather than going straight to where it will cross the goal.
-    for (side, transform, mut movement, acceleration) in &mut paddles_query {
+    for (side, transform, mut movement, speed, acceleration) in
+        &mut paddles_query
+    {
         // Get the relative position of the ball that's closest to this goal.
         let mut closest_ball_distance = std::f32::MAX;
         let mut ball_local_position = GOAL_PADDLE_START_POSITION.x;
@@ -202,7 +207,7 @@ pub fn goal_paddle_ai_control_system(
         let delta_seconds = 0.05; // Overshoots the ball slightly more often.
         // let delta_seconds = 0.001; // Precisely follows the ball.
         let delta_speed = acceleration.0 * delta_seconds;
-        let mut current_speed = movement.speed;
+        let mut current_speed = speed.0;
         let mut paddle_stop_position = transform.translation.x;
 
         while current_speed.abs() > 0.0 {
