@@ -3,10 +3,7 @@ use crate::prelude::*;
 pub const FADE_PROGRESS_MIN: f32 = 0.0;
 pub const FADE_PROGRESS_MAX: f32 = 1.0;
 
-pub struct FadeOutEntityEvent {
-    pub entity: Entity,
-    pub is_stopped: bool,
-}
+pub struct FadeOutEntityEvent(pub Entity);
 
 #[derive(Bundle, Default)]
 pub struct FadeBundle {
@@ -139,7 +136,7 @@ pub fn fade_out_entity_event_system(
     query: Query<(Entity, &Fade)>,
     mut event_reader: EventReader<FadeOutEntityEvent>,
 ) {
-    for FadeOutEntityEvent { entity, is_stopped } in event_reader.iter() {
+    for FadeOutEntityEvent(entity) in event_reader.iter() {
         // If interrupting Fade::In then start with its inverse progress to
         // avoid visual popping. If it's Fade::Out, just let it run until done.
         let fade_out_progress = match query.get_component::<Fade>(*entity) {
@@ -148,15 +145,9 @@ pub fn fade_out_entity_event_system(
             _ => 0.0,
         };
 
-        // Remove Movement and Collider to stop entity and prevent repeated
-        // collisions and/or scoring.
-        let mut entity_commands = commands.entity(*entity);
-
-        if *is_stopped {
-            entity_commands.remove::<Movement>();
-        }
-
-        entity_commands
+        // Remove Collider to prevent repeated collisions and/or scoring.
+        commands
+            .entity(*entity)
             .remove::<Collider>()
             .insert(Fade::Out(fade_out_progress));
         info!("Entity({:?}) -> Fading Out", entity);

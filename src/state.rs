@@ -29,10 +29,7 @@ pub fn app_state_enter_despawn_system(
         }
 
         if fade_animation.is_some() {
-            fade_out_entity_events.send(FadeOutEntityEvent {
-                entity,
-                is_stopped: true,
-            });
+            fade_out_entity_events.send(FadeOutEntityEvent(entity));
         } else {
             commands.entity(entity).despawn_recursive();
         }

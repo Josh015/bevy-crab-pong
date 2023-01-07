@@ -51,10 +51,8 @@ pub fn spawn_paddles_system(
 ) {
     // Fade out existing paddles so new ones can spawn at starting positions.
     for entity in &paddles_query {
-        fade_out_entity_events.send(FadeOutEntityEvent {
-            entity,
-            is_stopped: true,
-        });
+        commands.entity(entity).remove::<Movement>();
+        fade_out_entity_events.send(FadeOutEntityEvent(entity));
     }
 
     // Give every paddle a parent so we can use relative transforms.
@@ -263,10 +261,7 @@ pub fn goal_scored_check_system(
             }
 
             // Start fading out the ball to prevent repeated scoring.
-            fade_out_entity_events.send(FadeOutEntityEvent {
-                entity,
-                is_stopped: false,
-            });
+            fade_out_entity_events.send(FadeOutEntityEvent(entity));
             break;
         }
     }
@@ -274,6 +269,7 @@ pub fn goal_scored_check_system(
 
 /// Disables a given [`Goal`] to remove it from play.
 pub fn goal_eliminated_event_system(
+    mut commands: Commands,
     mut event_reader: EventReader<GoalEliminatedEvent>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     mut spawn_wall_events: EventWriter<SpawnWallEvent>,
@@ -290,10 +286,8 @@ pub fn goal_eliminated_event_system(
             }
 
             // Stop the paddle from moving and colliding.
-            fade_out_entity_events.send(FadeOutEntityEvent {
-                entity,
-                is_stopped: true,
-            });
+            commands.entity(entity).remove::<Movement>();
+            fade_out_entity_events.send(FadeOutEntityEvent(entity));
             break;
         }
 
@@ -311,9 +305,6 @@ pub fn goal_despawn_walls_system(
     query: Query<Entity, (With<Wall>, Without<Fade>)>,
 ) {
     for entity in &query {
-        fade_out_entity_events.send(FadeOutEntityEvent {
-            entity,
-            is_stopped: false,
-        });
+        fade_out_entity_events.send(FadeOutEntityEvent(entity));
     }
 }
