@@ -53,8 +53,7 @@ pub fn spawn_paddles_system(
     for entity in &paddles_query {
         commands
             .entity(entity)
-            .remove::<Speed>()
-            .remove::<Collider>();
+            .remove::<(Collider, Heading, Speed)>();
         fade_out_entity_events.send(FadeOutEntityEvent(entity));
     }
 
@@ -298,8 +297,7 @@ pub fn goal_eliminated_event_system(
             // Stop the paddle from moving and colliding.
             commands
                 .entity(entity)
-                .remove::<Collider>()
-                .remove::<Speed>();
+                .remove::<(Collider, Heading, Speed)>();
             fade_out_entity_events.send(FadeOutEntityEvent(entity));
             break;
         }
