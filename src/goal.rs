@@ -168,13 +168,14 @@ pub fn goal_paddle_collision_system(
 
 /// AI control for [`Paddle`] entities.
 pub fn goal_paddle_ai_control_system(
-    time: Res<Time>,
     mut paddles_query: Query<
         (&Side, &Transform, &mut Movement),
         (With<Paddle>, With<Enemy>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
 ) {
+    // We want the paddle to follow and try to stay under the moving ball
+    // rather than going straight to where it will cross the goal.
     for (side, transform, mut movement) in &mut paddles_query {
         // Get the relative position of the ball that's closest to this goal.
         let mut closest_ball_distance = std::f32::MAX;
@@ -193,7 +194,8 @@ pub fn goal_paddle_ai_control_system(
         }
 
         // Predict the paddle's stop position if it begins decelerating now.
-        let delta_seconds = time.delta_seconds();
+        let delta_seconds = 0.05; // Overshoots the ball slightly more often.
+        // let delta_seconds = 0.001; // Precisely follows the ball.
         let delta_speed = movement.acceleration * delta_seconds;
         let mut current_speed = movement.speed;
         let mut paddle_stop_position = transform.translation.x;
