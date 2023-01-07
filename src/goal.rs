@@ -51,7 +51,10 @@ pub fn spawn_paddles_system(
 ) {
     // Fade out existing paddles so new ones can spawn at starting positions.
     for entity in &paddles_query {
-        commands.entity(entity).remove::<Movement>();
+        commands
+            .entity(entity)
+            .remove::<Movement>()
+            .remove::<Collider>();
         fade_out_entity_events.send(FadeOutEntityEvent(entity));
     }
 
@@ -245,10 +248,6 @@ pub fn goal_scored_check_system(
                 continue;
             }
 
-            // HACK: Remove the Collision component here to prevent repeated
-            // scoring, since fade handler doesn't seem to be fast enough.
-            commands.entity(entity).remove::<Collider>();
-
             // Decrement the goal's HP and potentially eliminate it.
             let hit_points = run_state.goals_hit_points.get_mut(side).unwrap();
 
@@ -260,7 +259,9 @@ pub fn goal_scored_check_system(
                 info!("Ball({:?}) -> Eliminated Goal({:?})", entity, side);
             }
 
-            // Start fading out the ball to prevent repeated scoring.
+            // Remove Collider and start fading out the ball to prevent
+            // repeated scoring.
+            commands.entity(entity).remove::<Collider>();
             fade_out_entity_events.send(FadeOutEntityEvent(entity));
             break;
         }
@@ -286,7 +287,10 @@ pub fn goal_eliminated_event_system(
             }
 
             // Stop the paddle from moving and colliding.
-            commands.entity(entity).remove::<Movement>();
+            commands
+                .entity(entity)
+                .remove::<Collider>()
+                .remove::<Movement>();
             fade_out_entity_events.send(FadeOutEntityEvent(entity));
             break;
         }
@@ -301,10 +305,12 @@ pub fn goal_eliminated_event_system(
 
 /// Fades out any existing [`Wall`] entities.
 pub fn goal_despawn_walls_system(
+    mut commands: Commands,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     query: Query<Entity, (With<Wall>, Without<Fade>)>,
 ) {
     for entity in &query {
+        commands.entity(entity).remove::<Collider>();
         fade_out_entity_events.send(FadeOutEntityEvent(entity));
     }
 }

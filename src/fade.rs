@@ -139,17 +139,14 @@ pub fn fade_out_entity_event_system(
     for FadeOutEntityEvent(entity) in event_reader.iter() {
         // If interrupting Fade::In then start with its inverse progress to
         // avoid visual popping. If it's Fade::Out, just let it run until done.
-        let fade_out_progress = match query.get_component::<Fade>(*entity) {
+        let progress = match query.get_component::<Fade>(*entity) {
             Ok(Fade::In(progress)) => 1.0 - *progress,
             Ok(Fade::Out(_)) => continue,
             _ => 0.0,
         };
 
-        // Remove Collider to prevent repeated collisions and/or scoring.
-        commands
-            .entity(*entity)
-            .remove::<Collider>()
-            .insert(Fade::Out(fade_out_progress));
+        // Initiate fade out.
+        commands.entity(*entity).insert(Fade::Out(progress));
         info!("Entity({:?}) -> Fading Out", entity);
     }
 }
