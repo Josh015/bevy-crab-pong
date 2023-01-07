@@ -27,7 +27,7 @@ pub struct MaxSpeed(pub f32);
 pub struct Acceleration(pub f32);
 
 #[derive(Bundle, Default)]
-pub struct MovementBundle {
+pub struct VelocityBundle {
     pub heading: Heading,
     pub speed: Speed,
 }
@@ -35,7 +35,7 @@ pub struct MovementBundle {
 #[derive(Bundle, Default)]
 pub struct AccelerationBundle {
     #[bundle]
-    pub movement: MovementBundle,
+    pub velocity: VelocityBundle,
     pub force: Force,
     pub max_speed: MaxSpeed,
     pub acceleration: Acceleration,
@@ -72,7 +72,7 @@ pub fn acceleration_system(
 }
 
 /// Handles moving entities with [`Heading`] and [`Speed`].
-pub fn movement_system(
+pub fn velocity_system(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &Heading, &Speed)>,
 ) {

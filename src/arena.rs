@@ -247,7 +247,7 @@ pub fn arena_ball_spawner_system(
 
         commands.entity(entity).insert((
             Collider,
-            MovementBundle {
+            VelocityBundle {
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
                 speed: Speed(config.ball_max_speed),
                 ..default()

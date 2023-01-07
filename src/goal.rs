@@ -89,7 +89,7 @@ pub fn spawn_paddles_system(
                     Paddle,
                     Collider,
                     AccelerationBundle {
-                        movement: MovementBundle {
+                        velocity: VelocityBundle {
                             heading: Heading(Vec3::X),
                             ..default()
                         },

@@ -65,7 +65,7 @@ fn main() {
             SystemSet::on_update(AppState::Game)
                 .with_system(arena_collision_system)
                 .with_system(acceleration_system)
-                .with_system(movement_system)
+                .with_system(velocity_system)
                 .with_system(goal_paddle_collision_system)
                 .with_system(goal_paddle_ai_control_system)
                 .with_system(arena_ball_spawner_system)
