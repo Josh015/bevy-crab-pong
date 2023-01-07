@@ -230,7 +230,7 @@ pub fn arena_ball_spawner_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     new_balls_query: Query<
         (Entity, Option<&Fade>),
-        (With<Ball>, Without<Movement>),
+        (With<Ball>, Without<Heading>, Without<Speed>),
     >,
     all_balls_query: Query<&Ball>,
 ) {
@@ -248,15 +248,8 @@ pub fn arena_ball_spawner_system(
         commands.entity(entity).insert((
             Collider,
             MovementBundle {
-                movement: Movement {
-                    force: Some(Force::Positive),
-                },
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
-                speed: Speed(config.ball_starting_speed),
-                max_speed: MaxSpeed(config.ball_max_speed),
-                acceleration: Acceleration(
-                    config.ball_max_speed / config.ball_seconds_to_max_speed,
-                ),
+                speed: Speed(config.ball_max_speed),
                 ..default()
             },
         ));

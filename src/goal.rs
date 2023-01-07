@@ -88,9 +88,12 @@ pub fn spawn_paddles_system(
                     side.clone(),
                     Paddle,
                     Collider,
-                    MovementBundle {
+                    AccelerationBundle {
+                        movement2: MovementBundle {
+                            heading: Heading(Vec3::X),
+                            ..default()
+                        },
                         movement: Movement { ..default() },
-                        heading: Heading(Vec3::X),
                         max_speed: MaxSpeed(config.paddle_max_speed),
                         acceleration: Acceleration(
                             config.paddle_max_speed

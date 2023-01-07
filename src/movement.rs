@@ -34,9 +34,15 @@ pub struct Acceleration(pub f32);
 
 #[derive(Bundle, Default)]
 pub struct MovementBundle {
-    pub movement: Movement,
     pub heading: Heading,
     pub speed: Speed,
+}
+
+#[derive(Bundle, Default)]
+pub struct AccelerationBundle {
+    #[bundle]
+    pub movement2: MovementBundle,
+    pub movement: Movement,
     pub max_speed: MaxSpeed,
     pub acceleration: Acceleration,
 }
@@ -79,7 +85,7 @@ pub fn movement_system(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &Heading, &Speed)>,
 ) {
-    for (mut transform, direction, speed) in &mut query {
-        transform.translation += direction.0 * (speed.0 * time.delta_seconds());
+    for (mut transform, heading, speed) in &mut query {
+        transform.translation += heading.0 * (speed.0 * time.delta_seconds());
     }
 }
