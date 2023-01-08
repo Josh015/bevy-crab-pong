@@ -27,8 +27,6 @@ pub struct RunState {
     pub font_handle: Handle<Font>,
     pub paddle_mesh_handle: Handle<Mesh>,
     pub paddle_material_handles: HashMap<Side, Handle<StandardMaterial>>,
-    pub wall_mesh_handle: Handle<Mesh>,
-    pub wall_material_handle: Handle<StandardMaterial>,
 }
 
 impl FromWorld for RunState {
@@ -38,28 +36,22 @@ impl FromWorld for RunState {
 
             asset_server.load("fonts/FiraSans-Bold.ttf")
         };
-        let (wall_mesh_handle, paddle_mesh_handle) = {
+        let paddle_mesh_handle = {
             let mut meshes = world.get_resource_mut::<Assets<Mesh>>().unwrap();
 
-            (
-                meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-            )
+            meshes.add(Mesh::from(shape::Cube { size: 1.0 }))
         };
-        let (wall_material_handle, paddle_material_handles) = {
+        let paddle_material_handles = {
             let mut materials = world
                 .get_resource_mut::<Assets<StandardMaterial>>()
                 .unwrap();
 
-            (
-                materials.add(Color::hex("00A400").unwrap().into()),
-                HashMap::from([
-                    (Side::Bottom, materials.add(Color::RED.into())),
-                    (Side::Right, materials.add(Color::BLUE.into())),
-                    (Side::Top, materials.add(Color::ORANGE.into())),
-                    (Side::Left, materials.add(Color::PURPLE.into())),
-                ]),
-            )
+            HashMap::from([
+                (Side::Bottom, materials.add(Color::RED.into())),
+                (Side::Right, materials.add(Color::BLUE.into())),
+                (Side::Top, materials.add(Color::ORANGE.into())),
+                (Side::Left, materials.add(Color::PURPLE.into())),
+            ])
         };
 
         Self {
@@ -68,8 +60,6 @@ impl FromWorld for RunState {
             font_handle,
             paddle_mesh_handle,
             paddle_material_handles,
-            wall_mesh_handle,
-            wall_material_handle,
         }
     }
 }

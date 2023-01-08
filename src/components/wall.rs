@@ -11,6 +11,35 @@ pub const WALL_SCALE: Vec3 =
 #[derive(Component)]
 pub struct Wall;
 
+/// Cached wall materials and meshes.
+#[derive(Debug, Resource)]
+pub struct WallResources {
+    pub wall_mesh_handle: Handle<Mesh>,
+    pub wall_material_handle: Handle<StandardMaterial>,
+}
+
+impl FromWorld for WallResources {
+    fn from_world(world: &mut World) -> Self {
+        let wall_mesh_handle = {
+            let mut meshes = world.get_resource_mut::<Assets<Mesh>>().unwrap();
+
+            meshes.add(Mesh::from(shape::Cube { size: 1.0 }))
+        };
+        let wall_material_handle = {
+            let mut materials = world
+                .get_resource_mut::<Assets<StandardMaterial>>()
+                .unwrap();
+
+            materials.add(Color::hex("00A400").unwrap().into())
+        };
+
+        Self {
+            wall_mesh_handle,
+            wall_material_handle,
+        }
+    }
+}
+
 /// An event fired when a [`Wall`] needs to be spawned.
 pub struct SpawnWallEvent {
     pub side: Side,
@@ -18,7 +47,7 @@ pub struct SpawnWallEvent {
 }
 
 pub fn spawn_wall_event(
-    run_state: Res<RunState>,
+    resources: Res<WallResources>,
     mut commands: Commands,
     mut event_reader: EventReader<SpawnWallEvent>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
@@ -42,8 +71,8 @@ pub fn spawn_wall_event(
                         fade: Fade::In(if *is_instant { 1.0 } else { 0.0 }),
                     },
                     PbrBundle {
-                        mesh: run_state.wall_mesh_handle.clone(),
-                        material: run_state.wall_material_handle.clone(),
+                        mesh: resources.wall_mesh_handle.clone(),
+                        material: resources.wall_material_handle.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
                                 Vec3::splat(f32::EPSILON),
@@ -76,7 +105,8 @@ pub struct WallPlugin;
 
 impl Plugin for WallPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<SpawnWallEvent>()
+        app.init_resource::<WallResources>()
+            .add_event::<SpawnWallEvent>()
             .add_system_set(
                 SystemSet::on_exit(GameScreen::StartMenu)
                     .with_system(despawn_walls),

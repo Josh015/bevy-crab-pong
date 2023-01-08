@@ -14,7 +14,7 @@ pub const BALL_SPAWNER_POSITION: Vec3 = Vec3::new(
 #[derive(Component)]
 pub struct Ball;
 
-/// All global information for this game.
+/// Cached ball materials and meshes.
 #[derive(Debug, Resource)]
 pub struct BallResources {
     pub ball_mesh_handle: Handle<Mesh>,
