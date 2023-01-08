@@ -88,7 +88,7 @@ impl Plugin for MovementPlugin {
         app.add_system_set(
             SystemSet::on_update(AppState::Game)
                 .with_system(acceleration_system)
-                .with_system(velocity_system),
+                .with_system(velocity_system.after(acceleration_system)),
         );
     }
 }
