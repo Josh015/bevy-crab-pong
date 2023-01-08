@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::prelude::*;
 
 pub const PADDLE_WIDTH: f32 = 0.2;
@@ -12,11 +14,45 @@ pub const PADDLE_SCALE: Vec3 =
 #[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
 pub struct Paddle;
 
+/// All global information for this game.
+#[derive(Debug, Resource)]
+pub struct PaddleResources {
+    pub paddle_mesh_handle: Handle<Mesh>,
+    pub paddle_material_handles: HashMap<Side, Handle<StandardMaterial>>,
+}
+
+impl FromWorld for PaddleResources {
+    fn from_world(world: &mut World) -> Self {
+        let paddle_mesh_handle = {
+            let mut meshes = world.get_resource_mut::<Assets<Mesh>>().unwrap();
+
+            meshes.add(Mesh::from(shape::Cube { size: 1.0 }))
+        };
+        let paddle_material_handles = {
+            let mut materials = world
+                .get_resource_mut::<Assets<StandardMaterial>>()
+                .unwrap();
+
+            HashMap::from([
+                (Side::Bottom, materials.add(Color::RED.into())),
+                (Side::Right, materials.add(Color::BLUE.into())),
+                (Side::Top, materials.add(Color::ORANGE.into())),
+                (Side::Left, materials.add(Color::PURPLE.into())),
+            ])
+        };
+
+        Self {
+            paddle_mesh_handle,
+            paddle_material_handles,
+        }
+    }
+}
+
 /// Spawns [`Paddle`] entities for their corresponding goals.
 pub fn spawn_paddles(
     mut commands: Commands,
     config: Res<GameConfig>,
-    run_state: Res<RunState>,
+    resources: Res<PaddleResources>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     paddles_query: Query<Entity, (With<Paddle>, Without<Fade>)>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
@@ -56,8 +92,8 @@ pub fn spawn_paddles(
                     ..default()
                 },
                 PbrBundle {
-                    mesh: run_state.paddle_mesh_handle.clone(),
-                    material: run_state.paddle_material_handles[side].clone(),
+                    mesh: resources.paddle_mesh_handle.clone(),
+                    material: resources.paddle_material_handles[side].clone(),
                     transform: Transform::from_matrix(
                         Mat4::from_scale_rotation_translation(
                             Vec3::splat(f32::EPSILON),
@@ -84,7 +120,7 @@ pub struct PaddlePlugin;
 
 impl Plugin for PaddlePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
+        app.init_resource::<PaddleResources>().add_system_set(
             SystemSet::on_exit(GameScreen::StartMenu)
                 .with_system(spawn_paddles),
         );
