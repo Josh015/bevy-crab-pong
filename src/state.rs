@@ -24,11 +24,9 @@ pub struct RunState {
     pub game_over: Option<GameOver>,
 
     // TODO: Move these to corresponding component files!
-    pub next_ball_material_index: usize,
     pub font_handle: Handle<Font>,
     pub paddle_mesh_handle: Handle<Mesh>,
     pub paddle_material_handles: HashMap<Side, Handle<StandardMaterial>>,
-    pub ball_mesh_handle: Handle<Mesh>,
     pub wall_mesh_handle: Handle<Mesh>,
     pub wall_material_handle: Handle<StandardMaterial>,
 }
@@ -40,16 +38,12 @@ impl FromWorld for RunState {
 
             asset_server.load("fonts/FiraSans-Bold.ttf")
         };
-        let (wall_mesh_handle, paddle_mesh_handle, ball_mesh_handle) = {
+        let (wall_mesh_handle, paddle_mesh_handle) = {
             let mut meshes = world.get_resource_mut::<Assets<Mesh>>().unwrap();
 
             (
                 meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
                 meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                meshes.add(Mesh::from(shape::Icosphere {
-                    radius: 0.5,
-                    subdivisions: 2,
-                })),
             )
         };
         let (wall_material_handle, paddle_material_handles) = {
@@ -71,11 +65,9 @@ impl FromWorld for RunState {
         Self {
             goals_hit_points: HashMap::with_capacity(4),
             game_over: None,
-            next_ball_material_index: 0,
             font_handle,
             paddle_mesh_handle,
             paddle_material_handles,
-            ball_mesh_handle,
             wall_mesh_handle,
             wall_material_handle,
         }

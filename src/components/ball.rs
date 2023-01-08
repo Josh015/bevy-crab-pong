@@ -14,12 +14,57 @@ pub const BALL_SPAWNER_POSITION: Vec3 = Vec3::new(
 #[derive(Component)]
 pub struct Ball;
 
+/// All global information for this game.
+#[derive(Debug, Resource)]
+pub struct BallResources {
+    pub ball_mesh_handle: Handle<Mesh>,
+    pub ball_material_handles: Vec<Handle<StandardMaterial>>,
+    pub next_ball_material_index: usize,
+}
+
+impl FromWorld for BallResources {
+    fn from_world(world: &mut World) -> Self {
+        let ball_mesh_handle = {
+            let mut meshes = world.get_resource_mut::<Assets<Mesh>>().unwrap();
+            meshes.add(Mesh::from(shape::Icosphere {
+                radius: 0.5,
+                subdivisions: 2,
+            }))
+        };
+
+        let max_ball_count =
+            { world.get_resource::<GameConfig>().unwrap().max_ball_count };
+
+        let ball_material_handles = {
+            let mut materials = world
+                .get_resource_mut::<Assets<StandardMaterial>>()
+                .unwrap();
+
+            (0..max_ball_count)
+                .into_iter()
+                .map(|_| {
+                    materials.add(StandardMaterial {
+                        alpha_mode: AlphaMode::Blend,
+                        base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),
+                        ..default()
+                    })
+                })
+                .collect()
+        };
+
+        Self {
+            ball_mesh_handle,
+            ball_material_handles,
+            next_ball_material_index: 0,
+        }
+    }
+}
+
 /// Automatically spawns [`Ball`] entities from the center of the arena.
 pub fn spawn_balls(
     config: Res<GameConfig>,
-    run_state: Res<RunState>,
+    mut resources: ResMut<BallResources>,
     mut commands: Commands,
-    mut materials: ResMut<Assets<StandardMaterial>>,
     new_balls_query: Query<
         (Entity, Option<&Fade>),
         (With<Ball>, Without<Heading>, Without<Speed>),
@@ -53,14 +98,6 @@ pub fn spawn_balls(
         return;
     }
 
-    // TODO: Figure out how to give each ball own material without constantly
-    // creating more?
-    let material = materials.add(StandardMaterial {
-        alpha_mode: AlphaMode::Blend,
-        base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),
-        ..default()
-    });
-
     let entity = commands
         .spawn((
             Ball,
@@ -69,8 +106,10 @@ pub fn spawn_balls(
             },
             FadeBundle::default(),
             PbrBundle {
-                mesh: run_state.ball_mesh_handle.clone(),
-                material: material.clone(),
+                mesh: resources.ball_mesh_handle.clone(),
+                material: resources.ball_material_handles
+                    [resources.next_ball_material_index]
+                    .clone(),
                 transform: Transform::from_matrix(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(BALL_DIAMETER),
@@ -83,6 +122,8 @@ pub fn spawn_balls(
         ))
         .id();
 
+    resources.next_ball_material_index += 1;
+    resources.next_ball_material_index %= config.max_ball_count;
     info!("Ball({:?}) -> Spawning", entity);
 }
 
@@ -90,7 +131,7 @@ pub struct BallPlugin;
 
 impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
+        app.init_resource::<BallResources>().add_system_set(
             SystemSet::on_update(GameScreen::Playing).with_system(spawn_balls),
         );
     }
