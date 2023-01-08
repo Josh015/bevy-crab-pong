@@ -86,7 +86,7 @@ pub struct MovementPlugin;
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
-            SystemSet::on_update(AppState::Game)
+            SystemSet::on_update(GameScreen::Playing)
                 .with_system(acceleration)
                 .with_system(velocity.after(acceleration)),
         );

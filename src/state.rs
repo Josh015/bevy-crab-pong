@@ -1,12 +1,12 @@
 use crate::prelude::*;
 use std::collections::HashMap;
 
-/// Current state of the app.
+/// Current screen of the game.
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
-pub enum AppState {
+pub enum GameScreen {
     StartMenu,
-    Game,
-    Pause,
+    Playing,
+    Paused,
 }
 
 /// Represents whether the player won or lost the last game.
@@ -22,9 +22,9 @@ pub enum GameOver {
 pub struct RunState {
     pub goals_hit_points: HashMap<Side, u32>,
     pub game_over: Option<GameOver>,
-    pub next_ball_material_index: usize,
 
-    // Store the most used asset handles.
+    // TODO: Move these to corresponding component files!
+    pub next_ball_material_index: usize,
     pub font_handle: Handle<Font>,
     pub paddle_mesh_handle: Handle<Mesh>,
     pub paddle_material_handles: HashMap<Side, Handle<StandardMaterial>>,
@@ -95,7 +95,7 @@ pub fn reset_hit_points(
 /// Checks for conditions that would trigger a game over.
 pub fn game_over_check(
     mut run_state: ResMut<RunState>,
-    mut state: ResMut<State<AppState>>,
+    mut game_screen: ResMut<State<GameScreen>>,
     mut event_reader: EventReader<GoalEliminatedEvent>,
     enemies_query: Query<&Side, (With<Paddle>, With<Ai>)>,
     players_query: Query<&Side, (With<Paddle>, With<Player>)>,
@@ -121,7 +121,7 @@ pub fn game_over_check(
             Some(GameOver::Lost)
         };
 
-        state.set(AppState::StartMenu).unwrap();
+        game_screen.set(GameScreen::StartMenu).unwrap();
         info!("Game Over -> Player {:?}", run_state.game_over.unwrap());
     }
 }
@@ -131,13 +131,13 @@ pub struct StatePlugin;
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<RunState>()
-            .add_state(AppState::StartMenu)
+            .add_state(GameScreen::StartMenu)
             .add_system_set(
-                SystemSet::on_exit(AppState::StartMenu)
+                SystemSet::on_exit(GameScreen::StartMenu)
                     .with_system(reset_hit_points),
             )
             .add_system_set(
-                SystemSet::on_update(AppState::Game)
+                SystemSet::on_update(GameScreen::Playing)
                     .with_system(game_over_check.after(goal_eliminated_event)),
             )
             .add_startup_system(reset_hit_points);

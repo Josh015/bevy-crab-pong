@@ -65,7 +65,7 @@ pub fn spawn_balls(
         .spawn((
             Ball,
             ForState {
-                states: vec![AppState::Game, AppState::Pause],
+                states: vec![GameScreen::Playing, GameScreen::Paused],
             },
             FadeBundle::default(),
             PbrBundle {
@@ -91,7 +91,7 @@ pub struct BallPlugin;
 impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
-            SystemSet::on_update(AppState::Game).with_system(spawn_balls),
+            SystemSet::on_update(GameScreen::Playing).with_system(spawn_balls),
         );
     }
 }

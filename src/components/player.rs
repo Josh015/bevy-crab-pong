@@ -32,7 +32,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
-            SystemSet::on_update(AppState::Game)
+            SystemSet::on_update(GameScreen::Playing)
                 .with_system(player_paddle_control),
         );
     }

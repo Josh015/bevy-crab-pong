@@ -85,7 +85,8 @@ pub struct PaddlePlugin;
 impl Plugin for PaddlePlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
-            SystemSet::on_exit(AppState::StartMenu).with_system(spawn_paddles),
+            SystemSet::on_exit(GameScreen::StartMenu)
+                .with_system(spawn_paddles),
         );
     }
 }

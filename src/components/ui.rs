@@ -3,7 +3,7 @@ use crate::prelude::*;
 /// An event fired when spawning a message UI.
 pub struct MessageUiEvent {
     message: String,
-    screen: AppState,
+    game_screen: GameScreen,
 }
 
 /// A component for marking a [`Text`] UI entity as displaying the hit points
@@ -30,11 +30,15 @@ pub fn spawn_ui_message_event(
     mut commands: Commands,
     mut event_reader: EventReader<MessageUiEvent>,
 ) {
-    for MessageUiEvent { message, screen } in event_reader.iter() {
+    for MessageUiEvent {
+        message,
+        game_screen,
+    } in event_reader.iter()
+    {
         commands
             .spawn((
                 ForState {
-                    states: vec![screen.clone()],
+                    states: vec![game_screen.clone()],
                 },
                 NodeBundle {
                     style: Style {
@@ -101,7 +105,7 @@ pub fn spawn_start_menu_ui(
 
     ui_message_events.send(MessageUiEvent {
         message,
-        screen: AppState::StartMenu,
+        game_screen: GameScreen::StartMenu,
     });
 }
 
@@ -111,7 +115,7 @@ pub fn spawn_pause_ui(
 ) {
     ui_message_events.send(MessageUiEvent {
         message: config.pause_message.clone(),
-        screen: AppState::Pause,
+        game_screen: GameScreen::Paused,
     });
 }
 
@@ -121,11 +125,11 @@ impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<MessageUiEvent>()
             .add_system_set(
-                SystemSet::on_enter(AppState::StartMenu)
+                SystemSet::on_enter(GameScreen::StartMenu)
                     .with_system(spawn_start_menu_ui),
             )
             .add_system_set(
-                SystemSet::on_enter(AppState::Pause)
+                SystemSet::on_enter(GameScreen::Paused)
                     .with_system(spawn_pause_ui),
             )
             .add_system(spawn_ui_message_event)

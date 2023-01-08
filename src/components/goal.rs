@@ -99,7 +99,7 @@ pub struct GoalPlugin;
 impl Plugin for GoalPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<GoalEliminatedEvent>().add_system_set(
-            SystemSet::on_update(AppState::Game)
+            SystemSet::on_update(GameScreen::Playing)
                 .with_system(goal_scored_check)
                 .with_system(goal_eliminated_event.after(goal_scored_check)),
         );

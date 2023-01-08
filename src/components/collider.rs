@@ -189,7 +189,7 @@ pub struct ColliderPlugin;
 impl Plugin for ColliderPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
-            SystemSet::on_update(AppState::Game)
+            SystemSet::on_update(GameScreen::Playing)
                 .with_system(paddle_to_barrier_collisions)
                 .with_system(ball_to_ball_collisions)
                 .with_system(

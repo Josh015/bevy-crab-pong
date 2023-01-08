@@ -78,12 +78,12 @@ pub fn fade_entities(
     mut commands: Commands,
     config: Res<GameConfig>,
     time: Res<Time>,
-    state: Res<State<AppState>>,
+    game_screen: Res<State<GameScreen>>,
     mut query: Query<(Entity, &mut Fade), With<FadeAnimation>>,
 ) {
     for (entity, mut fade) in &mut query {
         // Prevent fade animations from running when game is paused.
-        if *state.current() == AppState::Pause {
+        if *game_screen.current() == GameScreen::Paused {
             return;
         }
 

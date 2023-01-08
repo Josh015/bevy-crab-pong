@@ -41,33 +41,33 @@ fn main() {
 /// Handles all user input regardless of the current game state.
 pub fn input(
     keyboard_input: Res<Input<KeyCode>>,
-    mut state: ResMut<State<AppState>>,
+    mut game_screen: ResMut<State<GameScreen>>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
         app_exit_events.send(AppExit);
     }
 
-    if state.current() != &AppState::StartMenu
+    if game_screen.current() != &GameScreen::StartMenu
         && keyboard_input.just_pressed(KeyCode::Back)
     {
-        state.set(AppState::StartMenu).unwrap();
+        game_screen.set(GameScreen::StartMenu).unwrap();
         info!("Start Menu");
     }
 
-    if state.current() == &AppState::Game {
+    if game_screen.current() == &GameScreen::Playing {
         if keyboard_input.just_pressed(KeyCode::Space) {
-            state.set(AppState::Pause).unwrap();
+            game_screen.set(GameScreen::Paused).unwrap();
             info!("Paused");
         }
-    } else if state.current() == &AppState::Pause {
+    } else if game_screen.current() == &GameScreen::Paused {
         if keyboard_input.just_pressed(KeyCode::Space) {
-            state.set(AppState::Game).unwrap();
+            game_screen.set(GameScreen::Playing).unwrap();
             info!("Unpaused");
         }
-    } else if state.current() == &AppState::StartMenu {
+    } else if game_screen.current() == &GameScreen::StartMenu {
         if keyboard_input.just_pressed(KeyCode::Return) {
-            state.set(AppState::Game).unwrap();
+            game_screen.set(GameScreen::Playing).unwrap();
             info!("New Game");
         }
     }
