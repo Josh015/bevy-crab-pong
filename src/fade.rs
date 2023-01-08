@@ -151,7 +151,6 @@ pub fn fade_animation_system(
     }
 }
 
-#[derive(Default)]
 pub struct FadePlugin;
 
 impl Plugin for FadePlugin {

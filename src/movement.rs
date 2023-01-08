@@ -80,3 +80,15 @@ pub fn velocity_system(
         transform.translation += heading.0 * (speed.0 * time.delta_seconds());
     }
 }
+
+pub struct MovementPlugin;
+
+impl Plugin for MovementPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system_set(
+            SystemSet::on_update(AppState::Game)
+                .with_system(acceleration_system)
+                .with_system(velocity_system),
+        );
+    }
+}

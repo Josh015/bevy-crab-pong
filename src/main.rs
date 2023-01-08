@@ -63,8 +63,6 @@ fn main() {
         .add_system_set(
             SystemSet::on_update(AppState::Game)
                 .with_system(arena_collision_system)
-                .with_system(acceleration_system)
-                .with_system(velocity_system)
                 .with_system(goal_paddle_collision_system)
                 .with_system(goal_paddle_ai_control_system)
                 .with_system(arena_ball_spawner_system)
@@ -91,6 +89,7 @@ fn main() {
         .add_startup_system(spawn_arena_system)
         .add_startup_system(reset_hit_points_system.after(spawn_arena_system))
         .add_plugin(FadePlugin)
+        .add_plugin(MovementPlugin)
         .run();
 }
 
