@@ -52,7 +52,7 @@ impl Default for Fade {
 
 /// Makes a [`FadeAnimation`] entity start its animation to fade out and
 /// despawn.
-pub fn fade_out_entity_event_system(
+pub fn fade_out_entity_event(
     mut commands: Commands,
     query: Query<(Entity, &Fade)>,
     mut event_reader: EventReader<FadeOutEntityEvent>,
@@ -74,7 +74,7 @@ pub fn fade_out_entity_event_system(
 
 /// Progresses a [`Fade`] component to completion before either removing it or
 /// despawning the entity.
-pub fn fade_system(
+pub fn fade_entities(
     mut commands: Commands,
     config: Res<GameConfig>,
     time: Res<Time>,
@@ -113,7 +113,7 @@ pub fn fade_system(
 
 /// Handles [`Fade`] animations and the transition from visible->invisible and
 /// vice versa over time.
-pub fn fade_animation_system(
+pub fn fade_animation(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<(
         &mut Transform,
@@ -156,8 +156,8 @@ pub struct FadePlugin;
 impl Plugin for FadePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<FadeOutEntityEvent>()
-            .add_system(fade_out_entity_event_system)
-            .add_system(fade_system)
-            .add_system(fade_animation_system.after(fade_system));
+            .add_system(fade_out_entity_event)
+            .add_system(fade_entities)
+            .add_system(fade_animation.after(fade_entities));
     }
 }

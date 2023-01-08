@@ -9,33 +9,6 @@ pub enum AppState {
     Pause,
 }
 
-/// Component to tag an entity as only needed in one state.
-#[derive(Component)]
-pub struct ForState<T> {
-    pub states: Vec<T>,
-}
-
-/// When entering a new state this despawns [`ForState`] entities that aren't
-/// configured for it.
-pub fn app_state_enter_despawn_system(
-    mut commands: Commands,
-    state: Res<State<AppState>>,
-    mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
-    mut query: Query<(Entity, &ForState<AppState>, Option<&FadeAnimation>)>,
-) {
-    for (entity, for_state, fade_animation) in &mut query {
-        if for_state.states.contains(state.current()) {
-            continue;
-        }
-
-        if fade_animation.is_some() {
-            fade_out_entity_events.send(FadeOutEntityEvent(entity));
-        } else {
-            commands.entity(entity).despawn_recursive();
-        }
-    }
-}
-
 /// Represents whether the player won or lost the last game.
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash)]
 pub enum GameOver {
@@ -110,7 +83,7 @@ impl FromWorld for RunState {
 }
 
 /// Resets all goal HP fields to their starting value.
-pub fn reset_hit_points_system(
+pub fn reset_hit_points(
     config: Res<GameConfig>,
     mut run_state: ResMut<RunState>,
 ) {
@@ -120,11 +93,11 @@ pub fn reset_hit_points_system(
 }
 
 /// Checks for conditions that would trigger a game over.
-pub fn game_over_check_system(
+pub fn game_over_check(
     mut run_state: ResMut<RunState>,
     mut state: ResMut<State<AppState>>,
     mut event_reader: EventReader<GoalEliminatedEvent>,
-    enemies_query: Query<&Side, (With<Paddle>, With<Enemy>)>,
+    enemies_query: Query<&Side, (With<Paddle>, With<Ai>)>,
     players_query: Query<&Side, (With<Paddle>, With<Player>)>,
 ) {
     for GoalEliminatedEvent(_) in event_reader.iter() {
@@ -160,24 +133,13 @@ impl Plugin for StatePlugin {
         app.init_resource::<RunState>()
             .add_state(AppState::StartMenu)
             .add_system_set(
-                SystemSet::on_enter(AppState::StartMenu)
-                    .with_system(app_state_enter_despawn_system),
-            )
-            .add_system_set(
-                SystemSet::on_enter(AppState::Game)
-                    .with_system(app_state_enter_despawn_system),
-            )
-            .add_system_set(
-                SystemSet::on_enter(AppState::Pause)
-                    .with_system(app_state_enter_despawn_system),
-            )
-            .add_system_set(
                 SystemSet::on_exit(AppState::StartMenu)
-                    .with_system(reset_hit_points_system),
+                    .with_system(reset_hit_points),
             )
-            .add_system_set(SystemSet::on_update(AppState::Game).with_system(
-                game_over_check_system.after(goal_eliminated_event_system),
-            ))
-            .add_startup_system(reset_hit_points_system);
+            .add_system_set(
+                SystemSet::on_update(AppState::Game)
+                    .with_system(game_over_check.after(goal_eliminated_event)),
+            )
+            .add_startup_system(reset_hit_points);
     }
 }

@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use bevy::app::AppExit;
 
 /// An event fired when spawning a message UI.
 pub struct MessageUiEvent {
@@ -16,7 +15,7 @@ pub struct HitPointsUi;
 
 /// Updates a [`Text`] entity to display the current life of its associated
 /// [`Goal`].
-pub fn goal_hit_points_ui_system(
+pub fn goal_hit_points_ui(
     game: Res<RunState>,
     mut query: Query<(&Side, &mut Text), With<HitPointsUi>>,
 ) {
@@ -26,7 +25,7 @@ pub fn goal_hit_points_ui_system(
     }
 }
 
-pub fn spawn_ui_message_event_system(
+pub fn spawn_ui_message_event(
     run_state: Res<RunState>,
     mut commands: Commands,
     mut event_reader: EventReader<MessageUiEvent>,
@@ -87,7 +86,7 @@ pub fn spawn_ui_message_event_system(
     }
 }
 
-pub fn spawn_start_menu_ui_system(
+pub fn spawn_start_menu_ui(
     config: Res<GameConfig>,
     run_state: Res<RunState>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
@@ -106,7 +105,7 @@ pub fn spawn_start_menu_ui_system(
     });
 }
 
-pub fn spawn_pause_ui_system(
+pub fn spawn_pause_ui(
     config: Res<GameConfig>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
@@ -116,54 +115,20 @@ pub fn spawn_pause_ui_system(
     });
 }
 
-/// Handles all user input regardless of the current game state.
-pub fn user_input_system(
-    keyboard_input: Res<Input<KeyCode>>,
-    mut state: ResMut<State<AppState>>,
-    mut app_exit_events: EventWriter<AppExit>,
-    mut query: Query<&mut Force, (With<Player>, With<Paddle>)>,
-) {
-    if keyboard_input.just_pressed(KeyCode::Escape) {
-        app_exit_events.send(AppExit);
-    }
+pub struct UiPlugin;
 
-    if state.current() != &AppState::StartMenu
-        && keyboard_input.just_pressed(KeyCode::Back)
-    {
-        state.set(AppState::StartMenu).unwrap();
-        info!("Start Menu");
-    }
-
-    if state.current() == &AppState::Game {
-        // Makes a Paddle entity move left/right in response to the
-        // keyboard's corresponding arrows keys.
-        for mut force in &mut query {
-            *force = if keyboard_input.pressed(KeyCode::Left)
-                || keyboard_input.pressed(KeyCode::A)
-            {
-                Force::Negative
-            } else if keyboard_input.pressed(KeyCode::Right)
-                || keyboard_input.pressed(KeyCode::D)
-            {
-                Force::Positive
-            } else {
-                Force::Zero
-            };
-        }
-
-        if keyboard_input.just_pressed(KeyCode::Space) {
-            state.set(AppState::Pause).unwrap();
-            info!("Paused");
-        }
-    } else if state.current() == &AppState::Pause {
-        if keyboard_input.just_pressed(KeyCode::Space) {
-            state.set(AppState::Game).unwrap();
-            info!("Unpaused");
-        }
-    } else if state.current() == &AppState::StartMenu {
-        if keyboard_input.just_pressed(KeyCode::Return) {
-            state.set(AppState::Game).unwrap();
-            info!("New Game");
-        }
+impl Plugin for UiPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_event::<MessageUiEvent>()
+            .add_system_set(
+                SystemSet::on_enter(AppState::StartMenu)
+                    .with_system(spawn_start_menu_ui),
+            )
+            .add_system_set(
+                SystemSet::on_enter(AppState::Pause)
+                    .with_system(spawn_pause_ui),
+            )
+            .add_system(spawn_ui_message_event)
+            .add_system(goal_hit_points_ui);
     }
 }

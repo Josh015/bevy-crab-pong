@@ -50,7 +50,7 @@ pub fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
 
 /// Handles calculating the actual acceleration/deceleration over time for a
 /// [`Force`] entity.
-pub fn acceleration_system(
+pub fn acceleration(
     time: Res<Time>,
     mut query: Query<(&mut Speed, &Force, &MaxSpeed, &Acceleration)>,
 ) {
@@ -72,7 +72,7 @@ pub fn acceleration_system(
 }
 
 /// Handles moving entities with [`Heading`] and [`Speed`].
-pub fn velocity_system(
+pub fn velocity(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &Heading, &Speed)>,
 ) {
@@ -87,8 +87,8 @@ impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
             SystemSet::on_update(AppState::Game)
-                .with_system(acceleration_system)
-                .with_system(velocity_system.after(acceleration_system)),
+                .with_system(acceleration)
+                .with_system(velocity.after(acceleration)),
         );
     }
 }

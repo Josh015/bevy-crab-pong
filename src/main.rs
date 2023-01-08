@@ -1,24 +1,15 @@
-mod arena;
 mod components;
 mod config;
-mod fade;
 mod files;
-mod goal;
-mod movement;
-mod side;
 mod state;
-mod ui;
 
 pub mod prelude {
-    pub use crate::{
-        arena::*, components::*, config::*, fade::*, goal::*, movement::*,
-        side::*, state::*, ui::*,
-    };
+    pub use crate::{components::*, config::*, state::*};
     pub use bevy::{math::*, prelude::*};
     pub use rand::prelude::*;
 }
 
-use bevy::window::PresentMode;
+use bevy::{app::AppExit, window::PresentMode};
 
 use crate::prelude::*;
 
@@ -39,53 +30,242 @@ fn main() {
         }))
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(ClearColor(config.clear_color))
-        .add_event::<MessageUiEvent>()
-        .add_event::<SpawnWallEvent>()
-        .add_event::<GoalEliminatedEvent>()
         .insert_resource(config)
-        .add_system_set(
-            SystemSet::on_enter(AppState::StartMenu)
-                .with_system(spawn_start_menu_ui_system),
-        )
-        .add_system_set(
-            SystemSet::on_exit(AppState::StartMenu)
-                .with_system(goal_despawn_walls_system)
-                .with_system(spawn_paddles_system),
-        )
-        .add_system_set(
-            SystemSet::on_update(AppState::Game)
-                .with_system(arena_collision_system)
-                .with_system(goal_paddle_collision_system)
-                .with_system(goal_paddle_ai_control_system)
-                .with_system(arena_ball_spawner_system)
-                .with_system(goal_scored_check_system)
-                .with_system(
-                    goal_eliminated_event_system
-                        .after(goal_scored_check_system),
-                ),
-        )
-        .add_system_set(
-            SystemSet::on_enter(AppState::Pause)
-                .with_system(spawn_pause_ui_system),
-        )
-        .add_system(user_input_system)
-        .add_system(spawn_ui_message_event_system)
-        .add_system(goal_hit_points_ui_system)
-        .add_system(spawn_wall_event_system)
-        .add_system(arena_animated_water_system)
-        .add_system(arena_swaying_camera_system)
-        .add_startup_system(spawn_arena_system)
+        .add_plugin(ComponentsPlugin)
         .add_plugin(StatePlugin)
-        .add_plugin(FadePlugin)
-        .add_plugin(MovementPlugin)
+        .add_system(input)
+        .add_startup_system(setup)
         .run();
+}
+
+/// Handles all user input regardless of the current game state.
+pub fn input(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut state: ResMut<State<AppState>>,
+    mut app_exit_events: EventWriter<AppExit>,
+) {
+    if keyboard_input.just_pressed(KeyCode::Escape) {
+        app_exit_events.send(AppExit);
+    }
+
+    if state.current() != &AppState::StartMenu
+        && keyboard_input.just_pressed(KeyCode::Back)
+    {
+        state.set(AppState::StartMenu).unwrap();
+        info!("Start Menu");
+    }
+
+    if state.current() == &AppState::Game {
+        if keyboard_input.just_pressed(KeyCode::Space) {
+            state.set(AppState::Pause).unwrap();
+            info!("Paused");
+        }
+    } else if state.current() == &AppState::Pause {
+        if keyboard_input.just_pressed(KeyCode::Space) {
+            state.set(AppState::Game).unwrap();
+            info!("Unpaused");
+        }
+    } else if state.current() == &AppState::StartMenu {
+        if keyboard_input.just_pressed(KeyCode::Return) {
+            state.set(AppState::Game).unwrap();
+            info!("New Game");
+        }
+    }
+}
+
+/// Handles setting up the static arena entities.
+pub fn setup(
+    mut run_state: ResMut<RunState>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut spawn_wall_events: EventWriter<SpawnWallEvent>,
+) {
+    let unit_plane = meshes.add(Mesh::from(shape::Plane { size: 1.0 }));
+
+    // Cameras
+    commands.spawn((SwayingCamera, Camera3dBundle::default()));
+
+    // Light
+    let light_transform = Mat4::from_euler(
+        EulerRot::ZYX,
+        0.0,
+        std::f32::consts::FRAC_PI_4,
+        -std::f32::consts::FRAC_PI_4,
+    );
+    commands.spawn(DirectionalLightBundle {
+        directional_light: DirectionalLight {
+            illuminance: 10000.0,
+            shadow_projection: OrthographicProjection {
+                left: -10.0,
+                right: 10.0,
+                bottom: -10.0,
+                top: 10.0,
+                near: -50.0,
+                far: 50.0,
+                ..default()
+            },
+            // shadows_enabled: true,
+            ..default()
+        },
+        transform: Transform::from_matrix(light_transform),
+        ..default()
+    });
+
+    // Ocean
+    commands.spawn((
+        AnimatedWater::default(),
+        PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Plane { size: 100.0 })),
+            material: materials.add(StandardMaterial {
+                base_color: Color::hex("257AFFCC").unwrap(),
+                alpha_mode: AlphaMode::Blend,
+                ..default()
+            }),
+            transform: Transform::from_xyz(0.0, -0.01, 0.0),
+            ..default()
+        },
+    ));
+
+    // Beach
+    commands.spawn(PbrBundle {
+        mesh: unit_plane.clone(),
+        material: materials.add(Color::hex("C4BD99").unwrap().into()),
+        transform: Transform::from_matrix(
+            Mat4::from_scale_rotation_translation(
+                Vec3::splat(GOAL_WIDTH),
+                Quat::IDENTITY,
+                ARENA_CENTER_POINT,
+            ),
+        ),
+        ..default()
+    });
+
+    // Goals
+    let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
+    let barrier_material = materials.add(Color::hex("750000").unwrap().into());
+    let goal_configs = [
+        (
+            Side::Bottom,
+            UiRect {
+                bottom: Val::Px(5.0),
+                right: Val::Px(400.0),
+                ..default()
+            },
+        ),
+        (
+            Side::Right,
+            UiRect {
+                top: Val::Px(400.0),
+                right: Val::Px(5.0),
+                ..default()
+            },
+        ),
+        (
+            Side::Top,
+            UiRect {
+                top: Val::Px(5.0),
+                left: Val::Px(400.0),
+                ..default()
+            },
+        ),
+        (
+            Side::Left,
+            UiRect {
+                bottom: Val::Px(400.0),
+                left: Val::Px(5.0),
+                ..default()
+            },
+        ),
+    ];
+
+    for (i, (side, rect)) in goal_configs.iter().enumerate() {
+        // Walls
+        spawn_wall_events.send(SpawnWallEvent {
+            side: side.clone(),
+            is_instant: true,
+        });
+
+        // Goals
+        commands
+            .spawn((
+                Goal,
+                side.clone(),
+                PbrBundle {
+                    transform: Transform::from_rotation(Quat::from_axis_angle(
+                        Vec3::Y,
+                        std::f32::consts::TAU
+                            * (i as f32 / goal_configs.len() as f32),
+                    ))
+                    .mul_transform(Transform::from_xyz(
+                        0.0,
+                        0.0,
+                        GOAL_HALF_WIDTH,
+                    )),
+                    ..default()
+                },
+            ))
+            .with_children(|parent| {
+                // Barrier
+                parent.spawn((
+                    Barrier,
+                    Collider,
+                    PbrBundle {
+                        mesh: unit_cube.clone(),
+                        material: barrier_material.clone(),
+                        transform: Transform::from_matrix(
+                            Mat4::from_scale_rotation_translation(
+                                Vec3::new(
+                                    BARRIER_DIAMETER,
+                                    BARRIER_HEIGHT,
+                                    BARRIER_DIAMETER,
+                                ),
+                                Quat::IDENTITY,
+                                Vec3::new(
+                                    GOAL_HALF_WIDTH,
+                                    0.5 * BARRIER_HEIGHT,
+                                    0.0,
+                                ),
+                            ),
+                        ),
+                        ..default()
+                    },
+                ));
+            });
+
+        // Score
+        commands.spawn((
+            HitPointsUi,
+            side.clone(),
+            TextBundle {
+                style: Style {
+                    align_self: AlignSelf::FlexEnd,
+                    position_type: PositionType::Absolute,
+                    justify_content: JustifyContent::Center,
+                    position: *rect,
+                    ..default()
+                },
+                text: Text::from_section(
+                    "",
+                    TextStyle {
+                        font: run_state.font_handle.clone(),
+                        font_size: 50.0,
+                        color: Color::RED,
+                    },
+                ),
+                ..default()
+            },
+        ));
+
+        run_state.goals_hit_points.insert(side.clone(), 0);
+    }
 }
 
 // TODO: Need a fix for the rare occasion when a ball just bounces infinitely
 // between two walls in a straight line? Maybe make all bounces slightly adjust
 // ball angle rather than pure reflection?
 
-// TODO: Offer a "Traditional" mode with two paddles (1xPlayer, 1xEnemy)
+// TODO: Offer a "Traditional" mode with two paddles (1xPlayer, 1xAi)
 // opposite each other and the other two walled off. Also just one ball?
 
 // TODO: Debug option to make all paddles driven by AI? Will need to revise
