@@ -43,22 +43,14 @@ fn main() {
         .add_event::<SpawnWallEvent>()
         .add_event::<GoalEliminatedEvent>()
         .insert_resource(config)
-        .init_resource::<RunState>()
-        .add_state(AppState::StartMenu)
         .add_system_set(
             SystemSet::on_enter(AppState::StartMenu)
-                .with_system(spawn_start_menu_ui_system)
-                .with_system(app_state_enter_despawn_system),
+                .with_system(spawn_start_menu_ui_system),
         )
         .add_system_set(
             SystemSet::on_exit(AppState::StartMenu)
-                .with_system(reset_hit_points_system)
                 .with_system(goal_despawn_walls_system)
                 .with_system(spawn_paddles_system),
-        )
-        .add_system_set(
-            SystemSet::on_enter(AppState::Game)
-                .with_system(app_state_enter_despawn_system),
         )
         .add_system_set(
             SystemSet::on_update(AppState::Game)
@@ -70,15 +62,11 @@ fn main() {
                 .with_system(
                     goal_eliminated_event_system
                         .after(goal_scored_check_system),
-                )
-                .with_system(
-                    game_over_check_system.after(goal_eliminated_event_system),
                 ),
         )
         .add_system_set(
             SystemSet::on_enter(AppState::Pause)
-                .with_system(spawn_pause_ui_system)
-                .with_system(app_state_enter_despawn_system),
+                .with_system(spawn_pause_ui_system),
         )
         .add_system(user_input_system)
         .add_system(spawn_ui_message_event_system)
@@ -87,7 +75,7 @@ fn main() {
         .add_system(arena_animated_water_system)
         .add_system(arena_swaying_camera_system)
         .add_startup_system(spawn_arena_system)
-        .add_startup_system(reset_hit_points_system.after(spawn_arena_system))
+        .add_plugin(StatePlugin)
         .add_plugin(FadePlugin)
         .add_plugin(MovementPlugin)
         .run();

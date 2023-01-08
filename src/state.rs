@@ -152,3 +152,32 @@ pub fn game_over_check_system(
         info!("Game Over -> Player {:?}", run_state.game_over.unwrap());
     }
 }
+
+pub struct StatePlugin;
+
+impl Plugin for StatePlugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<RunState>()
+            .add_state(AppState::StartMenu)
+            .add_system_set(
+                SystemSet::on_enter(AppState::StartMenu)
+                    .with_system(app_state_enter_despawn_system),
+            )
+            .add_system_set(
+                SystemSet::on_enter(AppState::Game)
+                    .with_system(app_state_enter_despawn_system),
+            )
+            .add_system_set(
+                SystemSet::on_enter(AppState::Pause)
+                    .with_system(app_state_enter_despawn_system),
+            )
+            .add_system_set(
+                SystemSet::on_exit(AppState::StartMenu)
+                    .with_system(reset_hit_points_system),
+            )
+            .add_system_set(SystemSet::on_update(AppState::Game).with_system(
+                game_over_check_system.after(goal_eliminated_event_system),
+            ))
+            .add_startup_system(reset_hit_points_system);
+    }
+}
