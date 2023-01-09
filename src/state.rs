@@ -76,11 +76,11 @@ pub fn game_over_check(
         }
 
         // Declare a winner and navigate back to the Start Menu.
-        run_state.game_over = if has_player_won {
-            Some(GameOver::Won)
+        run_state.game_over = Some(if has_player_won {
+            GameOver::Won
         } else {
-            Some(GameOver::Lost)
-        };
+            GameOver::Lost
+        });
 
         game_screen.set(GameScreen::StartMenu).unwrap();
         info!("Game Over -> Player {:?}", run_state.game_over.unwrap());
