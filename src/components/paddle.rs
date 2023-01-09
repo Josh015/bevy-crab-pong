@@ -14,7 +14,7 @@ pub const PADDLE_SCALE: Vec3 =
 #[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
 pub struct Paddle;
 
-/// All global information for this game.
+/// Cached paddle materials and meshes.
 #[derive(Debug, Resource)]
 pub struct PaddleResources {
     pub paddle_mesh_handle: Handle<Mesh>,
