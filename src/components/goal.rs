@@ -6,8 +6,6 @@ pub const GOAL_PADDLE_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
 pub const GOAL_PADDLE_MAX_POSITION_X: f32 =
     GOAL_HALF_WIDTH - BARRIER_RADIUS - PADDLE_HALF_WIDTH;
 
-// TODO: Go around and replace all GoalSide clone() calls since it is copyable?
-
 /// An event fired when a [`Goal`] has been eliminated from play after its HP
 /// has reached zero.
 pub struct GoalEliminatedEvent(pub Side);
@@ -88,7 +86,7 @@ pub fn goal_eliminated_event(
 
         // Fade in the wall for the eliminated goal.
         spawn_wall_events.send(SpawnWallEvent {
-            side: eliminated_side.clone(),
+            side: *eliminated_side,
             is_instant: false,
         });
     }

@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 /// Assigns and entity to a given side of the arena.
-#[derive(Clone, Component, Copy, Eq, PartialEq, Debug, Hash)]
+#[derive(Clone, Component, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Side {
     Top,
     Right,

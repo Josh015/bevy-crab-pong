@@ -182,7 +182,7 @@ pub fn setup(
     for (i, (side, rect)) in goal_configs.iter().enumerate() {
         // Walls
         spawn_wall_events.send(SpawnWallEvent {
-            side: side.clone(),
+            side: *side,
             is_instant: true,
         });
 
@@ -190,7 +190,7 @@ pub fn setup(
         commands
             .spawn((
                 Goal,
-                side.clone(),
+                *side,
                 PbrBundle {
                     transform: Transform::from_rotation(Quat::from_axis_angle(
                         Vec3::Y,
@@ -257,7 +257,7 @@ pub fn setup(
             },
         ));
 
-        run_state.goals_hit_points.insert(side.clone(), 0);
+        run_state.goals_hit_points.insert(*side, 0);
     }
 }
 

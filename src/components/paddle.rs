@@ -70,7 +70,7 @@ pub fn spawn_paddles(
         commands.entity(entity).with_children(|parent| {
             let mut paddle = parent.spawn((
                 Paddle,
-                side.clone(),
+                *side,
                 Collider,
                 FadeBundle {
                     fade_animation: FadeAnimation::Scale {

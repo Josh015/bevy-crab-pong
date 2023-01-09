@@ -61,7 +61,7 @@ pub fn spawn_wall_event(
             commands.entity(entity).with_children(|parent| {
                 parent.spawn((
                     Wall,
-                    side.clone(),
+                    *side,
                     Collider,
                     FadeBundle {
                         fade_animation: FadeAnimation::Scale {
