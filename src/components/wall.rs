@@ -46,7 +46,7 @@ pub struct SpawnWallEvent {
     pub is_instant: bool,
 }
 
-pub fn spawn_wall_event(
+fn spawn_wall_event(
     resources: Res<WallResources>,
     mut commands: Commands,
     mut event_reader: EventReader<SpawnWallEvent>,
@@ -90,7 +90,7 @@ pub fn spawn_wall_event(
 }
 
 /// Fades out any existing [`Wall`] entities.
-pub fn despawn_walls(
+fn despawn_walls(
     mut commands: Commands,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     query: Query<Entity, With<Wall>>,

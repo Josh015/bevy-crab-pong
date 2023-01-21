@@ -7,7 +7,7 @@ pub struct AnimatedWater {
 }
 
 /// Scrolls a material's texture.
-pub fn animated_water(
+fn animated_water(
     config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<(&mut AnimatedWater, &mut Transform)>,

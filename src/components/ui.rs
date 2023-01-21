@@ -15,7 +15,7 @@ pub struct HitPointsUi;
 
 /// Updates a [`Text`] entity to display the current life of its associated
 /// [`Goal`].
-pub fn goal_hit_points_ui(
+fn goal_hit_points_ui(
     game: Res<RunState>,
     mut query: Query<(&Side, &mut Text), With<HitPointsUi>>,
 ) {
@@ -25,7 +25,7 @@ pub fn goal_hit_points_ui(
     }
 }
 
-pub fn spawn_ui_message_event(
+fn spawn_ui_message_event(
     run_state: Res<RunState>,
     mut commands: Commands,
     mut event_reader: EventReader<MessageUiEvent>,
@@ -90,7 +90,7 @@ pub fn spawn_ui_message_event(
     }
 }
 
-pub fn spawn_start_menu_ui(
+fn spawn_start_menu_ui(
     config: Res<GameConfig>,
     run_state: Res<RunState>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
@@ -109,7 +109,7 @@ pub fn spawn_start_menu_ui(
     });
 }
 
-pub fn spawn_pause_ui(
+fn spawn_pause_ui(
     config: Res<GameConfig>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {

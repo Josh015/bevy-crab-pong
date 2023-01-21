@@ -8,7 +8,7 @@ pub struct ForState<T> {
 
 /// Check [`ForState`] entities and either fade out or despawn any that aren't
 /// allowed in the current [`AppState`].
-pub fn despawn_invalid_entities_for_state(
+fn despawn_invalid_entities_for_state(
     mut commands: Commands,
     game_screen: Res<State<GameScreen>>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,

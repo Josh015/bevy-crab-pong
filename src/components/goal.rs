@@ -17,7 +17,7 @@ pub struct Goal;
 
 /// Checks if a [`Ball`] has scored against a [`Goal`] and then decrements the
 /// corresponding score.
-pub fn goal_scored_check(
+fn goal_scored_check(
     mut commands: Commands,
     mut run_state: ResMut<RunState>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
@@ -59,7 +59,7 @@ pub fn goal_scored_check(
 }
 
 /// Disables a given [`Goal`] to remove it from play.
-pub fn goal_eliminated_event(
+fn goal_eliminated_event(
     mut commands: Commands,
     mut event_reader: EventReader<GoalEliminatedEvent>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,

@@ -4,14 +4,9 @@ use crate::prelude::*;
 #[derive(Component)]
 pub struct Collider;
 
-/// A basic reflect function that also normalizes the result.
-fn reflect(d: Vec3, n: Vec3) -> Vec3 {
-    (d - (2.0 * (d.dot(n) * n))).normalize()
-}
-
 /// Restricts a [`Paddle`] entity to the space between the [`Barrier`] entities
 /// on either side of its [`Goal`].
-pub fn paddle_to_barrier_collisions(
+fn paddle_to_barrier_collisions(
     mut query: Query<
         (&mut Transform, &mut Force, &mut Speed),
         (With<Paddle>, With<Collider>),
@@ -33,7 +28,7 @@ pub fn paddle_to_barrier_collisions(
 }
 
 /// Checks if multiple [`Ball`] entities have collided with each other.
-pub fn ball_to_ball_collisions(
+fn ball_to_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
@@ -73,7 +68,7 @@ pub fn ball_to_ball_collisions(
 }
 
 /// Checks if a [`Ball`] and a [`Paddle`] have collided.
-pub fn ball_to_paddle_collisions(
+fn ball_to_paddle_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
@@ -115,7 +110,7 @@ pub fn ball_to_paddle_collisions(
 }
 
 /// Checks if a [`Ball`] and a [`Barrier`] have collided.
-pub fn ball_to_barrier_collisions(
+fn ball_to_barrier_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
@@ -155,7 +150,7 @@ pub fn ball_to_barrier_collisions(
 }
 
 /// Checks if a [`Ball`] and a [`Wall`] have collided.
-pub fn ball_to_wall_collisions(
+fn ball_to_wall_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),

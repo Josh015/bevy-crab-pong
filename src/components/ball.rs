@@ -61,7 +61,7 @@ impl FromWorld for BallResources {
 }
 
 /// Automatically spawns [`Ball`] entities from the center of the arena.
-pub fn spawn_balls(
+fn spawn_balls(
     config: Res<GameConfig>,
     /* mut */ resources: ResMut<BallResources>,
     mut commands: Commands,

@@ -6,7 +6,7 @@ use crate::prelude::*;
 pub struct Ai;
 
 /// AI control for [`Paddle`] entities.
-pub fn ai_paddle_control(
+fn ai_paddle_control(
     mut paddles_query: Query<
         (&Side, &Transform, &mut Force, &Speed, &Acceleration),
         (With<Paddle>, With<Ai>),
@@ -48,12 +48,12 @@ pub fn ai_paddle_control(
         // Controls how much the paddle tries to get its center under the ball.
         // Lower values improve the catch rate, but also reduce how widely it
         // will deflect the ball for near misses. Range (0,1].
-        let percent_from_center = 0.60;
+        const PERCENT_FROM_CENTER: f32 = 0.60;
         let distance_from_paddle_center =
             (paddle_stop_position - ball_local_position).abs();
 
         *force = if distance_from_paddle_center
-            < percent_from_center * PADDLE_HALF_WIDTH
+            < PERCENT_FROM_CENTER * PADDLE_HALF_WIDTH
         {
             Force::Zero
         } else if ball_local_position < transform.translation.x {

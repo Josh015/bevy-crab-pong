@@ -44,17 +44,14 @@ impl FromWorld for RunState {
 }
 
 /// Resets all goal HP fields to their starting value.
-pub fn reset_hit_points(
-    config: Res<GameConfig>,
-    mut run_state: ResMut<RunState>,
-) {
+fn reset_hit_points(config: Res<GameConfig>, mut run_state: ResMut<RunState>) {
     for (_, hit_points) in &mut run_state.goals_hit_points {
         *hit_points = config.starting_hit_points;
     }
 }
 
 /// Checks for conditions that would trigger a game over.
-pub fn game_over_check(
+fn game_over_check(
     mut run_state: ResMut<RunState>,
     mut game_screen: ResMut<State<GameScreen>>,
     mut event_reader: EventReader<GoalEliminatedEvent>,
@@ -99,7 +96,7 @@ impl Plugin for StatePlugin {
             )
             .add_system_set(
                 SystemSet::on_update(GameScreen::Playing)
-                    .with_system(game_over_check.after(goal_eliminated_event)),
+                    .with_system(game_over_check),
             )
             .add_startup_system(reset_hit_points);
     }

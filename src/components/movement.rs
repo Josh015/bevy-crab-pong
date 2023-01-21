@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use std::ops::{Add, Sub};
+use std::ops::Add;
 
 /// Whether the entity has positive, negative, or zero force acting on it.
 #[derive(Component, Clone, Copy, Default, PartialEq)]
@@ -41,16 +41,9 @@ pub struct AccelerationBundle {
     pub acceleration: Acceleration,
 }
 
-/// Calculate a new reduced speed value based on delta speed and clamping
-/// to zero.
-pub fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
-    let s = speed.abs().sub(delta_speed).max(0.0);
-    speed.max(-s).min(s) // clamp() panics when min == max.
-}
-
 /// Handles calculating the actual acceleration/deceleration over time for a
 /// [`Force`] entity.
-pub fn acceleration(
+fn acceleration(
     time: Res<Time>,
     mut query: Query<(&mut Speed, &Force, &MaxSpeed, &Acceleration)>,
 ) {
@@ -72,7 +65,7 @@ pub fn acceleration(
 }
 
 /// Handles moving entities with [`Heading`] and [`Speed`].
-pub fn velocity(
+fn velocity(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &Heading, &Speed)>,
 ) {

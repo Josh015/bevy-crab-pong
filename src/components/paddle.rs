@@ -49,7 +49,7 @@ impl FromWorld for PaddleResources {
 }
 
 /// Spawns [`Paddle`] entities for their corresponding goals.
-pub fn spawn_paddles(
+fn spawn_paddles(
     mut commands: Commands,
     config: Res<GameConfig>,
     resources: Res<PaddleResources>,

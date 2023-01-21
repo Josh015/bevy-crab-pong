@@ -7,7 +7,7 @@ pub struct SwayingCamera;
 
 /// Makes a [`SwayingCamera`] and [`Camera3d`] entity slowly sway back and
 /// forth.
-pub fn swaying_camera(
+fn swaying_camera(
     config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<&mut Transform, (With<SwayingCamera>, With<Camera3d>)>,

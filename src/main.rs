@@ -2,9 +2,10 @@ mod components;
 mod config;
 mod files;
 mod state;
+mod util;
 
 pub mod prelude {
-    pub use crate::{components::*, config::*, state::*};
+    pub use crate::{components::*, config::*, state::*, util::*};
     pub use bevy::{math::*, prelude::*};
     pub use rand::prelude::*;
 }
@@ -39,7 +40,7 @@ fn main() {
 }
 
 /// Handles all user input regardless of the current game state.
-pub fn input(
+fn input(
     keyboard_input: Res<Input<KeyCode>>,
     mut game_screen: ResMut<State<GameScreen>>,
     mut app_exit_events: EventWriter<AppExit>,
@@ -74,7 +75,7 @@ pub fn input(
 }
 
 /// Handles setting up the static arena entities.
-pub fn setup(
+fn setup(
     mut run_state: ResMut<RunState>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,

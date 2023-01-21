@@ -6,7 +6,7 @@ use crate::prelude::*;
 pub struct Player;
 
 /// Handles all user input regardless of the current game state.
-pub fn player_paddle_control(
+fn player_paddle_control(
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<&mut Force, (With<Player>, With<Paddle>)>,
 ) {
