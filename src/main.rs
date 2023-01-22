@@ -190,8 +190,8 @@ fn setup(
         // Goals
         commands
             .spawn((
-                Goal,
                 *side,
+                Goal,
                 PbrBundle {
                     transform: Transform::from_rotation(Quat::from_axis_angle(
                         Vec3::Y,

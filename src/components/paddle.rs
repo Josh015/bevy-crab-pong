@@ -69,8 +69,8 @@ fn spawn_paddles(
     for (i, (entity, side)) in goals_query.iter().enumerate() {
         commands.entity(entity).with_children(|parent| {
             let mut paddle = parent.spawn((
-                Paddle,
                 *side,
+                Paddle,
                 Collider,
                 FadeBundle {
                     fade_animation: FadeAnimation::Scale {
