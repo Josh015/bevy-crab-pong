@@ -5,7 +5,7 @@ use std::{fs::File, path::PathBuf};
 /// Opens a file using the project's manifest directory as the root.
 pub fn open_local_file(path: &str) -> File {
     let input_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(path);
-    File::open(&input_path)
+    File::open(input_path)
         .expect(&format!("Failed opening file: {:#?}", path)[..])
 }
 

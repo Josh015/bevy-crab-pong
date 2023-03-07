@@ -38,7 +38,7 @@ fn spawn_ui_message_event(
         commands
             .spawn((
                 ForState {
-                    states: vec![game_screen.clone()],
+                    states: vec![*game_screen],
                 },
                 NodeBundle {
                     style: Style {

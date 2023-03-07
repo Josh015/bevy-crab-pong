@@ -12,7 +12,7 @@ pub mod prelude {
 
 use bevy::{
     app::AppExit,
-    window::{ExitCondition, PresentMode, WindowResolution},
+    window::{PresentMode, WindowResolution},
 };
 
 use crate::prelude::*;
@@ -32,8 +32,7 @@ fn main() {
                 present_mode: PresentMode::AutoVsync,
                 ..default()
             }),
-            exit_condition: ExitCondition::OnAllClosed,
-            close_when_requested: true,
+            ..default()
         }))
         .insert_resource(Msaa::default())
         .insert_resource(ClearColor(config.clear_color))
@@ -54,30 +53,26 @@ fn input(
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
         app_exit_events.send(AppExit);
-    }
-
-    if game_screen.0 != GameScreen::StartMenu
+    } else if game_screen.0 != GameScreen::StartMenu
         && keyboard_input.just_pressed(KeyCode::Back)
     {
         next_game_screen.set(GameScreen::StartMenu);
         info!("Start Menu");
-    }
-
-    if game_screen.0 == GameScreen::Playing {
-        if keyboard_input.just_pressed(KeyCode::Space) {
-            next_game_screen.set(GameScreen::Paused);
-            info!("Paused");
-        }
-    } else if game_screen.0 == GameScreen::Paused {
-        if keyboard_input.just_pressed(KeyCode::Space) {
-            next_game_screen.set(GameScreen::Playing);
-            info!("Unpaused");
-        }
     } else if game_screen.0 == GameScreen::StartMenu {
         if keyboard_input.just_pressed(KeyCode::Return) {
             next_game_screen.set(GameScreen::Playing);
             info!("New Game");
         }
+    } else if game_screen.0 == GameScreen::Playing {
+        if keyboard_input.just_pressed(KeyCode::Space) {
+            next_game_screen.set(GameScreen::Paused);
+            info!("Paused");
+        }
+    } else if game_screen.0 == GameScreen::Paused
+        && keyboard_input.just_pressed(KeyCode::Space)
+    {
+        next_game_screen.set(GameScreen::Playing);
+        info!("Unpaused");
     }
 }
 
@@ -89,11 +84,6 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut spawn_wall_events: EventWriter<SpawnWallEvent>,
 ) {
-    let unit_plane = meshes.add(Mesh::from(shape::Plane {
-        size: 1.0,
-        subdivisions: 1,
-    }));
-
     // Cameras
     commands.spawn((SwayingCamera, Camera3dBundle::default()));
 
@@ -134,7 +124,10 @@ fn setup(
 
     // Beach
     commands.spawn(PbrBundle {
-        mesh: unit_plane.clone(),
+        mesh: meshes.add(Mesh::from(shape::Plane {
+            size: 1.0,
+            subdivisions: 1,
+        })),
         material: materials.add(Color::hex("C4BD99").unwrap().into()),
         transform: Transform::from_matrix(
             Mat4::from_scale_rotation_translation(
@@ -241,7 +234,7 @@ fn setup(
         // Score
         commands.spawn((
             HitPointsUi,
-            side.clone(),
+            *side,
             TextBundle {
                 style: Style {
                     align_self: AlignSelf::FlexEnd,

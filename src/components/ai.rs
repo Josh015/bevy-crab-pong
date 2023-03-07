@@ -1,3 +1,5 @@
+#![allow(clippy::type_complexity)]
+
 use crate::prelude::*;
 
 /// A component that works in tandem with [`Paddle`] to make AI-driven

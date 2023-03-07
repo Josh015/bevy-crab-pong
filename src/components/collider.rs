@@ -1,3 +1,5 @@
+#![allow(clippy::type_complexity)]
+
 use crate::prelude::*;
 
 /// Marks a component that can collide, score, etc.

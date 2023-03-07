@@ -1,3 +1,5 @@
+#![allow(clippy::type_complexity)]
+
 use crate::prelude::*;
 
 pub const GOAL_WIDTH: f32 = 1.0;

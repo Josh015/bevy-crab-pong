@@ -1,3 +1,5 @@
+#![allow(clippy::type_complexity)]
+
 use crate::prelude::*;
 
 pub const BALL_DIAMETER: f32 = 0.08;
@@ -89,7 +91,6 @@ fn spawn_balls(
             VelocityBundle {
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
                 speed: Speed(config.ball_max_speed),
-                ..default()
             },
         ));
         info!("Ball({:?}) -> Launched", entity);
