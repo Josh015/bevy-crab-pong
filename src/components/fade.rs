@@ -83,7 +83,7 @@ fn fade_entities(
 ) {
     for (entity, mut fade) in &mut query {
         // Prevent fade animations from running when game is paused.
-        if *game_screen.current() == GameScreen::Paused {
+        if game_screen.0 == GameScreen::Paused {
             return;
         }
 
@@ -155,9 +155,8 @@ pub struct FadePlugin;
 
 impl Plugin for FadePlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<FadeOutEntityEvent>()
-            .add_system(fade_out_entity_event)
-            .add_system(fade_entities)
-            .add_system(fade_animation.after(fade_entities));
+        app.add_event::<FadeOutEntityEvent>().add_systems(
+            (fade_out_entity_event, fade_entities, fade_animation).chain(),
+        );
     }
 }

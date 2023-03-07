@@ -123,16 +123,11 @@ pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<MessageUiEvent>()
-            .add_system_set(
-                SystemSet::on_enter(GameScreen::StartMenu)
-                    .with_system(spawn_start_menu_ui),
-            )
-            .add_system_set(
-                SystemSet::on_enter(GameScreen::Paused)
-                    .with_system(spawn_pause_ui),
-            )
-            .add_system(spawn_ui_message_event)
-            .add_system(goal_hit_points_ui);
+        app.add_event::<MessageUiEvent>().add_systems((
+            spawn_start_menu_ui.in_schedule(OnEnter(GameScreen::StartMenu)),
+            spawn_pause_ui.in_schedule(OnEnter(GameScreen::Paused)),
+            spawn_ui_message_event,
+            goal_hit_points_ui,
+        ));
     }
 }

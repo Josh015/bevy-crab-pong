@@ -26,9 +26,10 @@ impl FromWorld for BallResources {
     fn from_world(world: &mut World) -> Self {
         let ball_mesh_handle = {
             let mut meshes = world.get_resource_mut::<Assets<Mesh>>().unwrap();
-            meshes.add(Mesh::from(shape::Icosphere {
+            meshes.add(Mesh::from(shape::UVSphere {
                 radius: 0.5,
-                subdivisions: 2,
+                sectors: 30,
+                stacks: 30,
             }))
         };
 
@@ -140,8 +141,7 @@ pub struct BallPlugin;
 
 impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<BallResources>().add_system_set(
-            SystemSet::on_update(GameScreen::Playing).with_system(spawn_balls),
-        );
+        app.init_resource::<BallResources>()
+            .add_system(spawn_balls.in_set(OnUpdate(GameScreen::Playing)));
     }
 }

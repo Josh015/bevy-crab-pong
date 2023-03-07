@@ -68,9 +68,6 @@ pub struct AiPlugin;
 
 impl Plugin for AiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_update(GameScreen::Playing)
-                .with_system(ai_paddle_control),
-        );
+        app.add_system(ai_paddle_control.in_set(OnUpdate(GameScreen::Playing)));
     }
 }

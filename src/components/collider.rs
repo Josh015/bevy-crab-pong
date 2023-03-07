@@ -183,19 +183,16 @@ pub struct ColliderPlugin;
 
 impl Plugin for ColliderPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_update(GameScreen::Playing)
-                .with_system(paddle_to_barrier_collisions)
-                .with_system(ball_to_ball_collisions)
-                .with_system(
-                    ball_to_paddle_collisions.after(ball_to_ball_collisions),
-                )
-                .with_system(
-                    ball_to_barrier_collisions.after(ball_to_ball_collisions),
-                )
-                .with_system(
-                    ball_to_wall_collisions.after(ball_to_ball_collisions),
-                ),
+        app.add_systems(
+            (
+                paddle_to_barrier_collisions,
+                ball_to_ball_collisions,
+                ball_to_paddle_collisions,
+                ball_to_barrier_collisions,
+                ball_to_wall_collisions,
+            )
+                .chain()
+                .in_set(OnUpdate(GameScreen::Playing)),
         );
     }
 }

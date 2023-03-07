@@ -107,10 +107,9 @@ impl Plugin for WallPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<WallResources>()
             .add_event::<SpawnWallEvent>()
-            .add_system_set(
-                SystemSet::on_exit(GameScreen::StartMenu)
-                    .with_system(despawn_walls),
-            )
-            .add_system(spawn_wall_event);
+            .add_systems((
+                despawn_walls.in_schedule(OnExit(GameScreen::StartMenu)),
+                spawn_wall_event,
+            ));
     }
 }

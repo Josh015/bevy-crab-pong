@@ -10,7 +10,10 @@ pub mod prelude {
     pub use rand::prelude::*;
 }
 
-use bevy::{app::AppExit, window::PresentMode};
+use bevy::{
+    app::AppExit,
+    window::{ExitCondition, PresentMode, WindowResolution},
+};
 
 use crate::prelude::*;
 
@@ -20,20 +23,23 @@ fn main() {
 
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
-            window: WindowDescriptor {
+            primary_window: Some(Window {
                 title: config.title.clone(),
-                width: config.width as f32,
-                height: config.height as f32,
+                resolution: WindowResolution::new(
+                    config.width as f32,
+                    config.height as f32,
+                ),
                 present_mode: PresentMode::AutoVsync,
                 ..default()
-            },
-            ..default()
+            }),
+            exit_condition: ExitCondition::OnAllClosed,
+            close_when_requested: true,
         }))
-        .insert_resource(Msaa { samples: 4 })
+        .insert_resource(Msaa::default())
         .insert_resource(ClearColor(config.clear_color))
         .insert_resource(config)
-        .add_plugin(ComponentsPlugin)
         .add_plugin(StatePlugin)
+        .add_plugin(ComponentsPlugin)
         .add_system(input)
         .add_startup_system(setup)
         .run();
@@ -42,33 +48,34 @@ fn main() {
 /// Handles all user input regardless of the current game state.
 fn input(
     keyboard_input: Res<Input<KeyCode>>,
-    mut game_screen: ResMut<State<GameScreen>>,
+    game_screen: Res<State<GameScreen>>,
+    mut next_game_screen: ResMut<NextState<GameScreen>>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
         app_exit_events.send(AppExit);
     }
 
-    if game_screen.current() != &GameScreen::StartMenu
+    if game_screen.0 != GameScreen::StartMenu
         && keyboard_input.just_pressed(KeyCode::Back)
     {
-        game_screen.set(GameScreen::StartMenu).unwrap();
+        next_game_screen.set(GameScreen::StartMenu);
         info!("Start Menu");
     }
 
-    if game_screen.current() == &GameScreen::Playing {
+    if game_screen.0 == GameScreen::Playing {
         if keyboard_input.just_pressed(KeyCode::Space) {
-            game_screen.set(GameScreen::Paused).unwrap();
+            next_game_screen.set(GameScreen::Paused);
             info!("Paused");
         }
-    } else if game_screen.current() == &GameScreen::Paused {
+    } else if game_screen.0 == GameScreen::Paused {
         if keyboard_input.just_pressed(KeyCode::Space) {
-            game_screen.set(GameScreen::Playing).unwrap();
+            next_game_screen.set(GameScreen::Playing);
             info!("Unpaused");
         }
-    } else if game_screen.current() == &GameScreen::StartMenu {
+    } else if game_screen.0 == GameScreen::StartMenu {
         if keyboard_input.just_pressed(KeyCode::Return) {
-            game_screen.set(GameScreen::Playing).unwrap();
+            next_game_screen.set(GameScreen::Playing);
             info!("New Game");
         }
     }
@@ -82,7 +89,10 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut spawn_wall_events: EventWriter<SpawnWallEvent>,
 ) {
-    let unit_plane = meshes.add(Mesh::from(shape::Plane { size: 1.0 }));
+    let unit_plane = meshes.add(Mesh::from(shape::Plane {
+        size: 1.0,
+        subdivisions: 1,
+    }));
 
     // Cameras
     commands.spawn((SwayingCamera, Camera3dBundle::default()));
@@ -97,15 +107,6 @@ fn setup(
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 10000.0,
-            shadow_projection: OrthographicProjection {
-                left: -10.0,
-                right: 10.0,
-                bottom: -10.0,
-                top: 10.0,
-                near: -50.0,
-                far: 50.0,
-                ..default()
-            },
             // shadows_enabled: true,
             ..default()
         },
@@ -117,7 +118,10 @@ fn setup(
     commands.spawn((
         AnimatedWater::default(),
         PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane { size: 100.0 })),
+            mesh: meshes.add(Mesh::from(shape::Plane {
+                size: 100.0,
+                subdivisions: 1,
+            })),
             material: materials.add(StandardMaterial {
                 base_color: Color::hex("257AFFCC").unwrap(),
                 alpha_mode: AlphaMode::Blend,

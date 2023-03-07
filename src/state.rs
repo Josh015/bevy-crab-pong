@@ -2,15 +2,16 @@ use crate::prelude::*;
 use std::collections::HashMap;
 
 /// Current screen of the game.
-#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, States)]
 pub enum GameScreen {
+    #[default]
     StartMenu,
     Playing,
     Paused,
 }
 
 /// Represents whether the player won or lost the last game.
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub enum GameOver {
     #[default]
     Won,
@@ -53,7 +54,7 @@ fn reset_hit_points(config: Res<GameConfig>, mut run_state: ResMut<RunState>) {
 /// Checks for conditions that would trigger a game over.
 fn game_over_check(
     mut run_state: ResMut<RunState>,
-    mut game_screen: ResMut<State<GameScreen>>,
+    mut next_game_screen: ResMut<NextState<GameScreen>>,
     mut event_reader: EventReader<GoalEliminatedEvent>,
     enemies_query: Query<&Side, (With<Paddle>, With<Ai>)>,
     players_query: Query<&Side, (With<Paddle>, With<Player>)>,
@@ -79,7 +80,7 @@ fn game_over_check(
             GameOver::Lost
         });
 
-        game_screen.set(GameScreen::StartMenu).unwrap();
+        next_game_screen.set(GameScreen::StartMenu);
         info!("Game Over -> Player {:?}", run_state.game_over.unwrap());
     }
 }
@@ -89,15 +90,11 @@ pub struct StatePlugin;
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<RunState>()
-            .add_state(GameScreen::StartMenu)
-            .add_system_set(
-                SystemSet::on_exit(GameScreen::StartMenu)
-                    .with_system(reset_hit_points),
-            )
-            .add_system_set(
-                SystemSet::on_update(GameScreen::Playing)
-                    .with_system(game_over_check),
-            )
+            .add_state::<GameScreen>()
+            .add_systems((
+                reset_hit_points.in_schedule(OnExit(GameScreen::StartMenu)),
+                game_over_check.in_set(OnUpdate(GameScreen::Playing)),
+            ))
             .add_startup_system(reset_hit_points);
     }
 }

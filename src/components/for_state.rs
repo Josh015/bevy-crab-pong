@@ -15,7 +15,7 @@ fn despawn_invalid_entities_for_state(
     mut query: Query<(Entity, &ForState<GameScreen>, Option<&FadeAnimation>)>,
 ) {
     for (entity, for_state, fade_animation) in &mut query {
-        if for_state.states.contains(game_screen.current()) {
+        if for_state.states.contains(&game_screen.0) {
             continue;
         }
 
@@ -31,18 +31,13 @@ pub struct ForStatePlugin;
 
 impl Plugin for ForStatePlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<RunState>()
-            .add_system_set(
-                SystemSet::on_enter(GameScreen::StartMenu)
-                    .with_system(despawn_invalid_entities_for_state),
-            )
-            .add_system_set(
-                SystemSet::on_enter(GameScreen::Playing)
-                    .with_system(despawn_invalid_entities_for_state),
-            )
-            .add_system_set(
-                SystemSet::on_enter(GameScreen::Paused)
-                    .with_system(despawn_invalid_entities_for_state),
-            );
+        app.init_resource::<RunState>().add_systems((
+            despawn_invalid_entities_for_state
+                .in_schedule(OnEnter(GameScreen::StartMenu)),
+            despawn_invalid_entities_for_state
+                .in_schedule(OnEnter(GameScreen::Playing)),
+            despawn_invalid_entities_for_state
+                .in_schedule(OnEnter(GameScreen::Paused)),
+        ));
     }
 }
