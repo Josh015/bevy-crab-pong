@@ -81,7 +81,7 @@ fn goal_eliminated_event(
             // Stop the paddle from moving and colliding.
             commands
                 .entity(paddle_entity)
-                .remove::<(Collider, Heading, Speed)>();
+                .remove::<(Collider, AccelerationBundle)>();
             fade_out_entity_events.send(FadeOutEntityEvent(paddle_entity));
             break;
         }

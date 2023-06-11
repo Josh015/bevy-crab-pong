@@ -61,7 +61,7 @@ fn spawn_paddles(
     for entity in &paddles_query {
         commands
             .entity(entity)
-            .remove::<(Collider, Heading, Speed)>();
+            .remove::<(Collider, AccelerationBundle)>();
         fade_out_entity_events.send(FadeOutEntityEvent(entity));
     }
 
