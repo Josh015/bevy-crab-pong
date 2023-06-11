@@ -123,13 +123,13 @@ fn fade_animation(
     )>,
 ) {
     // Apply effect animation to the entity.
-    for (mut transform, material, fade_effect, fade) in &mut query {
+    for (mut transform, material, fade_animation, fade) in &mut query {
         let weight = match *fade {
             Fade::In(progress) => progress,
             Fade::Out(progress) => 1.0 - progress,
         };
 
-        match *fade_effect {
+        match *fade_animation {
             FadeAnimation::Scale {
                 max_scale,
                 axis_mask,

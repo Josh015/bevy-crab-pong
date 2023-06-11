@@ -36,14 +36,14 @@ fn ai_paddle_control(
         }
 
         // Predict the paddle's stop position if it begins decelerating now.
-        let delta_seconds = 0.05; // Overshoots the ball slightly more often.
-        // let delta_seconds = 0.001; // Precisely follows the ball.
-        let delta_speed = acceleration.0 * delta_seconds;
+        const DELTA_SECONDS: f32 = 0.05; // Overshoots the ball slightly more often.
+        // const DELTA_SECONDS: f32 = 0.001; // Precisely follows the ball.
+        let delta_speed = acceleration.0 * DELTA_SECONDS;
         let mut current_speed = speed.0;
         let mut paddle_stop_position = transform.translation.x;
 
         while current_speed.abs() > 0.0 {
-            paddle_stop_position += current_speed * delta_seconds;
+            paddle_stop_position += current_speed * DELTA_SECONDS;
             current_speed = decelerate_speed(current_speed, delta_speed);
         }
 

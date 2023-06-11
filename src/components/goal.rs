@@ -30,7 +30,7 @@ fn goal_scored_check(
     >,
     goals_query: Query<&Side, With<Goal>>,
 ) {
-    for (entity, global_transform) in &balls_query {
+    for (ball_entity, global_transform) in &balls_query {
         for side in &goals_query {
             // A ball will score against the goal it's closest to once it's
             // fully past the goal's paddle.
@@ -44,17 +44,17 @@ fn goal_scored_check(
             let hit_points = run_state.goals_hit_points.get_mut(side).unwrap();
 
             *hit_points = hit_points.saturating_sub(1);
-            info!("Ball({:?}) -> Scored Goal({:?})", entity, side);
+            info!("Ball({:?}) -> Scored Goal({:?})", ball_entity, side);
 
             if *hit_points == 0 {
                 goal_eliminated_writer.send(GoalEliminatedEvent(*side));
-                info!("Ball({:?}) -> Eliminated Goal({:?})", entity, side);
+                info!("Ball({:?}) -> Eliminated Goal({:?})", ball_entity, side);
             }
 
             // Remove Collider and start fading out the ball to prevent
             // repeated scoring.
-            commands.entity(entity).remove::<Collider>();
-            fade_out_entity_events.send(FadeOutEntityEvent(entity));
+            commands.entity(ball_entity).remove::<Collider>();
+            fade_out_entity_events.send(FadeOutEntityEvent(ball_entity));
             break;
         }
     }
@@ -73,16 +73,16 @@ fn goal_eliminated_event(
 ) {
     for GoalEliminatedEvent(eliminated_side) in event_reader.iter() {
         // Fade out the paddle for the eliminated goal.
-        for (entity, side) in &paddles_query {
+        for (paddle_entity, side) in &paddles_query {
             if *side != *eliminated_side {
                 continue;
             }
 
             // Stop the paddle from moving and colliding.
             commands
-                .entity(entity)
+                .entity(paddle_entity)
                 .remove::<(Collider, Heading, Speed)>();
-            fade_out_entity_events.send(FadeOutEntityEvent(entity));
+            fade_out_entity_events.send(FadeOutEntityEvent(paddle_entity));
             break;
         }
 
