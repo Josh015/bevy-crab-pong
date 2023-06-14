@@ -2,27 +2,5 @@
   "editor.defaultFormatter": "rust-lang.rust-analyzer",
   "editor.formatOnSave": true,
   "editor.bracketPairColorization.enabled": true,
-  "editor.guides.bracketPairs": true,
-  "cSpell.words": [
-    "collidable",
-    "consts",
-    "despawn",
-    "despawned",
-    "despawning",
-    "despawns",
-    "fira",
-    "gameplay",
-    "icosphere",
-    "lerp",
-    "msaa",
-    "pixmap",
-    "powf",
-    "powi",
-    "randomizer",
-    "rrggbb",
-    "voxel",
-    "voxels",
-    "vsync",
-    "xyzw"
-  ]
+  "editor.guides.bracketPairs": true
 }
