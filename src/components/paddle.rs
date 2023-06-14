@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use crate::prelude::*;
+use std::collections::HashMap;
 
 pub const PADDLE_WIDTH: f32 = 0.2;
 pub const PADDLE_DEPTH: f32 = 0.1;

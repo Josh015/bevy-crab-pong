@@ -10,12 +10,11 @@ pub mod prelude {
     pub use rand::prelude::*;
 }
 
+use crate::prelude::*;
 use bevy::{
     app::AppExit,
     window::{PresentMode, WindowResolution},
 };
-
-use crate::prelude::*;
 
 fn main() {
     let config: GameConfig =
