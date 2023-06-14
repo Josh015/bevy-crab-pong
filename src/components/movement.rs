@@ -41,8 +41,8 @@ pub struct AccelerationBundle {
     pub acceleration: Acceleration,
 }
 
-/// Handles calculating the actual acceleration/deceleration over time for a
-/// [`Force`] entity.
+/// Handles calculating the actual acceleration/deceleration over time for
+/// entities with [`Force`], [`MaxSpeed`], and [`Acceleration`].
 fn acceleration(
     time: Res<Time>,
     mut query: Query<(&mut Speed, &Force, &MaxSpeed, &Acceleration)>,
