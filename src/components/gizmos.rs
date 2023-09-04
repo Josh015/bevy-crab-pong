@@ -21,13 +21,44 @@ fn debug_ball_path_gizmos(
     }
 }
 
+fn debug_paddle_stop_positions_gizmos(
+    query: Query<
+        (&GlobalTransform, &Heading, &Acceleration, &Speed),
+        (With<Paddle>, Without<Fade>),
+    >,
+    mut gizmos: Gizmos,
+) {
+    for (global_transform, heading, acceleration, speed) in &query {
+        const DELTA_SECONDS: f32 = 0.01;
+        let delta_speed = acceleration.0 * DELTA_SECONDS;
+        let mut current_speed = speed.0;
+        let mut stop_position_transform = global_transform.compute_transform();
+        let global_heading = stop_position_transform.rotation * heading.0;
+
+        // TODO: Need to account for wall collisions.
+        while current_speed.abs() > 0.0 {
+            stop_position_transform.translation +=
+                global_heading * current_speed * DELTA_SECONDS;
+            current_speed = decelerate_speed(current_speed, delta_speed);
+        }
+
+        gizmos.line(
+            global_transform.translation(),
+            stop_position_transform.translation,
+            Color::BLUE,
+        );
+        gizmos.cuboid(stop_position_transform, Color::GREEN);
+    }
+}
+
 pub struct GizmosPlugin;
 
 impl Plugin for GizmosPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            debug_ball_path_gizmos.run_if(show_debug_gizmos),
+            (debug_ball_path_gizmos, debug_paddle_stop_positions_gizmos)
+                .run_if(show_debug_gizmos),
         );
     }
 }
