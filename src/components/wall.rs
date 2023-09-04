@@ -41,6 +41,7 @@ impl FromWorld for WallResources {
 }
 
 /// An event fired when a [`Wall`] needs to be spawned.
+#[derive(Event)]
 pub struct SpawnWallEvent {
     pub side: Side,
     pub is_instant: bool,
@@ -107,9 +108,7 @@ impl Plugin for WallPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<WallResources>()
             .add_event::<SpawnWallEvent>()
-            .add_systems((
-                despawn_walls.in_schedule(OnExit(GameScreen::StartMenu)),
-                spawn_wall_event,
-            ));
+            .add_systems(OnExit(GameScreen::StartMenu), despawn_walls)
+            .add_systems(Update, spawn_wall_event);
     }
 }

@@ -25,5 +25,5 @@ fn animated_water(
 pub struct AnimatedWaterPlugin;
 
 impl Plugin for AnimatedWaterPlugin {
-    fn build(&self, app: &mut App) { app.add_system(animated_water); }
+    fn build(&self, app: &mut App) { app.add_systems(Update, animated_water); }
 }

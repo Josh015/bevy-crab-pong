@@ -3,6 +3,7 @@ use crate::prelude::*;
 pub const FADE_PROGRESS_MIN: f32 = 0.0;
 pub const FADE_PROGRESS_MAX: f32 = 1.0;
 
+#[derive(Event)]
 pub struct FadeOutEntityEvent(pub Entity);
 
 #[derive(Bundle, Default)]
@@ -78,15 +79,9 @@ fn fade_entities(
     mut commands: Commands,
     config: Res<GameConfig>,
     time: Res<Time>,
-    game_screen: Res<State<GameScreen>>,
     mut query: Query<(Entity, &mut Fade), With<FadeAnimation>>,
 ) {
     for (entity, mut fade) in &mut query {
-        // Prevent fade animations from running when game is paused.
-        if game_screen.0 == GameScreen::Paused {
-            return;
-        }
-
         // Progress the fade effect.
         let step = config.fade_speed * time.delta_seconds();
 
@@ -156,7 +151,10 @@ pub struct FadePlugin;
 impl Plugin for FadePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<FadeOutEntityEvent>().add_systems(
-            (fade_out_entity_event, fade_entities, fade_animation).chain(),
+            Update,
+            (fade_out_entity_event, fade_entities, fade_animation)
+                .chain()
+                .run_if(not(in_state(GameScreen::Paused))),
         );
     }
 }

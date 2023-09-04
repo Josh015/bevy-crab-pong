@@ -142,7 +142,9 @@ pub struct BallPlugin;
 
 impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<BallResources>()
-            .add_system(spawn_balls.in_set(OnUpdate(GameScreen::Playing)));
+        app.init_resource::<BallResources>().add_systems(
+            Update,
+            spawn_balls.run_if(in_state(GameScreen::Playing)),
+        );
     }
 }

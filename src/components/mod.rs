@@ -38,18 +38,20 @@ pub struct ComponentsPlugin;
 
 impl Plugin for ComponentsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(AnimatedWaterPlugin)
-            .add_plugin(BallPlugin)
-            .add_plugin(ColliderPlugin)
-            .add_plugin(AiPlugin)
-            .add_plugin(FadePlugin)
-            .add_plugin(ForStatePlugin)
-            .add_plugin(GoalPlugin)
-            .add_plugin(MovementPlugin)
-            .add_plugin(PaddlePlugin)
-            .add_plugin(PlayerPlugin)
-            .add_plugin(SwayingCameraPlugin)
-            .add_plugin(UiPlugin)
-            .add_plugin(WallPlugin);
+        app.add_plugins((
+            AnimatedWaterPlugin,
+            BallPlugin,
+            ColliderPlugin,
+            AiPlugin,
+            FadePlugin,
+            ForStatePlugin,
+            GoalPlugin,
+            MovementPlugin,
+            PaddlePlugin,
+            PlayerPlugin,
+            SwayingCameraPlugin,
+            UiPlugin,
+            WallPlugin,
+        ));
     }
 }

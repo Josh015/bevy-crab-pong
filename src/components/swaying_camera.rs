@@ -23,5 +23,5 @@ fn swaying_camera(
 pub struct SwayingCameraPlugin;
 
 impl Plugin for SwayingCameraPlugin {
-    fn build(&self, app: &mut App) { app.add_system(swaying_camera); }
+    fn build(&self, app: &mut App) { app.add_systems(Update, swaying_camera); }
 }

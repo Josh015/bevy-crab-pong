@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 /// An event fired when spawning a message UI.
+#[derive(Event)]
 pub struct MessageUiEvent {
     message: String,
     game_screen: GameScreen,
@@ -42,10 +43,8 @@ fn spawn_ui_message_event(
                 },
                 NodeBundle {
                     style: Style {
-                        size: Size::new(
-                            Val::Percent(100.0),
-                            Val::Percent(100.0),
-                        ),
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
                         justify_content: JustifyContent::SpaceBetween,
                         ..default()
                     },
@@ -57,10 +56,8 @@ fn spawn_ui_message_event(
                 parent
                     .spawn(NodeBundle {
                         style: Style {
-                            size: Size::new(
-                                Val::Percent(100.0),
-                                Val::Percent(100.0),
-                            ),
+                            width: Val::Percent(100.0),
+                            height: Val::Percent(100.0),
                             position_type: PositionType::Absolute,
                             align_items: AlignItems::Center,
                             justify_content: JustifyContent::Center,
@@ -123,11 +120,9 @@ pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<MessageUiEvent>().add_systems((
-            spawn_start_menu_ui.in_schedule(OnEnter(GameScreen::StartMenu)),
-            spawn_pause_ui.in_schedule(OnEnter(GameScreen::Paused)),
-            spawn_ui_message_event,
-            goal_hit_points_ui,
-        ));
+        app.add_event::<MessageUiEvent>()
+            .add_systems(OnEnter(GameScreen::StartMenu), spawn_start_menu_ui)
+            .add_systems(OnEnter(GameScreen::Paused), spawn_pause_ui)
+            .add_systems(Update, (spawn_ui_message_event, goal_hit_points_ui));
     }
 }

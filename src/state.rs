@@ -91,10 +91,11 @@ impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<RunState>()
             .add_state::<GameScreen>()
-            .add_systems((
-                reset_hit_points.in_schedule(OnExit(GameScreen::StartMenu)),
-                game_over_check.in_set(OnUpdate(GameScreen::Playing)),
-            ))
-            .add_startup_system(reset_hit_points);
+            .add_systems(OnExit(GameScreen::StartMenu), reset_hit_points)
+            .add_systems(
+                Update,
+                game_over_check.run_if(in_state(GameScreen::Playing)),
+            )
+            .add_systems(Startup, reset_hit_points);
     }
 }

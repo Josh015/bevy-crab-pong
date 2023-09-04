@@ -10,6 +10,7 @@ pub const GOAL_PADDLE_MAX_POSITION_X: f32 =
 
 /// An event fired when a [`Goal`] has been eliminated from play after its HP
 /// has reached zero.
+#[derive(Event)]
 pub struct GoalEliminatedEvent(pub Side);
 
 /// Marks a [`Goal`] entity so that [`Paddle`] and [`Wall`] entities can use it
@@ -99,9 +100,10 @@ pub struct GoalPlugin;
 impl Plugin for GoalPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<GoalEliminatedEvent>().add_systems(
+            Update,
             (goal_scored_check, goal_eliminated_event)
                 .chain()
-                .in_set(OnUpdate(GameScreen::Playing)),
+                .run_if(in_state(GameScreen::Playing)),
         );
     }
 }

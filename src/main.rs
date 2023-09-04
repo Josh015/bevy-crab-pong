@@ -36,10 +36,9 @@ fn main() {
         .insert_resource(Msaa::default())
         .insert_resource(ClearColor(config.clear_color))
         .insert_resource(config)
-        .add_plugin(StatePlugin)
-        .add_plugin(ComponentsPlugin)
-        .add_system(input)
-        .add_startup_system(setup)
+        .add_plugins((StatePlugin, ComponentsPlugin))
+        .add_systems(Update, input)
+        .add_systems(Startup, setup)
         .run();
 }
 
@@ -50,28 +49,32 @@ fn input(
     mut next_game_screen: ResMut<NextState<GameScreen>>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Escape) {
-        app_exit_events.send(AppExit);
-    } else if game_screen.0 != GameScreen::StartMenu
-        && keyboard_input.just_pressed(KeyCode::Back)
-    {
-        next_game_screen.set(GameScreen::StartMenu);
-        info!("Start Menu");
-    } else if game_screen.0 == GameScreen::StartMenu {
-        if keyboard_input.just_pressed(KeyCode::Return) {
+    match game_screen.get() {
+        GameScreen::StartMenu
+            if keyboard_input.just_pressed(KeyCode::Return) =>
+        {
             next_game_screen.set(GameScreen::Playing);
             info!("New Game");
-        }
-    } else if game_screen.0 == GameScreen::Playing {
-        if keyboard_input.just_pressed(KeyCode::Space) {
+        },
+        GameScreen::Playing if keyboard_input.just_pressed(KeyCode::Space) => {
             next_game_screen.set(GameScreen::Paused);
             info!("Paused");
-        }
-    } else if game_screen.0 == GameScreen::Paused
-        && keyboard_input.just_pressed(KeyCode::Space)
-    {
-        next_game_screen.set(GameScreen::Playing);
-        info!("Unpaused");
+        },
+        GameScreen::Paused if keyboard_input.just_pressed(KeyCode::Space) => {
+            next_game_screen.set(GameScreen::Playing);
+            info!("Unpaused");
+        },
+        GameScreen::Playing | GameScreen::Paused
+            if keyboard_input.just_pressed(KeyCode::Back) =>
+        {
+            next_game_screen.set(GameScreen::StartMenu);
+            info!("Start Menu");
+        },
+        _ => {
+            if keyboard_input.just_pressed(KeyCode::Escape) {
+                app_exit_events.send(AppExit)
+            }
+        },
     }
 }
 
@@ -144,7 +147,10 @@ fn setup(
     let goal_configs = [
         (
             Side::Bottom,
-            UiRect {
+            Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
                 bottom: Val::Px(5.0),
                 right: Val::Px(400.0),
                 ..default()
@@ -152,7 +158,10 @@ fn setup(
         ),
         (
             Side::Right,
-            UiRect {
+            Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
                 top: Val::Px(400.0),
                 right: Val::Px(5.0),
                 ..default()
@@ -160,7 +169,10 @@ fn setup(
         ),
         (
             Side::Top,
-            UiRect {
+            Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
                 top: Val::Px(5.0),
                 left: Val::Px(400.0),
                 ..default()
@@ -168,7 +180,10 @@ fn setup(
         ),
         (
             Side::Left,
-            UiRect {
+            Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
                 bottom: Val::Px(400.0),
                 left: Val::Px(5.0),
                 ..default()
@@ -176,7 +191,7 @@ fn setup(
         ),
     ];
 
-    for (i, (side, rect)) in goal_configs.iter().enumerate() {
+    for (i, (side, style)) in goal_configs.iter().enumerate() {
         // Walls
         spawn_wall_events.send(SpawnWallEvent {
             side: *side,
@@ -235,13 +250,7 @@ fn setup(
             HitPointsUi,
             *side,
             TextBundle {
-                style: Style {
-                    align_self: AlignSelf::FlexEnd,
-                    position_type: PositionType::Absolute,
-                    justify_content: JustifyContent::Center,
-                    position: *rect,
-                    ..default()
-                },
+                style: style.clone(),
                 text: Text::from_section(
                     "",
                     TextStyle {

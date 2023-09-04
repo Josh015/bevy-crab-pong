@@ -34,7 +34,6 @@ pub struct VelocityBundle {
 
 #[derive(Bundle, Default)]
 pub struct AccelerationBundle {
-    #[bundle]
     pub velocity: VelocityBundle,
     pub force: Force,
     pub max_speed: MaxSpeed,
@@ -79,9 +78,10 @@ pub struct MovementPlugin;
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
+            Update,
             (acceleration, velocity)
                 .chain()
-                .in_set(OnUpdate(GameScreen::Playing)),
+                .run_if(in_state(GameScreen::Playing)),
         );
     }
 }
