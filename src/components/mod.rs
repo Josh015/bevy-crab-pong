@@ -7,6 +7,7 @@ mod barrier;
 mod collider;
 mod fade;
 mod for_state;
+mod gizmos;
 mod goal;
 mod movement;
 mod paddle;
@@ -23,6 +24,7 @@ pub use barrier::*;
 pub use collider::*;
 pub use fade::*;
 pub use for_state::*;
+pub use gizmos::*;
 pub use goal::*;
 pub use movement::*;
 pub use paddle::*;
@@ -45,6 +47,7 @@ impl Plugin for ComponentsPlugin {
             AiPlugin,
             FadePlugin,
             ForStatePlugin,
+            GizmosPlugin,
             GoalPlugin,
             MovementPlugin,
             PaddlePlugin,

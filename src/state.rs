@@ -23,6 +23,7 @@ pub enum GameOver {
 pub struct RunState {
     pub goals_hit_points: HashMap<Side, u32>,
     pub game_over: Option<GameOver>,
+    pub has_debug_gizmos: bool,
 
     // TODO: Move these to corresponding component files!
     pub font_handle: Handle<Font>,
@@ -40,6 +41,7 @@ impl FromWorld for RunState {
             goals_hit_points: HashMap::with_capacity(4),
             game_over: None,
             font_handle,
+            has_debug_gizmos: false,
         }
     }
 }

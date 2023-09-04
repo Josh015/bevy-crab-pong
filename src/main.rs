@@ -46,6 +46,7 @@ fn main() {
 fn input(
     keyboard_input: Res<Input<KeyCode>>,
     game_screen: Res<State<GameScreen>>,
+    mut run_state: ResMut<RunState>,
     mut next_game_screen: ResMut<NextState<GameScreen>>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
@@ -73,6 +74,8 @@ fn input(
         _ => {
             if keyboard_input.just_pressed(KeyCode::Escape) {
                 app_exit_events.send(AppExit)
+            } else if keyboard_input.just_pressed(KeyCode::Key1) {
+                run_state.has_debug_gizmos = true;
             }
         },
     }
