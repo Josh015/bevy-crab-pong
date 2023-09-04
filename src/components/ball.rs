@@ -93,7 +93,7 @@ fn spawn_balls(
                 speed: Speed(config.ball_max_speed),
             },
         ));
-        info!("Ball({:?}) -> Launched", entity);
+        info!("Ball({:?}): Launched", entity);
     }
 
     // Spawn new balls until max is reached.
@@ -135,7 +135,7 @@ fn spawn_balls(
     // resources.next_ball_material_index += 1;
     // resources.next_ball_material_index %=
     // resources.ball_material_handles.len();
-    info!("Ball({:?}) -> Spawning", entity);
+    info!("Ball({:?}): Spawning", entity);
 }
 
 pub struct BallPlugin;

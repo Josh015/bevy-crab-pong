@@ -45,11 +45,11 @@ fn goal_scored_check(
             let hit_points = run_state.goals_hit_points.get_mut(side).unwrap();
 
             *hit_points = hit_points.saturating_sub(1);
-            info!("Ball({:?}) -> Scored Goal({:?})", ball_entity, side);
+            info!("Ball({:?}): Scored Goal({:?})", ball_entity, side);
 
             if *hit_points == 0 {
                 goal_eliminated_writer.send(GoalEliminatedEvent(*side));
-                info!("Ball({:?}) -> Eliminated Goal({:?})", ball_entity, side);
+                info!("Ball({:?}): Eliminated Goal({:?})", ball_entity, side);
             }
 
             // Remove Collider and start fading out the ball to prevent

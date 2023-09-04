@@ -69,7 +69,7 @@ fn fade_out_entity_event(
 
         // Initiate fade out.
         commands.entity(*entity).insert(Fade::Out(progress));
-        info!("Entity({:?}) -> Fading Out", entity);
+        info!("Entity({:?}): Fading Out", entity);
     }
 }
 
@@ -90,7 +90,7 @@ fn fade_entities(
                 if *progress < FADE_PROGRESS_MAX {
                     *progress = progress.max(FADE_PROGRESS_MIN) + step;
                 } else {
-                    info!("Entity({:?}) -> Ready", entity);
+                    info!("Entity({:?}): Ready", entity);
                     commands.entity(entity).remove::<Fade>();
                 }
             },
@@ -98,7 +98,7 @@ fn fade_entities(
                 if *progress < FADE_PROGRESS_MAX {
                     *progress = progress.max(FADE_PROGRESS_MIN) + step;
                 } else {
-                    info!("Entity({:?}) -> Despawned", entity);
+                    info!("Entity({:?}): Despawned", entity);
                     commands.entity(entity).despawn_recursive();
                 }
             },

@@ -83,7 +83,7 @@ fn game_over_check(
         });
 
         next_game_screen.set(GameScreen::StartMenu);
-        info!("Game Over -> Player {:?}", run_state.game_over.unwrap());
+        info!("Game Over: Player {:?}", run_state.game_over.unwrap());
     }
 }
 

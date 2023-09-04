@@ -63,7 +63,7 @@ fn ball_to_ball_collisions(
                 .entity(entity)
                 .insert(Heading(reflect(ball_heading.0, axis)));
 
-            info!("Ball({:?}) -> Collided Ball({:?})", entity, entity2);
+            info!("Ball({:?}): Collided Ball({:?})", entity, entity2);
             break;
         }
     }
@@ -105,7 +105,7 @@ fn ball_to_paddle_collisions(
                 .entity(entity)
                 .insert(Heading(rotation_away_from_center * -ball_heading.0));
 
-            info!("Ball({:?}) -> Collided Paddle({:?})", entity, side);
+            info!("Ball({:?}): Collided Paddle({:?})", entity, side);
             break;
         }
     }
@@ -145,7 +145,7 @@ fn ball_to_barrier_collisions(
                 .entity(entity)
                 .insert(Heading(reflect(ball_heading.0, axis)));
 
-            info!("Ball({:?}) -> Collided Barrier", entity);
+            info!("Ball({:?}): Collided Barrier", entity);
             break;
         }
     }
@@ -175,7 +175,7 @@ fn ball_to_wall_collisions(
                 .entity(entity)
                 .insert(Heading(reflect(ball_heading.0, axis)));
 
-            info!("Ball({:?}) -> Collided Wall({:?})", entity, side);
+            info!("Ball({:?}): Collided Wall({:?})", entity, side);
             break;
         }
     }
