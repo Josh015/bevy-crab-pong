@@ -32,7 +32,7 @@ pub struct ForStatePlugin;
 impl Plugin for ForStatePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<RunState>().add_systems(
-            Update,
+            PostUpdate,
             despawn_invalid_entities_for_state
                 .run_if(state_changed::<GameScreen>()),
         );

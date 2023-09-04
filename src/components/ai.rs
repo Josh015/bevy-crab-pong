@@ -10,30 +10,29 @@ pub struct Ai;
 /// AI control for [`Paddle`] entities.
 fn ai_paddle_control(
     mut paddles_query: Query<
-        (&Side, &Transform, &mut Force, &Speed, &Acceleration),
+        (
+            &Side,
+            &Transform,
+            &mut Force,
+            &Speed,
+            &Acceleration,
+            &Targeting,
+        ),
         (With<Paddle>, With<Ai>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
 ) {
     // We want the paddle to follow and try to stay under the moving ball
     // rather than going straight to where it will cross the goal.
-    for (side, transform, mut force, speed, acceleration) in &mut paddles_query
+    for (side, transform, mut force, speed, acceleration, targeting) in
+        &mut paddles_query
     {
-        // Get the relative position of the ball that's closest to this goal.
-        let mut closest_ball_distance = std::f32::MAX;
-        let mut ball_local_position = GOAL_PADDLE_START_POSITION.x;
-
-        for ball_transform in &balls_query {
-            let ball_distance_to_goal = side.distance_to_ball(ball_transform);
-
-            if ball_distance_to_goal >= closest_ball_distance {
-                continue;
-            }
-
-            closest_ball_distance = ball_distance_to_goal;
-            ball_local_position =
-                side.map_ball_position_to_paddle_local_space(ball_transform);
-        }
+        // Get the targeted ball's position in the goal's local space.
+        let Ok(target) = balls_query.get(targeting.0) else {
+            continue;
+        };
+        let ball_local_position =
+            side.map_ball_position_to_paddle_local_space(target);
 
         // Predict the paddle's stop position if it begins decelerating now.
         const DELTA_SECONDS: f32 = 0.05; // Overshoots the ball slightly more often.

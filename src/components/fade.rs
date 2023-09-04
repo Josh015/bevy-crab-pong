@@ -151,7 +151,7 @@ pub struct FadePlugin;
 impl Plugin for FadePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<FadeOutEntityEvent>().add_systems(
-            Update,
+            PostUpdate,
             (fade_out_entity_event, fade_entities, fade_animation)
                 .chain()
                 .run_if(not(in_state(GameScreen::Paused))),

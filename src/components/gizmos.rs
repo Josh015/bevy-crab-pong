@@ -51,32 +51,22 @@ fn debug_paddle_stop_positions_gizmos(
     }
 }
 
-fn debug_paddle_target_ball_gizmos(
-    query: Query<(&GlobalTransform, &Side), (With<Paddle>, Without<Fade>)>,
+fn debug_ball_targeting_gizmos(
+    paddles_query: Query<
+        (&GlobalTransform, &Targeting),
+        (With<Paddle>, Without<Fade>),
+    >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
     mut gizmos: Gizmos,
 ) {
-    for (global_transform, side) in &query {
-        // Get the relative position of the ball that's closest to this goal.
-        let mut closest_ball_distance = std::f32::MAX;
-        let mut nearest_ball_transform = GlobalTransform::IDENTITY;
-
-        for ball_transform in &balls_query {
-            let ball_distance_to_goal = side.distance_to_ball(ball_transform);
-
-            if ball_distance_to_goal >= closest_ball_distance {
-                continue;
-            }
-
-            closest_ball_distance = ball_distance_to_goal;
-            nearest_ball_transform = ball_transform.clone();
+    for (global_transform, targeting) in &paddles_query {
+        if let Ok(target) = balls_query.get(targeting.0) {
+            gizmos.line(
+                global_transform.translation(),
+                target.translation(),
+                Color::PURPLE,
+            );
         }
-
-        gizmos.line(
-            global_transform.translation(),
-            nearest_ball_transform.translation(),
-            Color::PURPLE,
-        );
     }
 }
 
@@ -85,11 +75,11 @@ pub struct GizmosPlugin;
 impl Plugin for GizmosPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
+            PostUpdate,
             (
                 debug_ball_path_gizmos,
                 debug_paddle_stop_positions_gizmos,
-                debug_paddle_target_ball_gizmos,
+                debug_ball_targeting_gizmos,
             )
                 .run_if(show_debug_gizmos),
         );
