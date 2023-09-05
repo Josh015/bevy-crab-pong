@@ -9,12 +9,13 @@ pub struct Collider;
 /// Restricts a [`Paddle`] entity to the space between the [`Barrier`] entities
 /// on either side of its [`Goal`].
 fn paddle_to_barrier_collisions(
+    mut commands: Commands,
     mut query: Query<
-        (&mut Transform, &mut Force, &mut Speed),
+        (Entity, &mut Transform, &mut Speed),
         (With<Paddle>, With<Collider>),
     >,
 ) {
-    for (mut transform, mut force, mut speed) in &mut query {
+    for (entity, mut transform, mut speed) in &mut query {
         // Limit paddle to open space between barriers
         if !(-GOAL_PADDLE_MAX_POSITION_X..=GOAL_PADDLE_MAX_POSITION_X)
             .contains(&transform.translation.x)
@@ -23,8 +24,8 @@ fn paddle_to_barrier_collisions(
                 .translation
                 .x
                 .clamp(-GOAL_PADDLE_MAX_POSITION_X, GOAL_PADDLE_MAX_POSITION_X);
-            *force = Force::Zero;
             speed.0 = 0.0;
+            commands.entity(entity).remove::<Force>();
         }
     }
 }

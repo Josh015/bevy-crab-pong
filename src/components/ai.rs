@@ -9,23 +9,17 @@ pub struct Ai;
 
 /// AI control for [`Paddle`] entities.
 fn ai_paddle_control(
-    mut paddles_query: Query<
-        (
-            &Side,
-            &Transform,
-            &mut Force,
-            &Speed,
-            &Acceleration,
-            &Targeting,
-        ),
+    mut commands: Commands,
+    paddles_query: Query<
+        (Entity, &Side, &Transform, &Speed, &Acceleration, &Targeting),
         (With<Paddle>, With<Ai>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
 ) {
     // We want the paddle to follow and try to stay under the moving ball
     // rather than going straight to where it will cross the goal.
-    for (side, transform, mut force, speed, acceleration, targeting) in
-        &mut paddles_query
+    for (entity, side, transform, speed, acceleration, targeting) in
+        &paddles_query
     {
         // Get the targeted ball's position in the goal's local space.
         let Ok(target) = balls_query.get(targeting.0) else {
@@ -53,15 +47,18 @@ fn ai_paddle_control(
         let distance_from_paddle_center =
             (paddle_stop_position - ball_local_position).abs();
 
-        *force = if distance_from_paddle_center
-            < PERCENT_FROM_CENTER * PADDLE_HALF_WIDTH
+        if distance_from_paddle_center < PERCENT_FROM_CENTER * PADDLE_HALF_WIDTH
         {
-            Force::Zero
-        } else if ball_local_position < transform.translation.x {
-            Force::Negative // Left
+            commands.entity(entity).remove::<Force>();
         } else {
-            Force::Positive // Right
-        };
+            commands.entity(entity).insert(
+                if ball_local_position < transform.translation.x {
+                    Force::Negative // Left
+                } else {
+                    Force::Positive // Right
+                },
+            );
+        }
     }
 }
 

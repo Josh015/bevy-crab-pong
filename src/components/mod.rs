@@ -74,13 +74,12 @@ impl Plugin for ComponentsPlugin {
             PostUpdate,
             GameSystemSet::Collision
                 .after(GameSystemSet::Movement)
-                .before(GameSystemSet::Despawning)
-                .run_if(in_state(GameScreen::Playing)),
+                .run_if(not(in_state(GameScreen::Paused))),
         );
         app.configure_set(
             PostUpdate,
             GameSystemSet::Despawning
-                .after(GameSystemSet::Movement)
+                .after(GameSystemSet::Collision)
                 .run_if(not(in_state(GameScreen::Paused))),
         );
         app.add_plugins((
