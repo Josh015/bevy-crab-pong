@@ -283,9 +283,3 @@ fn setup(
 // TODO: Debug option to directly control single ball's exact position with
 // keyboard and see how paddles respond. Can go in goals, triggering a score and
 // ball return?
-
-// TODO: Debug option to add small cubes at the projected points on goals with
-// debug lines to the nearest ball. Also add a line from the paddle to a flat
-// but wide cube (to allow both to be visible if they overlap) that matches the
-// paddle's hit box dimensions and is positioned where the paddle predicts it
-// will stop. One of each per goal so we can spawn them in advance.
