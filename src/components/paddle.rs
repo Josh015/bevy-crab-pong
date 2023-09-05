@@ -115,11 +115,65 @@ fn spawn_paddles(
     }
 }
 
+fn debug_paddle_stop_positions(
+    query: Query<
+        (&GlobalTransform, &Heading, &Acceleration, &Speed),
+        (With<Paddle>, Without<Fade>),
+    >,
+    mut gizmos: Gizmos,
+) {
+    for (global_transform, heading, acceleration, speed) in &query {
+        const DELTA_SECONDS: f32 = 0.01;
+        let delta_speed = acceleration.0 * DELTA_SECONDS;
+        let mut current_speed = speed.0;
+        let mut stop_position_transform = global_transform.compute_transform();
+        let global_heading = stop_position_transform.rotation * heading.0;
+
+        // TODO: Need to account for wall collisions.
+        while current_speed.abs() > 0.0 {
+            stop_position_transform.translation +=
+                global_heading * current_speed * DELTA_SECONDS;
+            current_speed = decelerate_speed(current_speed, delta_speed);
+        }
+
+        gizmos.line(
+            global_transform.translation(),
+            stop_position_transform.translation,
+            Color::BLUE,
+        );
+        gizmos.cuboid(stop_position_transform, Color::GREEN);
+    }
+}
+
+fn debug_paddle_targeting_balls(
+    paddles_query: Query<
+        (&GlobalTransform, &Targeting),
+        (With<Paddle>, Without<Fade>),
+    >,
+    balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
+    mut gizmos: Gizmos,
+) {
+    for (global_transform, targeting) in &paddles_query {
+        if let Ok(target) = balls_query.get(targeting.0) {
+            gizmos.line(
+                global_transform.translation(),
+                target.translation(),
+                Color::PURPLE,
+            );
+        }
+    }
+}
+
 pub struct PaddlePlugin;
 
 impl Plugin for PaddlePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PaddleResources>()
-            .add_systems(OnExit(GameScreen::StartMenu), spawn_paddles);
+            .add_systems(OnExit(GameScreen::StartMenu), spawn_paddles)
+            .add_systems(
+                Update,
+                (debug_paddle_stop_positions, debug_paddle_targeting_balls)
+                    .in_set(GameSystemSet::Debugging),
+            );
     }
 }

@@ -7,7 +7,6 @@ mod barrier;
 mod collider;
 mod fade;
 mod for_state;
-mod gizmos;
 mod goal;
 mod movement;
 mod paddle;
@@ -25,7 +24,6 @@ pub use barrier::*;
 pub use collider::*;
 pub use fade::*;
 pub use for_state::*;
-pub use gizmos::*;
 pub use goal::*;
 pub use movement::*;
 pub use paddle::*;
@@ -40,16 +38,28 @@ pub const ARENA_CENTER_POINT: Vec3 = Vec3::ZERO;
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum GameSystemSet {
+    Debugging,
     GameplayLogic,
     Movement,
     Collision,
     Despawning,
 }
 
+fn show_debugging_systems(run_state: Res<RunState>) -> bool {
+    run_state.is_debugging_enabled
+}
+
 pub struct ComponentsPlugin;
 
 impl Plugin for ComponentsPlugin {
     fn build(&self, app: &mut App) {
+        app.configure_set(
+            Update,
+            GameSystemSet::Debugging
+                .before(GameSystemSet::Movement)
+                .run_if(show_debugging_systems)
+                .run_if(in_state(GameScreen::Playing)),
+        );
         app.configure_set(
             Update,
             GameSystemSet::GameplayLogic
@@ -80,7 +90,6 @@ impl Plugin for ComponentsPlugin {
             AiPlugin,
             FadePlugin,
             ForStatePlugin,
-            GizmosPlugin,
             GoalPlugin,
             MovementPlugin,
             PaddlePlugin,

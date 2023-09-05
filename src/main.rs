@@ -75,7 +75,8 @@ fn input(
             if keyboard_input.just_pressed(KeyCode::Escape) {
                 app_exit_events.send(AppExit)
             } else if keyboard_input.just_pressed(KeyCode::G) {
-                run_state.has_debug_gizmos = !run_state.has_debug_gizmos;
+                run_state.is_debugging_enabled =
+                    !run_state.is_debugging_enabled;
             }
         },
     }

@@ -138,13 +138,31 @@ fn spawn_balls(
     info!("Ball({:?}): Spawning", entity);
 }
 
+fn debug_ball_paths(
+    query: Query<(&GlobalTransform, &Heading), (With<Ball>, Without<Fade>)>,
+    mut gizmos: Gizmos,
+) {
+    for (global_transform, heading) in &query {
+        gizmos.line(
+            global_transform.translation(),
+            global_transform.translation() + heading.0 * 20.0,
+            Color::RED,
+        )
+        // TODO: Draw a sphere over the goal position where the ball is expected
+        // to cross.
+    }
+}
+
 pub struct BallPlugin;
 
 impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<BallResources>().add_systems(
             Update,
-            spawn_balls.in_set(GameSystemSet::GameplayLogic),
+            (
+                spawn_balls.in_set(GameSystemSet::GameplayLogic),
+                debug_ball_paths.in_set(GameSystemSet::Debugging),
+            ),
         );
     }
 }
