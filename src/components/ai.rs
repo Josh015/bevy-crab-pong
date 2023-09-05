@@ -15,7 +15,7 @@ pub struct Target(pub Entity);
 /// Causes [`Ai`] entities to target whichever ball is closest to their goal.
 fn detect_and_target_ball_closest_to_paddle(
     mut commands: Commands,
-    ai_query: Query<(Entity, &Side), (With<Paddle>, With<Ai>)>,
+    ai_query: Query<(Entity, &Side), (With<Ai>, With<Paddle>)>,
     balls_query: Query<
         (Entity, &GlobalTransform),
         (With<Ball>, With<Collider>),
@@ -34,8 +34,11 @@ fn detect_and_target_ball_closest_to_paddle(
             }
         }
 
-        let Some(target) = target else { continue };
-        commands.entity(ai_entity).insert(Target(target));
+        if let Some(target) = target {
+            commands.entity(ai_entity).insert(Target(target));
+        } else {
+            commands.entity(ai_entity).remove::<Target>();
+        }
     }
 }
 
@@ -44,7 +47,7 @@ fn ai_paddle_control(
     mut commands: Commands,
     paddles_query: Query<
         (Entity, &Side, &Transform, &Speed, &Acceleration, &Target),
-        (With<Paddle>, With<Ai>),
+        (With<Ai>, With<Paddle>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
 ) {
@@ -96,14 +99,14 @@ fn ai_paddle_control(
 /// Provides debug visualization to show which [`Ai`] entities are targeting
 /// which [`Ball`] entities.
 fn debug_targeting(
-    paddles_query: Query<
+    ai_query: Query<
         (&GlobalTransform, &Target),
-        (With<Paddle>, Without<Fade>),
+        (With<Ai>, With<Paddle>, Without<Fade>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
     mut gizmos: Gizmos,
 ) {
-    for (global_transform, target) in &paddles_query {
+    for (global_transform, target) in &ai_query {
         if let Ok(target) = balls_query.get(target.0) {
             gizmos.line(
                 global_transform.translation(),
