@@ -13,6 +13,11 @@ pub const PADDLE_SCALE: Vec3 =
 #[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
 pub struct Paddle;
 
+/// Offset from a [`Paddle`] entity's current position to where it will stop
+/// if it begins decelerating immediately.
+#[derive(Component)]
+pub struct StopPositionOffset(pub f32);
+
 /// Cached paddle materials and meshes.
 #[derive(Debug, Resource)]
 pub struct PaddleResources {
@@ -115,28 +120,54 @@ fn spawn_paddles(
     }
 }
 
-// TODO: Have Movement module handle stop positions and direction?
-fn debug_paddle_stop_positions(
+/// Calculates the bounded stop position offset for the paddles.
+fn calculate_paddle_stop_position_offset(
+    mut commands: Commands,
     query: Query<
-        (&GlobalTransform, &Heading, &Acceleration, &Speed),
+        (Entity, &Acceleration, &Speed, &Transform),
         (With<Paddle>, Without<Fade>),
     >,
-    mut gizmos: Gizmos,
 ) {
-    for (global_transform, heading, acceleration, speed) in &query {
+    for (entity, acceleration, speed, transform) in &query {
+        // Calculate the paddle's stop position after deceleration.
         const DELTA_SECONDS: f32 = 0.01;
         let delta_speed = acceleration.0 * DELTA_SECONDS;
         let mut current_speed = speed.0;
-        let mut stop_position_transform = global_transform.compute_transform();
-        let global_heading = stop_position_transform.rotation * heading.0;
+        let mut offset = 0f32;
 
-        // TODO: Need to account for wall collisions.
         while current_speed.abs() > 0.0 {
-            stop_position_transform.translation +=
-                global_heading * current_speed * DELTA_SECONDS;
+            offset += current_speed * DELTA_SECONDS;
             current_speed = decelerate_speed(current_speed, delta_speed);
         }
 
+        // Restrict to valid positions within the bounds of the goal.
+        let new_position = transform.translation.x + offset;
+
+        if !(-GOAL_PADDLE_MAX_POSITION_X..=GOAL_PADDLE_MAX_POSITION_X)
+            .contains(&new_position)
+        {
+            offset = new_position.signum() * GOAL_PADDLE_MAX_POSITION_X
+                - transform.translation.x;
+        }
+
+        commands.entity(entity).insert(StopPositionOffset(offset));
+    }
+}
+
+/// Visualizes where the paddles will be when they stop.
+fn debug_paddle_stop_positions(
+    query: Query<
+        (&GlobalTransform, &Heading, &StopPositionOffset),
+        Without<Fade>,
+    >,
+    mut gizmos: Gizmos,
+) {
+    for (global_transform, heading, stop_position_offset) in &query {
+        let mut stop_position_transform = global_transform.compute_transform();
+        let global_heading = stop_position_transform.rotation * heading.0;
+
+        stop_position_transform.translation +=
+            global_heading * stop_position_offset.0;
         gizmos.line(
             global_transform.translation(),
             stop_position_transform.translation,
@@ -154,7 +185,12 @@ impl Plugin for PaddlePlugin {
             .add_systems(OnExit(GameScreen::StartMenu), spawn_paddles)
             .add_systems(
                 Update,
-                debug_paddle_stop_positions.in_set(GameSystemSet::Debugging),
+                (
+                    calculate_paddle_stop_position_offset
+                        .in_set(GameSystemSet::GameplayLogic),
+                    debug_paddle_stop_positions
+                        .in_set(GameSystemSet::Debugging),
+                ),
             );
     }
 }
