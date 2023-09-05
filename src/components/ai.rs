@@ -11,18 +11,17 @@ pub struct Ai;
 fn ai_paddle_control(
     mut commands: Commands,
     paddles_query: Query<
-        (Entity, &Side, &Transform, &Speed, &Acceleration, &Targeting),
+        (Entity, &Side, &Transform, &Speed, &Acceleration, &Target),
         (With<Paddle>, With<Ai>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
 ) {
     // We want the paddle to follow and try to stay under the moving ball
     // rather than going straight to where it will cross the goal.
-    for (entity, side, transform, speed, acceleration, targeting) in
-        &paddles_query
+    for (entity, side, transform, speed, acceleration, target) in &paddles_query
     {
         // Get the targeted ball's position in the goal's local space.
-        let Ok(target) = balls_query.get(targeting.0) else {
+        let Ok(target) = balls_query.get(target.0) else {
             continue;
         };
         let ball_local_position =

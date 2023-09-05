@@ -3,7 +3,7 @@
 use crate::prelude::*;
 
 #[derive(Component)]
-pub struct Targeting(pub Entity);
+pub struct Target(pub Entity);
 
 fn detect_and_target_closest_ball(
     mut commands: Commands,
@@ -28,20 +28,20 @@ fn detect_and_target_closest_ball(
         }
 
         let Some(target) = target else { continue };
-        commands.entity(paddle_entity).insert(Targeting(target));
+        commands.entity(paddle_entity).insert(Target(target));
     }
 }
 
 fn debug_targeted_objects(
     paddles_query: Query<
-        (&GlobalTransform, &Targeting),
+        (&GlobalTransform, &Target),
         (With<Paddle>, Without<Fade>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
     mut gizmos: Gizmos,
 ) {
-    for (global_transform, targeting) in &paddles_query {
-        if let Ok(target) = balls_query.get(targeting.0) {
+    for (global_transform, target) in &paddles_query {
+        if let Ok(target) = balls_query.get(target.0) {
             gizmos.line(
                 global_transform.translation(),
                 target.translation(),
@@ -51,9 +51,9 @@ fn debug_targeted_objects(
     }
 }
 
-pub struct TargetingPlugin;
+pub struct TargetPlugin;
 
-impl Plugin for TargetingPlugin {
+impl Plugin for TargetPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,

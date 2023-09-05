@@ -13,7 +13,7 @@ mod paddle;
 mod player;
 mod side;
 mod swaying_camera;
-mod targeting;
+mod target;
 mod ui;
 mod wall;
 
@@ -30,7 +30,7 @@ pub use paddle::*;
 pub use player::*;
 pub use side::*;
 pub use swaying_camera::*;
-pub use targeting::*;
+pub use target::*;
 pub use ui::*;
 pub use wall::*;
 
@@ -94,7 +94,7 @@ impl Plugin for ComponentsPlugin {
             PaddlePlugin,
             PlayerPlugin,
             SwayingCameraPlugin,
-            TargetingPlugin,
+            TargetPlugin,
             UiPlugin,
             WallPlugin,
         ));
