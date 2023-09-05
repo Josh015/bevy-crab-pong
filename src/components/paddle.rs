@@ -115,6 +115,7 @@ fn spawn_paddles(
     }
 }
 
+// TODO: Have Movement module handle stop positions and direction?
 fn debug_paddle_stop_positions(
     query: Query<
         (&GlobalTransform, &Heading, &Acceleration, &Speed),
@@ -145,25 +146,6 @@ fn debug_paddle_stop_positions(
     }
 }
 
-fn debug_paddle_targeting_balls(
-    paddles_query: Query<
-        (&GlobalTransform, &Targeting),
-        (With<Paddle>, Without<Fade>),
-    >,
-    balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
-    mut gizmos: Gizmos,
-) {
-    for (global_transform, targeting) in &paddles_query {
-        if let Ok(target) = balls_query.get(targeting.0) {
-            gizmos.line(
-                global_transform.translation(),
-                target.translation(),
-                Color::PURPLE,
-            );
-        }
-    }
-}
-
 pub struct PaddlePlugin;
 
 impl Plugin for PaddlePlugin {
@@ -172,8 +154,7 @@ impl Plugin for PaddlePlugin {
             .add_systems(OnExit(GameScreen::StartMenu), spawn_paddles)
             .add_systems(
                 Update,
-                (debug_paddle_stop_positions, debug_paddle_targeting_balls)
-                    .in_set(GameSystemSet::Debugging),
+                debug_paddle_stop_positions.in_set(GameSystemSet::Debugging),
             );
     }
 }

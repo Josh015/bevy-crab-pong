@@ -138,6 +138,7 @@ fn spawn_balls(
     info!("Ball({:?}): Spawning", entity);
 }
 
+// TODO: Make this work with all object movement, not just Balls?
 fn debug_ball_paths(
     query: Query<(&GlobalTransform, &Heading), (With<Ball>, Without<Fade>)>,
     mut gizmos: Gizmos,
@@ -148,8 +149,6 @@ fn debug_ball_paths(
             global_transform.translation() + heading.0 * 20.0,
             Color::RED,
         )
-        // TODO: Draw a sphere over the goal position where the ball is expected
-        // to cross.
     }
 }
 

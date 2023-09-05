@@ -32,13 +32,36 @@ fn detect_and_target_closest_ball(
     }
 }
 
+fn debug_targeted_objects(
+    paddles_query: Query<
+        (&GlobalTransform, &Targeting),
+        (With<Paddle>, Without<Fade>),
+    >,
+    balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
+    mut gizmos: Gizmos,
+) {
+    for (global_transform, targeting) in &paddles_query {
+        if let Ok(target) = balls_query.get(targeting.0) {
+            gizmos.line(
+                global_transform.translation(),
+                target.translation(),
+                Color::PURPLE,
+            );
+        }
+    }
+}
+
 pub struct TargetingPlugin;
 
 impl Plugin for TargetingPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            detect_and_target_closest_ball.in_set(GameSystemSet::GameplayLogic),
+            (
+                detect_and_target_closest_ball
+                    .in_set(GameSystemSet::GameplayLogic),
+                debug_targeted_objects.in_set(GameSystemSet::Debugging),
+            ),
         );
     }
 }

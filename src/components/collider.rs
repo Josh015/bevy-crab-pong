@@ -181,6 +181,8 @@ fn ball_to_wall_collisions(
     }
 }
 
+// TODO: Add debug visualizations for bounding shapes.
+
 pub struct ColliderPlugin;
 
 impl Plugin for ColliderPlugin {
