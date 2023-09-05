@@ -56,7 +56,7 @@ impl Plugin for ComponentsPlugin {
             GameSystemSet::Debugging
                 .before(GameSystemSet::Movement)
                 .run_if(show_debugging_systems)
-                .run_if(in_state(GameScreen::Playing)),
+                .run_if(not(in_state(GameScreen::StartMenu))),
         );
         app.configure_set(
             Update,
