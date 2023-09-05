@@ -17,9 +17,7 @@ fn paddle_to_barrier_collisions(
 ) {
     for (entity, mut transform, mut speed) in &mut query {
         // Limit paddle to open space between barriers
-        if !(-GOAL_PADDLE_MAX_POSITION_X..=GOAL_PADDLE_MAX_POSITION_X)
-            .contains(&transform.translation.x)
-        {
+        if !GOAL_PADDLE_MAX_POSITION_RANGE.contains(&transform.translation.x) {
             transform.translation.x = transform
                 .translation
                 .x

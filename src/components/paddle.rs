@@ -143,9 +143,7 @@ fn calculate_paddle_stop_position_offset(
         // Restrict to valid positions within the bounds of the goal.
         let new_position = transform.translation.x + offset;
 
-        if !(-GOAL_PADDLE_MAX_POSITION_X..=GOAL_PADDLE_MAX_POSITION_X)
-            .contains(&new_position)
-        {
+        if !GOAL_PADDLE_MAX_POSITION_RANGE.contains(&new_position) {
             offset = new_position.signum() * GOAL_PADDLE_MAX_POSITION_X
                 - transform.translation.x;
         }

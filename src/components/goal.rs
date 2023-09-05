@@ -1,12 +1,15 @@
 #![allow(clippy::type_complexity)]
 
 use crate::prelude::*;
+use std::ops::RangeInclusive;
 
 pub const GOAL_WIDTH: f32 = 1.0;
 pub const GOAL_HALF_WIDTH: f32 = 0.5 * GOAL_WIDTH;
 pub const GOAL_PADDLE_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
 pub const GOAL_PADDLE_MAX_POSITION_X: f32 =
     GOAL_HALF_WIDTH - BARRIER_RADIUS - PADDLE_HALF_WIDTH;
+pub const GOAL_PADDLE_MAX_POSITION_RANGE: RangeInclusive<f32> =
+    -GOAL_PADDLE_MAX_POSITION_X..=GOAL_PADDLE_MAX_POSITION_X;
 
 /// An event fired when a [`Goal`] has been eliminated from play after its HP
 /// has reached zero.
