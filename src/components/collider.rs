@@ -6,28 +6,6 @@ use crate::prelude::*;
 #[derive(Component)]
 pub struct Collider;
 
-/// Restricts a [`Paddle`] entity to the space between the [`Barrier`] entities
-/// on either side of its [`Goal`].
-fn paddle_to_barrier_collisions(
-    mut commands: Commands,
-    mut query: Query<
-        (Entity, &mut Transform, &mut Speed),
-        (With<Paddle>, With<Collider>),
-    >,
-) {
-    for (entity, mut transform, mut speed) in &mut query {
-        // Limit paddle to open space between barriers
-        if !GOAL_PADDLE_MAX_POSITION_RANGE.contains(&transform.translation.x) {
-            transform.translation.x = transform
-                .translation
-                .x
-                .clamp(-GOAL_PADDLE_MAX_POSITION_X, GOAL_PADDLE_MAX_POSITION_X);
-            speed.0 = 0.0;
-            commands.entity(entity).remove::<Force>();
-        }
-    }
-}
-
 /// Checks if multiple [`Ball`] entities have collided with each other.
 fn ball_to_ball_collisions(
     mut commands: Commands,
@@ -189,7 +167,6 @@ impl Plugin for ColliderPlugin {
         app.add_systems(
             PostUpdate,
             (
-                paddle_to_barrier_collisions,
                 ball_to_ball_collisions,
                 ball_to_paddle_collisions,
                 ball_to_barrier_collisions,

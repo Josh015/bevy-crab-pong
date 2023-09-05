@@ -115,18 +115,31 @@ fn spawn_paddles(
     }
 }
 
-/// Bounds check and restrict each paddles' stopping distance.
-fn bounds_check_paddle_stopping_distance(
+/// Restricts a [`Paddle`] entity to the open space of its goal.
+fn restrict_paddle_to_goal_space(
+    mut commands: Commands,
     mut query: Query<
-        (&Transform, &mut StoppingDistance),
-        (With<Paddle>, Without<Fade>),
+        (Entity, &mut Transform, &mut Speed, &mut StoppingDistance),
+        (With<Paddle>, With<Collider>),
     >,
 ) {
-    for (transform, mut stopping_distance) in &mut query {
-        let new_position = transform.translation.x + stopping_distance.0;
+    for (entity, mut transform, mut speed, mut stopping_distance) in &mut query
+    {
+        // Limit paddle to bounds of the goal.
+        if !GOAL_PADDLE_MAX_POSITION_RANGE.contains(&transform.translation.x) {
+            transform.translation.x = transform
+                .translation
+                .x
+                .clamp(-GOAL_PADDLE_MAX_POSITION_X, GOAL_PADDLE_MAX_POSITION_X);
+            speed.0 = 0.0;
+            commands.entity(entity).remove::<Force>();
+        }
 
-        if !GOAL_PADDLE_MAX_POSITION_RANGE.contains(&new_position) {
-            stopping_distance.0 = new_position.signum()
+        // Limit stopping distance to the bounds of the goal.
+        let stopped_position = transform.translation.x + stopping_distance.0;
+
+        if !GOAL_PADDLE_MAX_POSITION_RANGE.contains(&stopped_position) {
+            stopping_distance.0 = stopped_position.signum()
                 * GOAL_PADDLE_MAX_POSITION_X
                 - transform.translation.x;
         }
@@ -165,7 +178,7 @@ impl Plugin for PaddlePlugin {
             .add_systems(
                 Update,
                 (
-                    bounds_check_paddle_stopping_distance
+                    restrict_paddle_to_goal_space
                         .in_set(GameSystemSet::Collision),
                     debug_paddle_stop_positions
                         .in_set(GameSystemSet::Debugging),

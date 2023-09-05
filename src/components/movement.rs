@@ -92,9 +92,9 @@ fn velocity(
 
 /// Calculates the stopping distance for an entity.
 fn stopping_distance(
-    mut query: Query<(&Acceleration, &Speed, &mut StoppingDistance)>,
+    mut query: Query<(&mut StoppingDistance, &Acceleration, &Speed)>,
 ) {
-    for (acceleration, speed, mut stopping_distance) in &mut query {
+    for (mut stopping_distance, acceleration, speed) in &mut query {
         const DELTA_SECONDS: f32 = 0.01;
         let delta_speed = acceleration.0 * DELTA_SECONDS;
         let mut current_speed = speed.0;
