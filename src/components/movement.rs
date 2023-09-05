@@ -81,7 +81,7 @@ impl Plugin for MovementPlugin {
             Update,
             (acceleration, velocity)
                 .chain()
-                .in_set(LogicalSet::Movement),
+                .in_set(GameSystemSet::Movement),
         );
     }
 }

@@ -39,7 +39,7 @@ pub use wall::*;
 pub const ARENA_CENTER_POINT: Vec3 = Vec3::ZERO;
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
-pub enum LogicalSet {
+pub enum GameSystemSet {
     GameplayLogic,
     Movement,
     Collision,
@@ -52,25 +52,25 @@ impl Plugin for ComponentsPlugin {
     fn build(&self, app: &mut App) {
         app.configure_set(
             Update,
-            LogicalSet::GameplayLogic
-                .before(LogicalSet::Movement)
+            GameSystemSet::GameplayLogic
+                .before(GameSystemSet::Movement)
                 .run_if(in_state(GameScreen::Playing)),
         );
         app.configure_set(
             Update,
-            LogicalSet::Movement.run_if(not(in_state(GameScreen::Paused))),
+            GameSystemSet::Movement.run_if(not(in_state(GameScreen::Paused))),
         );
         app.configure_set(
             PostUpdate,
-            LogicalSet::Collision
-                .after(LogicalSet::Movement)
-                .before(LogicalSet::Despawning)
+            GameSystemSet::Collision
+                .after(GameSystemSet::Movement)
+                .before(GameSystemSet::Despawning)
                 .run_if(in_state(GameScreen::Playing)),
         );
         app.configure_set(
             PostUpdate,
-            LogicalSet::Despawning
-                .after(LogicalSet::Movement)
+            GameSystemSet::Despawning
+                .after(GameSystemSet::Movement)
                 .run_if(not(in_state(GameScreen::Paused))),
         );
         app.add_plugins((

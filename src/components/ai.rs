@@ -71,7 +71,7 @@ impl Plugin for AiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            ai_paddle_control.in_set(LogicalSet::GameplayLogic),
+            ai_paddle_control.in_set(GameSystemSet::GameplayLogic),
         );
     }
 }

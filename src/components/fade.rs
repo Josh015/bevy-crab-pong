@@ -154,7 +154,7 @@ impl Plugin for FadePlugin {
             PostUpdate,
             (fade_out_entity_event, fade_entities, fade_animation)
                 .chain()
-                .in_set(LogicalSet::Despawning),
+                .in_set(GameSystemSet::Despawning),
         );
     }
 }

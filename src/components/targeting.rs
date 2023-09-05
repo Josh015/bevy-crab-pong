@@ -38,7 +38,7 @@ impl Plugin for TargetingPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            detect_and_target_closest_ball.in_set(LogicalSet::GameplayLogic),
+            detect_and_target_closest_ball.in_set(GameSystemSet::GameplayLogic),
         );
     }
 }

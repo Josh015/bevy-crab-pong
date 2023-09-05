@@ -103,7 +103,7 @@ impl Plugin for GoalPlugin {
             Update,
             (goal_scored_check, goal_eliminated_event)
                 .chain()
-                .in_set(LogicalSet::GameplayLogic),
+                .in_set(GameSystemSet::GameplayLogic),
         );
     }
 }

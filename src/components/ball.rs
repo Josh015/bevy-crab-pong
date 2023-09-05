@@ -142,7 +142,9 @@ pub struct BallPlugin;
 
 impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<BallResources>()
-            .add_systems(Update, spawn_balls.in_set(LogicalSet::GameplayLogic));
+        app.init_resource::<BallResources>().add_systems(
+            Update,
+            spawn_balls.in_set(GameSystemSet::GameplayLogic),
+        );
     }
 }

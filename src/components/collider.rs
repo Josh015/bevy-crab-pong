@@ -186,7 +186,7 @@ pub struct ColliderPlugin;
 impl Plugin for ColliderPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
+            PostUpdate,
             (
                 paddle_to_barrier_collisions,
                 ball_to_ball_collisions,
@@ -195,7 +195,7 @@ impl Plugin for ColliderPlugin {
                 ball_to_wall_collisions,
             )
                 .chain()
-                .in_set(LogicalSet::Collision),
+                .in_set(GameSystemSet::Collision),
         );
     }
 }
