@@ -2,6 +2,9 @@
 
 use crate::prelude::*;
 
+/// Makes a paddle try to get the middle 50% of its width under the ball.
+const PADDLE_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.5;
+
 /// A component that works in tandem with [`Paddle`] to make AI-driven
 /// opponents.
 #[derive(Component)]
@@ -66,11 +69,11 @@ fn ai_paddle_control(
         // Controls how much the paddle tries to get its center under the ball.
         // Lower values improve the catch rate, but also reduce how widely it
         // will deflect the ball for near misses. Range (0,1].
-        const PERCENT_FROM_CENTER: f32 = 0.50;
         let distance_from_paddle_center =
             (paddle_stop_position - ball_local_position).abs();
 
-        if distance_from_paddle_center < PERCENT_FROM_CENTER * PADDLE_HALF_WIDTH
+        if distance_from_paddle_center
+            < PADDLE_CENTER_HIT_AREA_PERCENTAGE * PADDLE_HALF_WIDTH
         {
             commands.entity(entity).remove::<Force>();
         } else {
@@ -106,6 +109,21 @@ fn debug_targeting(
     }
 }
 
+/// Provides debug visualization to show the size of the ideal hit area on each
+/// [`Ai`] [`Paddle`] entity.
+fn debug_ai_paddle_hit_area(
+    ai_query: Query<&GlobalTransform, (With<Ai>, With<Paddle>, Without<Fade>)>,
+    mut gizmos: Gizmos,
+) {
+    for global_transform in &ai_query {
+        let mut hit_area_transform = global_transform.compute_transform();
+
+        hit_area_transform.scale.x =
+            PADDLE_CENTER_HIT_AREA_PERCENTAGE * PADDLE_WIDTH;
+        gizmos.cuboid(hit_area_transform, Color::YELLOW);
+    }
+}
+
 pub struct AiPlugin;
 
 impl Plugin for AiPlugin {
@@ -116,7 +134,8 @@ impl Plugin for AiPlugin {
                 (detect_and_target_ball_closest_to_goal, ai_paddle_control)
                     .chain()
                     .in_set(GameSystemSet::GameplayLogic),
-                debug_targeting.in_set(GameSystemSet::Debugging),
+                (debug_targeting, debug_ai_paddle_hit_area)
+                    .in_set(GameSystemSet::Debugging),
             ),
         );
     }
