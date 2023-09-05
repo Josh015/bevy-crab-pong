@@ -46,16 +46,14 @@ fn detect_and_target_ball_closest_to_goal(
 fn ai_paddle_control(
     mut commands: Commands,
     paddles_query: Query<
-        (Entity, &Side, &Transform, &Target, &StopPositionOffset),
+        (Entity, &Side, &Transform, &Target, &StoppingDistance),
         (With<Ai>, With<Paddle>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
 ) {
     // We want the paddle to follow and try to stay under the moving ball
     // rather than going straight to where it will cross the goal.
-    for (entity, side, transform, target, stop_position_offset) in
-        &paddles_query
-    {
+    for (entity, side, transform, target, stopping_distance) in &paddles_query {
         // Get the targeted ball's position in the goal's local space.
         let Ok(target) = balls_query.get(target.0) else {
             continue;
@@ -63,7 +61,7 @@ fn ai_paddle_control(
         let ball_local_position =
             side.map_ball_position_to_paddle_local_space(target);
         let paddle_stop_position =
-            transform.translation.x + stop_position_offset.0;
+            transform.translation.x + stopping_distance.0;
 
         // Controls how much the paddle tries to get its center under the ball.
         // Lower values improve the catch rate, but also reduce how widely it

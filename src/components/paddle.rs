@@ -13,10 +13,10 @@ pub const PADDLE_SCALE: Vec3 =
 #[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
 pub struct Paddle;
 
-/// Offset from a [`Paddle`] entity's current position to where it will stop
-/// if it begins decelerating immediately.
+/// Distance from a [`Paddle`] entity's current position to where it will come
+/// to a full stop if it begins decelerating immediately.
 #[derive(Component)]
-pub struct StopPositionOffset(pub f32);
+pub struct StoppingDistance(pub f32);
 
 /// Cached paddle materials and meshes.
 #[derive(Debug, Resource)]
@@ -120,8 +120,8 @@ fn spawn_paddles(
     }
 }
 
-/// Calculates the bounded stop position offset for the paddles.
-fn calculate_paddle_stop_position_offset(
+/// Calculates the bounded stopping distance for the paddles.
+fn calculate_paddle_stopping_distance(
     mut commands: Commands,
     query: Query<
         (Entity, &Acceleration, &Speed, &Transform),
@@ -148,24 +148,24 @@ fn calculate_paddle_stop_position_offset(
                 - transform.translation.x;
         }
 
-        commands.entity(entity).insert(StopPositionOffset(offset));
+        commands.entity(entity).insert(StoppingDistance(offset));
     }
 }
 
 /// Visualizes where the paddles will be when they stop.
 fn debug_paddle_stop_positions(
     query: Query<
-        (&GlobalTransform, &Heading, &StopPositionOffset),
+        (&GlobalTransform, &Heading, &StoppingDistance),
         Without<Fade>,
     >,
     mut gizmos: Gizmos,
 ) {
-    for (global_transform, heading, stop_position_offset) in &query {
+    for (global_transform, heading, stopping_distance) in &query {
         let mut stop_position_transform = global_transform.compute_transform();
         let global_heading = stop_position_transform.rotation * heading.0;
 
         stop_position_transform.translation +=
-            global_heading * stop_position_offset.0;
+            global_heading * stopping_distance.0;
         gizmos.line(
             global_transform.translation(),
             stop_position_transform.translation,
@@ -184,7 +184,7 @@ impl Plugin for PaddlePlugin {
             .add_systems(
                 Update,
                 (
-                    calculate_paddle_stop_position_offset
+                    calculate_paddle_stopping_distance
                         .in_set(GameSystemSet::GameplayLogic),
                     debug_paddle_stop_positions
                         .in_set(GameSystemSet::Debugging),
