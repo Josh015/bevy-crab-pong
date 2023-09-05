@@ -154,7 +154,7 @@ impl Plugin for FadePlugin {
             PostUpdate,
             (fade_out_entity_event, fade_entities, fade_animation)
                 .chain()
-                .run_if(not(in_state(GameScreen::Paused))),
+                .in_set(LogicalSet::Despawning),
         );
     }
 }

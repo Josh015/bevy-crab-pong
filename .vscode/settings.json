@@ -2,5 +2,8 @@
   "editor.defaultFormatter": "rust-lang.rust-analyzer",
   "editor.formatOnSave": true,
   "editor.bracketPairColorization.enabled": true,
-  "editor.guides.bracketPairs": true
+  "editor.guides.bracketPairs": true,
+  "rust-analyzer.linkedProjects": [
+    ".\\Cargo.toml"
+  ]
 }

@@ -195,7 +195,7 @@ impl Plugin for ColliderPlugin {
                 ball_to_wall_collisions,
             )
                 .chain()
-                .run_if(in_state(GameScreen::Playing)),
+                .in_set(LogicalSet::Collision),
         );
     }
 }

@@ -33,7 +33,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            player_paddle_control.run_if(in_state(GameScreen::Playing)),
+            player_paddle_control.in_set(LogicalSet::GameplayLogic),
         );
     }
 }
