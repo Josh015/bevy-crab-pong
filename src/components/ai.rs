@@ -91,18 +91,18 @@ fn ai_paddle_control(
 /// Provides debug visualization to show which [`Ai`] entities are targeting
 /// which [`Ball`] entities.
 fn debug_targeting(
-    ai_query: Query<
+    paddles_query: Query<
         (&GlobalTransform, &Target),
         (With<Ai>, With<Paddle>, Without<Fade>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
     mut gizmos: Gizmos,
 ) {
-    for (global_transform, target) in &ai_query {
-        if let Ok(target) = balls_query.get(target.0) {
+    for (paddle_transform, target) in &paddles_query {
+        if let Ok(ball_transform) = balls_query.get(target.0) {
             gizmos.line(
-                global_transform.translation(),
-                target.translation(),
+                paddle_transform.translation(),
+                ball_transform.translation(),
                 Color::PURPLE,
             );
         }

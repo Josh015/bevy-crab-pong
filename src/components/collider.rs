@@ -2,7 +2,7 @@
 
 use crate::prelude::*;
 
-/// Marks a component that can collide, score, etc.
+/// Marks an entity that can be collided with by a [`Ball`] entity.
 #[derive(Component)]
 pub struct Collider;
 
