@@ -34,11 +34,8 @@ impl Side {
         }
     }
 
-    /// Map a ball's global position to a paddle's local x-axis.
-    pub fn map_ball_position_to_goal_position(
-        &self,
-        ball_transform: &GlobalTransform,
-    ) -> f32 {
+    /// Map a ball's global position to a side's local x-axis.
+    pub fn get_ball_position(&self, ball_transform: &GlobalTransform) -> f32 {
         match *self {
             Self::Top => -ball_transform.translation().x,
             Self::Right => -ball_transform.translation().z,

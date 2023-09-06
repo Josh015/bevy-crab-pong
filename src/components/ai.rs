@@ -66,8 +66,7 @@ fn ai_paddle_control(
 
         if let Some(target) = target {
             if let Ok(ball_transform) = balls_query.get(target.0) {
-                target_goal_position =
-                    side.map_ball_position_to_goal_position(ball_transform)
+                target_goal_position = side.get_ball_position(ball_transform)
             }
         }
 

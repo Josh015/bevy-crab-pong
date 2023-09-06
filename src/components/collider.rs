@@ -57,17 +57,16 @@ fn ball_to_paddle_collisions(
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
         for (side, transform) in &paddles_query {
-            let axis = side.axis();
-            let ball_distance = side.distance_to_ball(ball_transform);
-            let ball_local_position =
-                side.map_ball_position_to_goal_position(ball_transform);
-            let ball_to_paddle = transform.translation.x - ball_local_position;
-            let distance_from_paddle_center = (ball_to_paddle).abs();
+            let goal_axis = side.axis();
+            let ball_distance_to_goal = side.distance_to_ball(ball_transform);
+            let ball_goal_position = side.get_ball_position(ball_transform);
+            let ball_to_paddle = transform.translation.x - ball_goal_position;
+            let ball_distance_to_paddle = ball_to_paddle.abs();
 
             // Check that the ball is touching the paddle and facing the goal.
-            if ball_distance > PADDLE_HALF_DEPTH
-                || distance_from_paddle_center >= PADDLE_HALF_WIDTH
-                || ball_heading.0.dot(axis) <= 0.0
+            if ball_distance_to_goal > PADDLE_HALF_DEPTH
+                || ball_distance_to_paddle >= PADDLE_HALF_WIDTH
+                || ball_heading.0.dot(goal_axis) <= 0.0
             {
                 continue;
             }
