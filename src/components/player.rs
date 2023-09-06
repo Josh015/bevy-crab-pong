@@ -26,6 +26,8 @@ fn player_paddle_control(
             commands.entity(entity).remove::<Force>();
         };
     }
+
+    // TODO: Need to make inputs account for side!
 }
 
 pub struct PlayerPlugin;

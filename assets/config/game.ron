@@ -6,9 +6,10 @@
   game_over_win_message: "You win!\n",
   game_over_lose_message: "You lose.\n",
   new_game_message: "
-Press ENTER for a new game
-Press ESC to quit
-(Use A/LEFT and D/RIGHT to move the paddle)
+ENTER for a new game.
+ESC to quit.
+WASD / ARROWS to move the paddle.
+G to enable debugging.
   ",
   clear_color: Rgba(red: 0.7, green: 0.9, blue: 1.0, alpha: 1.0),
   swaying_camera_speed: 0.2,

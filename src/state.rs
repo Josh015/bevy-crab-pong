@@ -21,6 +21,7 @@ pub enum GameOver {
 /// All global information for this game.
 #[derive(Debug, Resource)]
 pub struct RunState {
+    pub mode_index: usize,
     pub goals_hit_points: HashMap<Side, u32>,
     pub game_over: Option<GameOver>,
     pub is_debugging_enabled: bool,
@@ -38,6 +39,7 @@ impl FromWorld for RunState {
         };
 
         Self {
+            mode_index: 0,
             goals_hit_points: HashMap::with_capacity(4),
             game_over: None,
             font_handle,

@@ -47,15 +47,36 @@ fn input(
     keyboard_input: Res<Input<KeyCode>>,
     game_screen: Res<State<GameScreen>>,
     mut run_state: ResMut<RunState>,
+    config: Res<GameConfig>,
     mut next_game_screen: ResMut<NextState<GameScreen>>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
+    if keyboard_input.just_pressed(KeyCode::Escape) {
+        app_exit_events.send(AppExit);
+        return;
+    } else if keyboard_input.just_pressed(KeyCode::G) {
+        run_state.is_debugging_enabled = !run_state.is_debugging_enabled;
+        return;
+    }
+
     match game_screen.get() {
-        GameScreen::StartMenu
-            if keyboard_input.just_pressed(KeyCode::Return) =>
-        {
-            next_game_screen.set(GameScreen::Playing);
-            info!("New Game");
+        GameScreen::StartMenu => {
+            if keyboard_input.just_pressed(KeyCode::Return) {
+                next_game_screen.set(GameScreen::Playing);
+                info!("New Game");
+            } else if keyboard_input.just_pressed(KeyCode::Left)
+                && run_state.mode_index > 0
+            {
+                run_state.mode_index -= 1;
+                let mode_name = &config.modes[run_state.mode_index].name;
+                info!("Game Mode: {mode_name}");
+            } else if keyboard_input.just_pressed(KeyCode::Right)
+                && run_state.mode_index < config.modes.len() - 1
+            {
+                run_state.mode_index += 1;
+                let mode_name = &config.modes[run_state.mode_index].name;
+                info!("Game Mode: {mode_name}");
+            }
         },
         GameScreen::Playing if keyboard_input.just_pressed(KeyCode::Space) => {
             next_game_screen.set(GameScreen::Paused);
@@ -71,14 +92,7 @@ fn input(
             next_game_screen.set(GameScreen::StartMenu);
             info!("Start Menu");
         },
-        _ => {
-            if keyboard_input.just_pressed(KeyCode::Escape) {
-                app_exit_events.send(AppExit)
-            } else if keyboard_input.just_pressed(KeyCode::G) {
-                run_state.is_debugging_enabled =
-                    !run_state.is_debugging_enabled;
-            }
-        },
+        _ => {},
     }
 }
 
@@ -277,9 +291,6 @@ fn setup(
 
 // TODO: Offer a "Traditional" mode with two paddles (1xPlayer, 1xAi)
 // opposite each other and the other two walled off. Also just one ball?
-
-// TODO: Debug option to make all paddles driven by AI? Will need to revise
-// player system to handle no players.
 
 // TODO: Debug option to directly control single ball's exact position with
 // keyboard and see how paddles respond. Can go in goals, triggering a score and

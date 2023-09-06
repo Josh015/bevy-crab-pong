@@ -50,6 +50,7 @@ impl FromWorld for PaddleResources {
 /// Spawns [`Paddle`] entities for their corresponding goals.
 fn spawn_paddles(
     mut commands: Commands,
+    run_state: Res<RunState>,
     config: Res<GameConfig>,
     resources: Res<PaddleResources>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
@@ -104,7 +105,7 @@ fn spawn_paddles(
                 },
             ));
 
-            let goal_config = &config.modes[0].goals[i];
+            let goal_config = &config.modes[run_state.mode_index].goals[i];
 
             // TODO: Combine with above statement after player selection
             // is fixed.
