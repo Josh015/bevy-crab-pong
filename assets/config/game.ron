@@ -20,4 +20,33 @@ Press ESC to quit
   ball_max_speed: 0.5,
   ball_seconds_to_max_speed: 2.0,
   starting_hit_points: 5,
+  modes: [
+    (
+      name: "1xKeyboard vs 3xAI",
+      goals: (
+        (team: Allies, controller: Keyboard),
+        (team: Enemies, controller: AI),
+        (team: Enemies, controller: AI),
+        (team: Enemies, controller: AI),
+      ),
+    ),
+    (
+      name: "1xAI vs 3xAI",
+      goals: (
+        (team: Allies, controller: AI),
+        (team: Enemies, controller: AI),
+        (team: Enemies, controller: AI),
+        (team: Enemies, controller: AI),
+      ),
+    ),
+    (
+      name: "2xAI vs 2xAI",
+      goals: (
+        (team: Allies, controller: AI),
+        (team: Allies, controller: AI),
+        (team: Enemies, controller: AI),
+        (team: Enemies, controller: AI),
+      ),
+    ),
+  ],
 )

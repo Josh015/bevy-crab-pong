@@ -13,6 +13,7 @@ mod paddle;
 mod player;
 mod side;
 mod swaying_camera;
+mod team;
 mod ui;
 mod wall;
 
@@ -29,6 +30,7 @@ pub use paddle::*;
 pub use player::*;
 pub use side::*;
 pub use swaying_camera::*;
+pub use team::*;
 pub use ui::*;
 pub use wall::*;
 

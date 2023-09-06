@@ -58,18 +58,19 @@ fn game_over_check(
     mut run_state: ResMut<RunState>,
     mut next_game_screen: ResMut<NextState<GameScreen>>,
     mut event_reader: EventReader<GoalEliminatedEvent>,
-    enemies_query: Query<&Side, (With<Paddle>, With<Ai>)>,
-    players_query: Query<&Side, (With<Paddle>, With<Player>)>,
+    teams_query: Query<(&Team, &Side), With<Paddle>>,
 ) {
     for GoalEliminatedEvent(_) in event_reader.iter() {
         // See if player or enemies have lost enough paddles for a game over.
-        let has_player_won = enemies_query
+        let has_player_won = teams_query
             .iter()
-            .all(|side| run_state.goals_hit_points[side] == 0);
+            .filter(|(team, _)| **team == Team::Enemies)
+            .all(|(_, side)| run_state.goals_hit_points[side] == 0);
 
-        let has_player_lost = players_query
+        let has_player_lost = teams_query
             .iter()
-            .all(|side| run_state.goals_hit_points[side] == 0);
+            .filter(|(team, _)| **team == Team::Allies)
+            .all(|(_, side)| run_state.goals_hit_points[side] == 0);
 
         if !has_player_won && !has_player_lost {
             continue;

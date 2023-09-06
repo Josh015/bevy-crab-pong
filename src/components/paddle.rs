@@ -104,12 +104,20 @@ fn spawn_paddles(
                 },
             ));
 
+            let goal_config = &config.modes[0].goals[i];
+
             // TODO: Combine with above statement after player selection
             // is fixed.
-            if i == 0 {
-                paddle.insert(Player);
+            paddle.insert(if goal_config.team == TeamConfig::Enemies {
+                Team::Enemies
             } else {
+                Team::Allies
+            });
+
+            if goal_config.controller == ControllerConfig::AI {
                 paddle.insert(Ai);
+            } else {
+                paddle.insert(Player);
             }
         });
     }

@@ -21,4 +21,29 @@ pub struct GameConfig {
     pub ball_seconds_to_max_speed: f32,
     pub fade_speed: f32,
     pub starting_hit_points: u32,
+    pub modes: Vec<ModeConfig>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ModeConfig {
+    pub name: String,
+    pub goals: [GoalConfig; 4],
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GoalConfig {
+    pub team: TeamConfig,
+    pub controller: ControllerConfig,
+}
+
+#[derive(Debug, Deserialize, Eq, PartialEq)]
+pub enum TeamConfig {
+    Enemies,
+    Allies,
+}
+
+#[derive(Debug, Deserialize, Eq, PartialEq)]
+pub enum ControllerConfig {
+    Keyboard,
+    AI,
 }
