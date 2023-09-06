@@ -60,7 +60,7 @@ fn ball_to_paddle_collisions(
             let axis = side.axis();
             let ball_distance = side.distance_to_ball(ball_transform);
             let ball_local_position =
-                side.map_ball_position_to_paddle_local_space(ball_transform);
+                side.map_ball_position_to_goal_position(ball_transform);
             let ball_to_paddle = transform.translation.x - ball_local_position;
             let distance_from_paddle_center = (ball_to_paddle).abs();
 

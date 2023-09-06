@@ -35,7 +35,7 @@ impl Side {
     }
 
     /// Map a ball's global position to a paddle's local x-axis.
-    pub fn map_ball_position_to_paddle_local_space(
+    pub fn map_ball_position_to_goal_position(
         &self,
         ball_transform: &GlobalTransform,
     ) -> f32 {

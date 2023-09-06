@@ -49,28 +49,33 @@ fn detect_and_target_ball_closest_to_goal(
 fn ai_paddle_control(
     mut commands: Commands,
     paddles_query: Query<
-        (Entity, &Side, &Transform, &Target, &StoppingDistance),
+        (
+            Entity,
+            &Side,
+            &Transform,
+            &StoppingDistance,
+            Option<&Target>,
+        ),
         (With<Ai>, With<Paddle>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
 ) {
-    // We want the paddle to follow and try to stay under the moving ball
-    // rather than going straight to where it will cross the goal.
-    for (entity, side, transform, target, stopping_distance) in &paddles_query {
-        // Get the targeted ball's position in the goal's local space.
-        let Ok(target) = balls_query.get(target.0) else {
-            continue;
-        };
-        let ball_local_position =
-            side.map_ball_position_to_paddle_local_space(target);
+    for (entity, side, transform, stopping_distance, target) in &paddles_query {
+        // Use the ball's goal position or default to the center of the goal.
+        let mut target_goal_position = 0.0;
+
+        if let Some(target) = target {
+            if let Ok(ball_transform) = balls_query.get(target.0) {
+                target_goal_position =
+                    side.map_ball_position_to_goal_position(ball_transform)
+            }
+        }
+
+        // Move the paddle so that its center is over the target goal position.
         let paddle_stop_position =
             transform.translation.x + stopping_distance.0;
-
-        // Controls how much the paddle tries to get its center under the ball.
-        // Lower values improve the catch rate, but also reduce how widely it
-        // will deflect the ball for near misses. Range (0,1].
         let distance_from_paddle_center =
-            (paddle_stop_position - ball_local_position).abs();
+            (paddle_stop_position - target_goal_position).abs();
 
         if distance_from_paddle_center
             < PADDLE_CENTER_HIT_AREA_PERCENTAGE * PADDLE_HALF_WIDTH
@@ -78,7 +83,7 @@ fn ai_paddle_control(
             commands.entity(entity).remove::<Force>();
         } else {
             commands.entity(entity).insert(
-                if ball_local_position < transform.translation.x {
+                if target_goal_position < transform.translation.x {
                     Force::Negative // Left
                 } else {
                     Force::Positive // Right
