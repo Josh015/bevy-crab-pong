@@ -164,28 +164,7 @@ fn setup(
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
     let goal_configs = [
         (
-            Side::Bottom,
-            Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                justify_content: JustifyContent::Center,
-                bottom: Val::Px(5.0),
-                right: Val::Px(400.0),
-                ..default()
-            },
-        ),
-        (
-            Side::Right,
-            Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                justify_content: JustifyContent::Center,
-                top: Val::Px(400.0),
-                right: Val::Px(5.0),
-                ..default()
-            },
-        ),
-        (
+            2,
             Side::Top,
             Style {
                 align_self: AlignSelf::FlexEnd,
@@ -197,6 +176,31 @@ fn setup(
             },
         ),
         (
+            1,
+            Side::Right,
+            Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                top: Val::Px(400.0),
+                right: Val::Px(5.0),
+                ..default()
+            },
+        ),
+        (
+            0,
+            Side::Bottom,
+            Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                bottom: Val::Px(5.0),
+                right: Val::Px(400.0),
+                ..default()
+            },
+        ),
+        (
+            3,
             Side::Left,
             Style {
                 align_self: AlignSelf::FlexEnd,
@@ -209,7 +213,7 @@ fn setup(
         ),
     ];
 
-    for (i, (side, style)) in goal_configs.iter().enumerate() {
+    for (i, side, style) in goal_configs.iter() {
         // Walls
         spawn_wall_events.send(SpawnWallEvent {
             side: *side,
@@ -225,7 +229,7 @@ fn setup(
                     transform: Transform::from_rotation(Quat::from_axis_angle(
                         Vec3::Y,
                         std::f32::consts::TAU
-                            * (i as f32 / goal_configs.len() as f32),
+                            * (*i as f32 / goal_configs.len() as f32),
                     ))
                     .mul_transform(Transform::from_xyz(
                         0.0,

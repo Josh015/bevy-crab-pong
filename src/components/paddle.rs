@@ -33,9 +33,9 @@ impl FromWorld for PaddleResources {
                 .unwrap();
 
             HashMap::from([
-                (Side::Bottom, materials.add(Color::RED.into())),
-                (Side::Right, materials.add(Color::BLUE.into())),
                 (Side::Top, materials.add(Color::ORANGE.into())),
+                (Side::Right, materials.add(Color::BLUE.into())),
+                (Side::Bottom, materials.add(Color::RED.into())),
                 (Side::Left, materials.add(Color::PURPLE.into())),
             ])
         };
