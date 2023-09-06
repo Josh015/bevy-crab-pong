@@ -67,6 +67,7 @@ fn game_over_check(
     mut event_reader: EventReader<GoalEliminatedEvent>,
     teams_query: Query<(&Team, &Side), With<Paddle>>,
 ) {
+    // TODO: Need a more robust system that allows 4 teams!
     for GoalEliminatedEvent(_) in event_reader.iter() {
         // See if player or enemies have lost enough paddles for a game over.
         let has_player_won = teams_query
@@ -104,7 +105,7 @@ impl Plugin for StatePlugin {
             .add_systems(OnExit(GameScreen::StartMenu), reset_hit_points)
             .add_systems(
                 Update,
-                game_over_check.run_if(in_state(GameScreen::Playing)),
+                game_over_check.in_set(GameSystemSet::GameplayLogic),
             )
             .add_systems(Startup, reset_hit_points);
     }
