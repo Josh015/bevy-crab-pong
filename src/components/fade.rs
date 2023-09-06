@@ -48,7 +48,9 @@ pub enum Fade {
 }
 
 impl Default for Fade {
-    fn default() -> Self { Self::In(0.0) }
+    fn default() -> Self {
+        Self::In(0.0)
+    }
 }
 
 /// Makes a [`FadeAnimation`] entity start its animation to fade out and
