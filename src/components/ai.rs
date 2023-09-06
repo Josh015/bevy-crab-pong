@@ -93,7 +93,7 @@ fn ai_paddle_control(
 fn debug_targeting(
     paddles_query: Query<
         (&GlobalTransform, &Target),
-        (With<Ai>, With<Paddle>, Without<Fade>),
+        (With<Paddle>, With<Ai>, Without<Fade>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
     mut gizmos: Gizmos,
@@ -112,10 +112,13 @@ fn debug_targeting(
 /// Provides debug visualization to show the size of the ideal hit area on each
 /// [`Ai`] [`Paddle`] entity.
 fn debug_ai_paddle_hit_area(
-    ai_query: Query<&GlobalTransform, (With<Ai>, With<Paddle>, Without<Fade>)>,
+    paddles_query: Query<
+        &GlobalTransform,
+        (With<Paddle>, With<Ai>, Without<Fade>),
+    >,
     mut gizmos: Gizmos,
 ) {
-    for global_transform in &ai_query {
+    for global_transform in &paddles_query {
         let mut hit_area_transform = global_transform.compute_transform();
 
         hit_area_transform.scale.x =
