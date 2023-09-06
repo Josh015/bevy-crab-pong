@@ -50,8 +50,12 @@ impl FromWorld for RunState {
 
 /// Resets all goal HP fields to their starting value.
 fn reset_hit_points(config: Res<GameConfig>, mut run_state: ResMut<RunState>) {
-    for hit_points in &mut run_state.goals_hit_points.values_mut() {
-        *hit_points = config.starting_hit_points;
+    let mode_index = run_state.mode_index;
+
+    for (i, hit_points) in
+        &mut run_state.goals_hit_points.values_mut().enumerate()
+    {
+        *hit_points = config.modes[mode_index].goals[i].starting_hit_points;
     }
 }
 

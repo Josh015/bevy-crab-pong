@@ -65,6 +65,7 @@ impl FromWorld for BallResources {
 
 /// Automatically spawns [`Ball`] entities from the center of the arena.
 fn spawn_balls(
+    run_state: Res<RunState>,
     config: Res<GameConfig>,
     /* mut */ resources: ResMut<BallResources>,
     mut commands: Commands,
@@ -90,14 +91,16 @@ fn spawn_balls(
             Collider,
             VelocityBundle {
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
-                speed: Speed(config.ball_max_speed),
+                speed: Speed(config.ball_speed),
             },
         ));
         info!("Ball({:?}): Launched", entity);
     }
 
     // Spawn new balls until max is reached.
-    if all_balls_query.iter().count() >= config.max_ball_count {
+    if all_balls_query.iter().count()
+        >= config.modes[run_state.mode_index].max_ball_count
+    {
         return;
     }
 

@@ -16,17 +16,15 @@ pub struct GameConfig {
     pub animated_water_speed: f32,
     pub paddle_max_speed: f32,
     pub paddle_seconds_to_max_speed: f32,
-    pub max_ball_count: usize,
-    pub ball_max_speed: f32,
-    pub ball_seconds_to_max_speed: f32,
+    pub ball_speed: f32,
     pub fade_speed: f32,
-    pub starting_hit_points: u32,
     pub modes: Vec<ModeConfig>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct ModeConfig {
     pub name: String,
+    pub max_ball_count: usize,
     pub goals: [GoalConfig; 4],
 }
 
@@ -34,6 +32,7 @@ pub struct ModeConfig {
 pub struct GoalConfig {
     pub team: TeamConfig,
     pub controller: ControllerConfig,
+    pub starting_hit_points: u32,
 }
 
 #[derive(Debug, Deserialize, Eq, PartialEq)]
