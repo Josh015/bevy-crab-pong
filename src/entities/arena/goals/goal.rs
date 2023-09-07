@@ -25,7 +25,7 @@ pub struct Goal;
 /// corresponding score.
 fn goal_scored_check(
     mut commands: Commands,
-    mut run_state: ResMut<RunState>,
+    mut game_state: ResMut<GameState>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     mut goal_eliminated_writer: EventWriter<GoalEliminatedEvent>,
     balls_query: Query<
@@ -45,7 +45,7 @@ fn goal_scored_check(
             }
 
             // Decrement the goal's HP and potentially eliminate it.
-            let hit_points = run_state.goals_hit_points.get_mut(side).unwrap();
+            let hit_points = game_state.goals_hit_points.get_mut(side).unwrap();
 
             *hit_points = hit_points.saturating_sub(1);
             info!("Ball({:?}): Scored Goal({:?})", ball_entity, side);

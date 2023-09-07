@@ -57,8 +57,8 @@ impl FromWorld for PaddleResources {
 /// Spawns [`Paddle`] entities for their corresponding goals.
 fn spawn_paddles(
     mut commands: Commands,
-    run_state: Res<RunState>,
-    config: Res<GameConfig>,
+    game_state: Res<GameState>,
+    game_config: Res<GameConfig>,
     resources: Res<PaddleResources>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
@@ -75,7 +75,7 @@ fn spawn_paddles(
 
     // Give every paddle a parent so we can use relative transforms.
     for (i, (entity, side)) in goals_query.iter().enumerate() {
-        let goal_config = &config.modes[run_state.mode_index].goals[i];
+        let goal_config = &game_config.modes[game_state.mode_index].goals[i];
         let material_handle = resources.paddle_material_handles[side].clone();
 
         commands.entity(entity).with_children(|parent| {
@@ -95,10 +95,10 @@ fn spawn_paddles(
                         heading: Heading(Vec3::X),
                         ..default()
                     },
-                    max_speed: MaxSpeed(config.paddle_max_speed),
+                    max_speed: MaxSpeed(game_config.paddle_max_speed),
                     acceleration: Acceleration(
-                        config.paddle_max_speed
-                            / config.paddle_seconds_to_max_speed,
+                        game_config.paddle_max_speed
+                            / game_config.paddle_seconds_to_max_speed,
                     ),
                     ..default()
                 },
@@ -175,7 +175,7 @@ fn ai_controlled_paddles(
 ) {
     for (entity, side, transform, stopping_distance, target) in &paddles_query {
         // Use the ball's goal position or default to the center of the goal.
-        let mut target_goal_position = ARENA_CENTER_POINT.x;
+        let mut target_goal_position = FIELD_CENTER_POINT.x;
 
         if let Some(target) = target {
             if let Ok(ball_transform) = balls_query.get(target.0) {
@@ -262,6 +262,47 @@ fn restrict_paddle_to_goal_space(
             stopping_distance.0 = stopped_position.signum()
                 * GOAL_PADDLE_MAX_POSITION_X
                 - transform.translation.x;
+        }
+    }
+}
+
+/// Checks if a [`Ball`] and a [`Paddle`] have collided.
+fn ball_to_paddle_collisions(
+    mut commands: Commands,
+    balls_query: Query<
+        (Entity, &GlobalTransform, &Heading),
+        (With<Ball>, With<Collider>),
+    >,
+    paddles_query: Query<(&Side, &Transform), (With<Paddle>, With<Collider>)>,
+) {
+    for (entity, ball_transform, ball_heading) in &balls_query {
+        for (side, transform) in &paddles_query {
+            let goal_axis = side.axis();
+            let ball_distance_to_goal = side.distance_to_ball(ball_transform);
+            let ball_goal_position = side.get_ball_position(ball_transform);
+            let ball_to_paddle = transform.translation.x - ball_goal_position;
+            let ball_distance_to_paddle = ball_to_paddle.abs();
+
+            // Check that the ball is touching the paddle and facing the goal.
+            if ball_distance_to_goal > PADDLE_HALF_DEPTH
+                || ball_distance_to_paddle >= PADDLE_HALF_WIDTH
+                || ball_heading.0.dot(goal_axis) <= 0.0
+            {
+                continue;
+            }
+
+            // Reverse the ball's direction and rotate it outward based on how
+            // far its position is from the paddle's center.
+            let rotation_away_from_center = Quat::from_rotation_y(
+                std::f32::consts::FRAC_PI_4
+                    * (ball_to_paddle / PADDLE_HALF_WIDTH),
+            );
+            commands
+                .entity(entity)
+                .insert(Heading(rotation_away_from_center * -ball_heading.0));
+
+            info!("Ball({:?}): Collided Paddle({:?})", entity, side);
+            break;
         }
     }
 }
@@ -353,6 +394,10 @@ impl Plugin for PaddlePlugin {
                     )
                         .in_set(GameSystemSet::Debugging),
                 ),
+            )
+            .add_systems(
+                PostUpdate,
+                ball_to_paddle_collisions.in_set(GameSystemSet::Collision),
             );
     }
 }

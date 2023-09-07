@@ -12,22 +12,20 @@ pub struct MessageUiEvent {
 #[derive(Component)]
 pub struct HitPointsUi;
 
-// TODO: Move UI systems to arena and goal after we make them text meshes?
-
 /// Updates a [`Text`] entity to display the current life of its associated
 /// [`Goal`].
 fn goal_hit_points_ui(
-    game: Res<RunState>,
+    game_state: Res<GameState>,
     mut query: Query<(&Side, &mut Text), With<HitPointsUi>>,
 ) {
     for (side, mut text) in &mut query {
-        let hit_points = game.goals_hit_points[side];
+        let hit_points = game_state.goals_hit_points[side];
         text.sections[0].value = hit_points.to_string();
     }
 }
 
 fn spawn_ui_message_event(
-    run_state: Res<RunState>,
+    game_state: Res<GameState>,
     mut commands: Commands,
     mut event_reader: EventReader<MessageUiEvent>,
 ) {
@@ -75,7 +73,7 @@ fn spawn_ui_message_event(
                             text: Text::from_section(
                                 message.clone(),
                                 TextStyle {
-                                    font: run_state.font_handle.clone(),
+                                    font: game_state.font_handle.clone(),
                                     font_size: 30.0,
                                     color: Color::RED,
                                 },
@@ -88,17 +86,17 @@ fn spawn_ui_message_event(
 }
 
 fn spawn_start_menu_ui(
-    config: Res<GameConfig>,
-    run_state: Res<RunState>,
+    game_config: Res<GameConfig>,
+    game_state: Res<GameState>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
-    let mut message = String::from(match run_state.game_over {
-        Some(GameOver::Won) => &config.game_over_win_message,
-        Some(GameOver::Lost) => &config.game_over_lose_message,
+    let mut message = String::from(match game_state.game_over {
+        Some(GameOver::Won) => &game_config.game_over_win_message,
+        Some(GameOver::Lost) => &game_config.game_over_lose_message,
         _ => "",
     });
 
-    message.push_str(&config.new_game_message);
+    message.push_str(&game_config.new_game_message);
 
     ui_message_events.send(MessageUiEvent {
         message,
@@ -107,11 +105,11 @@ fn spawn_start_menu_ui(
 }
 
 fn spawn_pause_ui(
-    config: Res<GameConfig>,
+    game_config: Res<GameConfig>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
     ui_message_events.send(MessageUiEvent {
-        message: config.pause_message.clone(),
+        message: game_config.pause_message.clone(),
         game_screen: GameScreen::Paused,
     });
 }

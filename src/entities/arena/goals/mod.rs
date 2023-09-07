@@ -18,6 +18,6 @@ pub struct GoalsPlugin;
 
 impl Plugin for GoalsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((GoalPlugin, PaddlePlugin, WallPlugin));
+        app.add_plugins((BarrierPlugin, GoalPlugin, PaddlePlugin, WallPlugin));
     }
 }

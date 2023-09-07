@@ -1,18 +1,15 @@
 use crate::prelude::*;
 
-mod animated_water;
-mod swaying_camera;
-mod ui;
-
-pub use animated_water::*;
-pub use swaying_camera::*;
-pub use ui::*;
-
-pub const ARENA_CENTER_POINT: Vec3 = Vec3::ZERO;
+pub const FIELD_CENTER_POINT: Vec3 = Vec3::ZERO;
+pub const BALL_SPAWNER_POSITION: Vec3 = Vec3::new(
+    FIELD_CENTER_POINT.x,
+    FIELD_CENTER_POINT.y + BALL_HEIGHT,
+    FIELD_CENTER_POINT.z,
+);
 
 /// Handles setting up the static arena entities.
-fn spawn_arena(
-    mut run_state: ResMut<RunState>,
+fn spawn_play_field(
+    mut game_state: ResMut<GameState>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -67,7 +64,7 @@ fn spawn_arena(
             Mat4::from_scale_rotation_translation(
                 Vec3::splat(GOAL_WIDTH),
                 Quat::IDENTITY,
-                ARENA_CENTER_POINT,
+                FIELD_CENTER_POINT,
             ),
         ),
         ..default()
@@ -190,7 +187,7 @@ fn spawn_arena(
                 text: Text::from_section(
                     "",
                     TextStyle {
-                        font: run_state.font_handle.clone(),
+                        font: game_state.font_handle.clone(),
                         font_size: 50.0,
                         color: Color::RED,
                     },
@@ -199,15 +196,87 @@ fn spawn_arena(
             },
         ));
 
-        run_state.goals_hit_points.insert(*side, 0);
+        game_state.goals_hit_points.insert(*side, 0);
     }
 }
 
-pub struct ArenaPlugin;
+/// Automatically spawns [`Ball`] entities from the center of the arena.
+fn spawn_balls_as_needed(
+    game_state: Res<GameState>,
+    game_config: Res<GameConfig>,
+    resources: ResMut<BallResources>,
+    mut commands: Commands,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    new_balls_query: Query<
+        (Entity, Option<&Fade>),
+        (With<Ball>, Without<Heading>, Without<Speed>),
+    >,
+    all_balls_query: Query<&Ball>,
+) {
+    // Check for any non-moving new balls.
+    for (entity, fade) in &new_balls_query {
+        // Pause the spawning process until the new ball finishes fading in.
+        if fade.is_some() {
+            return;
+        }
 
-impl Plugin for ArenaPlugin {
+        // Make the ball collidable and launch it in a random direction.
+        let mut rng = SmallRng::from_entropy();
+        let angle = rng.gen_range(0.0..std::f32::consts::TAU);
+
+        commands.entity(entity).insert((
+            Collider,
+            VelocityBundle {
+                heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
+                speed: Speed(game_config.ball_speed),
+            },
+        ));
+        info!("Ball({:?}): Launched", entity);
+    }
+
+    // Spawn new balls until max is reached.
+    if all_balls_query.iter().count()
+        >= game_config.modes[game_state.mode_index].max_ball_count
+    {
+        return;
+    }
+
+    let entity = commands
+        .spawn((
+            Ball,
+            ForState {
+                states: vec![GameScreen::Playing, GameScreen::Paused],
+            },
+            FadeBundle::default(),
+            PbrBundle {
+                mesh: resources.ball_mesh_handle.clone(),
+                material: materials.add(StandardMaterial {
+                    alpha_mode: AlphaMode::Blend,
+                    base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),
+                    ..default()
+                }),
+                transform: Transform::from_matrix(
+                    Mat4::from_scale_rotation_translation(
+                        Vec3::splat(BALL_DIAMETER),
+                        Quat::IDENTITY,
+                        BALL_SPAWNER_POSITION,
+                    ),
+                ),
+                ..default()
+            },
+        ))
+        .id();
+
+    info!("Ball({:?}): Spawning", entity);
+}
+
+pub struct FieldPlugin;
+
+impl Plugin for FieldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((AnimatedWaterPlugin, SwayingCameraPlugin, UiPlugin))
-            .add_systems(Startup, spawn_arena);
+        app.add_systems(Startup, spawn_play_field).add_systems(
+            Update,
+            spawn_balls_as_needed.in_set(GameSystemSet::GameplayLogic),
+        );
     }
 }

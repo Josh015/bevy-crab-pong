@@ -8,7 +8,7 @@ pub struct AnimatedWater {
 
 /// Scrolls a material's texture.
 fn animated_water(
-    config: Res<GameConfig>,
+    game_config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<(&mut AnimatedWater, &mut Transform)>,
 ) {
@@ -18,7 +18,8 @@ fn animated_water(
 
     *transform = Transform::from_xyz(0.0, -0.01, animated_water.scroll);
 
-    animated_water.scroll += config.animated_water_speed * time.delta_seconds();
+    animated_water.scroll +=
+        game_config.animated_water_speed * time.delta_seconds();
     animated_water.scroll %= 1.0;
 }
 

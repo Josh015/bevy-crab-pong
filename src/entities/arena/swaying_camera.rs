@@ -8,16 +8,16 @@ pub struct SwayingCamera;
 /// Makes a [`SwayingCamera`] and [`Camera3d`] entity slowly sway back and
 /// forth.
 fn swaying_camera(
-    config: Res<GameConfig>,
+    game_config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<&mut Transform, (With<SwayingCamera>, With<Camera3d>)>,
 ) {
     let mut transform = query.single_mut();
-    let x = (time.elapsed_seconds() * config.swaying_camera_speed).sin()
+    let x = (time.elapsed_seconds() * game_config.swaying_camera_speed).sin()
         * GOAL_HALF_WIDTH;
 
     *transform = Transform::from_xyz(x * 0.5, 2.0, 1.5)
-        .looking_at(ARENA_CENTER_POINT, Vec3::Y);
+        .looking_at(FIELD_CENTER_POINT, Vec3::Y);
 }
 
 pub struct SwayingCameraPlugin;

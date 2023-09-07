@@ -102,6 +102,36 @@ fn despawn_walls(
     }
 }
 
+/// Checks if a [`Ball`] and a [`Wall`] have collided.
+fn ball_to_wall_collisions(
+    mut commands: Commands,
+    balls_query: Query<
+        (Entity, &GlobalTransform, &Heading),
+        (With<Ball>, With<Collider>),
+    >,
+    walls_query: Query<&Side, (With<Wall>, With<Collider>)>,
+) {
+    for (entity, ball_transform, ball_heading) in &balls_query {
+        for side in &walls_query {
+            let ball_distance = side.distance_to_ball(ball_transform);
+            let axis = side.axis();
+
+            // Check that the ball is touching and facing the wall.
+            if ball_distance > WALL_RADIUS || ball_heading.0.dot(axis) <= 0.0 {
+                continue;
+            }
+
+            // Deflect the ball away from the wall.
+            commands
+                .entity(entity)
+                .insert(Heading(reflect(ball_heading.0, axis)));
+
+            info!("Ball({:?}): Collided Wall({:?})", entity, side);
+            break;
+        }
+    }
+}
+
 pub struct WallPlugin;
 
 impl Plugin for WallPlugin {
@@ -109,6 +139,10 @@ impl Plugin for WallPlugin {
         app.init_resource::<WallResources>()
             .add_event::<SpawnWallEvent>()
             .add_systems(OnExit(GameScreen::StartMenu), despawn_walls)
-            .add_systems(Update, spawn_wall_event);
+            .add_systems(Update, spawn_wall_event)
+            .add_systems(
+                PostUpdate,
+                ball_to_wall_collisions.in_set(GameSystemSet::Collision),
+            );
     }
 }

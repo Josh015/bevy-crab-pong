@@ -79,13 +79,13 @@ fn fade_out_entity_event(
 /// despawning the entity.
 fn fade_entities(
     mut commands: Commands,
-    config: Res<GameConfig>,
+    game_config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<(Entity, &mut Fade), With<FadeAnimation>>,
 ) {
     for (entity, mut fade) in &mut query {
         // Progress the fade effect.
-        let step = config.fade_speed * time.delta_seconds();
+        let step = game_config.fade_speed * time.delta_seconds();
 
         match *fade {
             Fade::In(ref mut progress) => {

@@ -1,19 +1,5 @@
 use crate::prelude::*;
 
-mod arena;
-mod balls;
-mod goals;
-mod inputs;
-mod movement;
-mod spawning;
-
-pub use arena::*;
-pub use balls::*;
-pub use goals::*;
-pub use inputs::*;
-pub use movement::*;
-pub use spawning::*;
-
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum GameSystemSet {
     GameplayLogic,
@@ -23,50 +9,43 @@ pub enum GameSystemSet {
     Despawning,
 }
 
-fn show_debugging_systems(run_state: Res<RunState>) -> bool {
-    run_state.is_debugging_enabled
+fn show_debugging_systems(game_state: Res<GameState>) -> bool {
+    game_state.is_debugging_enabled
 }
 
-pub struct ComponentsPlugin;
+pub struct SystemSetPlugin;
 
-impl Plugin for ComponentsPlugin {
+impl Plugin for SystemSetPlugin {
     fn build(&self, app: &mut App) {
         app.configure_set(
             Update,
             GameSystemSet::GameplayLogic
                 .before(GameSystemSet::Movement)
                 .run_if(in_state(GameScreen::Playing)),
-        );
-        app.configure_set(
+        )
+        .configure_set(
             Update,
             GameSystemSet::Movement.run_if(not(in_state(GameScreen::Paused))),
-        );
-        app.configure_set(
+        )
+        .configure_set(
             PostUpdate,
             GameSystemSet::Collision
                 .after(GameSystemSet::Movement)
                 .run_if(not(in_state(GameScreen::Paused))),
-        );
-        app.configure_set(
+        )
+        .configure_set(
             Update,
             GameSystemSet::Debugging
                 .after(GameSystemSet::Collision)
                 .before(GameSystemSet::Despawning)
                 .run_if(show_debugging_systems)
                 .run_if(not(in_state(GameScreen::StartMenu))),
-        );
-        app.configure_set(
+        )
+        .configure_set(
             PostUpdate,
             GameSystemSet::Despawning
                 .after(GameSystemSet::Collision)
                 .run_if(not(in_state(GameScreen::Paused))),
         );
-        app.add_plugins((
-            ArenaPlugin,
-            BallsPlugin,
-            GoalsPlugin,
-            MovementPlugin,
-            SpawningPlugin,
-        ));
     }
 }
