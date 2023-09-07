@@ -2,15 +2,15 @@ use crate::prelude::*;
 
 mod arena;
 mod balls;
-mod control;
 mod goals;
+mod inputs;
 mod movement;
 mod spawning;
 
 pub use arena::*;
 pub use balls::*;
-pub use control::*;
 pub use goals::*;
+pub use inputs::*;
 pub use movement::*;
 pub use spawning::*;
 
@@ -64,7 +64,6 @@ impl Plugin for ComponentsPlugin {
         app.add_plugins((
             ArenaPlugin,
             BallsPlugin,
-            ControlPlugin,
             GoalsPlugin,
             MovementPlugin,
             SpawningPlugin,

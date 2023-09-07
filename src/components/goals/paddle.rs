@@ -9,11 +9,16 @@ pub const PADDLE_HALF_WIDTH: f32 = 0.5 * PADDLE_WIDTH;
 pub const PADDLE_HALF_DEPTH: f32 = 0.5 * PADDLE_DEPTH;
 pub const PADDLE_SCALE: Vec3 =
     Vec3::new(PADDLE_WIDTH, PADDLE_DEPTH, PADDLE_DEPTH);
+pub const PADDLE_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.5;
 
 /// A component that makes a paddle that can deflect [`Ball`] entities and
 /// moves left->right and vice versa along a single axis when [`Collider`].
 #[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
 pub struct Paddle;
+
+/// The ball being targeted by AI paddles.
+#[derive(Component)]
+pub struct Target(pub Entity);
 
 /// Cached paddle materials and meshes.
 #[derive(Debug, Resource)]
@@ -117,14 +122,116 @@ fn spawn_paddles(
             ));
 
             if goal_config.controlled_by == ControlledByConfig::AI {
-                paddle.insert(AiControlled);
+                paddle.insert(AiInput);
             } else {
-                paddle.insert(KeyboardControlled);
+                paddle.insert(KeyboardInput);
             }
 
             let material = materials.get_mut(&material_handle).unwrap();
             material.base_color = Color::hex(&goal_config.color).unwrap()
         });
+    }
+}
+
+/// Handles all user input regardless of the current game state.
+fn keyboard_controlled_paddles(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut commands: Commands,
+    query: Query<Entity, (With<KeyboardInput>, With<Paddle>)>,
+) {
+    // Makes a Paddle entity move left/right in response to the
+    // keyboard's corresponding arrows keys.
+    for entity in &query {
+        if keyboard_input.pressed(KeyCode::Left)
+            || keyboard_input.pressed(KeyCode::A)
+        {
+            commands.entity(entity).insert(Force::Negative);
+        } else if keyboard_input.pressed(KeyCode::Right)
+            || keyboard_input.pressed(KeyCode::D)
+        {
+            commands.entity(entity).insert(Force::Positive);
+        } else {
+            commands.entity(entity).remove::<Force>();
+        };
+    }
+
+    // TODO: Need to make inputs account for side!
+}
+
+/// AI control for [`Paddle`] entities.
+fn ai_controlled_paddles(
+    mut commands: Commands,
+    paddles_query: Query<
+        (
+            Entity,
+            &Side,
+            &Transform,
+            &StoppingDistance,
+            Option<&Target>,
+        ),
+        (With<AiInput>, With<Paddle>),
+    >,
+    balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
+) {
+    for (entity, side, transform, stopping_distance, target) in &paddles_query {
+        // Use the ball's goal position or default to the center of the goal.
+        let mut target_goal_position = ARENA_CENTER_POINT.x;
+
+        if let Some(target) = target {
+            if let Ok(ball_transform) = balls_query.get(target.0) {
+                target_goal_position = side.get_ball_position(ball_transform)
+            }
+        }
+
+        // Move the paddle so that its center is over the target goal position.
+        let paddle_stop_position =
+            transform.translation.x + stopping_distance.0;
+        let distance_from_paddle_center =
+            (paddle_stop_position - target_goal_position).abs();
+
+        if distance_from_paddle_center
+            < PADDLE_CENTER_HIT_AREA_PERCENTAGE * PADDLE_HALF_WIDTH
+        {
+            commands.entity(entity).remove::<Force>();
+        } else {
+            commands.entity(entity).insert(
+                if target_goal_position < transform.translation.x {
+                    Force::Negative // Left
+                } else {
+                    Force::Positive // Right
+                },
+            );
+        }
+    }
+}
+
+/// Causes [`Ai`] entities to target whichever ball is closest to their goal.
+fn detect_and_target_ball_closest_to_goal(
+    mut commands: Commands,
+    paddles_query: Query<(Entity, &Side), (With<AiInput>, With<Paddle>)>,
+    balls_query: Query<
+        (Entity, &GlobalTransform),
+        (With<Ball>, With<Collider>),
+    >,
+) {
+    for (ai_entity, side) in &paddles_query {
+        let mut closest_ball_distance = std::f32::MAX;
+        let mut target = None;
+
+        for (ball_entity, ball_transform) in &balls_query {
+            let ball_distance_to_goal = side.distance_to_ball(ball_transform);
+
+            if ball_distance_to_goal < closest_ball_distance {
+                closest_ball_distance = ball_distance_to_goal;
+                target = Some(ball_entity);
+            }
+        }
+
+        if let Some(target) = target {
+            commands.entity(ai_entity).insert(Target(target));
+        } else {
+            commands.entity(ai_entity).remove::<Target>();
+        }
     }
 }
 
@@ -182,6 +289,45 @@ fn debug_paddle_stop_positions(
     }
 }
 
+/// Provides debug visualization to show which [`Ai`] entities are targeting
+/// which [`Ball`] entities.
+fn debug_targeting(
+    paddles_query: Query<
+        (&GlobalTransform, &Target),
+        (With<AiInput>, With<Paddle>, Without<Fade>),
+    >,
+    balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
+    mut gizmos: Gizmos,
+) {
+    for (paddle_transform, target) in &paddles_query {
+        if let Ok(ball_transform) = balls_query.get(target.0) {
+            gizmos.line(
+                paddle_transform.translation(),
+                ball_transform.translation(),
+                Color::PURPLE,
+            );
+        }
+    }
+}
+
+/// Provides debug visualization to show the size of the ideal hit area on each
+/// [`Ai`] [`Paddle`] entity.
+fn debug_ai_paddle_hit_area(
+    paddles_query: Query<
+        &GlobalTransform,
+        (With<Paddle>, With<AiInput>, Without<Fade>),
+    >,
+    mut gizmos: Gizmos,
+) {
+    for global_transform in &paddles_query {
+        let mut hit_area_transform = global_transform.compute_transform();
+
+        hit_area_transform.scale.x =
+            PADDLE_CENTER_HIT_AREA_PERCENTAGE * PADDLE_WIDTH;
+        gizmos.cuboid(hit_area_transform, Color::YELLOW);
+    }
+}
+
 pub struct PaddlePlugin;
 
 impl Plugin for PaddlePlugin {
@@ -191,9 +337,20 @@ impl Plugin for PaddlePlugin {
             .add_systems(
                 Update,
                 (
+                    (
+                        keyboard_controlled_paddles,
+                        detect_and_target_ball_closest_to_goal,
+                        ai_controlled_paddles,
+                    )
+                        .chain()
+                        .in_set(GameSystemSet::GameplayLogic),
                     restrict_paddle_to_goal_space
                         .in_set(GameSystemSet::Collision),
-                    debug_paddle_stop_positions
+                    (
+                        debug_paddle_stop_positions,
+                        debug_targeting,
+                        debug_ai_paddle_hit_area,
+                    )
                         .in_set(GameSystemSet::Debugging),
                 ),
             );
