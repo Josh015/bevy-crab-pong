@@ -124,7 +124,7 @@ fn make_ai_paddles_target_the_balls_closest_to_their_goals(
     }
 }
 
-fn move_ai_paddles_toward_where_their_targeted_balls_will_cross_their_goals(
+fn move_ai_paddles_toward_where_their_targeted_balls_will_enter_their_goals(
     mut commands: Commands,
     paddles_query: Query<
         (
@@ -170,7 +170,7 @@ fn move_ai_paddles_toward_where_their_targeted_balls_will_cross_their_goals(
     }
 }
 
-fn check_if_a_ball_has_scored_against_any_goals(
+fn check_if_any_balls_have_scored_against_any_goals(
     mut commands: Commands,
     mut game_state: ResMut<GameState>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
@@ -294,8 +294,8 @@ impl Plugin for GameplayLogicPlugin {
                 spawn_balls_as_needed_from_the_center_of_the_arena,
                 handle_keyboard_input_for_player_controlled_paddles,
                 make_ai_paddles_target_the_balls_closest_to_their_goals,
-                move_ai_paddles_toward_where_their_targeted_balls_will_cross_their_goals,
-                check_if_a_ball_has_scored_against_any_goals,
+                move_ai_paddles_toward_where_their_targeted_balls_will_enter_their_goals,
+                check_if_any_balls_have_scored_against_any_goals,
                 handle_goal_eliminated_event,
                 check_for_game_over_conditions,
             )
