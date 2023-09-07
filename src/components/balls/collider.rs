@@ -6,6 +6,11 @@ use crate::prelude::*;
 #[derive(Component)]
 pub struct Collider;
 
+/// A basic reflect function that also normalizes the result.
+fn reflect(d: Vec3, n: Vec3) -> Vec3 {
+    (d - (2.0 * (d.dot(n) * n))).normalize()
+}
+
 /// Checks if multiple [`Ball`] entities have collided with each other.
 fn ball_to_ball_collisions(
     mut commands: Commands,
