@@ -1,33 +1,31 @@
 use crate::prelude::*;
 
-mod ai;
 mod animated_water;
 mod ball;
 mod barrier;
 mod collider;
+mod control;
 mod fade;
 mod for_state;
 mod goal;
 mod movement;
 mod paddle;
-mod player;
 mod side;
 mod swaying_camera;
 mod team;
 mod ui;
 mod wall;
 
-pub use ai::*;
 pub use animated_water::*;
 pub use ball::*;
 pub use barrier::*;
 pub use collider::*;
+pub use control::*;
 pub use fade::*;
 pub use for_state::*;
 pub use goal::*;
 pub use movement::*;
 pub use paddle::*;
-pub use player::*;
 pub use side::*;
 pub use swaying_camera::*;
 pub use team::*;
@@ -86,13 +84,12 @@ impl Plugin for ComponentsPlugin {
             AnimatedWaterPlugin,
             BallPlugin,
             ColliderPlugin,
-            AiPlugin,
+            ControlPlugin,
             FadePlugin,
             ForStatePlugin,
             GoalPlugin,
             MovementPlugin,
             PaddlePlugin,
-            PlayerPlugin,
             SwayingCameraPlugin,
             UiPlugin,
             WallPlugin,

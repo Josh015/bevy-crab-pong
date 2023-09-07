@@ -3,13 +3,13 @@ use crate::prelude::*;
 /// A component for marking a [`Paddle`] entity as being controller by player
 /// input.
 #[derive(Component)]
-pub struct Player;
+pub struct KeyboardControlled;
 
 /// Handles all user input regardless of the current game state.
-fn player_paddle_control(
+fn keyboard_controlled_paddles(
     keyboard_input: Res<Input<KeyCode>>,
     mut commands: Commands,
-    query: Query<Entity, (With<Player>, With<Paddle>)>,
+    query: Query<Entity, (With<KeyboardControlled>, With<Paddle>)>,
 ) {
     // Makes a Paddle entity move left/right in response to the
     // keyboard's corresponding arrows keys.
@@ -30,13 +30,13 @@ fn player_paddle_control(
     // TODO: Need to make inputs account for side!
 }
 
-pub struct PlayerPlugin;
+pub struct KeyboardPlugin;
 
-impl Plugin for PlayerPlugin {
+impl Plugin for KeyboardPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            player_paddle_control.in_set(GameSystemSet::GameplayLogic),
+            keyboard_controlled_paddles.in_set(GameSystemSet::GameplayLogic),
         );
     }
 }

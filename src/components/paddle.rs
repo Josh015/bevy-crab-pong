@@ -117,9 +117,9 @@ fn spawn_paddles(
             ));
 
             if goal_config.controller == ControllerConfig::AI {
-                paddle.insert(Ai);
+                paddle.insert(AiControlled);
             } else {
-                paddle.insert(Player);
+                paddle.insert(KeyboardControlled);
             }
 
             let material = materials.get_mut(&material_handle).unwrap();

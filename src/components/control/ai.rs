@@ -8,45 +8,15 @@ const PADDLE_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.5;
 /// A component that works in tandem with [`Paddle`] to make AI-driven
 /// opponents.
 #[derive(Component)]
-pub struct Ai;
+pub struct AiControlled;
 
 /// A component that works with [`Ai`] to target, follow, and try to block one
 /// of the balls.
 #[derive(Component)]
 pub struct Target(pub Entity);
 
-/// Causes [`Ai`] entities to target whichever ball is closest to their goal.
-fn detect_and_target_ball_closest_to_goal(
-    mut commands: Commands,
-    ai_query: Query<(Entity, &Side), (With<Ai>, With<Paddle>)>,
-    balls_query: Query<
-        (Entity, &GlobalTransform),
-        (With<Ball>, With<Collider>),
-    >,
-) {
-    for (ai_entity, side) in &ai_query {
-        let mut closest_ball_distance = std::f32::MAX;
-        let mut target = None;
-
-        for (ball_entity, ball_transform) in &balls_query {
-            let ball_distance_to_goal = side.distance_to_ball(ball_transform);
-
-            if ball_distance_to_goal < closest_ball_distance {
-                closest_ball_distance = ball_distance_to_goal;
-                target = Some(ball_entity);
-            }
-        }
-
-        if let Some(target) = target {
-            commands.entity(ai_entity).insert(Target(target));
-        } else {
-            commands.entity(ai_entity).remove::<Target>();
-        }
-    }
-}
-
 /// AI control for [`Paddle`] entities.
-fn ai_paddle_control(
+fn ai_controlled_paddles(
     mut commands: Commands,
     paddles_query: Query<
         (
@@ -56,13 +26,13 @@ fn ai_paddle_control(
             &StoppingDistance,
             Option<&Target>,
         ),
-        (With<Ai>, With<Paddle>),
+        (With<AiControlled>, With<Paddle>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
 ) {
     for (entity, side, transform, stopping_distance, target) in &paddles_query {
         // Use the ball's goal position or default to the center of the goal.
-        let mut target_goal_position = 0.0;
+        let mut target_goal_position = ARENA_CENTER_POINT.x;
 
         if let Some(target) = target {
             if let Ok(ball_transform) = balls_query.get(target.0) {
@@ -92,12 +62,42 @@ fn ai_paddle_control(
     }
 }
 
+/// Causes [`Ai`] entities to target whichever ball is closest to their goal.
+fn detect_and_target_ball_closest_to_goal(
+    mut commands: Commands,
+    paddles_query: Query<(Entity, &Side), (With<AiControlled>, With<Paddle>)>,
+    balls_query: Query<
+        (Entity, &GlobalTransform),
+        (With<Ball>, With<Collider>),
+    >,
+) {
+    for (ai_entity, side) in &paddles_query {
+        let mut closest_ball_distance = std::f32::MAX;
+        let mut target = None;
+
+        for (ball_entity, ball_transform) in &balls_query {
+            let ball_distance_to_goal = side.distance_to_ball(ball_transform);
+
+            if ball_distance_to_goal < closest_ball_distance {
+                closest_ball_distance = ball_distance_to_goal;
+                target = Some(ball_entity);
+            }
+        }
+
+        if let Some(target) = target {
+            commands.entity(ai_entity).insert(Target(target));
+        } else {
+            commands.entity(ai_entity).remove::<Target>();
+        }
+    }
+}
+
 /// Provides debug visualization to show which [`Ai`] entities are targeting
 /// which [`Ball`] entities.
 fn debug_targeting(
     paddles_query: Query<
         (&GlobalTransform, &Target),
-        (With<Paddle>, With<Ai>, Without<Fade>),
+        (With<AiControlled>, With<Paddle>, Without<Fade>),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
     mut gizmos: Gizmos,
@@ -118,7 +118,7 @@ fn debug_targeting(
 fn debug_ai_paddle_hit_area(
     paddles_query: Query<
         &GlobalTransform,
-        (With<Paddle>, With<Ai>, Without<Fade>),
+        (With<Paddle>, With<AiControlled>, Without<Fade>),
     >,
     mut gizmos: Gizmos,
 ) {
@@ -138,7 +138,10 @@ impl Plugin for AiPlugin {
         app.add_systems(
             Update,
             (
-                (detect_and_target_ball_closest_to_goal, ai_paddle_control)
+                (
+                    detect_and_target_ball_closest_to_goal,
+                    ai_controlled_paddles,
+                )
                     .chain()
                     .in_set(GameSystemSet::GameplayLogic),
                 (debug_targeting, debug_ai_paddle_hit_area)
