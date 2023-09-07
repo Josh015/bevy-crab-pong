@@ -22,8 +22,7 @@ fn spawn_start_menu_ui(
     });
 }
 
-/// Resets all goal HP fields to their starting value.
-fn reset_hit_points(
+fn reset_each_goals_hit_points(
     game_config: Res<GameConfig>,
     mut game_state: ResMut<GameState>,
 ) {
@@ -37,7 +36,6 @@ fn reset_hit_points(
     }
 }
 
-/// Fades out any existing [`Wall`] entities.
 fn despawn_walls(
     mut commands: Commands,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
@@ -49,7 +47,6 @@ fn despawn_walls(
     }
 }
 
-/// Spawns [`Paddle`] entities for their corresponding goals.
 fn spawn_paddles(
     mut commands: Commands,
     game_state: Res<GameState>,
@@ -136,7 +133,8 @@ impl Plugin for StartMenuPlugin {
         app.add_systems(OnEnter(GameScreen::StartMenu), spawn_start_menu_ui)
             .add_systems(
                 OnExit(GameScreen::StartMenu),
-                (reset_hit_points, despawn_walls, spawn_paddles).chain(),
+                (reset_each_goals_hit_points, despawn_walls, spawn_paddles)
+                    .chain(),
             );
     }
 }

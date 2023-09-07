@@ -2,19 +2,7 @@
 
 use crate::prelude::*;
 
-/// Updates a [`Text`] entity to display the current life of its associated
-/// [`Goal`].
-fn goal_hit_points_ui(
-    game_state: Res<GameState>,
-    mut query: Query<(&Side, &mut Text), With<HitPointsUi>>,
-) {
-    for (side, mut text) in &mut query {
-        let hit_points = game_state.goals_hit_points[side];
-        text.sections[0].value = hit_points.to_string();
-    }
-}
-
-fn spawn_ui_message_event(
+fn handle_spawn_ui_message_event(
     game_cached_assets: Res<GameCachedAssets>,
     mut commands: Commands,
     mut event_reader: EventReader<MessageUiEvent>,
@@ -77,13 +65,23 @@ fn spawn_ui_message_event(
     }
 }
 
+fn update_goal_hit_points_ui(
+    game_state: Res<GameState>,
+    mut query: Query<(&Side, &mut Text), With<HitPointsUi>>,
+) {
+    for (side, mut text) in &mut query {
+        let hit_points = game_state.goals_hit_points[side];
+        text.sections[0].value = hit_points.to_string();
+    }
+}
+
 pub struct UserInterfacePlugin;
 
 impl Plugin for UserInterfacePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (spawn_ui_message_event, goal_hit_points_ui)
+            (handle_spawn_ui_message_event, update_goal_hit_points_ui)
                 .chain()
                 .in_set(GameSystemSet::UserInterface),
         );

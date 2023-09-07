@@ -1,8 +1,7 @@
 use crate::prelude::*;
 use bevy::app::AppExit;
 
-/// Handles inputs specific to each game screen.
-fn game_screen_inputs(
+fn handle_game_screen_specific_inputs(
     keyboard_input: Res<Input<KeyCode>>,
     game_screen: Res<State<GameScreen>>,
     game_config: Res<GameConfig>,
@@ -55,9 +54,7 @@ fn game_screen_inputs(
     }
 }
 
-/// Check [`ForState`] entities and either fade out or despawn any that aren't
-/// allowed in the current [`AppState`].
-fn despawn_invalid_entities_for_state(
+fn despawn_invalid_entities_for_current_screen(
     mut commands: Commands,
     game_screen: Res<State<GameScreen>>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
@@ -80,10 +77,11 @@ pub struct AllPlugin;
 
 impl Plugin for AllPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, game_screen_inputs).add_systems(
-            PostUpdate,
-            despawn_invalid_entities_for_state
-                .run_if(state_changed::<GameScreen>()),
-        );
+        app.add_systems(Update, handle_game_screen_specific_inputs)
+            .add_systems(
+                PostUpdate,
+                despawn_invalid_entities_for_current_screen
+                    .run_if(state_changed::<GameScreen>()),
+            );
     }
 }

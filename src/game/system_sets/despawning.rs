@@ -2,9 +2,7 @@
 
 use crate::prelude::*;
 
-/// Makes a [`FadeAnimation`] entity start its animation to fade out and
-/// despawn.
-fn fade_out_entity_event(
+fn handle_fade_out_entity_event(
     mut commands: Commands,
     query: Query<(Entity, &Fade)>,
     mut event_reader: EventReader<FadeOutEntityEvent>,
@@ -24,9 +22,7 @@ fn fade_out_entity_event(
     }
 }
 
-/// Progresses a [`Fade`] component to completion before either removing it or
-/// despawning the entity.
-fn fade_entities(
+fn advance_fade_effect_progress(
     mut commands: Commands,
     game_config: Res<GameConfig>,
     time: Res<Time>,
@@ -57,9 +53,7 @@ fn fade_entities(
     }
 }
 
-/// Handles [`Fade`] animations and the transition from visible->invisible and
-/// vice versa over time.
-fn fade_animation(
+fn animate_fade_effect_on_entity(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<(
         &mut Transform,
@@ -103,7 +97,11 @@ impl Plugin for DespawningPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             PostUpdate,
-            (fade_out_entity_event, fade_entities, fade_animation)
+            (
+                handle_fade_out_entity_event,
+                advance_fade_effect_progress,
+                animate_fade_effect_on_entity,
+            )
                 .chain()
                 .in_set(GameSystemSet::Despawning),
         );

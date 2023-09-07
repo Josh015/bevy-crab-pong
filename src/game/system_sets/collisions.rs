@@ -2,13 +2,11 @@
 
 use crate::prelude::*;
 
-/// A basic reflect function that also normalizes the result.
 fn reflect(d: Vec3, n: Vec3) -> Vec3 {
     (d - (2.0 * (d.dot(n) * n))).normalize()
 }
 
-/// Restricts a [`Paddle`] entity to the open space of its goal.
-fn restrict_paddle_to_goal_space(
+fn restrict_paddle_to_open_space_between_goal_side_barriers(
     mut commands: Commands,
     mut query: Query<
         (Entity, &mut Transform, &mut Speed, &mut StoppingDistance),
@@ -38,8 +36,7 @@ fn restrict_paddle_to_goal_space(
     }
 }
 
-/// Checks if multiple [`Ball`] entities have collided with each other.
-fn ball_to_ball_collisions(
+fn handle_ball_to_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
@@ -78,8 +75,7 @@ fn ball_to_ball_collisions(
     }
 }
 
-/// Checks if a [`Ball`] and a [`Barrier`] have collided.
-fn ball_to_barrier_collisions(
+fn handle_ball_to_barrier_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
@@ -118,8 +114,7 @@ fn ball_to_barrier_collisions(
     }
 }
 
-/// Checks if a [`Ball`] and a [`Paddle`] have collided.
-fn ball_to_paddle_collisions(
+fn handle_ball_to_paddle_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
@@ -159,8 +154,7 @@ fn ball_to_paddle_collisions(
     }
 }
 
-/// Checks if a [`Ball`] and a [`Wall`] have collided.
-fn ball_to_wall_collisions(
+fn handle_ball_to_wall_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
@@ -200,11 +194,11 @@ impl Plugin for CollisionsPlugin {
         app.add_systems(
             PostUpdate,
             (
-                restrict_paddle_to_goal_space,
-                ball_to_ball_collisions,
-                ball_to_barrier_collisions,
-                ball_to_paddle_collisions,
-                ball_to_wall_collisions,
+                restrict_paddle_to_open_space_between_goal_side_barriers,
+                handle_ball_to_ball_collisions,
+                handle_ball_to_barrier_collisions,
+                handle_ball_to_paddle_collisions,
+                handle_ball_to_wall_collisions,
             )
                 .chain()
                 .in_set(GameSystemSet::Collisions),

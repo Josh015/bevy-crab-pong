@@ -2,8 +2,7 @@
 
 use crate::prelude::*;
 
-/// Automatically spawns [`Ball`] entities from the center of the arena.
-fn spawn_balls_as_needed(
+fn spawn_balls_as_needed_from_the_center_of_the_arena(
     game_state: Res<GameState>,
     game_config: Res<GameConfig>,
     game_cached_assets: Res<GameCachedAssets>,
@@ -72,8 +71,7 @@ fn spawn_balls_as_needed(
     info!("Ball({:?}): Spawning", entity);
 }
 
-/// Handles all user input regardless of the current game state.
-fn keyboard_controlled_paddles(
+fn keyboard_input_for_player_controlled_paddles(
     keyboard_input: Res<Input<KeyCode>>,
     mut commands: Commands,
     query: Query<Entity, (With<KeyboardInput>, With<Paddle>)>,
@@ -97,8 +95,7 @@ fn keyboard_controlled_paddles(
     // TODO: Need to make inputs account for side!
 }
 
-/// Causes [`Ai`] entities to target whichever ball is closest to their goal.
-fn ai_detect_and_target_ball_closest_to_goal(
+fn make_ai_paddles_target_balls_closest_to_their_goals(
     mut commands: Commands,
     paddles_query: Query<(Entity, &Side), (With<AiInput>, With<Paddle>)>,
     balls_query: Query<
@@ -127,8 +124,7 @@ fn ai_detect_and_target_ball_closest_to_goal(
     }
 }
 
-/// AI control for [`Paddle`] entities.
-fn ai_controlled_paddles(
+fn computer_control_for_ai_paddles(
     mut commands: Commands,
     paddles_query: Query<
         (
@@ -174,9 +170,7 @@ fn ai_controlled_paddles(
     }
 }
 
-/// Checks if a [`Ball`] has scored against a [`Goal`] and then decrements the
-/// corresponding score.
-fn goal_scored_check(
+fn check_if_a_ball_has_scored_against_any_goals(
     mut commands: Commands,
     mut game_state: ResMut<GameState>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
@@ -218,7 +212,7 @@ fn goal_scored_check(
 }
 
 /// Disables a given [`Goal`] to remove it from play.
-fn goal_eliminated_event(
+fn handle_goal_eliminated_event(
     mut commands: Commands,
     mut event_reader: EventReader<GoalEliminatedEvent>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
@@ -251,8 +245,7 @@ fn goal_eliminated_event(
     }
 }
 
-/// Checks for conditions that would trigger a game over.
-fn game_over_check(
+fn check_for_game_over_conditions(
     mut game_state: ResMut<GameState>,
     mut next_game_screen: ResMut<NextState<GameScreen>>,
     mut event_reader: EventReader<GoalEliminatedEvent>,
@@ -298,13 +291,13 @@ impl Plugin for GameplayLogicPlugin {
         app.add_systems(
             Update,
             (
-                spawn_balls_as_needed,
-                keyboard_controlled_paddles,
-                ai_detect_and_target_ball_closest_to_goal,
-                ai_controlled_paddles,
-                goal_scored_check,
-                goal_eliminated_event,
-                game_over_check,
+                spawn_balls_as_needed_from_the_center_of_the_arena,
+                keyboard_input_for_player_controlled_paddles,
+                make_ai_paddles_target_balls_closest_to_their_goals,
+                computer_control_for_ai_paddles,
+                check_if_a_ball_has_scored_against_any_goals,
+                handle_goal_eliminated_event,
+                check_for_game_over_conditions,
             )
                 .chain()
                 .in_set(GameSystemSet::GameplayLogic),

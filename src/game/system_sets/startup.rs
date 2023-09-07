@@ -2,7 +2,6 @@
 
 use crate::prelude::*;
 
-/// Handles setting up the static arena entities.
 fn spawn_play_area(
     game_cached_assets: Res<GameCachedAssets>,
     mut game_state: ResMut<GameState>,
@@ -33,7 +32,7 @@ fn spawn_play_area(
 
     // Ocean
     commands.spawn((
-        AnimatedWater::default(),
+        Ocean::default(),
         PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Plane {
                 size: 100.0,

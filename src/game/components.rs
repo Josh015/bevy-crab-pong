@@ -78,7 +78,7 @@ pub struct Wall;
 
 /// A component for an animated textured water plane.
 #[derive(Component, Default)]
-pub struct AnimatedWater {
+pub struct Ocean {
     pub scroll: f32,
 }
 

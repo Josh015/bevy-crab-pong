@@ -29,7 +29,7 @@ pub enum GameSystemSet {
     UserInterface,
 }
 
-fn show_debugging_systems(game_state: Res<GameState>) -> bool {
+fn show_debugging_gizmos(game_state: Res<GameState>) -> bool {
     game_state.is_debugging_enabled
 }
 
@@ -62,7 +62,7 @@ impl Plugin for SystemSetsPlugin {
                 GameSystemSet::Debugging
                     .after(GameSystemSet::Collisions)
                     .before(GameSystemSet::Despawning)
-                    .run_if(show_debugging_systems)
+                    .run_if(show_debugging_gizmos)
                     .run_if(not(in_state(GameScreen::StartMenu))),
             )
             .configure_set(

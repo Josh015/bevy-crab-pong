@@ -3,14 +3,11 @@
 use crate::prelude::*;
 use std::ops::{Add, Sub};
 
-/// Calculate a new reduced speed value based on delta speed and clamping
-/// to zero.
 fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
     let s = speed.abs().sub(delta_speed).max(0.0);
     speed.max(-s).min(s) // clamp() panics when min == max.
 }
 
-/// Handles acceleration over time for entities with [`Force`].
 fn acceleration(
     time: Res<Time>,
     mut query: Query<(&mut Speed, &Acceleration, &Force, &MaxSpeed)>,
@@ -29,7 +26,6 @@ fn acceleration(
     }
 }
 
-/// Handles deceleration over time for entities without [`Force`].
 fn deceleration(
     time: Res<Time>,
     mut query: Query<(&mut Speed, &Acceleration), Without<Force>>,
@@ -40,7 +36,6 @@ fn deceleration(
     }
 }
 
-/// Handles moving entities with a [`Heading`] and [`Speed`].
 fn velocity(
     time: Res<Time>,
     mut query: Query<(&mut Transform, &Heading, &Speed)>,
@@ -50,7 +45,6 @@ fn velocity(
     }
 }
 
-/// Calculates the stopping distance for an entity.
 fn stopping_distance(
     mut query: Query<(&mut StoppingDistance, &Acceleration, &Speed)>,
 ) {

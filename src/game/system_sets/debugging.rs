@@ -3,7 +3,7 @@
 use crate::prelude::*;
 
 // TODO: Make this work with all object movement, not just Balls?
-fn debug_ball_paths(
+fn draw_ball_paths_gizmos(
     query: Query<(&GlobalTransform, &Heading), (With<Ball>, Without<Fade>)>,
     mut gizmos: Gizmos,
 ) {
@@ -16,8 +16,7 @@ fn debug_ball_paths(
     }
 }
 
-/// Visualizes where the paddles will be when they stop.
-fn debug_paddle_stop_positions(
+fn draw_paddle_stop_position_gizmos(
     query: Query<
         (&GlobalTransform, &Heading, &StoppingDistance),
         Without<Fade>,
@@ -39,9 +38,7 @@ fn debug_paddle_stop_positions(
     }
 }
 
-/// Provides debug visualization to show which [`Ai`] entities are targeting
-/// which [`Ball`] entities.
-fn debug_targeting(
+fn draw_paddle_to_ball_targeting_gizmos(
     paddles_query: Query<
         (&GlobalTransform, &Target),
         (With<AiInput>, With<Paddle>, Without<Fade>),
@@ -60,9 +57,7 @@ fn debug_targeting(
     }
 }
 
-/// Provides debug visualization to show the size of the ideal hit area on each
-/// [`Ai`] [`Paddle`] entity.
-fn debug_ai_paddle_hit_area(
+fn draw_ai_paddle_ideal_hit_area_gizmos(
     paddles_query: Query<
         &GlobalTransform,
         (With<Paddle>, With<AiInput>, Without<Fade>),
@@ -87,10 +82,10 @@ impl Plugin for DebuggingPlugin {
         app.add_systems(
             PostUpdate,
             (
-                debug_ball_paths,
-                debug_paddle_stop_positions,
-                debug_targeting,
-                debug_ai_paddle_hit_area,
+                draw_ball_paths_gizmos,
+                draw_paddle_stop_position_gizmos,
+                draw_paddle_to_ball_targeting_gizmos,
+                draw_ai_paddle_ideal_hit_area_gizmos,
             )
                 .in_set(GameSystemSet::Debugging),
         );

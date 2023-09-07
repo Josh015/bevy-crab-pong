@@ -2,9 +2,7 @@
 
 use crate::prelude::*;
 
-/// Makes a [`SwayingCamera`] and [`Camera3d`] entity slowly sway back and
-/// forth.
-fn swaying_camera(
+fn make_camera_slowly_sway_back_and_forth(
     game_config: Res<GameConfig>,
     time: Res<Time>,
     mut query: Query<&mut Transform, (With<SwayingCamera>, With<Camera3d>)>,
@@ -17,11 +15,10 @@ fn swaying_camera(
         .looking_at(FIELD_CENTER_POINT, Vec3::Y);
 }
 
-/// Scrolls a material's texture.
-fn animated_water(
+fn animate_ocean_with_scrolling_texture_effect(
     game_config: Res<GameConfig>,
     time: Res<Time>,
-    mut query: Query<(&mut AnimatedWater, &mut Transform)>,
+    mut query: Query<(&mut Ocean, &mut Transform)>,
 ) {
     // FIXME: Translate the plane on the Z-axis, since we currently can't
     // animate the texture coordinates.
@@ -34,7 +31,7 @@ fn animated_water(
     animated_water.scroll %= 1.0;
 }
 
-fn spawn_wall_event(
+fn handle_spawn_wall_event(
     game_cached_assets: Res<GameCachedAssets>,
     mut commands: Commands,
     mut event_reader: EventReader<SpawnWallEvent>,
@@ -85,7 +82,11 @@ impl Plugin for EffectsPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (swaying_camera, animated_water, spawn_wall_event)
+            (
+                make_camera_slowly_sway_back_and_forth,
+                animate_ocean_with_scrolling_texture_effect,
+                handle_spawn_wall_event,
+            )
                 .in_set(GameSystemSet::Effects),
         );
     }
