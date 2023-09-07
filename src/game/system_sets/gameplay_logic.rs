@@ -98,7 +98,7 @@ fn keyboard_controlled_paddles(
 }
 
 /// Causes [`Ai`] entities to target whichever ball is closest to their goal.
-fn detect_and_target_ball_closest_to_goal(
+fn ai_detect_and_target_ball_closest_to_goal(
     mut commands: Commands,
     paddles_query: Query<(Entity, &Side), (With<AiInput>, With<Paddle>)>,
     balls_query: Query<
@@ -300,7 +300,7 @@ impl Plugin for GameplayLogicPlugin {
             (
                 spawn_balls_as_needed,
                 keyboard_controlled_paddles,
-                detect_and_target_ball_closest_to_goal,
+                ai_detect_and_target_ball_closest_to_goal,
                 ai_controlled_paddles,
                 goal_scored_check,
                 goal_eliminated_event,
