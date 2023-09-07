@@ -55,6 +55,7 @@ fn spawn_paddles(
     run_state: Res<RunState>,
     config: Res<GameConfig>,
     resources: Res<PaddleResources>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     paddles_query: Query<Entity, (With<Paddle>, Without<Fade>)>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
@@ -69,6 +70,9 @@ fn spawn_paddles(
 
     // Give every paddle a parent so we can use relative transforms.
     for (i, (entity, side)) in goals_query.iter().enumerate() {
+        let goal_config = &config.modes[run_state.mode_index].goals[i];
+        let material_handle = resources.paddle_material_handles[side].clone();
+
         commands.entity(entity).with_children(|parent| {
             let mut paddle = parent.spawn((
                 *side,
@@ -95,7 +99,7 @@ fn spawn_paddles(
                 },
                 PbrBundle {
                     mesh: resources.paddle_mesh_handle.clone(),
-                    material: resources.paddle_material_handles[side].clone(),
+                    material: material_handle.clone(),
                     transform: Transform::from_matrix(
                         Mat4::from_scale_rotation_translation(
                             Vec3::splat(f32::EPSILON),
@@ -105,23 +109,21 @@ fn spawn_paddles(
                     ),
                     ..default()
                 },
+                if goal_config.team == TeamConfig::Enemies {
+                    Team::Enemies
+                } else {
+                    Team::Allies
+                },
             ));
-
-            let goal_config = &config.modes[run_state.mode_index].goals[i];
-
-            // TODO: Combine with above statement after player selection
-            // is fixed.
-            paddle.insert(if goal_config.team == TeamConfig::Enemies {
-                Team::Enemies
-            } else {
-                Team::Allies
-            });
 
             if goal_config.controller == ControllerConfig::AI {
                 paddle.insert(Ai);
             } else {
                 paddle.insert(Player);
             }
+
+            let material = materials.get_mut(&material_handle).unwrap();
+            material.base_color = Color::hex(&goal_config.color).unwrap()
         });
     }
 }

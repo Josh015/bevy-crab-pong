@@ -30,6 +30,7 @@ pub struct ModeConfig {
 
 #[derive(Debug, Deserialize)]
 pub struct GoalConfig {
+    pub color: String,
     pub team: TeamConfig,
     pub controller: ControllerConfig,
     pub starting_hit_points: u32,

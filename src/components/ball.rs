@@ -20,8 +20,6 @@ pub struct Ball;
 #[derive(Debug, Resource)]
 pub struct BallResources {
     pub ball_mesh_handle: Handle<Mesh>,
-    // pub ball_material_handles: Vec<Handle<StandardMaterial>>,
-    // pub next_ball_material_index: usize,
 }
 
 impl FromWorld for BallResources {
@@ -35,31 +33,7 @@ impl FromWorld for BallResources {
             }))
         };
 
-        // let max_ball_count =
-        //     { world.get_resource::<GameConfig>().unwrap().max_ball_count };
-
-        // let ball_material_handles = {
-        //     let mut materials = world
-        //         .get_resource_mut::<Assets<StandardMaterial>>()
-        //         .unwrap();
-
-        //     (0..max_ball_count)
-        //         .into_iter()
-        //         .map(|_| {
-        //             materials.add(StandardMaterial {
-        //                 alpha_mode: AlphaMode::Blend,
-        //                 base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),
-        //                 ..default()
-        //             })
-        //         })
-        //         .collect()
-        // };
-
-        Self {
-            ball_mesh_handle,
-            // ball_material_handles,
-            // next_ball_material_index: 0,
-        }
+        Self { ball_mesh_handle }
     }
 }
 
@@ -67,7 +41,7 @@ impl FromWorld for BallResources {
 fn spawn_balls(
     run_state: Res<RunState>,
     config: Res<GameConfig>,
-    /* mut */ resources: ResMut<BallResources>,
+    resources: ResMut<BallResources>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     new_balls_query: Query<
@@ -113,16 +87,11 @@ fn spawn_balls(
             FadeBundle::default(),
             PbrBundle {
                 mesh: resources.ball_mesh_handle.clone(),
-                // TODO: Come up with a solution that doesn't require constant
-                // allocation!
                 material: materials.add(StandardMaterial {
                     alpha_mode: AlphaMode::Blend,
                     base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),
                     ..default()
                 }),
-                // material: resources.ball_material_handles
-                //     [resources.next_ball_material_index]
-                //     .clone(),
                 transform: Transform::from_matrix(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(BALL_DIAMETER),
@@ -135,9 +104,6 @@ fn spawn_balls(
         ))
         .id();
 
-    // resources.next_ball_material_index += 1;
-    // resources.next_ball_material_index %=
-    // resources.ball_material_handles.len();
     info!("Ball({:?}): Spawning", entity);
 }
 
