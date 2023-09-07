@@ -3,7 +3,7 @@
 use crate::prelude::*;
 
 // TODO: Make this work with all object movement, not just Balls?
-fn draw_ball_paths_gizmos(
+fn draw_balls_movement_direction_gizmos(
     query: Query<(&GlobalTransform, &Heading), (With<Ball>, Without<Fade>)>,
     mut gizmos: Gizmos,
 ) {
@@ -16,7 +16,7 @@ fn draw_ball_paths_gizmos(
     }
 }
 
-fn draw_paddle_stop_position_gizmos(
+fn draw_paddles_predicted_stop_positions_gizmos(
     query: Query<
         (&GlobalTransform, &Heading, &StoppingDistance),
         Without<Fade>,
@@ -82,8 +82,8 @@ impl Plugin for DebuggingPlugin {
         app.add_systems(
             PostUpdate,
             (
-                draw_ball_paths_gizmos,
-                draw_paddle_stop_position_gizmos,
+                draw_balls_movement_direction_gizmos,
+                draw_paddles_predicted_stop_positions_gizmos,
                 draw_paddle_to_ball_targeting_gizmos,
                 draw_ai_paddle_ideal_hit_area_gizmos,
             )

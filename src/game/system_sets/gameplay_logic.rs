@@ -71,7 +71,7 @@ fn spawn_balls_as_needed_from_the_center_of_the_arena(
     info!("Ball({:?}): Spawning", entity);
 }
 
-fn keyboard_input_for_player_controlled_paddles(
+fn handle_keyboard_input_for_player_controlled_paddles(
     keyboard_input: Res<Input<KeyCode>>,
     mut commands: Commands,
     query: Query<Entity, (With<KeyboardInput>, With<Paddle>)>,
@@ -95,7 +95,7 @@ fn keyboard_input_for_player_controlled_paddles(
     // TODO: Need to make inputs account for side!
 }
 
-fn make_ai_paddles_target_balls_closest_to_their_goals(
+fn make_ai_paddles_target_the_balls_closest_to_their_goals(
     mut commands: Commands,
     paddles_query: Query<(Entity, &Side), (With<AiInput>, With<Paddle>)>,
     balls_query: Query<
@@ -124,7 +124,7 @@ fn make_ai_paddles_target_balls_closest_to_their_goals(
     }
 }
 
-fn computer_control_for_ai_paddles(
+fn move_ai_paddles_toward_where_their_targeted_balls_will_cross_their_goals(
     mut commands: Commands,
     paddles_query: Query<
         (
@@ -292,9 +292,9 @@ impl Plugin for GameplayLogicPlugin {
             Update,
             (
                 spawn_balls_as_needed_from_the_center_of_the_arena,
-                keyboard_input_for_player_controlled_paddles,
-                make_ai_paddles_target_balls_closest_to_their_goals,
-                computer_control_for_ai_paddles,
+                handle_keyboard_input_for_player_controlled_paddles,
+                make_ai_paddles_target_the_balls_closest_to_their_goals,
+                move_ai_paddles_toward_where_their_targeted_balls_will_cross_their_goals,
                 check_if_a_ball_has_scored_against_any_goals,
                 handle_goal_eliminated_event,
                 check_for_game_over_conditions,
