@@ -1,45 +1,25 @@
 use crate::prelude::*;
 
-mod animated_water;
-mod ball;
-mod barrier;
-mod collider;
+mod arena;
+mod balls;
 mod control;
-mod fade;
-mod for_state;
-mod goal;
+mod goals;
 mod movement;
-mod paddle;
-mod side;
-mod swaying_camera;
-mod team;
-mod ui;
-mod wall;
+mod spawning;
 
-pub use animated_water::*;
-pub use ball::*;
-pub use barrier::*;
-pub use collider::*;
+pub use arena::*;
+pub use balls::*;
 pub use control::*;
-pub use fade::*;
-pub use for_state::*;
-pub use goal::*;
+pub use goals::*;
 pub use movement::*;
-pub use paddle::*;
-pub use side::*;
-pub use swaying_camera::*;
-pub use team::*;
-pub use ui::*;
-pub use wall::*;
-
-pub const ARENA_CENTER_POINT: Vec3 = Vec3::ZERO;
+pub use spawning::*;
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum GameSystemSet {
-    Debugging,
     GameplayLogic,
     Movement,
     Collision,
+    Debugging,
     Despawning,
 }
 
@@ -51,13 +31,6 @@ pub struct ComponentsPlugin;
 
 impl Plugin for ComponentsPlugin {
     fn build(&self, app: &mut App) {
-        app.configure_set(
-            Update,
-            GameSystemSet::Debugging
-                .before(GameSystemSet::Movement)
-                .run_if(show_debugging_systems)
-                .run_if(not(in_state(GameScreen::StartMenu))),
-        );
         app.configure_set(
             Update,
             GameSystemSet::GameplayLogic
@@ -75,24 +48,26 @@ impl Plugin for ComponentsPlugin {
                 .run_if(not(in_state(GameScreen::Paused))),
         );
         app.configure_set(
+            Update,
+            GameSystemSet::Debugging
+                .after(GameSystemSet::Collision)
+                .before(GameSystemSet::Despawning)
+                .run_if(show_debugging_systems)
+                .run_if(not(in_state(GameScreen::StartMenu))),
+        );
+        app.configure_set(
             PostUpdate,
             GameSystemSet::Despawning
                 .after(GameSystemSet::Collision)
                 .run_if(not(in_state(GameScreen::Paused))),
         );
         app.add_plugins((
-            AnimatedWaterPlugin,
-            BallPlugin,
-            ColliderPlugin,
+            ArenaPlugin,
+            BallsPlugin,
             ControlPlugin,
-            FadePlugin,
-            ForStatePlugin,
-            GoalPlugin,
+            GoalsPlugin,
             MovementPlugin,
-            PaddlePlugin,
-            SwayingCameraPlugin,
-            UiPlugin,
-            WallPlugin,
+            SpawningPlugin,
         ));
     }
 }
