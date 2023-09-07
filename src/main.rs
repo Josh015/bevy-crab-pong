@@ -1,9 +1,8 @@
-mod entities;
 mod file;
 mod game;
 
 pub mod prelude {
-    pub use crate::{entities::*, file::*, game::*};
+    pub use crate::{file::*, game::*};
     pub use bevy::{math::*, prelude::*};
     pub use rand::prelude::*;
 }
@@ -31,6 +30,6 @@ fn main() {
         .insert_resource(Msaa::default())
         .insert_resource(ClearColor(game_config.clear_color))
         .insert_resource(game_config)
-        .add_plugins((EntitiesPlugin, GamePlugin))
+        .add_plugins(GamePlugin)
         .run();
 }

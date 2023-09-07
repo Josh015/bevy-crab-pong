@@ -1,16 +1,6 @@
+#![allow(clippy::type_complexity)]
+
 use crate::prelude::*;
-
-/// An event fired when spawning a message UI.
-#[derive(Event)]
-pub struct MessageUiEvent {
-    message: String,
-    game_screen: GameScreen,
-}
-
-/// A component for marking a [`Text`] UI entity as displaying the hit points
-/// for an associated [`Goal`].
-#[derive(Component)]
-pub struct HitPointsUi;
 
 /// Updates a [`Text`] entity to display the current life of its associated
 /// [`Goal`].
@@ -25,7 +15,7 @@ fn goal_hit_points_ui(
 }
 
 fn spawn_ui_message_event(
-    game_state: Res<GameState>,
+    game_cached_assets: Res<GameCachedAssets>,
     mut commands: Commands,
     mut event_reader: EventReader<MessageUiEvent>,
 ) {
@@ -73,7 +63,9 @@ fn spawn_ui_message_event(
                             text: Text::from_section(
                                 message.clone(),
                                 TextStyle {
-                                    font: game_state.font_handle.clone(),
+                                    font: game_cached_assets
+                                        .font_handle
+                                        .clone(),
                                     font_size: 30.0,
                                     color: Color::RED,
                                 },
@@ -85,42 +77,15 @@ fn spawn_ui_message_event(
     }
 }
 
-fn spawn_start_menu_ui(
-    game_config: Res<GameConfig>,
-    game_state: Res<GameState>,
-    mut ui_message_events: EventWriter<MessageUiEvent>,
-) {
-    let mut message = String::from(match game_state.game_over {
-        Some(GameOver::Won) => &game_config.game_over_win_message,
-        Some(GameOver::Lost) => &game_config.game_over_lose_message,
-        _ => "",
-    });
+pub struct UserInterfacePlugin;
 
-    message.push_str(&game_config.new_game_message);
-
-    ui_message_events.send(MessageUiEvent {
-        message,
-        game_screen: GameScreen::StartMenu,
-    });
-}
-
-fn spawn_pause_ui(
-    game_config: Res<GameConfig>,
-    mut ui_message_events: EventWriter<MessageUiEvent>,
-) {
-    ui_message_events.send(MessageUiEvent {
-        message: game_config.pause_message.clone(),
-        game_screen: GameScreen::Paused,
-    });
-}
-
-pub struct UiPlugin;
-
-impl Plugin for UiPlugin {
+impl Plugin for UserInterfacePlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<MessageUiEvent>()
-            .add_systems(OnEnter(GameScreen::StartMenu), spawn_start_menu_ui)
-            .add_systems(OnEnter(GameScreen::Paused), spawn_pause_ui)
-            .add_systems(Update, (spawn_ui_message_event, goal_hit_points_ui));
+        app.add_systems(
+            Update,
+            (spawn_ui_message_event, goal_hit_points_ui)
+                .chain()
+                .in_set(GameSystemSet::UserInterface),
+        );
     }
 }

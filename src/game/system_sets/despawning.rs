@@ -1,57 +1,6 @@
+#![allow(clippy::type_complexity)]
+
 use crate::prelude::*;
-
-pub const FADE_PROGRESS_MIN: f32 = 0.0;
-pub const FADE_PROGRESS_MAX: f32 = 1.0;
-
-#[derive(Event)]
-pub struct FadeOutEntityEvent(pub Entity);
-
-#[derive(Bundle, Default)]
-pub struct FadeBundle {
-    pub fade_animation: FadeAnimation,
-    pub fade: Fade,
-}
-
-/// A component that specifies the entity's fade effect animation.
-#[derive(Clone, Component, Copy, Default, PartialEq, Debug)]
-pub enum FadeAnimation {
-    /// Uses [`StandardMaterial`] color and alpha blending to show/hide entity.
-    ///
-    /// When paired with [`Fade::In`] the entity's [`StandardMaterial`] must
-    /// first be set to [`AlphaMode::Blend`] and have its color alpha set to
-    /// zero to avoid visual popping.
-    #[default]
-    Opacity,
-
-    /// Uses [`Transform`] scale to grow/shrink the entity.
-    ///
-    /// When paired with [`Fade::In`] the entity's [`Transform`] scale must
-    /// first be set to EPSILON to avoid visual popping. We can't use zero
-    /// since that prevents it from appearing at all.
-    Scale {
-        /// The maximum scale to start/end with when fading out/in.
-        max_scale: Vec3,
-
-        /// Use either 0/1 to remove/mark an axis for the scale effect.
-        axis_mask: Vec3,
-    },
-}
-
-/// A component that makes an entity fade in/out and then despawn if needed.
-#[derive(Clone, Component, Copy, PartialEq, Debug)]
-pub enum Fade {
-    /// Fade-in effect with a progress value in the range \[0,1\].
-    In(f32),
-
-    /// Fade-out effect with a progress value in the range \[0,1\].
-    Out(f32),
-}
-
-impl Default for Fade {
-    fn default() -> Self {
-        Self::In(0.0)
-    }
-}
 
 /// Makes a [`FadeAnimation`] entity start its animation to fade out and
 /// despawn.
@@ -148,11 +97,11 @@ fn fade_animation(
     }
 }
 
-pub struct FadePlugin;
+pub struct DespawningPlugin;
 
-impl Plugin for FadePlugin {
+impl Plugin for DespawningPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<FadeOutEntityEvent>().add_systems(
+        app.add_systems(
             PostUpdate,
             (fade_out_entity_event, fade_entities, fade_animation)
                 .chain()
