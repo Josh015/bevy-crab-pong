@@ -1,10 +1,9 @@
 mod components;
-mod config;
 mod files;
 mod state;
 
 pub mod prelude {
-    pub use crate::{components::*, config::*, state::*};
+    pub use crate::{components::*, files::*, state::*};
     pub use bevy::{math::*, prelude::*};
     pub use rand::prelude::*;
 }

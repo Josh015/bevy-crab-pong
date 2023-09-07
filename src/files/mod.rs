@@ -2,6 +2,10 @@ use ron::de::from_reader;
 use serde::de::DeserializeOwned;
 use std::{fs::File, path::PathBuf};
 
+mod config;
+
+pub use config::*;
+
 /// Opens a file using the project's manifest directory as the root.
 pub fn open_local_file(path: &str) -> File {
     let input_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(path);
