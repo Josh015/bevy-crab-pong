@@ -116,7 +116,7 @@ fn spawn_paddles(
                 },
             ));
 
-            if goal_config.controller == ControllerConfig::AI {
+            if goal_config.controlled_by == ControlledByConfig::AI {
                 paddle.insert(AiControlled);
             } else {
                 paddle.insert(KeyboardControlled);

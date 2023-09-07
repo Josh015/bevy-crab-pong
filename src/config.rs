@@ -32,7 +32,7 @@ pub struct ModeConfig {
 pub struct GoalConfig {
     pub color: String,
     pub team: TeamConfig,
-    pub controller: ControllerConfig,
+    pub controlled_by: ControlledByConfig,
     pub starting_hit_points: u32,
 }
 
@@ -43,7 +43,7 @@ pub enum TeamConfig {
 }
 
 #[derive(Debug, Deserialize, Eq, PartialEq)]
-pub enum ControllerConfig {
+pub enum ControlledByConfig {
     Keyboard,
     AI,
 }
