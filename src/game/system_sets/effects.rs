@@ -35,7 +35,7 @@ fn animated_water(
 }
 
 fn spawn_wall_event(
-    resources: Res<GameCachedAssets>,
+    game_cached_assets: Res<GameCachedAssets>,
     mut commands: Commands,
     mut event_reader: EventReader<SpawnWallEvent>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
@@ -59,8 +59,10 @@ fn spawn_wall_event(
                         fade: Fade::In(if *is_instant { 1.0 } else { 0.0 }),
                     },
                     PbrBundle {
-                        mesh: resources.wall_mesh_handle.clone(),
-                        material: resources.wall_material_handle.clone(),
+                        mesh: game_cached_assets.wall_mesh_handle.clone(),
+                        material: game_cached_assets
+                            .wall_material_handle
+                            .clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
                                 Vec3::splat(f32::EPSILON),
