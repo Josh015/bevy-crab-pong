@@ -3,7 +3,7 @@
 use crate::prelude::*;
 
 // TODO: Make this work with all object movement, not just Balls?
-fn draw_balls_movement_direction_gizmos(
+fn display_ball_movement_direction_gizmos(
     query: Query<(&GlobalTransform, &Heading), (With<Ball>, Without<Fade>)>,
     mut gizmos: Gizmos,
 ) {
@@ -16,7 +16,7 @@ fn draw_balls_movement_direction_gizmos(
     }
 }
 
-fn draw_paddles_predicted_stop_positions_gizmos(
+fn display_paddle_predicted_stop_position_gizmos(
     query: Query<
         (&GlobalTransform, &Heading, &StoppingDistance),
         Without<Fade>,
@@ -38,7 +38,7 @@ fn draw_paddles_predicted_stop_positions_gizmos(
     }
 }
 
-fn draw_paddle_to_ball_targeting_gizmos(
+fn display_paddle_to_ball_targeting_gizmos(
     paddles_query: Query<
         (&GlobalTransform, &Target),
         (With<AiInput>, With<Paddle>, Without<Fade>),
@@ -57,7 +57,7 @@ fn draw_paddle_to_ball_targeting_gizmos(
     }
 }
 
-fn draw_ai_paddle_ideal_hit_area_gizmos(
+fn display_ai_paddle_ideal_hit_area_gizmos(
     paddles_query: Query<
         &GlobalTransform,
         (With<Paddle>, With<AiInput>, Without<Fade>),
@@ -73,7 +73,7 @@ fn draw_ai_paddle_ideal_hit_area_gizmos(
     }
 }
 
-// TODO: Add debug visualizations for bounding shapes.
+// TODO: Add debug visualizations for bounding shapes?
 
 pub struct DebuggingPlugin;
 
@@ -82,10 +82,10 @@ impl Plugin for DebuggingPlugin {
         app.add_systems(
             PostUpdate,
             (
-                draw_balls_movement_direction_gizmos,
-                draw_paddles_predicted_stop_positions_gizmos,
-                draw_paddle_to_ball_targeting_gizmos,
-                draw_ai_paddle_ideal_hit_area_gizmos,
+                display_ball_movement_direction_gizmos,
+                display_paddle_predicted_stop_position_gizmos,
+                display_paddle_to_ball_targeting_gizmos,
+                display_ai_paddle_ideal_hit_area_gizmos,
             )
                 .in_set(GameSystemSet::Debugging),
         );
