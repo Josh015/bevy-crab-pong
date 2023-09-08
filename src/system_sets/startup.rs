@@ -3,13 +3,13 @@ use crate::{
     components::{balls::Collider, effects::*, goals::*, paddles::HitPointsUi},
     constants::*,
     events::SpawnWallEvent,
-    state::GameState,
+    global_data::GlobalData,
 };
 use bevy::prelude::*;
 
 fn spawn_play_area(
     cached_assets: Res<CachedAssets>,
-    mut game_state: ResMut<GameState>,
+    mut global_data: ResMut<GlobalData>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -196,7 +196,7 @@ fn spawn_play_area(
             },
         ));
 
-        game_state.goals_hit_points.insert(*side, 0);
+        global_data.goals_hit_points.insert(*side, 0);
     }
 }
 

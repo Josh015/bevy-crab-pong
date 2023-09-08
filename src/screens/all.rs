@@ -2,8 +2,8 @@ use crate::{
     components::fading::{FadeAnimation, ForState},
     config::Config,
     events::FadeOutEntityEvent,
+    global_data::GlobalData,
     screens::GameScreen,
-    state::GameState,
 };
 use bevy::{app::AppExit, prelude::*};
 
@@ -11,7 +11,7 @@ fn handle_game_screen_specific_inputs(
     keyboard_input: Res<Input<KeyCode>>,
     game_screen: Res<State<GameScreen>>,
     config: Res<Config>,
-    mut game_state: ResMut<GameState>,
+    mut global_data: ResMut<GlobalData>,
     mut next_game_screen: ResMut<NextState<GameScreen>>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
@@ -19,7 +19,7 @@ fn handle_game_screen_specific_inputs(
         app_exit_events.send(AppExit);
         return;
     } else if keyboard_input.just_pressed(KeyCode::G) {
-        game_state.is_debugging_enabled = !game_state.is_debugging_enabled;
+        global_data.is_debugging_enabled = !global_data.is_debugging_enabled;
         return;
     }
 
@@ -29,16 +29,16 @@ fn handle_game_screen_specific_inputs(
                 next_game_screen.set(GameScreen::Playing);
                 info!("New Game");
             } else if keyboard_input.just_pressed(KeyCode::Left)
-                && game_state.mode_index > 0
+                && global_data.mode_index > 0
             {
-                game_state.mode_index -= 1;
-                let mode_name = &config.modes[game_state.mode_index].name;
+                global_data.mode_index -= 1;
+                let mode_name = &config.modes[global_data.mode_index].name;
                 info!("Game Mode: {mode_name}");
             } else if keyboard_input.just_pressed(KeyCode::Right)
-                && game_state.mode_index < config.modes.len() - 1
+                && global_data.mode_index < config.modes.len() - 1
             {
-                game_state.mode_index += 1;
-                let mode_name = &config.modes[game_state.mode_index].name;
+                global_data.mode_index += 1;
+                let mode_name = &config.modes[global_data.mode_index].name;
                 info!("Game Mode: {mode_name}");
             }
         },

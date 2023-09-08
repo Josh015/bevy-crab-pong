@@ -2,7 +2,7 @@ use crate::{
     cached_assets::CachedAssets,
     components::{fading::ForState, goals::Side, paddles::HitPointsUi},
     events::MessageUiEvent,
-    state::GameState,
+    global_data::GlobalData,
     system_sets::GameSystemSet,
 };
 use bevy::prelude::*;
@@ -69,11 +69,11 @@ fn handle_spawn_ui_message_event(
 }
 
 fn update_goal_hit_points_ui(
-    game_state: Res<GameState>,
+    global_data: Res<GlobalData>,
     mut query: Query<(&Side, &mut Text), With<HitPointsUi>>,
 ) {
     for (side, mut text) in &mut query {
-        let hit_points = game_state.goals_hit_points[side];
+        let hit_points = global_data.goals_hit_points[side];
         text.sections[0].value = hit_points.to_string();
     }
 }

@@ -10,15 +10,15 @@ use crate::{
     config::Config,
     constants::*,
     events::*,
+    global_data::{GameOver, GlobalData},
     screens::GameScreen,
-    state::{GameOver, GameState},
     system_sets::GameSystemSet,
 };
 use bevy::prelude::*;
 use rand::prelude::*;
 
 fn spawn_balls_as_needed_from_the_center_of_the_arena(
-    game_state: Res<GameState>,
+    global_data: Res<GlobalData>,
     config: Res<Config>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
@@ -52,7 +52,7 @@ fn spawn_balls_as_needed_from_the_center_of_the_arena(
 
     // Spawn new balls until max is reached.
     if all_balls_query.iter().count()
-        >= config.modes[game_state.mode_index].max_ball_count
+        >= config.modes[global_data.mode_index].max_ball_count
     {
         return;
     }
@@ -187,7 +187,7 @@ fn move_ai_paddles_toward_where_their_targeted_balls_will_enter_their_goals(
 
 fn check_if_any_balls_have_scored_against_any_goals(
     mut commands: Commands,
-    mut game_state: ResMut<GameState>,
+    mut global_data: ResMut<GlobalData>,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     mut goal_eliminated_writer: EventWriter<GoalEliminatedEvent>,
     balls_query: Query<
@@ -207,7 +207,8 @@ fn check_if_any_balls_have_scored_against_any_goals(
             }
 
             // Decrement the goal's HP and potentially eliminate it.
-            let hit_points = game_state.goals_hit_points.get_mut(side).unwrap();
+            let hit_points =
+                global_data.goals_hit_points.get_mut(side).unwrap();
 
             *hit_points = hit_points.saturating_sub(1);
             info!("Ball({:?}): Scored Goal({:?})", ball_entity, side);
@@ -261,7 +262,7 @@ fn handle_goal_eliminated_event(
 }
 
 fn check_for_game_over_conditions(
-    mut game_state: ResMut<GameState>,
+    mut global_data: ResMut<GlobalData>,
     mut next_game_screen: ResMut<NextState<GameScreen>>,
     mut event_reader: EventReader<GoalEliminatedEvent>,
     teams_query: Query<(&Team, &Side), With<Paddle>>,
@@ -272,26 +273,26 @@ fn check_for_game_over_conditions(
         let has_player_won = teams_query
             .iter()
             .filter(|(team, _)| **team == Team::Enemies)
-            .all(|(_, side)| game_state.goals_hit_points[side] == 0);
+            .all(|(_, side)| global_data.goals_hit_points[side] == 0);
 
         let has_player_lost = teams_query
             .iter()
             .filter(|(team, _)| **team == Team::Allies)
-            .all(|(_, side)| game_state.goals_hit_points[side] == 0);
+            .all(|(_, side)| global_data.goals_hit_points[side] == 0);
 
         if !has_player_won && !has_player_lost {
             continue;
         }
 
         // Declare a winner and navigate back to the Start Menu.
-        game_state.game_over = Some(if has_player_won {
+        global_data.game_over = Some(if has_player_won {
             GameOver::Won
         } else {
             GameOver::Lost
         });
 
         next_game_screen.set(GameScreen::StartMenu);
-        info!("Game Over: Player {:?}", game_state.game_over.unwrap());
+        info!("Game Over: Player {:?}", global_data.game_over.unwrap());
     }
 }
 

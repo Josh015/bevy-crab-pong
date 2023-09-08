@@ -10,16 +10,16 @@ pub enum GameOver {
     Lost,
 }
 
-/// All global information for this game.
+/// All the global data for this game.
 #[derive(Debug, Resource)]
-pub struct GameState {
+pub struct GlobalData {
     pub mode_index: usize,
     pub goals_hit_points: HashMap<Side, u32>,
     pub game_over: Option<GameOver>,
     pub is_debugging_enabled: bool,
 }
 
-impl Default for GameState {
+impl Default for GlobalData {
     fn default() -> Self {
         Self {
             mode_index: 0,
@@ -30,10 +30,10 @@ impl Default for GameState {
     }
 }
 
-pub struct StatePlugin;
+pub struct GlobalDataPlugin;
 
-impl Plugin for StatePlugin {
+impl Plugin for GlobalDataPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<GameState>();
+        app.init_resource::<GlobalData>();
     }
 }

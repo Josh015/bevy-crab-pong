@@ -6,8 +6,8 @@ mod config;
 mod constants;
 mod events;
 mod file;
+mod global_data;
 mod screens;
-mod state;
 mod system_sets;
 
 use bevy::{
@@ -38,8 +38,8 @@ fn main() {
         .add_plugins((
             cached_assets::CachedAssetsPlugin,
             events::EventsPlugin,
+            global_data::GlobalDataPlugin,
             screens::ScreensPlugin,
-            state::StatePlugin,
             system_sets::SystemSetsPlugin,
         ))
         .run();

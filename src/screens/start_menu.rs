@@ -4,17 +4,17 @@ use crate::{
     config::{Config, ControlledByConfig, TeamConfig},
     constants::*,
     events::{FadeOutEntityEvent, MessageUiEvent},
+    global_data::{GameOver, GlobalData},
     screens::GameScreen,
-    state::{GameOver, GameState},
 };
 use bevy::prelude::*;
 
 fn spawn_start_menu_ui(
     config: Res<Config>,
-    game_state: Res<GameState>,
+    global_data: Res<GlobalData>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
-    let mut message = String::from(match game_state.game_over {
+    let mut message = String::from(match global_data.game_over {
         Some(GameOver::Won) => &config.game_over_win_message,
         Some(GameOver::Lost) => &config.game_over_lose_message,
         _ => "",
@@ -49,13 +49,13 @@ fn stop_paddles_and_disable_ball_collisions(
 
 fn reset_each_goals_hit_points(
     config: Res<Config>,
-    mut game_state: ResMut<GameState>,
+    mut global_data: ResMut<GlobalData>,
 ) {
     const SIDES: [Side; 4] = [Side::Top, Side::Right, Side::Bottom, Side::Left];
-    let goals = &config.modes[game_state.mode_index].goals;
+    let goals = &config.modes[global_data.mode_index].goals;
 
     for (i, side) in SIDES.iter().enumerate() {
-        game_state
+        global_data
             .goals_hit_points
             .insert(*side, goals[i].starting_hit_points);
     }
@@ -81,7 +81,7 @@ fn despawn_existing_paddles_and_walls(
 }
 
 fn spawn_new_paddles(
-    game_state: Res<GameState>,
+    global_data: Res<GlobalData>,
     config: Res<Config>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
@@ -90,7 +90,7 @@ fn spawn_new_paddles(
 ) {
     // Spawn each paddle with a goal as a parent to allow relative transforms.
     for (i, (entity, side)) in goals_query.iter().enumerate() {
-        let goal_config = &config.modes[game_state.mode_index].goals[i];
+        let goal_config = &config.modes[global_data.mode_index].goals[i];
         let material_handle = cached_assets.paddle_materials[side].clone();
 
         commands.entity(entity).with_children(|parent| {

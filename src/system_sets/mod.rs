@@ -7,7 +7,7 @@ mod movement;
 mod startup;
 mod user_interface;
 
-use crate::{screens::GameScreen, state::GameState};
+use crate::{global_data::GlobalData, screens::GameScreen};
 use bevy::prelude::*;
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
@@ -21,8 +21,8 @@ pub enum GameSystemSet {
     UserInterface,
 }
 
-fn show_debugging_gizmos(game_state: Res<GameState>) -> bool {
-    game_state.is_debugging_enabled
+fn show_debugging_gizmos(global_data: Res<GlobalData>) -> bool {
+    global_data.is_debugging_enabled
 }
 
 pub struct SystemSetsPlugin;
