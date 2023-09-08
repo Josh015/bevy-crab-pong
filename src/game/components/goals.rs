@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-/// Marks a [`Goal`] entity so that [`Paddle`] and [`Wall`] entities can use it
+/// Marks a goal entity so that [`Paddle`] and [`Wall`] entities can use it
 /// as a parent, and so [`Ball`] entities can score against it.
 #[derive(Component)]
 pub struct Goal;

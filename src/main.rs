@@ -7,7 +7,7 @@ pub use file::*;
 
 pub mod prelude {
     pub use crate::game::*;
-    pub use bevy::{math::*, prelude::*};
+    pub use bevy::prelude::*;
 }
 
 use crate::prelude::*;
