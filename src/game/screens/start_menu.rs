@@ -55,28 +55,12 @@ fn reset_each_goals_hit_points(
     }
 }
 
-fn despawn_walls(
+fn despawn_existing_paddles_and_walls(
     mut commands: Commands,
     mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
-    query: Query<Entity, With<Wall>>,
+    paddles_query: Query<Entity, With<Paddle>>,
+    walls_query: Query<Entity, With<Wall>>,
 ) {
-    for entity in &query {
-        commands.entity(entity).remove::<Collider>();
-        fade_out_entity_events.send(FadeOutEntityEvent(entity));
-    }
-}
-
-fn spawn_paddles(
-    mut commands: Commands,
-    game_state: Res<GameState>,
-    game_config: Res<GameConfig>,
-    game_cached_assets: Res<GameCachedAssets>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
-    paddles_query: Query<Entity, (With<Paddle>, Without<Fade>)>,
-    goals_query: Query<(Entity, &Side), With<Goal>>,
-) {
-    // Fade out existing paddles so new ones can spawn at starting positions.
     for entity in &paddles_query {
         commands
             .entity(entity)
@@ -84,7 +68,21 @@ fn spawn_paddles(
         fade_out_entity_events.send(FadeOutEntityEvent(entity));
     }
 
-    // Give every paddle a parent so we can use relative transforms.
+    for entity in &walls_query {
+        commands.entity(entity).remove::<Collider>();
+        fade_out_entity_events.send(FadeOutEntityEvent(entity));
+    }
+}
+
+fn spawn_new_paddles(
+    game_state: Res<GameState>,
+    game_config: Res<GameConfig>,
+    game_cached_assets: Res<GameCachedAssets>,
+    mut commands: Commands,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    goals_query: Query<(Entity, &Side), With<Goal>>,
+) {
+    // Spawn each paddle with a goal as a parent to allow relative transforms.
     for (i, (entity, side)) in goals_query.iter().enumerate() {
         let goal_config = &game_config.modes[game_state.mode_index].goals[i];
         let material_handle =
@@ -155,7 +153,12 @@ impl Plugin for StartMenuPlugin {
         )
         .add_systems(
             OnExit(GameScreen::StartMenu),
-            (reset_each_goals_hit_points, despawn_walls, spawn_paddles).chain(),
+            (
+                reset_each_goals_hit_points,
+                despawn_existing_paddles_and_walls,
+                spawn_new_paddles,
+            )
+                .chain(),
         );
     }
 }
