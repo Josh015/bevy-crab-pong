@@ -1,11 +1,11 @@
 use crate::{
     cached_assets::CachedAssets,
     components::{balls::*, fading::*, goals::*, movement::*, paddles::*},
-    config::{Config, ControlledByConfig, TeamConfig},
     constants::*,
     events::{FadeOutEntityEvent, MessageUiEvent},
     global_data::{GameOver, GlobalData},
     screens::GameScreen,
+    serialization::{Config, ControlledByConfig, TeamConfig},
 };
 use bevy::prelude::*;
 

@@ -1,4 +1,6 @@
-use crate::{config::Config, events::MessageUiEvent, screens::GameScreen};
+use crate::{
+    events::MessageUiEvent, screens::GameScreen, serialization::Config,
+};
 use bevy::prelude::*;
 
 fn spawn_pause_ui(

@@ -1,9 +1,9 @@
 use crate::{
     components::fading::{FadeAnimation, ForState},
-    config::Config,
     events::FadeOutEntityEvent,
     global_data::GlobalData,
     screens::GameScreen,
+    serialization::Config,
 };
 use bevy::{app::AppExit, prelude::*};
 

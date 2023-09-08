@@ -2,22 +2,21 @@
 
 mod cached_assets;
 mod components;
-mod config;
 mod constants;
 mod events;
-mod file;
 mod global_data;
 mod screens;
+mod serialization;
 mod system_sets;
 
+use crate::serialization::*;
 use bevy::{
     prelude::*,
     window::{PresentMode, WindowResolution},
 };
 
 fn main() {
-    let config: config::Config =
-        file::load_config_from_file("assets/config/game.ron");
+    let config: Config = load_config_from_ron_file("assets/config/game.ron");
 
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {

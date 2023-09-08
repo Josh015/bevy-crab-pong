@@ -1,9 +1,9 @@
 use crate::{
     cached_assets::CachedAssets,
     components::{balls::Collider, effects::*, fading::*, goals::*},
-    config::Config,
     constants::*,
     events::*,
+    serialization::Config,
     system_sets::GameSystemSet,
 };
 use bevy::prelude::*;

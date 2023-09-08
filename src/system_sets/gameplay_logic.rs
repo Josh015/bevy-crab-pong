@@ -7,11 +7,11 @@ use crate::{
         movement::*,
         paddles::*,
     },
-    config::Config,
     constants::*,
     events::*,
     global_data::{GameOver, GlobalData},
     screens::GameScreen,
+    serialization::Config,
     system_sets::GameSystemSet,
 };
 use bevy::prelude::*;

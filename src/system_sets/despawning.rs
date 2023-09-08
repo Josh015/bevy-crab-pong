@@ -1,6 +1,6 @@
 use crate::{
-    components::fading::*, config::Config, constants::*,
-    events::FadeOutEntityEvent, system_sets::GameSystemSet,
+    components::fading::*, constants::*, events::FadeOutEntityEvent,
+    serialization::Config, system_sets::GameSystemSet,
 };
 use bevy::prelude::*;
 
