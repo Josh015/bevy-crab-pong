@@ -103,7 +103,7 @@ fn make_ai_paddles_target_the_balls_closest_to_their_goals(
         (With<Ball>, With<Collider>),
     >,
 ) {
-    for (ai_entity, side) in &paddles_query {
+    for (paddle_entity, side) in &paddles_query {
         let mut closest_ball_distance = std::f32::MAX;
         let mut target = None;
 
@@ -117,9 +117,9 @@ fn make_ai_paddles_target_the_balls_closest_to_their_goals(
         }
 
         if let Some(target) = target {
-            commands.entity(ai_entity).insert(Target(target));
+            commands.entity(paddle_entity).insert(Target(target));
         } else {
-            commands.entity(ai_entity).remove::<Target>();
+            commands.entity(paddle_entity).remove::<Target>();
         }
     }
 }
