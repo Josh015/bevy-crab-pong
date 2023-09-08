@@ -17,6 +17,7 @@ pub struct Paddle;
 
 /// The ball being targeted by AI paddles.
 #[derive(Component)]
+#[component(storage = "SparseSet")]
 pub struct Target(pub Entity);
 
 /// Assigns and entity to a given side of the arena.
@@ -164,6 +165,7 @@ pub struct AiInput;
 
 /// Whether the entity has positive or negative force acting on it.
 #[derive(Component, Clone, Copy, PartialEq)]
+#[component(storage = "SparseSet")]
 pub enum Force {
     Positive,
     Negative,
