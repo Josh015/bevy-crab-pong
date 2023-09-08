@@ -1,24 +1,20 @@
 use crate::prelude::*;
 
-/// A component for a corner barrier entity that exists only to deflect
-/// [`Ball`] entities.
-#[derive(Component)]
-pub struct Barrier;
+/// A component for an animated textured water plane.
+#[derive(Component, Default)]
+pub struct Ocean {
+    pub scroll: f32,
+}
 
-/// Marks a [`Goal`] entity so that [`Paddle`] and [`Wall`] entities can use it
-/// as a parent, and so [`Ball`] entities can score against it.
+/// A component that causes a camera to sway back and forth in a slow
+/// reciprocating motion as it focuses on the origin.
 #[derive(Component)]
-pub struct Goal;
+pub struct SwayingCamera;
 
-/// A component that makes a paddle that can deflect [`Ball`] entities and
-/// moves left->right and vice versa along a single axis when [`Collider`].
-#[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
-pub struct Paddle;
-
-/// The ball being targeted by AI paddles.
+/// A component for marking a [`Text`] UI entity as displaying the hit points
+/// for an associated [`Goal`].
 #[derive(Component)]
-#[component(storage = "SparseSet")]
-pub struct Target(pub Entity);
+pub struct HitPointsUi;
 
 /// Assigns and entity to a given side of the arena.
 #[derive(Clone, Component, Copy, Debug, Eq, Hash, PartialEq)]
@@ -72,26 +68,53 @@ pub enum Team {
     Allies,
 }
 
+/// Marks a [`Goal`] entity so that [`Paddle`] and [`Wall`] entities can use it
+/// as a parent, and so [`Ball`] entities can score against it.
+#[derive(Component)]
+pub struct Goal;
+
+/// A component for a corner barrier entity that exists only to deflect
+/// [`Ball`] entities.
+#[derive(Component)]
+pub struct Barrier;
+
+/// A component that makes a paddle that can deflect [`Ball`] entities and
+/// moves left->right and vice versa along a single axis when [`Collider`].
+#[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
+pub struct Paddle;
+
 /// A component that makes an entity a wall in a [`Goal`] that can deflect
 /// [`Ball`] entities away from the entire goal when [`Collider`].
 #[derive(Component)]
 pub struct Wall;
 
-/// A component for an animated textured water plane.
-#[derive(Component, Default)]
-pub struct Ocean {
-    pub scroll: f32,
+/// Marks an entity that can be collided with by a [`Ball`] entity.
+#[derive(Component)]
+pub struct Collider;
+
+/// A component for a ball entity that must have inertia and be able to deflect
+/// upon collision when [`Collider`].
+#[derive(Component)]
+pub struct Ball;
+
+/// A component that marks an entity as being controlled by the keyboard.
+#[derive(Component)]
+pub struct KeyboardInput;
+
+/// A component that marks an entity as being controlled by AI.
+#[derive(Component)]
+pub struct AiInput;
+
+/// The ball being targeted by AI paddles.
+#[derive(Component)]
+#[component(storage = "SparseSet")]
+pub struct Target(pub Entity);
+
+/// Tags an entity to only exist in the listed game states.
+#[derive(Component)]
+pub struct ForState<T> {
+    pub states: Vec<T>,
 }
-
-/// A component that causes a camera to sway back and forth in a slow
-/// reciprocating motion as it focuses on the origin.
-#[derive(Component)]
-pub struct SwayingCamera;
-
-/// A component for marking a [`Text`] UI entity as displaying the hit points
-/// for an associated [`Goal`].
-#[derive(Component)]
-pub struct HitPointsUi;
 
 #[derive(Bundle, Default)]
 pub struct FadeBundle {
@@ -140,29 +163,6 @@ impl Default for Fade {
         Self::In(0.0)
     }
 }
-
-/// Tags an entity to only exist in the listed game states.
-#[derive(Component)]
-pub struct ForState<T> {
-    pub states: Vec<T>,
-}
-
-/// Marks an entity that can be collided with by a [`Ball`] entity.
-#[derive(Component)]
-pub struct Collider;
-
-/// A component for a ball entity that must have inertia and be able to deflect
-/// upon collision when [`Collider`].
-#[derive(Component)]
-pub struct Ball;
-
-/// A component that marks an entity as being controlled by the keyboard.
-#[derive(Component)]
-pub struct KeyboardInput;
-
-/// A component that marks an entity as being controlled by AI.
-#[derive(Component)]
-pub struct AiInput;
 
 /// Whether the entity has positive or negative force acting on it.
 #[derive(Component, Clone, Copy, PartialEq)]
