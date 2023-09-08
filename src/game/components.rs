@@ -126,6 +126,7 @@ pub enum FadeAnimation {
 
 /// A component that makes an entity fade in/out and then despawn if needed.
 #[derive(Clone, Component, Copy, PartialEq, Debug)]
+#[component(storage = "SparseSet")]
 pub enum Fade {
     /// Fade-in effect with a progress value in the range \[0,1\].
     In(f32),
