@@ -19,7 +19,7 @@ fn spawn_start_menu_ui(
     });
 }
 
-fn remove_ball_colliders_and_stop_paddles(
+fn stop_paddles_and_disable_ball_collisions(
     mut commands: Commands,
     balls_query: Query<Entity, (With<Ball>, With<Collider>)>,
     paddles_query: Query<
@@ -27,14 +27,14 @@ fn remove_ball_colliders_and_stop_paddles(
         (With<Paddle>, With<Collider>, With<Speed>, With<Heading>),
     >,
 ) {
-    // Ensure balls pass through everything.
-    for entity in &balls_query {
-        commands.entity(entity).remove::<Collider>();
-    }
-
     // Immediately stop all paddles in place.
     for entity in &paddles_query {
         commands.entity(entity).remove::<AccelerationBundle>();
+    }
+
+    // Ensure balls pass through everything.
+    for entity in &balls_query {
+        commands.entity(entity).remove::<Collider>();
     }
 }
 
@@ -146,7 +146,10 @@ impl Plugin for StartMenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(GameScreen::StartMenu),
-            (spawn_start_menu_ui, remove_ball_colliders_and_stop_paddles),
+            (
+                spawn_start_menu_ui,
+                stop_paddles_and_disable_ball_collisions,
+            ),
         )
         .add_systems(
             OnExit(GameScreen::StartMenu),
