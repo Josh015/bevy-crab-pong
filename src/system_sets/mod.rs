@@ -7,8 +7,9 @@ mod movement;
 mod startup;
 mod user_interface;
 
-use crate::{global_data::GlobalData, screens::GameScreen};
 use bevy::prelude::*;
+
+use crate::{global_data::GlobalData, screens::GameScreen};
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum GameSystemSet {

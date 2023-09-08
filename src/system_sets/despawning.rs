@@ -1,8 +1,9 @@
+use bevy::prelude::*;
+
 use crate::{
     components::fading::*, constants::*, events::FadeOutEntityEvent,
     serialization::Config, system_sets::GameSystemSet,
 };
-use bevy::prelude::*;
 
 fn handle_fade_out_entity_event(
     mut commands: Commands,

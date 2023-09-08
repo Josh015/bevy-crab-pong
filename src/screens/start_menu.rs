@@ -1,3 +1,5 @@
+use bevy::prelude::*;
+
 use crate::{
     cached_assets::CachedAssets,
     components::{balls::*, fading::*, goals::*, movement::*, paddles::*},
@@ -7,7 +9,6 @@ use crate::{
     screens::GameScreen,
     serialization::{Config, ControlledByConfig, TeamConfig},
 };
-use bevy::prelude::*;
 
 fn spawn_start_menu_ui(
     config: Res<Config>,

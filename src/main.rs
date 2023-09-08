@@ -9,11 +9,12 @@ mod screens;
 mod serialization;
 mod system_sets;
 
-use crate::serialization::*;
 use bevy::{
     prelude::*,
     window::{PresentMode, WindowResolution},
 };
+
+use crate::serialization::*;
 
 fn main() {
     let config: Config = load_config_from_ron_file("assets/config/game.ron");

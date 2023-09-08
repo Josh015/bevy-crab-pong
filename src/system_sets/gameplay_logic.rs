@@ -1,3 +1,6 @@
+use bevy::prelude::*;
+use rand::prelude::*;
+
 use crate::{
     cached_assets::CachedAssets,
     components::{
@@ -14,8 +17,6 @@ use crate::{
     serialization::Config,
     system_sets::GameSystemSet,
 };
-use bevy::prelude::*;
-use rand::prelude::*;
 
 fn spawn_balls_as_needed_from_the_center_of_the_arena(
     global_data: Res<GlobalData>,

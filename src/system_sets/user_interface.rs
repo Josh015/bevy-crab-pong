@@ -1,3 +1,5 @@
+use bevy::prelude::*;
+
 use crate::{
     cached_assets::CachedAssets,
     components::{fading::ForState, goals::Side, paddles::HitPointsUi},
@@ -5,7 +7,6 @@ use crate::{
     global_data::GlobalData,
     system_sets::GameSystemSet,
 };
-use bevy::prelude::*;
 
 fn handle_spawn_ui_message_event(
     cached_assets: Res<CachedAssets>,

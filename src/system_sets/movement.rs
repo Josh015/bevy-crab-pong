@@ -1,6 +1,7 @@
-use crate::{components::movement::*, system_sets::GameSystemSet};
 use bevy::prelude::*;
 use std::ops::{Add, Sub};
+
+use crate::{components::movement::*, system_sets::GameSystemSet};
 
 fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
     let s = speed.abs().sub(delta_speed).max(0.0);

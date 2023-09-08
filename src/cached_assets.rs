@@ -1,6 +1,7 @@
-use crate::components::goals::Side;
 use bevy::prelude::*;
 use std::collections::HashMap;
+
+use crate::components::goals::Side;
 
 /// Assets that need to remain loaded at all times.
 #[derive(Debug, Resource)]

@@ -1,3 +1,5 @@
+use bevy::prelude::*;
+
 use crate::{
     cached_assets::CachedAssets,
     components::{balls::Collider, effects::*, fading::*, goals::*},
@@ -6,7 +8,6 @@ use crate::{
     serialization::Config,
     system_sets::GameSystemSet,
 };
-use bevy::prelude::*;
 
 fn make_camera_slowly_sway_back_and_forth(
     config: Res<Config>,

@@ -1,3 +1,5 @@
+use bevy::{app::AppExit, prelude::*};
+
 use crate::{
     components::fading::{FadeAnimation, ForState},
     events::FadeOutEntityEvent,
@@ -5,7 +7,6 @@ use crate::{
     screens::GameScreen,
     serialization::Config,
 };
-use bevy::{app::AppExit, prelude::*};
 
 fn handle_game_screen_specific_inputs(
     keyboard_input: Res<Input<KeyCode>>,
