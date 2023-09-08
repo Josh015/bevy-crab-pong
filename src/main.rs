@@ -3,10 +3,11 @@
 mod file;
 mod game;
 
+pub use file::*;
+
 pub mod prelude {
-    pub use crate::{file::*, game::*};
+    pub use crate::game::*;
     pub use bevy::{math::*, prelude::*};
-    pub use rand::prelude::*;
 }
 
 use crate::prelude::*;
