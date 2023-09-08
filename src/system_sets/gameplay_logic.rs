@@ -1,5 +1,5 @@
 use crate::{
-    cached_assets::GameCachedAssets,
+    cached_assets::CachedAssets,
     components::{
         balls::*,
         fading::*,
@@ -20,7 +20,7 @@ use rand::prelude::*;
 fn spawn_balls_as_needed_from_the_center_of_the_arena(
     game_state: Res<GameState>,
     game_config: Res<GameConfig>,
-    game_cached_assets: Res<GameCachedAssets>,
+    cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     new_balls_query: Query<
@@ -65,7 +65,7 @@ fn spawn_balls_as_needed_from_the_center_of_the_arena(
             },
             FadeBundle::default(),
             PbrBundle {
-                mesh: game_cached_assets.ball_mesh_handle.clone(),
+                mesh: cached_assets.ball_mesh.clone(),
                 material: materials.add(StandardMaterial {
                     alpha_mode: AlphaMode::Blend,
                     base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),

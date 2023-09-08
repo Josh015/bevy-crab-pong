@@ -1,5 +1,5 @@
 use crate::{
-    cached_assets::GameCachedAssets,
+    cached_assets::CachedAssets,
     components::{balls::*, fading::*, goals::*, movement::*, paddles::*},
     config::{ControlledByConfig, GameConfig, TeamConfig},
     constants::*,
@@ -83,7 +83,7 @@ fn despawn_existing_paddles_and_walls(
 fn spawn_new_paddles(
     game_state: Res<GameState>,
     game_config: Res<GameConfig>,
-    game_cached_assets: Res<GameCachedAssets>,
+    cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
@@ -91,8 +91,7 @@ fn spawn_new_paddles(
     // Spawn each paddle with a goal as a parent to allow relative transforms.
     for (i, (entity, side)) in goals_query.iter().enumerate() {
         let goal_config = &game_config.modes[game_state.mode_index].goals[i];
-        let material_handle =
-            game_cached_assets.paddle_material_handles[side].clone();
+        let material_handle = cached_assets.paddle_materials[side].clone();
 
         commands.entity(entity).with_children(|parent| {
             let mut paddle = parent.spawn((
@@ -119,7 +118,7 @@ fn spawn_new_paddles(
                     ..default()
                 },
                 PbrBundle {
-                    mesh: game_cached_assets.paddle_mesh_handle.clone(),
+                    mesh: cached_assets.paddle_mesh.clone(),
                     material: material_handle.clone(),
                     transform: Transform::from_matrix(
                         Mat4::from_scale_rotation_translation(

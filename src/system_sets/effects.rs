@@ -1,5 +1,5 @@
 use crate::{
-    cached_assets::GameCachedAssets,
+    cached_assets::CachedAssets,
     components::{balls::Collider, effects::*, fading::*, goals::*},
     config::GameConfig,
     constants::*,
@@ -38,7 +38,7 @@ fn animate_ocean_with_scrolling_texture_effect(
 }
 
 fn handle_spawn_wall_event(
-    game_cached_assets: Res<GameCachedAssets>,
+    cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     mut event_reader: EventReader<SpawnWallEvent>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
@@ -62,10 +62,8 @@ fn handle_spawn_wall_event(
                         fade: Fade::In(if *is_instant { 1.0 } else { 0.0 }),
                     },
                     PbrBundle {
-                        mesh: game_cached_assets.wall_mesh_handle.clone(),
-                        material: game_cached_assets
-                            .wall_material_handle
-                            .clone(),
+                        mesh: cached_assets.wall_mesh.clone(),
+                        material: cached_assets.wall_material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(
                                 Vec3::splat(f32::EPSILON),

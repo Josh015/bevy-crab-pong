@@ -1,5 +1,5 @@
 use crate::{
-    cached_assets::GameCachedAssets,
+    cached_assets::CachedAssets,
     components::{balls::Collider, effects::*, goals::*, paddles::HitPointsUi},
     constants::*,
     events::SpawnWallEvent,
@@ -8,7 +8,7 @@ use crate::{
 use bevy::prelude::*;
 
 fn spawn_play_area(
-    game_cached_assets: Res<GameCachedAssets>,
+    cached_assets: Res<CachedAssets>,
     mut game_state: ResMut<GameState>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -187,7 +187,7 @@ fn spawn_play_area(
                 text: Text::from_section(
                     "",
                     TextStyle {
-                        font: game_cached_assets.font_handle.clone(),
+                        font: cached_assets.menu_font.clone(),
                         font_size: 50.0,
                         color: Color::RED,
                     },

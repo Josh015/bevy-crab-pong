@@ -4,23 +4,23 @@ use std::collections::HashMap;
 
 /// Assets that need to remain loaded at all times.
 #[derive(Debug, Resource)]
-pub struct GameCachedAssets {
-    pub font_handle: Handle<Font>,
-    pub ball_mesh_handle: Handle<Mesh>,
-    pub paddle_mesh_handle: Handle<Mesh>,
-    pub paddle_material_handles: HashMap<Side, Handle<StandardMaterial>>,
-    pub wall_mesh_handle: Handle<Mesh>,
-    pub wall_material_handle: Handle<StandardMaterial>,
+pub struct CachedAssets {
+    pub menu_font: Handle<Font>,
+    pub ball_mesh: Handle<Mesh>,
+    pub paddle_mesh: Handle<Mesh>,
+    pub paddle_materials: HashMap<Side, Handle<StandardMaterial>>,
+    pub wall_mesh: Handle<Mesh>,
+    pub wall_material: Handle<StandardMaterial>,
 }
 
-impl FromWorld for GameCachedAssets {
+impl FromWorld for CachedAssets {
     fn from_world(world: &mut World) -> Self {
-        let font_handle = {
+        let menu_font = {
             let asset_server = world.get_resource::<AssetServer>().unwrap();
 
             asset_server.load("fonts/FiraSans-Bold.ttf")
         };
-        let (ball_mesh_handle, paddle_mesh_handle, wall_mesh_handle) = {
+        let (ball_mesh, paddle_mesh, wall_mesh) = {
             let mut meshes = world.get_resource_mut::<Assets<Mesh>>().unwrap();
 
             (
@@ -33,7 +33,7 @@ impl FromWorld for GameCachedAssets {
                 meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             )
         };
-        let (paddle_material_handles, wall_material_handle) = {
+        let (paddle_materials, wall_material) = {
             let mut materials = world
                 .get_resource_mut::<Assets<StandardMaterial>>()
                 .unwrap();
@@ -50,12 +50,12 @@ impl FromWorld for GameCachedAssets {
         };
 
         Self {
-            font_handle,
-            ball_mesh_handle,
-            paddle_mesh_handle,
-            paddle_material_handles,
-            wall_mesh_handle,
-            wall_material_handle,
+            menu_font,
+            ball_mesh,
+            paddle_mesh,
+            paddle_materials,
+            wall_mesh,
+            wall_material,
         }
     }
 }
@@ -64,6 +64,6 @@ pub struct CachedAssetsPlugin;
 
 impl Plugin for CachedAssetsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<GameCachedAssets>();
+        app.init_resource::<CachedAssets>();
     }
 }
