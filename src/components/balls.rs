@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use bevy::prelude::Component;
 
 /// Marks an entity that can be collided with by a [`Ball`] entity.
 #[derive(Component)]

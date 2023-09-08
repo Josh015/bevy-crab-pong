@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use bevy::prelude::{Bundle, Component, Vec3};
 
 /// Whether the entity has positive or negative force acting on it.
 #[derive(Component, Clone, Copy, PartialEq)]

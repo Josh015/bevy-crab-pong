@@ -1,4 +1,5 @@
-use crate::prelude::*;
+use crate::constants::*;
+use bevy::prelude::{Component, GlobalTransform, Vec3};
 
 /// Marks a goal entity so that [`Paddle`] and [`Wall`] entities can use it
 /// as a parent, and so [`Ball`] entities can score against it.

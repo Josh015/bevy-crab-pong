@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use bevy::prelude::{Component, Entity};
 
 /// Marks a [`Text`] entity to display the HP for an associated [`Paddle`].
 #[derive(Component)]

@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use bevy::prelude::{Color, Resource};
 use serde::Deserialize;
 
 /// Game settings read from a `*.ron` config file.

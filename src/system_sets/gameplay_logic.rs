@@ -1,4 +1,20 @@
-use crate::prelude::*;
+use crate::{
+    cached_assets::GameCachedAssets,
+    components::{
+        balls::*,
+        fading::*,
+        goals::{Goal, Side},
+        movement::*,
+        paddles::*,
+    },
+    config::GameConfig,
+    constants::*,
+    events::*,
+    screens::GameScreen,
+    state::{GameOver, GameState},
+    system_sets::GameSystemSet,
+};
+use bevy::prelude::*;
 use rand::prelude::*;
 
 fn spawn_balls_as_needed_from_the_center_of_the_arena(

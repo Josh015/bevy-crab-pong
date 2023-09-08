@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use bevy::prelude::{Bundle, Component, Vec3};
 
 /// Tags an entity to only exist in the listed game states.
 #[derive(Component)]

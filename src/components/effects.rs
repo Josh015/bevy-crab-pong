@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use bevy::prelude::Component;
 
 /// Marks an entity as an ocean with an animated texture effect.
 #[derive(Component, Default)]

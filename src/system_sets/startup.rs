@@ -1,4 +1,11 @@
-use crate::prelude::*;
+use crate::{
+    cached_assets::GameCachedAssets,
+    components::{balls::Collider, effects::*, goals::*, paddles::HitPointsUi},
+    constants::*,
+    events::SpawnWallEvent,
+    state::GameState,
+};
+use bevy::prelude::*;
 
 fn spawn_play_area(
     game_cached_assets: Res<GameCachedAssets>,

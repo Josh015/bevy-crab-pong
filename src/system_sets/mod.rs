@@ -1,5 +1,3 @@
-use crate::prelude::*;
-
 mod collisions;
 mod debugging;
 mod despawning;
@@ -9,14 +7,8 @@ mod movement;
 mod startup;
 mod user_interface;
 
-pub use collisions::*;
-pub use debugging::*;
-pub use despawning::*;
-pub use effects::*;
-pub use gameplay_logic::*;
-pub use movement::*;
-pub use startup::*;
-pub use user_interface::*;
+use crate::{screens::GameScreen, state::GameState};
+use bevy::prelude::*;
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum GameSystemSet {
@@ -72,14 +64,14 @@ impl Plugin for SystemSetsPlugin {
                     .run_if(not(in_state(GameScreen::Paused))),
             )
             .add_plugins((
-                CollisionsPlugin,
-                DebuggingPlugin,
-                DespawningPlugin,
-                EffectsPlugin,
-                GameplayLogicPlugin,
-                MovementPlugin,
-                StartupPlugin,
-                UserInterfacePlugin,
+                collisions::CollisionsPlugin,
+                debugging::DebuggingPlugin,
+                despawning::DespawningPlugin,
+                effects::EffectsPlugin,
+                gameplay_logic::GameplayLogicPlugin,
+                movement::MovementPlugin,
+                startup::StartupPlugin,
+                user_interface::UserInterfacePlugin,
             ));
     }
 }

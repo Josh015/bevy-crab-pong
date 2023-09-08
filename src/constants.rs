@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use bevy::prelude::Vec3;
 use std::ops::RangeInclusive;
 
 pub const BALL_DIAMETER: f32 = 0.08;

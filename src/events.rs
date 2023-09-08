@@ -1,4 +1,5 @@
-use crate::prelude::*;
+use crate::{components::goals::Side, screens::GameScreen};
+use bevy::prelude::{App, Entity, Event, Plugin};
 
 /// An event fired when spawning a message UI.
 #[derive(Event)]

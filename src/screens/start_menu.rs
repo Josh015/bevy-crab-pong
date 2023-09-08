@@ -1,4 +1,13 @@
-use crate::prelude::*;
+use crate::{
+    cached_assets::GameCachedAssets,
+    components::{balls::*, fading::*, goals::*, movement::*, paddles::*},
+    config::{ControlledByConfig, GameConfig, TeamConfig},
+    constants::*,
+    events::{FadeOutEntityEvent, MessageUiEvent},
+    screens::GameScreen,
+    state::{GameOver, GameState},
+};
+use bevy::prelude::*;
 
 fn spawn_start_menu_ui(
     game_config: Res<GameConfig>,

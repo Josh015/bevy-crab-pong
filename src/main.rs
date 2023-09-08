@@ -1,21 +1,23 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
+mod cached_assets;
+mod components;
+mod config;
+mod constants;
+mod events;
 mod file;
-mod game;
+mod screens;
+mod state;
+mod system_sets;
 
-pub use file::*;
-
-pub mod prelude {
-    pub use crate::game::*;
-    pub use bevy::prelude::*;
-}
-
-use crate::prelude::*;
-use bevy::window::{PresentMode, WindowResolution};
+use bevy::{
+    prelude::*,
+    window::{PresentMode, WindowResolution},
+};
 
 fn main() {
-    let game_config: GameConfig =
-        load_config_from_file("assets/config/game.ron");
+    let game_config: config::GameConfig =
+        file::load_config_from_file("assets/config/game.ron");
 
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -33,6 +35,12 @@ fn main() {
         .insert_resource(Msaa::default())
         .insert_resource(ClearColor(game_config.clear_color))
         .insert_resource(game_config)
-        .add_plugins(GamePlugin)
+        .add_plugins((
+            cached_assets::CachedAssetsPlugin,
+            events::EventsPlugin,
+            screens::ScreensPlugin,
+            state::StatePlugin,
+            system_sets::SystemSetsPlugin,
+        ))
         .run();
 }

@@ -1,4 +1,5 @@
-use crate::prelude::*;
+use crate::components::goals::Side;
+use bevy::prelude::{App, Plugin, Resource};
 use std::collections::HashMap;
 
 /// Represents whether the player won or lost the last game.
