@@ -1,5 +1,3 @@
-#![allow(clippy::type_complexity)]
-
 use crate::prelude::*;
 
 fn spawn_balls_as_needed_from_the_center_of_the_arena(

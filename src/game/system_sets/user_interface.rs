@@ -1,5 +1,3 @@
-#![allow(clippy::type_complexity)]
-
 use crate::prelude::*;
 
 fn handle_spawn_ui_message_event(

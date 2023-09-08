@@ -1,5 +1,3 @@
-#![allow(clippy::type_complexity)]
-
 use crate::prelude::*;
 
 fn spawn_pause_ui(

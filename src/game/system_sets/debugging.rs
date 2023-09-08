@@ -1,5 +1,3 @@
-#![allow(clippy::type_complexity)]
-
 use crate::prelude::*;
 
 // TODO: Make this work with all object movement, not just Balls?

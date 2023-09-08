@@ -1,5 +1,3 @@
-#![allow(clippy::type_complexity)]
-
 use crate::prelude::*;
 
 fn make_camera_slowly_sway_back_and_forth(

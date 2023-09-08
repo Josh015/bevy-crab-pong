@@ -1,5 +1,3 @@
-#![allow(clippy::type_complexity)]
-
 use crate::prelude::*;
 
 fn reflect(d: Vec3, n: Vec3) -> Vec3 {

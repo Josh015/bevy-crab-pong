@@ -1,6 +1,3 @@
-#![allow(clippy::too_many_arguments)]
-#![allow(clippy::type_complexity)]
-
 use crate::prelude::*;
 
 fn spawn_start_menu_ui(
