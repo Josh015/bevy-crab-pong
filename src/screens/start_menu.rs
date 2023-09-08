@@ -1,7 +1,7 @@
 use crate::{
     cached_assets::CachedAssets,
     components::{balls::*, fading::*, goals::*, movement::*, paddles::*},
-    config::{ControlledByConfig, GameConfig, TeamConfig},
+    config::{Config, ControlledByConfig, TeamConfig},
     constants::*,
     events::{FadeOutEntityEvent, MessageUiEvent},
     screens::GameScreen,
@@ -10,17 +10,17 @@ use crate::{
 use bevy::prelude::*;
 
 fn spawn_start_menu_ui(
-    game_config: Res<GameConfig>,
+    config: Res<Config>,
     game_state: Res<GameState>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
     let mut message = String::from(match game_state.game_over {
-        Some(GameOver::Won) => &game_config.game_over_win_message,
-        Some(GameOver::Lost) => &game_config.game_over_lose_message,
+        Some(GameOver::Won) => &config.game_over_win_message,
+        Some(GameOver::Lost) => &config.game_over_lose_message,
         _ => "",
     });
 
-    message.push_str(&game_config.new_game_message);
+    message.push_str(&config.new_game_message);
 
     ui_message_events.send(MessageUiEvent {
         message,
@@ -48,11 +48,11 @@ fn stop_paddles_and_disable_ball_collisions(
 }
 
 fn reset_each_goals_hit_points(
-    game_config: Res<GameConfig>,
+    config: Res<Config>,
     mut game_state: ResMut<GameState>,
 ) {
     const SIDES: [Side; 4] = [Side::Top, Side::Right, Side::Bottom, Side::Left];
-    let goals = &game_config.modes[game_state.mode_index].goals;
+    let goals = &config.modes[game_state.mode_index].goals;
 
     for (i, side) in SIDES.iter().enumerate() {
         game_state
@@ -82,7 +82,7 @@ fn despawn_existing_paddles_and_walls(
 
 fn spawn_new_paddles(
     game_state: Res<GameState>,
-    game_config: Res<GameConfig>,
+    config: Res<Config>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -90,7 +90,7 @@ fn spawn_new_paddles(
 ) {
     // Spawn each paddle with a goal as a parent to allow relative transforms.
     for (i, (entity, side)) in goals_query.iter().enumerate() {
-        let goal_config = &game_config.modes[game_state.mode_index].goals[i];
+        let goal_config = &config.modes[game_state.mode_index].goals[i];
         let material_handle = cached_assets.paddle_materials[side].clone();
 
         commands.entity(entity).with_children(|parent| {
@@ -110,10 +110,10 @@ fn spawn_new_paddles(
                         heading: Heading(Vec3::X),
                         ..default()
                     },
-                    max_speed: MaxSpeed(game_config.paddle_max_speed),
+                    max_speed: MaxSpeed(config.paddle_max_speed),
                     acceleration: Acceleration(
-                        game_config.paddle_max_speed
-                            / game_config.paddle_seconds_to_max_speed,
+                        config.paddle_max_speed
+                            / config.paddle_seconds_to_max_speed,
                     ),
                     ..default()
                 },

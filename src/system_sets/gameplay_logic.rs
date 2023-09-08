@@ -7,7 +7,7 @@ use crate::{
         movement::*,
         paddles::*,
     },
-    config::GameConfig,
+    config::Config,
     constants::*,
     events::*,
     screens::GameScreen,
@@ -19,7 +19,7 @@ use rand::prelude::*;
 
 fn spawn_balls_as_needed_from_the_center_of_the_arena(
     game_state: Res<GameState>,
-    game_config: Res<GameConfig>,
+    config: Res<Config>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -44,7 +44,7 @@ fn spawn_balls_as_needed_from_the_center_of_the_arena(
             Collider,
             VelocityBundle {
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
-                speed: Speed(game_config.ball_speed),
+                speed: Speed(config.ball_speed),
             },
         ));
         info!("Ball({:?}): Launched", entity);
@@ -52,7 +52,7 @@ fn spawn_balls_as_needed_from_the_center_of_the_arena(
 
     // Spawn new balls until max is reached.
     if all_balls_query.iter().count()
-        >= game_config.modes[game_state.mode_index].max_ball_count
+        >= config.modes[game_state.mode_index].max_ball_count
     {
         return;
     }

@@ -1,7 +1,7 @@
 use crate::{
     cached_assets::CachedAssets,
     components::{balls::Collider, effects::*, fading::*, goals::*},
-    config::GameConfig,
+    config::Config,
     constants::*,
     events::*,
     system_sets::GameSystemSet,
@@ -9,12 +9,12 @@ use crate::{
 use bevy::prelude::*;
 
 fn make_camera_slowly_sway_back_and_forth(
-    game_config: Res<GameConfig>,
+    config: Res<Config>,
     time: Res<Time>,
     mut query: Query<&mut Transform, (With<SwayingCamera>, With<Camera3d>)>,
 ) {
     let mut transform = query.single_mut();
-    let x = (time.elapsed_seconds() * game_config.swaying_camera_speed).sin()
+    let x = (time.elapsed_seconds() * config.swaying_camera_speed).sin()
         * GOAL_HALF_WIDTH;
 
     *transform = Transform::from_xyz(x * 0.5, 2.0, 1.5)
@@ -22,7 +22,7 @@ fn make_camera_slowly_sway_back_and_forth(
 }
 
 fn animate_ocean_with_scrolling_texture_effect(
-    game_config: Res<GameConfig>,
+    config: Res<Config>,
     time: Res<Time>,
     mut query: Query<(&mut Ocean, &mut Transform)>,
 ) {
@@ -32,8 +32,7 @@ fn animate_ocean_with_scrolling_texture_effect(
 
     *transform = Transform::from_xyz(0.0, -0.01, animated_water.scroll);
 
-    animated_water.scroll +=
-        game_config.animated_water_speed * time.delta_seconds();
+    animated_water.scroll += config.animated_water_speed * time.delta_seconds();
     animated_water.scroll %= 1.0;
 }
 

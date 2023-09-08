@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 /// Game settings read from a `*.ron` config file.
 #[derive(Debug, Deserialize, Resource)]
-pub struct GameConfig {
+pub struct Config {
     pub title: String,
     pub width: u32,
     pub height: u32,

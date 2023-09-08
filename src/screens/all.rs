@@ -1,6 +1,6 @@
 use crate::{
     components::fading::{FadeAnimation, ForState},
-    config::GameConfig,
+    config::Config,
     events::FadeOutEntityEvent,
     screens::GameScreen,
     state::GameState,
@@ -10,7 +10,7 @@ use bevy::{app::AppExit, prelude::*};
 fn handle_game_screen_specific_inputs(
     keyboard_input: Res<Input<KeyCode>>,
     game_screen: Res<State<GameScreen>>,
-    game_config: Res<GameConfig>,
+    config: Res<Config>,
     mut game_state: ResMut<GameState>,
     mut next_game_screen: ResMut<NextState<GameScreen>>,
     mut app_exit_events: EventWriter<AppExit>,
@@ -32,13 +32,13 @@ fn handle_game_screen_specific_inputs(
                 && game_state.mode_index > 0
             {
                 game_state.mode_index -= 1;
-                let mode_name = &game_config.modes[game_state.mode_index].name;
+                let mode_name = &config.modes[game_state.mode_index].name;
                 info!("Game Mode: {mode_name}");
             } else if keyboard_input.just_pressed(KeyCode::Right)
-                && game_state.mode_index < game_config.modes.len() - 1
+                && game_state.mode_index < config.modes.len() - 1
             {
                 game_state.mode_index += 1;
-                let mode_name = &game_config.modes[game_state.mode_index].name;
+                let mode_name = &config.modes[game_state.mode_index].name;
                 info!("Game Mode: {mode_name}");
             }
         },

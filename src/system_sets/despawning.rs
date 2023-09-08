@@ -1,5 +1,5 @@
 use crate::{
-    components::fading::*, config::GameConfig, constants::*,
+    components::fading::*, config::Config, constants::*,
     events::FadeOutEntityEvent, system_sets::GameSystemSet,
 };
 use bevy::prelude::*;
@@ -26,13 +26,13 @@ fn handle_fade_out_entity_event(
 
 fn advance_fade_effect_progress(
     mut commands: Commands,
-    game_config: Res<GameConfig>,
+    config: Res<Config>,
     time: Res<Time>,
     mut query: Query<(Entity, &mut Fade), With<FadeAnimation>>,
 ) {
     for (entity, mut fade) in &mut query {
         // Progress the fade effect.
-        let step = game_config.fade_speed * time.delta_seconds();
+        let step = config.fade_speed * time.delta_seconds();
 
         match *fade {
             Fade::In(ref mut progress) => {

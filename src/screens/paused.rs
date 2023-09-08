@@ -1,12 +1,12 @@
-use crate::{config::GameConfig, events::MessageUiEvent, screens::GameScreen};
+use crate::{config::Config, events::MessageUiEvent, screens::GameScreen};
 use bevy::prelude::*;
 
 fn spawn_pause_ui(
-    game_config: Res<GameConfig>,
+    config: Res<Config>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
     ui_message_events.send(MessageUiEvent {
-        message: game_config.pause_message.clone(),
+        message: config.pause_message.clone(),
         game_screen: GameScreen::Paused,
     });
 }
