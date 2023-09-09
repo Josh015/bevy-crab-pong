@@ -15,7 +15,7 @@ use crate::{
     constants::*,
     events::FadeOutEntityEvent,
     global_data::GlobalData,
-    objects::Objects,
+    object::Object,
     serialization::{Config, ControlledByConfig, TeamConfig},
 };
 
@@ -167,10 +167,10 @@ pub struct SpawnPlugin;
 
 impl Plugin for SpawnPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(SpewPlugin::<Objects, Side>::default())
+        app.add_plugins(SpewPlugin::<Object, Side>::default())
             .add_spawners((
-                (Objects::Paddle, spawn_paddle_in_goal),
-                (Objects::Wall, spawn_wall_in_goal),
+                (Object::Paddle, spawn_paddle_in_goal),
+                (Object::Wall, spawn_wall_in_goal),
             ));
     }
 }

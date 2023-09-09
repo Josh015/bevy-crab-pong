@@ -1,6 +1,6 @@
 /// Objects that can be spawned via `spew`.
 #[derive(Debug, Eq, PartialEq)]
-pub enum Objects {
+pub enum Object {
     Paddle,
     Wall,
 }

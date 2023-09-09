@@ -14,7 +14,7 @@ use crate::{
     constants::*,
     events::*,
     global_data::{GameOver, GlobalData},
-    objects::Objects,
+    object::Object,
     screens::GameScreen,
     serialization::Config,
     system_sets::GameSystemSet,
@@ -232,11 +232,11 @@ fn check_if_any_balls_have_scored_against_any_goals(
 
 fn block_eliminated_goals(
     mut event_reader: EventReader<GoalEliminatedEvent>,
-    mut spawn_in_goal_events: EventWriter<SpawnEvent<Objects, Side>>,
+    mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
     for GoalEliminatedEvent(eliminated_side) in event_reader.iter() {
         spawn_in_goal_events
-            .send(SpawnEvent::with_data(Objects::Wall, *eliminated_side));
+            .send(SpawnEvent::with_data(Object::Wall, *eliminated_side));
     }
 }
 

@@ -5,7 +5,7 @@ use crate::{
     components::{balls::*, goals::*},
     events::MessageUiEvent,
     global_data::{GameOver, GlobalData},
-    objects::Objects,
+    object::Object,
     screens::GameScreen,
     serialization::Config,
 };
@@ -55,11 +55,10 @@ fn reset_each_goals_hit_points(
 
 fn replace_walls_with_paddles(
     walls_query: Query<&Side, With<Wall>>,
-    mut spawn_in_goal_events: EventWriter<SpawnEvent<Objects, Side>>,
+    mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
     for side in &walls_query {
-        spawn_in_goal_events
-            .send(SpawnEvent::with_data(Objects::Paddle, *side));
+        spawn_in_goal_events.send(SpawnEvent::with_data(Object::Paddle, *side));
     }
 }
 
