@@ -1,8 +1,8 @@
-use bevy::prelude::{Bundle, Component, Vec3};
+use bevy::prelude::{Bundle, Component, States, Vec3};
 
 /// Tags an entity to only exist in the listed game states.
 #[derive(Component)]
-pub struct ForState<T> {
+pub struct ForState<T: States> {
     pub states: Vec<T>,
 }
 
