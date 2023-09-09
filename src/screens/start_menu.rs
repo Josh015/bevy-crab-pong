@@ -3,6 +3,7 @@ use spew::prelude::SpawnEvent;
 
 use crate::{
     components::goals::*,
+    constants::*,
     events::{MessageUiEvent, Object},
     global_data::{GameOver, GlobalData},
     screens::GameScreen,
@@ -51,6 +52,19 @@ fn replace_walls_with_paddles(
     }
 }
 
+fn spawn_starting_balls(
+    config: Res<Config>,
+    global_data: Res<GlobalData>,
+    mut spawn_events: EventWriter<SpawnEvent<Object>>,
+) {
+    for i in 0..config.modes[global_data.mode_index].max_ball_count {
+        spawn_events.send(
+            SpawnEvent::new(Object::Ball)
+                .delay_seconds(i as f32 * BALL_SPAWN_DELAY_IN_SECONDS),
+        );
+    }
+}
+
 pub struct StartMenuPlugin;
 
 impl Plugin for StartMenuPlugin {
@@ -58,7 +72,11 @@ impl Plugin for StartMenuPlugin {
         app.add_systems(OnEnter(GameScreen::StartMenu), spawn_start_menu_ui)
             .add_systems(
                 OnExit(GameScreen::StartMenu),
-                (reset_each_goals_hit_points, replace_walls_with_paddles)
+                (
+                    reset_each_goals_hit_points,
+                    replace_walls_with_paddles,
+                    spawn_starting_balls,
+                )
                     .chain(),
             );
     }

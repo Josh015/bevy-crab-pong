@@ -1,9 +1,7 @@
 use bevy::prelude::*;
-use rand::prelude::*;
 use spew::prelude::SpawnEvent;
 
 use crate::{
-    cached_assets::CachedAssets,
     components::{
         balls::*,
         goals::{Goal, Side},
@@ -15,99 +13,19 @@ use crate::{
     events::{GoalEliminatedEvent, Object},
     global_data::{GameOver, GlobalData},
     screens::GameScreen,
-    serialization::Config,
     system_sets::GameSystemSet,
 };
 
-// TODO: Add Ball spawn call for Objects.
-// TODO: Spawn ball on exit from StartScreen.
-// TODO: On Added<Ball> check if limit has been met, and spawn another if needed with delay?
-// TODO: If RemovedComponent<Ball> spawn another one.
-// TODO: Put limit check in ball spawn function itself, since it needs to be globally enforced.
-
-// fn print_add_name_component(query: Query<Entity, Added<Ball>>) {
-//     for entity in &query {
-//         println!("Ball added: {:?}", entity);
-
-//         // TODO: Every time a ball is added, check if we've reached maximum or not.
-//     }
-// }
-
-// fn react_on_removal(mut removed: RemovedComponents<Ball>) {
-//     removed.iter().for_each(|removed_entity| {
-//         println!("Removed Ball{:?}", removed_entity)
-
-//         // TODO: Every time a ball is removed, add a new one.
-//     });
-// }
-
-fn spawn_balls_as_needed_from_the_center_of_the_arena(
-    global_data: Res<GlobalData>,
-    config: Res<Config>,
-    cached_assets: Res<CachedAssets>,
-    mut commands: Commands,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    new_balls_query: Query<
-        (Entity, Option<&Spawning>),
-        (With<Ball>, Without<Heading>, Without<Speed>),
-    >,
-    all_balls_query: Query<&Ball>,
+fn replace_despawned_balls(
+    mut removed: RemovedComponents<Ball>,
+    mut spawn_events: EventWriter<SpawnEvent<Object>>,
 ) {
-    // Check for any non-moving new balls.
-    for (entity, fade) in &new_balls_query {
-        // Pause the spawning process until the new ball finishes fading in.
-        if fade.is_some() {
-            return;
-        }
-
-        // Make the ball collidable and launch it in a random direction.
-        let mut rng = SmallRng::from_entropy();
-        let angle = rng.gen_range(0.0..std::f32::consts::TAU);
-
-        commands.entity(entity).insert((
-            Collider,
-            VelocityBundle {
-                heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
-                speed: Speed(config.ball_speed),
-            },
-        ));
-        info!("Ball({:?}): Launched", entity);
+    for (i, _) in removed.iter().enumerate() {
+        spawn_events.send(
+            SpawnEvent::new(Object::Ball)
+                .delay_seconds(i as f32 * BALL_SPAWN_DELAY_IN_SECONDS),
+        );
     }
-
-    // Spawn new balls until max is reached.
-    if all_balls_query.iter().count()
-        >= config.modes[global_data.mode_index].max_ball_count
-    {
-        return;
-    }
-
-    let entity = commands
-        .spawn((
-            Ball,
-            ForState {
-                states: vec![GameScreen::Playing, GameScreen::Paused],
-            },
-            SpawningBundle::default(),
-            PbrBundle {
-                mesh: cached_assets.ball_mesh.clone(),
-                material: materials.add(StandardMaterial {
-                    alpha_mode: AlphaMode::Blend,
-                    base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),
-                    ..default()
-                }),
-                transform: Transform::from_matrix(
-                    Mat4::from_scale_rotation_translation(
-                        Vec3::splat(BALL_DIAMETER),
-                        Quat::IDENTITY,
-                        BALL_SPAWNER_POSITION,
-                    ),
-                ),
-                ..default()
-            },
-        ))
-        .id();
-
-    info!("Ball({:?}): Spawning", entity);
 }
 
 fn handle_keyboard_input_for_player_controlled_paddles(
@@ -329,15 +247,13 @@ impl Plugin for GameplayLogicPlugin {
         app.add_systems(
             Update,
             (
-                spawn_balls_as_needed_from_the_center_of_the_arena,
+                replace_despawned_balls,
                 handle_keyboard_input_for_player_controlled_paddles,
                 make_ai_paddles_target_the_balls_closest_to_their_goals,
                 move_ai_paddles_toward_where_their_targeted_balls_will_enter_their_goals,
                 check_if_any_balls_have_scored_against_any_goals,
                 block_eliminated_goals,
                 check_for_game_over_conditions,
-                // react_on_removal,
-                // print_add_name_component
             )
                 .chain()
                 .in_set(GameSystemSet::GameplayLogic),

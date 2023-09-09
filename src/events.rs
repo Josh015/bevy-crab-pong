@@ -5,8 +5,9 @@ use crate::{components::goals::Side, screens::GameScreen};
 /// Objects that can be spawned via `SpawnEvent`.
 #[derive(Debug, Eq, PartialEq)]
 pub enum Object {
-    Paddle,
+    Ball,
     Wall,
+    Paddle,
 }
 
 /// An event fired when spawning a message UI.
