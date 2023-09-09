@@ -15,14 +15,9 @@ use crate::{
     constants::*,
     events::FadeOutEntityEvent,
     global_data::GlobalData,
+    objects::Objects,
     serialization::{Config, ControlledByConfig, TeamConfig},
 };
-
-#[derive(Debug, Eq, PartialEq)]
-pub enum Spawn {
-    Paddle,
-    Wall,
-}
 
 fn spawn_wall_in_goal(
     In(side): In<Side>,
@@ -172,10 +167,10 @@ pub struct SpawnPlugin;
 
 impl Plugin for SpawnPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(SpewPlugin::<Spawn, Side>::default())
+        app.add_plugins(SpewPlugin::<Objects, Side>::default())
             .add_spawners((
-                (Spawn::Paddle, spawn_paddle_in_goal),
-                (Spawn::Wall, spawn_wall_in_goal),
+                (Objects::Paddle, spawn_paddle_in_goal),
+                (Objects::Wall, spawn_wall_in_goal),
             ));
     }
 }

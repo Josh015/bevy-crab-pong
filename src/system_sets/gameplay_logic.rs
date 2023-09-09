@@ -14,12 +14,11 @@ use crate::{
     constants::*,
     events::*,
     global_data::{GameOver, GlobalData},
+    objects::Objects,
     screens::GameScreen,
     serialization::Config,
     system_sets::GameSystemSet,
 };
-
-use super::spawn::Spawn;
 
 fn spawn_balls_as_needed_from_the_center_of_the_arena(
     global_data: Res<GlobalData>,
@@ -233,11 +232,11 @@ fn check_if_any_balls_have_scored_against_any_goals(
 
 fn block_eliminated_goals(
     mut event_reader: EventReader<GoalEliminatedEvent>,
-    mut spawn_in_goal_events: EventWriter<SpawnEvent<Spawn, Side>>,
+    mut spawn_in_goal_events: EventWriter<SpawnEvent<Objects, Side>>,
 ) {
     for GoalEliminatedEvent(eliminated_side) in event_reader.iter() {
         spawn_in_goal_events
-            .send(SpawnEvent::with_data(Spawn::Wall, *eliminated_side));
+            .send(SpawnEvent::with_data(Objects::Wall, *eliminated_side));
     }
 }
 

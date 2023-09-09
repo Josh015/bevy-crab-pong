@@ -5,9 +5,9 @@ use crate::{
     components::{balls::*, goals::*},
     events::MessageUiEvent,
     global_data::{GameOver, GlobalData},
+    objects::Objects,
     screens::GameScreen,
     serialization::Config,
-    system_sets::spawn::Spawn,
 };
 
 fn spawn_start_menu_ui(
@@ -55,10 +55,11 @@ fn reset_each_goals_hit_points(
 
 fn replace_walls_with_paddles(
     walls_query: Query<&Side, With<Wall>>,
-    mut spawn_in_goal_events: EventWriter<SpawnEvent<Spawn, Side>>,
+    mut spawn_in_goal_events: EventWriter<SpawnEvent<Objects, Side>>,
 ) {
     for side in &walls_query {
-        spawn_in_goal_events.send(SpawnEvent::with_data(Spawn::Paddle, *side));
+        spawn_in_goal_events
+            .send(SpawnEvent::with_data(Objects::Paddle, *side));
     }
 }
 

@@ -6,9 +6,8 @@ use crate::{
     components::{balls::Collider, effects::*, goals::*, paddles::HitPointsUi},
     constants::*,
     global_data::GlobalData,
+    objects::Objects,
 };
-
-use super::spawn::Spawn;
 
 fn spawn_play_area(
     cached_assets: Res<CachedAssets>,
@@ -16,7 +15,7 @@ fn spawn_play_area(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut spawn_in_goal_events: EventWriter<SpawnEvent<Spawn, Side>>,
+    mut spawn_in_goal_events: EventWriter<SpawnEvent<Objects, Side>>,
 ) {
     // Cameras
     commands.spawn((SwayingCamera, Camera3dBundle::default()));
@@ -194,7 +193,7 @@ fn spawn_play_area(
         ));
 
         // Walls
-        spawn_in_goal_events.send(SpawnEvent::with_data(Spawn::Wall, *side));
+        spawn_in_goal_events.send(SpawnEvent::with_data(Objects::Wall, *side));
         global_data.goals_hit_points.insert(*side, 0);
     }
 }

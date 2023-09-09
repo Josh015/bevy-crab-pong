@@ -4,7 +4,7 @@ mod despawning;
 mod effects;
 mod gameplay_logic;
 mod movement;
-pub mod spawn;
+mod spawn;
 mod startup;
 mod user_interface;
 
