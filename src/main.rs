@@ -5,7 +5,6 @@ mod components;
 mod constants;
 mod events;
 mod global_data;
-mod object;
 mod screens;
 mod serialization;
 mod system_sets;

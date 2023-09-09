@@ -2,6 +2,13 @@ use bevy::prelude::{App, Entity, Event, Plugin};
 
 use crate::{components::goals::Side, screens::GameScreen};
 
+/// Objects that can be spawned via `SpawnEvent`.
+#[derive(Debug, Eq, PartialEq)]
+pub enum Object {
+    Paddle,
+    Wall,
+}
+
 /// An event fired when spawning a message UI.
 #[derive(Event)]
 pub struct MessageUiEvent {

@@ -3,9 +3,8 @@ use spew::prelude::SpawnEvent;
 
 use crate::{
     components::{balls::*, goals::*},
-    events::MessageUiEvent,
+    events::{MessageUiEvent, Object},
     global_data::{GameOver, GlobalData},
-    object::Object,
     screens::GameScreen,
     serialization::Config,
 };

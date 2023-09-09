@@ -13,9 +13,8 @@ use crate::{
         paddles::{AiInput, KeyboardInput, Paddle, Team},
     },
     constants::*,
-    events::FadeOutEntityEvent,
+    events::{FadeOutEntityEvent, Object},
     global_data::GlobalData,
-    object::Object,
     serialization::{Config, ControlledByConfig, TeamConfig},
 };
 

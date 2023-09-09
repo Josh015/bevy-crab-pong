@@ -5,8 +5,8 @@ use crate::{
     cached_assets::CachedAssets,
     components::{balls::Collider, effects::*, goals::*, paddles::HitPointsUi},
     constants::*,
+    events::Object,
     global_data::GlobalData,
-    object::Object,
 };
 
 fn spawn_play_area(
