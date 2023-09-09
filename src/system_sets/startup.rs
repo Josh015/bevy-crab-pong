@@ -1,12 +1,14 @@
 use bevy::prelude::*;
+use spew::prelude::SpawnEvent;
 
 use crate::{
     cached_assets::CachedAssets,
     components::{balls::Collider, effects::*, goals::*, paddles::HitPointsUi},
     constants::*,
-    events::SpawnWallEvent,
     global_data::GlobalData,
 };
+
+use super::spawn::Spawn;
 
 fn spawn_play_area(
     cached_assets: Res<CachedAssets>,
@@ -14,7 +16,7 @@ fn spawn_play_area(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut spawn_wall_events: EventWriter<SpawnWallEvent>,
+    mut spawn_in_goal_events: EventWriter<SpawnEvent<Spawn, Side>>,
 ) {
     // Cameras
     commands.spawn((SwayingCamera, Camera3dBundle::default()));
@@ -126,12 +128,6 @@ fn spawn_play_area(
     ];
 
     for (i, side, style) in goal_configs.iter() {
-        // Walls
-        spawn_wall_events.send(SpawnWallEvent {
-            side: *side,
-            is_instant: true,
-        });
-
         // Goals
         commands
             .spawn((
@@ -197,6 +193,8 @@ fn spawn_play_area(
             },
         ));
 
+        // Walls
+        spawn_in_goal_events.send(SpawnEvent::with_data(Spawn::Wall, *side));
         global_data.goals_hit_points.insert(*side, 0);
     }
 }

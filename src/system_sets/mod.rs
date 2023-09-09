@@ -4,10 +4,12 @@ mod despawning;
 mod effects;
 mod gameplay_logic;
 mod movement;
+pub mod spawn;
 mod startup;
 mod user_interface;
 
 use bevy::prelude::*;
+use spew::prelude::SpewSystemSet;
 
 use crate::{global_data::GlobalData, screens::GameScreen};
 
@@ -35,7 +37,7 @@ impl Plugin for SystemSetsPlugin {
             .configure_set(
                 Update,
                 GameSystemSet::GameplayLogic
-                    .before(GameSystemSet::Movement)
+                    .before(SpewSystemSet)
                     .run_if(in_state(GameScreen::Playing)),
             )
             .configure_set(
@@ -71,6 +73,7 @@ impl Plugin for SystemSetsPlugin {
                 effects::EffectsPlugin,
                 gameplay_logic::GameplayLogicPlugin,
                 movement::MovementPlugin,
+                spawn::SpawnPlugin,
                 startup::StartupPlugin,
                 user_interface::UserInterfacePlugin,
             ));

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use rand::prelude::*;
+use spew::prelude::SpawnEvent;
 
 use crate::{
     cached_assets::CachedAssets,
@@ -17,6 +18,8 @@ use crate::{
     serialization::Config,
     system_sets::GameSystemSet,
 };
+
+use super::spawn::Spawn;
 
 fn spawn_balls_as_needed_from_the_center_of_the_arena(
     global_data: Res<GlobalData>,
@@ -228,37 +231,13 @@ fn check_if_any_balls_have_scored_against_any_goals(
     }
 }
 
-/// Disables a given [`Goal`] to remove it from play.
-fn handle_goal_eliminated_event(
-    mut commands: Commands,
+fn block_eliminated_goals(
     mut event_reader: EventReader<GoalEliminatedEvent>,
-    mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
-    mut spawn_wall_events: EventWriter<SpawnWallEvent>,
-    paddles_query: Query<
-        (Entity, &Side),
-        (With<Paddle>, With<Collider>, Without<Fade>),
-    >,
+    mut spawn_in_goal_events: EventWriter<SpawnEvent<Spawn, Side>>,
 ) {
     for GoalEliminatedEvent(eliminated_side) in event_reader.iter() {
-        // Fade out the paddle for the eliminated goal.
-        for (paddle_entity, side) in &paddles_query {
-            if *side != *eliminated_side {
-                continue;
-            }
-
-            // Stop the paddle from moving and colliding.
-            commands
-                .entity(paddle_entity)
-                .remove::<(Collider, VelocityBundle)>();
-            fade_out_entity_events.send(FadeOutEntityEvent(paddle_entity));
-            break;
-        }
-
-        // Fade in the wall for the eliminated goal.
-        spawn_wall_events.send(SpawnWallEvent {
-            side: *eliminated_side,
-            is_instant: false,
-        });
+        spawn_in_goal_events
+            .send(SpawnEvent::with_data(Spawn::Wall, *eliminated_side));
     }
 }
 
@@ -313,7 +292,7 @@ impl Plugin for GameplayLogicPlugin {
                 make_ai_paddles_target_the_balls_closest_to_their_goals,
                 move_ai_paddles_toward_where_their_targeted_balls_will_enter_their_goals,
                 check_if_any_balls_have_scored_against_any_goals,
-                handle_goal_eliminated_event,
+                block_eliminated_goals,
                 check_for_game_over_conditions,
             )
                 .chain()
