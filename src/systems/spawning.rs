@@ -212,16 +212,16 @@ fn spawn_paddle_in_goal(
     }
 }
 
-pub struct SpawnPlugin;
+pub struct SpawningPlugin;
 
-impl Plugin for SpawnPlugin {
+impl Plugin for SpawningPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(SpewPlugin::<Object>::default())
             .add_plugins(SpewPlugin::<Object, Side>::default())
             .add_spawners((
                 (Object::Ball, spawn_ball),
-                (Object::Paddle, spawn_paddle_in_goal),
                 (Object::Wall, spawn_wall_in_goal),
+                (Object::Paddle, spawn_paddle_in_goal),
             ));
     }
 }

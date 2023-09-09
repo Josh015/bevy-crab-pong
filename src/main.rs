@@ -7,7 +7,7 @@ mod events;
 mod global_data;
 mod screens;
 mod serialization;
-mod system_sets;
+mod systems;
 
 use bevy::{
     prelude::*,
@@ -40,7 +40,7 @@ fn main() {
             events::EventsPlugin,
             global_data::GlobalDataPlugin,
             screens::ScreensPlugin,
-            system_sets::SystemSetsPlugin,
+            systems::SystemsPlugin,
         ))
         .run();
 }

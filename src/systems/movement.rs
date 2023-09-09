@@ -4,7 +4,7 @@ use std::ops::{Add, Sub};
 use crate::{
     components::{movement::*, paddles::Paddle, spawning::Spawning},
     constants::*,
-    system_sets::GameSystemSet,
+    systems::GameSystemSet,
 };
 
 fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {

@@ -8,7 +8,7 @@ use crate::{
         spawning::{Despawning, Spawning},
     },
     constants::*,
-    system_sets::GameSystemSet,
+    systems::GameSystemSet,
 };
 
 // TODO: Make this work with all object movement, not just Balls?

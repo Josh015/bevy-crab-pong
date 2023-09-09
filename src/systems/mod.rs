@@ -4,7 +4,7 @@ mod despawning;
 mod effects;
 mod gameplay_logic;
 mod movement;
-mod spawn;
+mod spawning;
 mod startup;
 mod user_interface;
 
@@ -28,9 +28,9 @@ fn show_debugging_gizmos(global_data: Res<GlobalData>) -> bool {
     global_data.is_debugging_enabled
 }
 
-pub struct SystemSetsPlugin;
+pub struct SystemsPlugin;
 
-impl Plugin for SystemSetsPlugin {
+impl Plugin for SystemsPlugin {
     fn build(&self, app: &mut App) {
         app.configure_set(Update, GameSystemSet::UserInterface)
             .configure_set(Update, GameSystemSet::Effects)
@@ -73,7 +73,7 @@ impl Plugin for SystemSetsPlugin {
                 effects::EffectsPlugin,
                 gameplay_logic::GameplayLogicPlugin,
                 movement::MovementPlugin,
-                spawn::SpawnPlugin,
+                spawning::SpawningPlugin,
                 startup::StartupPlugin,
                 user_interface::UserInterfacePlugin,
             ));

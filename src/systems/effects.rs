@@ -7,7 +7,7 @@ use crate::{
     },
     constants::*,
     serialization::Config,
-    system_sets::GameSystemSet,
+    systems::GameSystemSet,
 };
 
 fn make_camera_slowly_sway_back_and_forth(

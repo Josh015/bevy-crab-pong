@@ -9,7 +9,7 @@ use crate::{
         spawning::{Despawning, Spawning},
     },
     constants::*,
-    system_sets::GameSystemSet,
+    systems::GameSystemSet,
 };
 
 fn reflect(d: Vec3, n: Vec3) -> Vec3 {

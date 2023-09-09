@@ -13,7 +13,7 @@ use crate::{
     events::{GoalEliminatedEvent, Object},
     global_data::{GameOver, GlobalData},
     screens::GameScreen,
-    system_sets::GameSystemSet,
+    systems::GameSystemSet,
 };
 
 fn replace_despawned_balls(
