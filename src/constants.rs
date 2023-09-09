@@ -4,7 +4,7 @@ use std::ops::RangeInclusive;
 pub const BALL_DIAMETER: f32 = 0.08;
 pub const BALL_HEIGHT: f32 = 0.05;
 pub const BALL_RADIUS: f32 = 0.5 * BALL_DIAMETER;
-pub const BALL_SPAWN_DELAY_IN_SECONDS: f32 = 1.0;
+pub const BALL_SPAWN_DELAY_IN_SECONDS: f32 = 1.1;
 
 pub const FIELD_CENTER_POINT: Vec3 = Vec3::ZERO;
 pub const BALL_SPAWNER_POSITION: Vec3 = Vec3::new(
