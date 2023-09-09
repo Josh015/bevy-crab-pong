@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use std::ops::{Add, Sub};
 
-use crate::{components::movement::*, system_sets::GameSystemSet};
+use crate::{
+    components::{movement::*, spawning::Spawning},
+    system_sets::GameSystemSet,
+};
 
 fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
     let s = speed.abs().sub(delta_speed).max(0.0);
@@ -38,7 +41,7 @@ fn deceleration(
 
 fn velocity(
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &Heading, &Speed)>,
+    mut query: Query<(&mut Transform, &Heading, &Speed), Without<Spawning>>,
 ) {
     for (mut transform, heading, speed) in &mut query {
         transform.translation += heading.0 * (speed.0 * time.delta_seconds());

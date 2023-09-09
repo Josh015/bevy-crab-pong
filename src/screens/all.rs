@@ -1,8 +1,7 @@
 use bevy::{app::AppExit, prelude::*};
 
 use crate::{
-    components::fading::{FadeAnimation, ForState},
-    events::FadeOutEntityEvent,
+    components::spawning::{Despawning, ForState, SpawningAnimation},
     global_data::GlobalData,
     screens::GameScreen,
     serialization::Config,
@@ -64,16 +63,19 @@ fn handle_game_screen_specific_inputs(
 fn despawn_invalid_entities_for_current_screen(
     mut commands: Commands,
     game_screen: Res<State<GameScreen>>,
-    mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
-    mut query: Query<(Entity, &ForState<GameScreen>, Option<&FadeAnimation>)>,
+    mut query: Query<(
+        Entity,
+        &ForState<GameScreen>,
+        Option<&SpawningAnimation>,
+    )>,
 ) {
-    for (entity, for_state, fade_animation) in &mut query {
+    for (entity, for_state, spawning_animation) in &mut query {
         if for_state.states.contains(game_screen.get()) {
             continue;
         }
 
-        if fade_animation.is_some() {
-            fade_out_entity_events.send(FadeOutEntityEvent(entity));
+        if spawning_animation.is_some() {
+            commands.entity(entity).insert(Despawning::default());
         } else {
             commands.entity(entity).despawn_recursive();
         }

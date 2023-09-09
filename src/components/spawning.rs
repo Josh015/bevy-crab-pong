@@ -1,4 +1,4 @@
-use bevy::prelude::{Bundle, Component, States, Vec3};
+use bevy::prelude::*;
 
 /// Tags an entity to only exist in the listed game states.
 #[derive(Component)]
@@ -6,16 +6,16 @@ pub struct ForState<T: States> {
     pub states: Vec<T>,
 }
 
-/// Marks an entity that needs to be able to fade in/out.
+/// Marks an entity that needs to be able to spawn in.
 #[derive(Bundle, Default)]
-pub struct FadeBundle {
-    pub fade_animation: FadeAnimation,
-    pub fade: Fade,
+pub struct SpawningBundle {
+    pub spawning_animation: SpawningAnimation,
+    pub spawning: Spawning,
 }
 
-/// Specifies an entity's fade effect animation.
+/// Specifies an entity's spawning effect animation.
 #[derive(Clone, Component, Copy, Default, PartialEq, Debug)]
-pub enum FadeAnimation {
+pub enum SpawningAnimation {
     /// Uses [`StandardMaterial`] color and alpha blending to show/hide entity.
     ///
     /// When paired with [`Fade::In`] the entity's [`StandardMaterial`] must
@@ -38,19 +38,16 @@ pub enum FadeAnimation {
     },
 }
 
-/// Marks an entity fade in or out and then despawn in the latter case.
-#[derive(Clone, Component, Copy, PartialEq, Debug)]
+/// Marks an entity to fade in and delay activation.
+#[derive(Clone, Component, Copy, Default, PartialEq, Debug)]
 #[component(storage = "SparseSet")]
-pub enum Fade {
-    /// Fade-in effect with a progress value in the range \[0,1\].
-    In(f32),
-
-    /// Fade-out effect with a progress value in the range \[0,1\].
-    Out(f32),
+pub struct Spawning {
+    pub progress: f32,
 }
 
-impl Default for Fade {
-    fn default() -> Self {
-        Self::In(0.0)
-    }
+/// Marks an entity to fade out and then despawn.
+#[derive(Clone, Component, Copy, Default, PartialEq, Debug)]
+#[component(storage = "SparseSet")]
+pub struct Despawning {
+    pub progress: f32,
 }

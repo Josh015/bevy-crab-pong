@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     cached_assets::CachedAssets,
-    components::{fading::ForState, goals::Side, paddles::HitPointsUi},
+    components::{goals::Side, paddles::HitPointsUi, spawning::ForState},
     events::MessageUiEvent,
     global_data::GlobalData,
     system_sets::GameSystemSet,

@@ -5,15 +5,15 @@ use crate::{
     cached_assets::CachedAssets,
     components::{
         balls::Collider,
-        fading::{Fade, FadeAnimation, FadeBundle},
         goals::{Goal, Side, Wall},
         movement::{
             Acceleration, AccelerationBundle, Heading, MaxSpeed, VelocityBundle,
         },
         paddles::{AiInput, KeyboardInput, Paddle, Team},
+        spawning::{Despawning, SpawningAnimation, SpawningBundle},
     },
     constants::*,
-    events::{FadeOutEntityEvent, Object},
+    events::Object,
     global_data::GlobalData,
     serialization::{Config, ControlledByConfig, TeamConfig},
 };
@@ -24,9 +24,8 @@ fn spawn_wall_in_goal(
     mut commands: Commands,
     goals_query: Query<(Entity, &Side), With<Goal>>,
     paddles_query: Query<(Entity, &Parent), With<Paddle>>,
-    mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
 ) {
-    for (goal_entity, goal_side) in goals_query.iter() {
+    for (goal_entity, goal_side) in &goals_query {
         if *goal_side != side {
             continue;
         }
@@ -39,8 +38,8 @@ fn spawn_wall_in_goal(
 
             commands
                 .entity(paddle_entity)
+                .insert(Despawning::default())
                 .remove::<(Collider, AccelerationBundle)>();
-            fade_out_entity_events.send(FadeOutEntityEvent(paddle_entity));
             break;
         }
 
@@ -50,12 +49,12 @@ fn spawn_wall_in_goal(
                 *goal_side,
                 Wall,
                 Collider,
-                FadeBundle {
-                    fade_animation: FadeAnimation::Scale {
+                SpawningBundle {
+                    spawning_animation: SpawningAnimation::Scale {
                         max_scale: WALL_SCALE,
                         axis_mask: Vec3::new(0.0, 1.0, 1.0),
                     },
-                    fade: Fade::In(0.0),
+                    ..default()
                 },
                 PbrBundle {
                     mesh: cached_assets.wall_mesh.clone(),
@@ -84,7 +83,6 @@ fn spawn_paddle_in_goal(
     mut materials: ResMut<Assets<StandardMaterial>>,
     walls_query: Query<(Entity, &Parent), With<Wall>>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
-    mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
 ) {
     for (i, (goal_entity, goal_side)) in goals_query.iter().enumerate() {
         if *goal_side != side {
@@ -97,8 +95,10 @@ fn spawn_paddle_in_goal(
                 continue;
             }
 
-            commands.entity(wall_entity).remove::<Collider>();
-            fade_out_entity_events.send(FadeOutEntityEvent(wall_entity));
+            commands
+                .entity(wall_entity)
+                .insert(Despawning::default())
+                .remove::<Collider>();
             break;
         }
 
@@ -111,8 +111,8 @@ fn spawn_paddle_in_goal(
                 *goal_side,
                 Paddle,
                 Collider,
-                FadeBundle {
-                    fade_animation: FadeAnimation::Scale {
+                SpawningBundle {
+                    spawning_animation: SpawningAnimation::Scale {
                         max_scale: PADDLE_SCALE,
                         axis_mask: Vec3::ONE,
                     },

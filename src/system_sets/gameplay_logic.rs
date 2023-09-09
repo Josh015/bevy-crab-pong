@@ -6,18 +6,34 @@ use crate::{
     cached_assets::CachedAssets,
     components::{
         balls::*,
-        fading::*,
         goals::{Goal, Side},
         movement::*,
         paddles::*,
+        spawning::*,
     },
     constants::*,
-    events::{FadeOutEntityEvent, GoalEliminatedEvent, Object},
+    events::{GoalEliminatedEvent, Object},
     global_data::{GameOver, GlobalData},
     screens::GameScreen,
     serialization::Config,
     system_sets::GameSystemSet,
 };
+
+// fn print_add_name_component(query: Query<Entity, Added<Ball>>) {
+//     for entity in &query {
+//         println!("Ball added: {:?}", entity);
+
+//         // TODO: Every time a ball is added, check if we've reached maximum or not.
+//     }
+// }
+
+// fn react_on_removal(mut removed: RemovedComponents<Ball>) {
+//     removed.iter().for_each(|removed_entity| {
+//         println!("Removed Ball{:?}", removed_entity)
+
+//         // TODO: Every time a ball is removed, add a new one.
+//     });
+// }
 
 fn spawn_balls_as_needed_from_the_center_of_the_arena(
     global_data: Res<GlobalData>,
@@ -26,7 +42,7 @@ fn spawn_balls_as_needed_from_the_center_of_the_arena(
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     new_balls_query: Query<
-        (Entity, Option<&Fade>),
+        (Entity, Option<&Spawning>),
         (With<Ball>, Without<Heading>, Without<Speed>),
     >,
     all_balls_query: Query<&Ball>,
@@ -65,7 +81,7 @@ fn spawn_balls_as_needed_from_the_center_of_the_arena(
             ForState {
                 states: vec![GameScreen::Playing, GameScreen::Paused],
             },
-            FadeBundle::default(),
+            SpawningBundle::default(),
             PbrBundle {
                 mesh: cached_assets.ball_mesh.clone(),
                 material: materials.add(StandardMaterial {
@@ -190,7 +206,6 @@ fn move_ai_paddles_toward_where_their_targeted_balls_will_enter_their_goals(
 fn check_if_any_balls_have_scored_against_any_goals(
     mut commands: Commands,
     mut global_data: ResMut<GlobalData>,
-    mut fade_out_entity_events: EventWriter<FadeOutEntityEvent>,
     mut goal_eliminated_writer: EventWriter<GoalEliminatedEvent>,
     balls_query: Query<
         (Entity, &GlobalTransform),
@@ -222,8 +237,10 @@ fn check_if_any_balls_have_scored_against_any_goals(
 
             // Remove Collider and start fading out the ball to prevent
             // repeated scoring.
-            commands.entity(ball_entity).remove::<Collider>();
-            fade_out_entity_events.send(FadeOutEntityEvent(ball_entity));
+            commands
+                .entity(ball_entity)
+                .insert(Despawning::default())
+                .remove::<Collider>();
             break;
         }
     }
@@ -292,6 +309,8 @@ impl Plugin for GameplayLogicPlugin {
                 check_if_any_balls_have_scored_against_any_goals,
                 block_eliminated_goals,
                 check_for_game_over_conditions,
+                // react_on_removal,
+                // print_add_name_component
             )
                 .chain()
                 .in_set(GameSystemSet::GameplayLogic),

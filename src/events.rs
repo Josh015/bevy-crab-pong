@@ -1,4 +1,4 @@
-use bevy::prelude::{App, Entity, Event, Plugin};
+use bevy::prelude::{App, Event, Plugin};
 
 use crate::{components::goals::Side, screens::GameScreen};
 
@@ -21,15 +21,11 @@ pub struct MessageUiEvent {
 #[derive(Event)]
 pub struct GoalEliminatedEvent(pub Side);
 
-#[derive(Event)]
-pub struct FadeOutEntityEvent(pub Entity);
-
 pub struct EventsPlugin;
 
 impl Plugin for EventsPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<MessageUiEvent>()
-            .add_event::<GoalEliminatedEvent>()
-            .add_event::<FadeOutEntityEvent>();
+            .add_event::<GoalEliminatedEvent>();
     }
 }

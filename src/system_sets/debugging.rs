@@ -1,14 +1,22 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{balls::*, fading::Fade, movement::*, paddles::*},
+    components::{
+        balls::*,
+        movement::*,
+        paddles::*,
+        spawning::{Despawning, Spawning},
+    },
     constants::*,
     system_sets::GameSystemSet,
 };
 
 // TODO: Make this work with all object movement, not just Balls?
 fn display_ball_movement_direction_gizmos(
-    query: Query<(&GlobalTransform, &Heading), (With<Ball>, Without<Fade>)>,
+    query: Query<
+        (&GlobalTransform, &Heading),
+        (With<Ball>, Without<Spawning>, Without<Despawning>),
+    >,
     mut gizmos: Gizmos,
 ) {
     for (global_transform, heading) in &query {
@@ -23,7 +31,7 @@ fn display_ball_movement_direction_gizmos(
 fn display_paddle_predicted_stop_position_gizmos(
     query: Query<
         (&GlobalTransform, &Heading, &StoppingDistance),
-        Without<Fade>,
+        (With<Paddle>, Without<Spawning>, Without<Despawning>),
     >,
     mut gizmos: Gizmos,
 ) {
@@ -45,7 +53,12 @@ fn display_paddle_predicted_stop_position_gizmos(
 fn display_paddle_to_ball_targeting_gizmos(
     paddles_query: Query<
         (&GlobalTransform, &Target),
-        (With<AiInput>, With<Paddle>, Without<Fade>),
+        (
+            With<AiInput>,
+            With<Paddle>,
+            Without<Spawning>,
+            Without<Despawning>,
+        ),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
     mut gizmos: Gizmos,
@@ -64,7 +77,12 @@ fn display_paddle_to_ball_targeting_gizmos(
 fn display_ai_paddle_ideal_hit_area_gizmos(
     paddles_query: Query<
         &GlobalTransform,
-        (With<Paddle>, With<AiInput>, Without<Fade>),
+        (
+            With<Paddle>,
+            With<AiInput>,
+            Without<Spawning>,
+            Without<Despawning>,
+        ),
     >,
     mut gizmos: Gizmos,
 ) {
