@@ -196,7 +196,10 @@ fn move_ai_paddles_toward_where_their_targeted_balls_will_enter_their_goals(
             Without<Despawning>,
         ),
     >,
-    balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
+    balls_query: Query<
+        &GlobalTransform,
+        (With<Ball>, Without<Spawning>, Without<Despawning>),
+    >,
 ) {
     for (entity, side, transform, stopping_distance, target) in &paddles_query {
         // Use the ball's goal position or default to the center of the goal.

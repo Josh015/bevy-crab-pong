@@ -16,37 +16,7 @@ fn reflect(d: Vec3, n: Vec3) -> Vec3 {
     (d - (2.0 * (d.dot(n) * n))).normalize()
 }
 
-fn restrict_paddle_to_open_space_between_goal_side_barriers(
-    mut commands: Commands,
-    mut query: Query<
-        (Entity, &mut Transform, &mut Speed, &mut StoppingDistance),
-        (With<Paddle>, With<Collider>),
-    >,
-) {
-    for (entity, mut transform, mut speed, mut stopping_distance) in &mut query
-    {
-        // Limit paddle to bounds of the goal.
-        if !GOAL_PADDLE_MAX_POSITION_RANGE.contains(&transform.translation.x) {
-            transform.translation.x = transform
-                .translation
-                .x
-                .clamp(-GOAL_PADDLE_MAX_POSITION_X, GOAL_PADDLE_MAX_POSITION_X);
-            speed.0 = 0.0;
-            commands.entity(entity).remove::<Force>();
-        }
-
-        // Limit stopping distance to the bounds of the goal.
-        let stopped_position = transform.translation.x + stopping_distance.0;
-
-        if !GOAL_PADDLE_MAX_POSITION_RANGE.contains(&stopped_position) {
-            stopping_distance.0 = stopped_position.signum()
-                * GOAL_PADDLE_MAX_POSITION_X
-                - transform.translation.x;
-        }
-    }
-}
-
-fn handle_ball_to_ball_collisions(
+fn ball_to_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
@@ -90,7 +60,7 @@ fn handle_ball_to_ball_collisions(
     }
 }
 
-fn handle_ball_to_barrier_collisions(
+fn ball_to_barrier_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
@@ -134,7 +104,7 @@ fn handle_ball_to_barrier_collisions(
     }
 }
 
-fn handle_ball_to_paddle_collisions(
+fn ball_to_paddle_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
@@ -182,7 +152,7 @@ fn handle_ball_to_paddle_collisions(
     }
 }
 
-fn handle_ball_to_wall_collisions(
+fn ball_to_wall_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
@@ -230,11 +200,10 @@ impl Plugin for CollisionsPlugin {
         app.add_systems(
             PostUpdate,
             (
-                restrict_paddle_to_open_space_between_goal_side_barriers,
-                handle_ball_to_ball_collisions,
-                handle_ball_to_barrier_collisions,
-                handle_ball_to_paddle_collisions,
-                handle_ball_to_wall_collisions,
+                ball_to_ball_collisions,
+                ball_to_barrier_collisions,
+                ball_to_paddle_collisions,
+                ball_to_wall_collisions,
             )
                 .chain()
                 .in_set(GameSystemSet::Collisions),

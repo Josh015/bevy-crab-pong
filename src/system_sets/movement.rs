@@ -2,7 +2,12 @@ use bevy::prelude::*;
 use std::ops::{Add, Sub};
 
 use crate::{
-    components::{movement::*, spawning::Spawning},
+    components::{
+        movement::*,
+        paddles::Paddle,
+        spawning::{Despawning, Spawning},
+    },
+    constants::*,
     system_sets::GameSystemSet,
 };
 
@@ -13,7 +18,10 @@ fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
 
 fn acceleration(
     time: Res<Time>,
-    mut query: Query<(&mut Speed, &Acceleration, &Force, &MaxSpeed)>,
+    mut query: Query<
+        (&mut Speed, &Acceleration, &Force, &MaxSpeed),
+        Without<Spawning>,
+    >,
 ) {
     for (mut speed, acceleration, force, max_speed) in &mut query {
         let delta_speed = acceleration.0 * time.delta_seconds();
@@ -31,7 +39,10 @@ fn acceleration(
 
 fn deceleration(
     time: Res<Time>,
-    mut query: Query<(&mut Speed, &Acceleration), Without<Force>>,
+    mut query: Query<
+        (&mut Speed, &Acceleration),
+        (Without<Force>, Without<Spawning>),
+    >,
 ) {
     for (mut speed, acceleration) in &mut query {
         let delta_speed = acceleration.0 * time.delta_seconds();
@@ -49,7 +60,10 @@ fn velocity(
 }
 
 fn stopping_distance(
-    mut query: Query<(&mut StoppingDistance, &Acceleration, &Speed)>,
+    mut query: Query<
+        (&mut StoppingDistance, &Acceleration, &Speed),
+        Without<Spawning>,
+    >,
 ) {
     for (mut stopping_distance, acceleration, speed) in &mut query {
         const DELTA_SECONDS: f32 = 0.01;
@@ -65,13 +79,49 @@ fn stopping_distance(
     }
 }
 
+fn restrict_paddles_to_open_space_in_their_goals(
+    mut commands: Commands,
+    mut query: Query<
+        (Entity, &mut Transform, &mut Speed, &mut StoppingDistance),
+        (With<Paddle>, Without<Spawning>),
+    >,
+) {
+    for (entity, mut transform, mut speed, mut stopping_distance) in &mut query
+    {
+        // Limit paddle to bounds of the goal.
+        if !GOAL_PADDLE_MAX_POSITION_RANGE.contains(&transform.translation.x) {
+            transform.translation.x = transform
+                .translation
+                .x
+                .clamp(-GOAL_PADDLE_MAX_POSITION_X, GOAL_PADDLE_MAX_POSITION_X);
+            speed.0 = 0.0;
+            commands.entity(entity).remove::<Force>();
+        }
+
+        // Limit stopping distance to the bounds of the goal.
+        let stopped_position = transform.translation.x + stopping_distance.0;
+
+        if !GOAL_PADDLE_MAX_POSITION_RANGE.contains(&stopped_position) {
+            stopping_distance.0 = stopped_position.signum()
+                * GOAL_PADDLE_MAX_POSITION_X
+                - transform.translation.x;
+        }
+    }
+}
+
 pub struct MovementPlugin;
 
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (acceleration, deceleration, velocity, stopping_distance)
+            (
+                acceleration,
+                deceleration,
+                velocity,
+                stopping_distance,
+                restrict_paddles_to_open_space_in_their_goals,
+            )
                 .chain()
                 .in_set(GameSystemSet::Movement),
         );

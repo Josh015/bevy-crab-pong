@@ -13,13 +13,13 @@ use crate::{
 
 // TODO: Make this work with all object movement, not just Balls?
 fn display_ball_movement_direction_gizmos(
-    query: Query<
+    balls_query: Query<
         (&GlobalTransform, &Heading),
         (With<Ball>, Without<Spawning>, Without<Despawning>),
     >,
     mut gizmos: Gizmos,
 ) {
-    for (global_transform, heading) in &query {
+    for (global_transform, heading) in &balls_query {
         gizmos.line(
             global_transform.translation(),
             global_transform.translation() + heading.0 * 20.0,
@@ -29,13 +29,13 @@ fn display_ball_movement_direction_gizmos(
 }
 
 fn display_paddle_predicted_stop_position_gizmos(
-    query: Query<
+    paddles_query: Query<
         (&GlobalTransform, &Heading, &StoppingDistance),
         (With<Paddle>, Without<Spawning>, Without<Despawning>),
     >,
     mut gizmos: Gizmos,
 ) {
-    for (global_transform, heading, stopping_distance) in &query {
+    for (global_transform, heading, stopping_distance) in &paddles_query {
         let mut stop_position_transform = global_transform.compute_transform();
         let global_heading = stop_position_transform.rotation * heading.0;
 
@@ -60,7 +60,10 @@ fn display_paddle_to_ball_targeting_gizmos(
             Without<Despawning>,
         ),
     >,
-    balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
+    balls_query: Query<
+        &GlobalTransform,
+        (With<Ball>, Without<Spawning>, Without<Despawning>),
+    >,
     mut gizmos: Gizmos,
 ) {
     for (paddle_transform, target) in &paddles_query {
