@@ -5,13 +5,12 @@ use spew::prelude::*;
 use crate::{
     cached_assets::CachedAssets,
     components::{
-        balls::{Ball, Collider},
         goals::{Goal, Side, Wall},
         movement::{
             Acceleration, AccelerationBundle, Heading, MaxSpeed, Speed,
             VelocityBundle,
         },
-        paddles::{AiInput, KeyboardInput, Paddle, Team},
+        paddles::{AiInput, Ball, KeyboardInput, Paddle, Team},
         spawning::{Despawning, ForState, SpawningAnimation, SpawningBundle},
     },
     constants::*,
@@ -33,7 +32,6 @@ fn spawn_ball(
     let ball = commands
         .spawn((
             Ball,
-            Collider,
             ForState {
                 states: vec![GameScreen::Playing, GameScreen::Paused],
             },
@@ -93,7 +91,6 @@ fn spawn_wall_in_goal(
                 parent.spawn((
                     *goal_side,
                     Wall,
-                    Collider,
                     SpawningBundle {
                         spawning_animation: SpawningAnimation::Scale {
                             max_scale: WALL_SCALE,
@@ -157,7 +154,6 @@ fn spawn_paddle_in_goal(
                 let mut paddle = parent.spawn((
                     *goal_side,
                     Paddle,
-                    Collider,
                     SpawningBundle {
                         spawning_animation: SpawningAnimation::Scale {
                             max_scale: PADDLE_SCALE,

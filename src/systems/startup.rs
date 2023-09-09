@@ -3,7 +3,7 @@ use spew::prelude::SpawnEvent;
 
 use crate::{
     cached_assets::CachedAssets,
-    components::{balls::Collider, effects::*, goals::*, paddles::HitPointsUi},
+    components::{effects::*, goals::*, paddles::HitPointsUi},
     constants::*,
     events::Object,
     global_data::GlobalData,
@@ -150,7 +150,6 @@ fn spawn_play_area(
                 // Barrier
                 parent.spawn((
                     Barrier,
-                    Collider,
                     PbrBundle {
                         mesh: unit_cube.clone(),
                         material: barrier_material.clone(),

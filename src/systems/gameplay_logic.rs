@@ -3,11 +3,10 @@ use spew::prelude::SpawnEvent;
 
 use crate::{
     components::{
-        balls::*,
         goals::{Goal, Side},
-        movement::*,
-        paddles::*,
-        spawning::*,
+        movement::{Force, StoppingDistance},
+        paddles::{AiInput, Ball, KeyboardInput, Paddle, Target, Team},
+        spawning::{Despawning, Spawning},
     },
     constants::*,
     events::{GoalEliminatedEvent, Object},
@@ -183,8 +182,7 @@ fn check_if_any_balls_have_scored_against_any_goals(
                 info!("Ball({:?}): Eliminated Goal({:?})", ball_entity, side);
             }
 
-            // Remove Collider and start fading out the ball to prevent
-            // repeated scoring.
+            // Start despawning the ball to prevent repeated scoring.
             commands.entity(ball_entity).insert(Despawning::default());
             break;
         }

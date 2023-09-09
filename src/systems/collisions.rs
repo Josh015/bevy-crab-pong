@@ -2,10 +2,9 @@ use bevy::prelude::*;
 
 use crate::{
     components::{
-        balls::*,
-        goals::*,
-        movement::*,
-        paddles::Paddle,
+        goals::{Barrier, Side, Wall},
+        movement::Heading,
+        paddles::{Ball, Paddle},
         spawning::{Despawning, Spawning},
     },
     constants::*,
@@ -20,12 +19,7 @@ fn ball_to_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (
-            With<Ball>,
-            With<Collider>,
-            Without<Spawning>,
-            Without<Despawning>,
-        ),
+        (With<Ball>, Without<Spawning>, Without<Despawning>),
     >,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
@@ -64,14 +58,9 @@ fn ball_to_barrier_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (
-            With<Ball>,
-            With<Collider>,
-            Without<Spawning>,
-            Without<Despawning>,
-        ),
+        (With<Ball>, Without<Spawning>, Without<Despawning>),
     >,
-    barriers_query: Query<&GlobalTransform, (With<Barrier>, With<Collider>)>,
+    barriers_query: Query<&GlobalTransform, With<Barrier>>,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
         for barrier_transform in &barriers_query {
@@ -108,16 +97,11 @@ fn ball_to_paddle_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (
-            With<Ball>,
-            With<Collider>,
-            Without<Spawning>,
-            Without<Despawning>,
-        ),
+        (With<Ball>, Without<Spawning>, Without<Despawning>),
     >,
     paddles_query: Query<
         (&Side, &Transform),
-        (With<Paddle>, With<Collider>, Without<Despawning>),
+        (With<Paddle>, Without<Despawning>),
     >,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
@@ -156,17 +140,9 @@ fn ball_to_wall_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (
-            With<Ball>,
-            With<Collider>,
-            Without<Spawning>,
-            Without<Despawning>,
-        ),
+        (With<Ball>, Without<Spawning>, Without<Despawning>),
     >,
-    walls_query: Query<
-        &Side,
-        (With<Wall>, With<Collider>, Without<Despawning>),
-    >,
+    walls_query: Query<&Side, (With<Wall>, Without<Despawning>)>,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
         for side in &walls_query {

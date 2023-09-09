@@ -28,3 +28,7 @@ pub struct AiInput;
 #[derive(Component)]
 #[component(storage = "SparseSet")]
 pub struct Target(pub Entity);
+
+/// Marks a ball entity that can collide and score.
+#[derive(Component)]
+pub struct Ball;

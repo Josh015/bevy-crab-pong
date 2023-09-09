@@ -2,9 +2,8 @@ use bevy::prelude::*;
 
 use crate::{
     components::{
-        balls::*,
-        movement::*,
-        paddles::*,
+        movement::{Heading, StoppingDistance},
+        paddles::{AiInput, Ball, Paddle, Target},
         spawning::{Despawning, Spawning},
     },
     constants::*,
