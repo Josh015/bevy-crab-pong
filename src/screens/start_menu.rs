@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use spew::prelude::SpawnEvent;
 
 use crate::{
-    components::{balls::*, goals::*},
+    components::goals::*,
     events::{MessageUiEvent, Object},
     global_data::{GameOver, GlobalData},
     screens::GameScreen,
@@ -26,16 +26,6 @@ fn spawn_start_menu_ui(
         message,
         game_screen: GameScreen::StartMenu,
     });
-}
-
-fn disable_ball_collisions(
-    mut commands: Commands,
-    balls_query: Query<Entity, (With<Ball>, With<Collider>)>,
-) {
-    // Ensure balls pass through everything.
-    for entity in &balls_query {
-        commands.entity(entity).remove::<Collider>();
-    }
 }
 
 fn reset_each_goals_hit_points(
@@ -65,13 +55,11 @@ pub struct StartMenuPlugin;
 
 impl Plugin for StartMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            OnEnter(GameScreen::StartMenu),
-            (spawn_start_menu_ui, disable_ball_collisions),
-        )
-        .add_systems(
-            OnExit(GameScreen::StartMenu),
-            (reset_each_goals_hit_points, replace_walls_with_paddles).chain(),
-        );
+        app.add_systems(OnEnter(GameScreen::StartMenu), spawn_start_menu_ui)
+            .add_systems(
+                OnExit(GameScreen::StartMenu),
+                (reset_each_goals_hit_points, replace_walls_with_paddles)
+                    .chain(),
+            );
     }
 }

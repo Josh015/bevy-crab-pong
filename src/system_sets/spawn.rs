@@ -36,10 +36,7 @@ fn spawn_wall_in_goal(
                 continue;
             }
 
-            commands
-                .entity(paddle_entity)
-                .insert(Despawning::default())
-                .remove::<(Collider, AccelerationBundle)>();
+            commands.entity(paddle_entity).insert(Despawning::default());
             break;
         }
 
@@ -95,10 +92,7 @@ fn spawn_paddle_in_goal(
                 continue;
             }
 
-            commands
-                .entity(wall_entity)
-                .insert(Despawning::default())
-                .remove::<Collider>();
+            commands.entity(wall_entity).insert(Despawning::default());
             break;
         }
 

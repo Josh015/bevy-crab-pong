@@ -19,6 +19,12 @@ use crate::{
     system_sets::GameSystemSet,
 };
 
+// TODO: Add Ball spawn call for Objects.
+// TODO: Spawn ball on exit from StartScreen.
+// TODO: On Added<Ball> check if limit has been met, and spawn another if needed with delay?
+// TODO: If RemovedComponent<Ball> spawn another one.
+// TODO: Put limit check in ball spawn function itself, since it needs to be globally enforced.
+
 // fn print_add_name_component(query: Query<Entity, Added<Ball>>) {
 //     for entity in &query {
 //         println!("Ball added: {:?}", entity);
@@ -107,11 +113,19 @@ fn spawn_balls_as_needed_from_the_center_of_the_arena(
 fn handle_keyboard_input_for_player_controlled_paddles(
     keyboard_input: Res<Input<KeyCode>>,
     mut commands: Commands,
-    query: Query<Entity, (With<KeyboardInput>, With<Paddle>)>,
+    paddles_query: Query<
+        Entity,
+        (
+            With<Paddle>,
+            With<KeyboardInput>,
+            Without<Spawning>,
+            Without<Despawning>,
+        ),
+    >,
 ) {
     // Makes a Paddle entity move left/right in response to the
     // keyboard's corresponding arrows keys.
-    for entity in &query {
+    for entity in &paddles_query {
         if keyboard_input.pressed(KeyCode::Left)
             || keyboard_input.pressed(KeyCode::A)
         {
@@ -130,10 +144,18 @@ fn handle_keyboard_input_for_player_controlled_paddles(
 
 fn make_ai_paddles_target_the_balls_closest_to_their_goals(
     mut commands: Commands,
-    paddles_query: Query<(Entity, &Side), (With<AiInput>, With<Paddle>)>,
+    paddles_query: Query<
+        (Entity, &Side),
+        (
+            With<Paddle>,
+            With<AiInput>,
+            Without<Spawning>,
+            Without<Despawning>,
+        ),
+    >,
     balls_query: Query<
         (Entity, &GlobalTransform),
-        (With<Ball>, With<Collider>),
+        (With<Ball>, Without<Spawning>, Without<Despawning>),
     >,
 ) {
     for (paddle_entity, side) in &paddles_query {
@@ -167,7 +189,12 @@ fn move_ai_paddles_toward_where_their_targeted_balls_will_enter_their_goals(
             &StoppingDistance,
             Option<&Target>,
         ),
-        (With<AiInput>, With<Paddle>),
+        (
+            With<Paddle>,
+            With<AiInput>,
+            Without<Spawning>,
+            Without<Despawning>,
+        ),
     >,
     balls_query: Query<&GlobalTransform, (With<Ball>, With<Collider>)>,
 ) {
@@ -209,7 +236,7 @@ fn check_if_any_balls_have_scored_against_any_goals(
     mut goal_eliminated_writer: EventWriter<GoalEliminatedEvent>,
     balls_query: Query<
         (Entity, &GlobalTransform),
-        (With<Ball>, With<Collider>),
+        (With<Ball>, Without<Spawning>, Without<Despawning>),
     >,
     goals_query: Query<&Side, With<Goal>>,
 ) {
@@ -237,10 +264,7 @@ fn check_if_any_balls_have_scored_against_any_goals(
 
             // Remove Collider and start fading out the ball to prevent
             // repeated scoring.
-            commands
-                .entity(ball_entity)
-                .insert(Despawning::default())
-                .remove::<Collider>();
+            commands.entity(ball_entity).insert(Despawning::default());
             break;
         }
     }
