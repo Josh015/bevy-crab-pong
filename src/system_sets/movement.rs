@@ -2,11 +2,7 @@ use bevy::prelude::*;
 use std::ops::{Add, Sub};
 
 use crate::{
-    components::{
-        movement::*,
-        paddles::Paddle,
-        spawning::{Despawning, Spawning},
-    },
+    components::{movement::*, paddles::Paddle, spawning::Spawning},
     constants::*,
     system_sets::GameSystemSet,
 };
