@@ -1,4 +1,4 @@
-use bevy::prelude::{App, Event, Plugin};
+use bevy::prelude::{App, Entity, Event, Plugin};
 
 use crate::{components::goals::Side, screens::GameScreen};
 
@@ -17,6 +17,10 @@ pub struct MessageUiEvent {
     pub game_screen: GameScreen,
 }
 
+/// Removes a goal's current paddle or wall child entity.
+#[derive(Event)]
+pub struct RemoveGoalOccupantEvent(pub Entity);
+
 /// An event fired when a [`Goal`] has been eliminated from play after its HP
 /// has reached zero.
 #[derive(Event)]
@@ -27,6 +31,7 @@ pub struct EventsPlugin;
 impl Plugin for EventsPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<MessageUiEvent>()
-            .add_event::<GoalEliminatedEvent>();
+            .add_event::<GoalEliminatedEvent>()
+            .add_event::<RemoveGoalOccupantEvent>();
     }
 }

@@ -11,10 +11,10 @@ use crate::{
             VelocityBundle,
         },
         paddles::{AiInput, Ball, KeyboardInput, Paddle, Team},
-        spawning::{Despawning, ForState, SpawningAnimation, SpawningBundle},
+        spawning::{ForState, SpawningAnimation, SpawningBundle},
     },
     constants::*,
-    events::Object,
+    events::{Object, RemoveGoalOccupantEvent},
     global_data::GlobalData,
     screens::GameScreen,
     serialization::{Config, ControlledByConfig, TeamConfig},
@@ -32,10 +32,14 @@ fn spawn_ball(
     let ball = commands
         .spawn((
             Ball,
+            SpawningBundle::default(),
             ForState {
                 states: vec![GameScreen::Playing, GameScreen::Paused],
             },
-            SpawningBundle::default(),
+            VelocityBundle {
+                heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
+                speed: Speed(config.ball_speed),
+            },
             PbrBundle {
                 mesh: cached_assets.ball_mesh.clone(),
                 material: materials.add(StandardMaterial {
@@ -52,10 +56,6 @@ fn spawn_ball(
                 ),
                 ..default()
             },
-            VelocityBundle {
-                heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
-                speed: Speed(config.ball_speed),
-            },
         ))
         .id();
 
@@ -67,26 +67,14 @@ fn spawn_wall_in_goal(
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     goals_query: Query<(Entity, &Side), With<Goal>>,
-    paddles_and_walls_query: Query<
-        (Entity, &Parent),
-        Or<(With<Paddle>, With<Wall>)>,
-    >,
+    mut remove_goal_occupant_writer: EventWriter<RemoveGoalOccupantEvent>,
 ) {
     for (goal_entity, goal_side) in &goals_query {
         if *goal_side != side {
             continue;
         }
 
-        // Despawn the existing paddle or wall in the goal.
-        for (entity, parent) in &paddles_and_walls_query {
-            if parent.get() == goal_entity {
-                commands
-                    .entity(entity)
-                    .remove::<AccelerationBundle>()
-                    .insert(Despawning::default());
-                break;
-            }
-        }
+        remove_goal_occupant_writer.send(RemoveGoalOccupantEvent(goal_entity));
 
         // Spawn wall in goal.
         let wall = commands
@@ -131,31 +119,18 @@ fn spawn_paddle_in_goal(
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
-    paddles_and_walls_query: Query<
-        (Entity, &Parent),
-        Or<(With<Paddle>, With<Wall>)>,
-    >,
+    mut remove_goal_occupant_writer: EventWriter<RemoveGoalOccupantEvent>,
 ) {
     for (i, (goal_entity, goal_side)) in goals_query.iter().enumerate() {
         if *goal_side != side {
             continue;
         }
 
-        // Despawn the existing paddle or wall in the goal.
-        for (entity, parent) in &paddles_and_walls_query {
-            if parent.get() == goal_entity {
-                commands
-                    .entity(entity)
-                    .remove::<AccelerationBundle>()
-                    .insert(Despawning::default());
-                break;
-            }
-        }
+        remove_goal_occupant_writer.send(RemoveGoalOccupantEvent(goal_entity));
 
         // Spawn paddle in goal.
         let goal_config = &config.modes[global_data.mode_index].goals[i];
         let material_handle = cached_assets.paddle_materials[goal_side].clone();
-
         let paddle = commands
             .entity(goal_entity)
             .with_children(|parent| {

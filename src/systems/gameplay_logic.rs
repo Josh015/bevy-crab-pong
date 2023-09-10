@@ -3,17 +3,38 @@ use spew::prelude::SpawnEvent;
 
 use crate::{
     components::{
-        goals::{Goal, Side},
-        movement::{Force, StoppingDistance},
+        goals::{Goal, Side, Wall},
+        movement::{AccelerationBundle, Force, StoppingDistance},
         paddles::{AiInput, Ball, KeyboardInput, Paddle, Target, Team},
         spawning::{Despawning, Spawning},
     },
     constants::*,
-    events::{GoalEliminatedEvent, Object},
+    events::{GoalEliminatedEvent, Object, RemoveGoalOccupantEvent},
     global_data::{GameOver, GlobalData},
     screens::GameScreen,
     systems::GameSystemSet,
 };
+
+fn remove_goal_occupant(
+    mut commands: Commands,
+    mut event_reader: EventReader<RemoveGoalOccupantEvent>,
+    paddles_and_walls_query: Query<
+        (Entity, &Parent),
+        Or<(With<Paddle>, With<Wall>)>,
+    >,
+) {
+    for RemoveGoalOccupantEvent(goal_entity) in event_reader.iter() {
+        for (entity, parent) in &paddles_and_walls_query {
+            if parent.get() == *goal_entity {
+                commands
+                    .entity(entity)
+                    .remove::<AccelerationBundle>()
+                    .insert(Despawning::default());
+                break;
+            }
+        }
+    }
+}
 
 fn replace_despawned_balls(
     mut removed: RemovedComponents<Ball>,
@@ -245,6 +266,7 @@ impl Plugin for GameplayLogicPlugin {
         app.add_systems(
             Update,
             (
+                remove_goal_occupant,
                 replace_despawned_balls,
                 handle_keyboard_input_for_player_controlled_paddles,
                 make_ai_paddles_target_the_balls_closest_to_their_goals,
