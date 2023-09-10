@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     components::{
         effects::{Ocean, SwayingCamera},
-        spawning::{Despawning, Spawning, SpawningAnimation},
+        spawning::{Despawning, SpawnAnimation, SpawnProgress, Spawning},
     },
     constants::*,
     serialization::Config,
@@ -41,20 +41,14 @@ fn animate_ocean_with_scrolling_texture_effect(
 
 fn start_despawning_entity(
     mut commands: Commands,
-    mut query: Query<
-        (Entity, Option<&Spawning>, &mut Despawning),
-        Added<Despawning>,
-    >,
+    query: Query<(Entity, Option<&Spawning>), Added<Despawning>>,
 ) {
-    for (entity, spawning, mut despawning) in &mut query {
-        // If interrupting Spawning then start with its inverse progress to
-        // avoid visual popping.
-        if let Some(Spawning { progress }) = spawning {
-            despawning.progress = 1.0 - progress;
+    for (entity, spawning) in &query {
+        if spawning.is_some() {
             commands.entity(entity).remove::<Spawning>();
         }
 
-        info!("Entity({:?}): Fading Out", entity);
+        info!("Entity({:?}): Despawning", entity);
     }
 }
 
@@ -62,13 +56,13 @@ fn advance_spawning_progress(
     mut commands: Commands,
     config: Res<Config>,
     time: Res<Time>,
-    mut query: Query<(Entity, &mut Spawning)>,
+    mut query: Query<(Entity, &mut SpawnProgress), With<Spawning>>,
 ) {
-    for (entity, mut spawning) in &mut query {
+    for (entity, mut progress) in &mut query {
         let step = config.fade_speed * time.delta_seconds();
 
-        if spawning.progress < FADE_PROGRESS_MAX {
-            spawning.progress = spawning.progress.max(FADE_PROGRESS_MIN) + step;
+        if progress.0 < FADE_PROGRESS_MAX {
+            progress.0 = progress.0.max(FADE_PROGRESS_MIN) + step;
         } else {
             info!("Entity({:?}): Ready", entity);
             commands.entity(entity).remove::<Spawning>();
@@ -80,15 +74,13 @@ fn advance_despawning_progress(
     mut commands: Commands,
     config: Res<Config>,
     time: Res<Time>,
-    mut query: Query<(Entity, &mut Despawning)>,
+    mut query: Query<(Entity, &mut SpawnProgress), With<Despawning>>,
 ) {
-    for (entity, mut despawning) in &mut query {
-        // Progress the fade effect.
+    for (entity, mut progress) in &mut query {
         let step = config.fade_speed * time.delta_seconds();
 
-        if despawning.progress < FADE_PROGRESS_MAX {
-            despawning.progress =
-                despawning.progress.max(FADE_PROGRESS_MIN) + step;
+        if progress.0 > 0.0 {
+            progress.0 = progress.0.min(FADE_PROGRESS_MAX) - step;
         } else {
             info!("Entity({:?}): Despawned", entity);
             commands.entity(entity).remove::<Despawning>();
@@ -102,38 +94,26 @@ fn animate_fade_effect_on_entity(
         (
             &mut Transform,
             &Handle<StandardMaterial>,
-            &SpawningAnimation,
-            Option<&Spawning>,
-            Option<&Despawning>,
+            &SpawnAnimation,
+            &SpawnProgress,
         ),
         Or<(With<Spawning>, With<Despawning>)>,
     >,
 ) {
-    // Apply effect animation to the entity.
-    for (mut transform, material, spawning_animation, spawning, despawning) in
-        &mut query
-    {
-        let mut weight = 0.0;
-
-        if let Some(Spawning { progress }) = spawning {
-            weight = *progress;
-        } else if let Some(Despawning { progress }) = despawning {
-            weight = 1.0 - *progress;
-        }
-
-        match *spawning_animation {
-            SpawningAnimation::Scale {
+    for (mut transform, material, animation, progress) in &mut query {
+        match *animation {
+            SpawnAnimation::Scale {
                 max_scale,
                 axis_mask,
             } => {
-                transform.scale =
-                    (max_scale * axis_mask) * weight + (Vec3::ONE - axis_mask);
+                transform.scale = (max_scale * axis_mask) * progress.0
+                    + (Vec3::ONE - axis_mask);
             },
-            SpawningAnimation::Opacity => {
+            SpawnAnimation::Opacity => {
                 let material = materials.get_mut(material).unwrap();
 
-                material.base_color.set_a(weight);
-                material.alpha_mode = if weight < 1.0 {
+                material.base_color.set_a(progress.0);
+                material.alpha_mode = if progress.0 < 1.0 {
                     AlphaMode::Blend
                 } else {
                     AlphaMode::Opaque

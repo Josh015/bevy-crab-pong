@@ -14,29 +14,24 @@ pub struct ForState<T: States> {
     pub states: Vec<T>,
 }
 
-/// Marks an entity that needs to be able to spawn in.
-#[derive(Bundle, Default)]
-pub struct SpawningBundle {
-    pub spawning_animation: SpawningAnimation,
-    pub spawning: Spawning,
-}
+/// Contains the [`SpawnAnimation`] progress for this entity.
+#[derive(Component, Default)]
+pub struct SpawnProgress(pub f32);
 
 /// Specifies an entity's spawning effect animation.
 #[derive(Clone, Component, Copy, Default, PartialEq, Debug)]
-pub enum SpawningAnimation {
-    /// Uses [`StandardMaterial`] color and alpha blending to show/hide entity.
+pub enum SpawnAnimation {
+    /// Uses alpha-blending to fade in/out an entity.
     ///
-    /// When paired with [`Fade::In`] the entity's [`StandardMaterial`] must
-    /// first be set to [`AlphaMode::Blend`] and have its color alpha set to
-    /// zero to avoid visual popping.
+    /// Will take control of the entity's [`StandardMaterial`] by setting it to
+    /// [`AlphaMode::Blend`] and adjusting its `base_color` alpha.
     #[default]
     Opacity,
 
-    /// Uses [`Transform`] scale to grow/shrink the entity.
+    /// Uses scale to grow/shrink an entity.
     ///
-    /// When paired with [`Fade::In`] the entity's [`Transform`] scale must
-    /// first be set to EPSILON to avoid visual popping. We can't use zero
-    /// since that prevents it from appearing at all.
+    /// Will take control of the entity's [`Transform`] `scale`. It must start
+    /// with a non-zero scale, or the entity won't appear at all.
     Scale {
         /// The maximum scale to start/end with when fading out/in.
         max_scale: Vec3,
@@ -49,13 +44,17 @@ pub enum SpawningAnimation {
 /// Marks an entity to fade in and delay activation.
 #[derive(Clone, Component, Copy, Default, PartialEq, Debug)]
 #[component(storage = "SparseSet")]
-pub struct Spawning {
-    pub progress: f32,
-}
+pub struct Spawning;
 
 /// Marks an entity to fade out and then despawn.
 #[derive(Clone, Component, Copy, Default, PartialEq, Debug)]
 #[component(storage = "SparseSet")]
-pub struct Despawning {
-    pub progress: f32,
+pub struct Despawning;
+
+/// Marks an entity that needs spawn effects.
+#[derive(Bundle, Default)]
+pub struct SpawnEffectsBundle {
+    pub spawn_animation: SpawnAnimation,
+    pub spawn_progress: SpawnProgress,
+    pub spawning: Spawning,
 }
