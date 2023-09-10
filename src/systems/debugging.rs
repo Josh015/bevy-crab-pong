@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     components::{
         movement::{Heading, StoppingDistance},
-        paddles::{AiInput, Ball, Paddle, Target},
+        paddles::{AiPlayer, Ball, Paddle, Target},
         spawning::{Despawning, Spawning},
     },
     constants::*,
@@ -54,7 +54,7 @@ fn display_paddle_to_ball_targeting_gizmos(
     paddles_query: Query<
         (&GlobalTransform, &Target),
         (
-            With<AiInput>,
+            With<AiPlayer>,
             With<Paddle>,
             Without<Spawning>,
             Without<Despawning>,
@@ -82,7 +82,7 @@ fn display_ai_paddle_ideal_hit_area_gizmos(
         &GlobalTransform,
         (
             With<Paddle>,
-            With<AiInput>,
+            With<AiPlayer>,
             Without<Spawning>,
             Without<Despawning>,
         ),

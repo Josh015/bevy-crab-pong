@@ -10,7 +10,7 @@ use crate::{
             Acceleration, AccelerationBundle, Heading, MaxSpeed, Speed,
             VelocityBundle,
         },
-        paddles::{AiInput, Ball, KeyboardInput, Paddle},
+        paddles::{AiPlayer, Ball, KeyboardPlayer, Paddle},
         spawning::{
             Despawning, ForState, Object, Spawning, SpawningAnimation,
             SpawningBundle,
@@ -19,7 +19,7 @@ use crate::{
     constants::*,
     global_data::GlobalData,
     screens::GameScreen,
-    serialization::{Config, ControlledByConfig},
+    serialization::{Config, PlayerConfig},
 };
 
 #[derive(Event)]
@@ -201,10 +201,10 @@ fn spawn_paddle_in_goal(
                     },
                 ));
 
-                if paddle_config.controlled_by == ControlledByConfig::AI {
-                    paddle.insert(AiInput);
+                if paddle_config.player == PlayerConfig::AI {
+                    paddle.insert(AiPlayer);
                 } else {
-                    paddle.insert(KeyboardInput);
+                    paddle.insert(KeyboardPlayer);
                 }
 
                 let material = materials.get_mut(&material_handle).unwrap();

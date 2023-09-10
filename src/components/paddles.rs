@@ -15,11 +15,11 @@ pub struct Paddle {
 
 /// Marks a [`Paddle`] entity as being controlled by the keyboard.
 #[derive(Component)]
-pub struct KeyboardInput;
+pub struct KeyboardPlayer;
 
 /// Marks a [`Paddle`] entity as being controlled by AI.
 #[derive(Component)]
-pub struct AiInput;
+pub struct AiPlayer;
 
 /// The [`Ball`] entity targeted by an [`AiInput`] [`Paddle`] entity.
 #[derive(Component)]

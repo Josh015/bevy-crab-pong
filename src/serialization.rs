@@ -42,12 +42,12 @@ pub struct ModeConfig {
 pub struct PaddleConfig {
     pub color: String,
     pub team: Team,
-    pub controlled_by: ControlledByConfig,
+    pub player: PlayerConfig,
     pub hit_points: u32,
 }
 
 #[derive(Debug, Deserialize, Eq, PartialEq)]
-pub enum ControlledByConfig {
+pub enum PlayerConfig {
     Keyboard,
     AI,
 }

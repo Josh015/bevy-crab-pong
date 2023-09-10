@@ -5,7 +5,7 @@ use crate::{
     components::{
         goals::Side,
         movement::{Force, StoppingDistance},
-        paddles::{AiInput, Ball, KeyboardInput, Paddle, Target},
+        paddles::{AiPlayer, Ball, KeyboardPlayer, Paddle, Target},
         spawning::{Despawning, Object, Spawning},
     },
     constants::*,
@@ -38,7 +38,7 @@ fn handle_keyboard_input_for_player_controlled_paddles(
         Entity,
         (
             With<Paddle>,
-            With<KeyboardInput>,
+            With<KeyboardPlayer>,
             Without<Spawning>,
             Without<Despawning>,
         ),
@@ -69,7 +69,7 @@ fn make_ai_paddles_target_the_balls_closest_to_their_goals(
         (Entity, &Side),
         (
             With<Paddle>,
-            With<AiInput>,
+            With<AiPlayer>,
             Without<Spawning>,
             Without<Despawning>,
         ),
@@ -112,7 +112,7 @@ fn move_ai_paddles_toward_their_targeted_balls(
         ),
         (
             With<Paddle>,
-            With<AiInput>,
+            With<AiPlayer>,
             Without<Spawning>,
             Without<Despawning>,
         ),
