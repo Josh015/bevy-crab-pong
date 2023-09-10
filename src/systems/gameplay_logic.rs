@@ -3,38 +3,20 @@ use spew::prelude::SpawnEvent;
 
 use crate::{
     components::{
-        goals::{Goal, Side, Wall},
-        movement::{AccelerationBundle, Force, StoppingDistance},
+        goals::{Goal, Side},
+        movement::{Force, StoppingDistance},
         paddles::{AiInput, Ball, KeyboardInput, Paddle, Target, Team},
         spawning::{Despawning, Spawning},
     },
     constants::*,
-    events::{GoalEliminatedEvent, Object, RemoveGoalOccupantEvent},
+    events::Object,
     global_data::{GameOver, GlobalData},
     screens::GameScreen,
     systems::GameSystemSet,
 };
 
-fn remove_goal_occupant(
-    mut commands: Commands,
-    mut event_reader: EventReader<RemoveGoalOccupantEvent>,
-    paddles_and_walls_query: Query<
-        (Entity, &Parent),
-        Or<(With<Paddle>, With<Wall>)>,
-    >,
-) {
-    for RemoveGoalOccupantEvent(goal_entity) in event_reader.iter() {
-        for (entity, parent) in &paddles_and_walls_query {
-            if parent.get() == *goal_entity {
-                commands
-                    .entity(entity)
-                    .remove::<AccelerationBundle>()
-                    .insert(Despawning::default());
-                break;
-            }
-        }
-    }
-}
+#[derive(Event)]
+struct GoalEliminatedEvent(Side);
 
 fn replace_despawned_balls(
     mut removed: RemovedComponents<Ball>,
@@ -117,7 +99,7 @@ fn make_ai_paddles_target_the_balls_closest_to_their_goals(
     }
 }
 
-fn move_ai_paddles_toward_where_their_targeted_balls_will_enter_their_goals(
+fn move_ai_paddles_toward_their_targeted_balls(
     mut commands: Commands,
     paddles_query: Query<
         (
@@ -263,14 +245,13 @@ pub struct GameplayLogicPlugin;
 
 impl Plugin for GameplayLogicPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
+        app.add_event::<GoalEliminatedEvent>().add_systems(
             Update,
             (
-                remove_goal_occupant,
                 replace_despawned_balls,
                 handle_keyboard_input_for_player_controlled_paddles,
                 make_ai_paddles_target_the_balls_closest_to_their_goals,
-                move_ai_paddles_toward_where_their_targeted_balls_will_enter_their_goals,
+                move_ai_paddles_toward_their_targeted_balls,
                 check_if_any_balls_have_scored_against_any_goals,
                 block_eliminated_goals,
                 check_for_game_over_conditions,

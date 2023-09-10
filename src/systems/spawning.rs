@@ -11,14 +11,40 @@ use crate::{
             VelocityBundle,
         },
         paddles::{AiInput, Ball, KeyboardInput, Paddle, Team},
-        spawning::{ForState, SpawningAnimation, SpawningBundle},
+        spawning::{
+            Despawning, ForState, Spawning, SpawningAnimation, SpawningBundle,
+        },
     },
     constants::*,
-    events::{Object, RemoveGoalOccupantEvent},
+    events::Object,
     global_data::GlobalData,
     screens::GameScreen,
     serialization::{Config, ControlledByConfig, TeamConfig},
 };
+
+#[derive(Event)]
+struct RemoveGoalOccupantEvent(Entity);
+
+fn remove_goal_occupant(
+    mut commands: Commands,
+    mut event_reader: EventReader<RemoveGoalOccupantEvent>,
+    paddles_and_walls_query: Query<
+        (Entity, &Parent),
+        (Or<(With<Paddle>, With<Wall>)>, Without<Spawning>),
+    >,
+) {
+    for RemoveGoalOccupantEvent(goal_entity) in event_reader.iter() {
+        for (entity, parent) in &paddles_and_walls_query {
+            if parent.get() == *goal_entity {
+                commands
+                    .entity(entity)
+                    .remove::<AccelerationBundle>()
+                    .insert(Despawning::default());
+                break;
+            }
+        }
+    }
+}
 
 fn spawn_ball(
     config: Res<Config>,
@@ -195,7 +221,9 @@ pub struct SpawningPlugin;
 
 impl Plugin for SpawningPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(SpewPlugin::<Object>::default())
+        app.add_event::<RemoveGoalOccupantEvent>()
+            .add_systems(Update, remove_goal_occupant.after(SpewSystemSet))
+            .add_plugins(SpewPlugin::<Object>::default())
             .add_plugins(SpewPlugin::<Object, Side>::default())
             .add_spawners((
                 (Object::Ball, spawn_ball),
