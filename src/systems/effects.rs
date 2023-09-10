@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     components::{
-        effects::{Ocean, SwayingCamera},
+        environment::{Ocean, SwayingCamera},
         spawning::{Despawning, SpawnAnimation, SpawnProgress, Spawning},
     },
     constants::*,

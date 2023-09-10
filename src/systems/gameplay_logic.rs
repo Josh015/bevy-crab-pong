@@ -201,7 +201,7 @@ fn block_eliminated_goals(
     }
 }
 
-fn check_for_game_over_conditions(
+fn check_for_game_over(
     mut global_data: ResMut<GlobalData>,
     mut next_game_screen: ResMut<NextState<GameScreen>>,
     mut paddle_eliminated_events: EventReader<PaddleEliminatedEvent>,
@@ -250,7 +250,7 @@ impl Plugin for GameplayLogicPlugin {
                 move_ai_paddles_toward_their_targeted_balls,
                 check_if_any_balls_have_scored_against_any_goals,
                 block_eliminated_goals,
-                check_for_game_over_conditions,
+                check_for_game_over,
             )
                 .chain()
                 .in_set(GameSystemSet::GameplayLogic),

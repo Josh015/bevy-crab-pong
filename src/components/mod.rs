@@ -1,4 +1,4 @@
-pub mod effects;
+pub mod environment;
 pub mod goals;
 pub mod movement;
 pub mod paddles;

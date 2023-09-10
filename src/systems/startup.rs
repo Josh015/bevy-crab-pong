@@ -4,7 +4,7 @@ use spew::prelude::SpawnEvent;
 use crate::{
     cached_assets::CachedAssets,
     components::{
-        effects::{Ocean, SwayingCamera},
+        environment::{Ocean, SwayingCamera},
         goals::{Barrier, Goal, Side},
         scoring::HitPointsUi,
         spawning::Object,
