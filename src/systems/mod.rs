@@ -14,7 +14,7 @@ use spew::prelude::SpewSystemSet;
 use crate::{global_data::GlobalData, screens::GameScreen};
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
-pub enum GameSystemSet {
+pub(super) enum GameSystemSet {
     Collisions,
     Debugging,
     Despawning,
