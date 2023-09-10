@@ -2,9 +2,12 @@ use bevy::prelude::*;
 use spew::prelude::SpawnEvent;
 
 use crate::{
-    components::goals::*,
+    components::{
+        goals::{Goal, Side},
+        spawning::Object,
+    },
     constants::*,
-    events::{MessageUiEvent, Object},
+    events::MessageUiEvent,
     global_data::{GameOver, GlobalData},
     screens::GameScreen,
     serialization::Config,

@@ -1,5 +1,13 @@
 use bevy::prelude::*;
 
+/// Objects that can be spawned via Spew.
+#[derive(Debug, Eq, PartialEq)]
+pub enum Object {
+    Ball,
+    Wall,
+    Paddle,
+}
+
 /// Tags an entity to only exist in the listed game states.
 #[derive(Component)]
 pub struct ForState<T: States> {

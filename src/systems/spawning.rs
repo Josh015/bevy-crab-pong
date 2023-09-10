@@ -12,11 +12,11 @@ use crate::{
         },
         paddles::{AiInput, Ball, KeyboardInput, Paddle, Team},
         spawning::{
-            Despawning, ForState, Spawning, SpawningAnimation, SpawningBundle,
+            Despawning, ForState, Object, Spawning, SpawningAnimation,
+            SpawningBundle,
         },
     },
     constants::*,
-    events::Object,
     global_data::GlobalData,
     screens::GameScreen,
     serialization::{Config, ControlledByConfig, TeamConfig},

@@ -3,9 +3,13 @@ use spew::prelude::SpawnEvent;
 
 use crate::{
     cached_assets::CachedAssets,
-    components::{effects::*, goals::*, paddles::HitPointsUi},
+    components::{
+        effects::{Ocean, SwayingCamera},
+        goals::{Barrier, Goal, Side},
+        paddles::HitPointsUi,
+        spawning::Object,
+    },
     constants::*,
-    events::Object,
     global_data::GlobalData,
 };
 
