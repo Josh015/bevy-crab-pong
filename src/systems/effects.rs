@@ -2,13 +2,14 @@ use bevy::prelude::*;
 
 use crate::{
     components::{
-        effects::*,
+        effects::{Ocean, SwayingCamera},
         spawning::{Despawning, Spawning, SpawningAnimation},
     },
     constants::*,
     serialization::Config,
-    systems::GameSystemSet,
 };
+
+use super::GameSystemSet;
 
 fn make_camera_slowly_sway_back_and_forth(
     config: Res<Config>,

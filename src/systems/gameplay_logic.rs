@@ -11,8 +11,9 @@ use crate::{
     constants::*,
     global_data::{GameOver, GlobalData},
     screens::GameScreen,
-    systems::GameSystemSet,
 };
+
+use super::GameSystemSet;
 
 #[derive(Event)]
 struct GoalEliminatedEvent(Side);

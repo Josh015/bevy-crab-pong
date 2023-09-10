@@ -3,9 +3,10 @@ use bevy::{app::AppExit, prelude::*};
 use crate::{
     components::spawning::{Despawning, ForState, SpawningAnimation},
     global_data::GlobalData,
-    screens::GameScreen,
     serialization::Config,
 };
+
+use super::GameScreen;
 
 fn handle_game_screen_specific_inputs(
     keyboard_input: Res<Input<KeyCode>>,

@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{components::spawning::Despawning, systems::GameSystemSet};
+use crate::components::spawning::Despawning;
+
+use super::GameSystemSet;
 
 fn finish_despawning_entity(
     mut commands: Commands,

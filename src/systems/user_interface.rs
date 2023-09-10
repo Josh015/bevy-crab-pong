@@ -5,8 +5,9 @@ use crate::{
     components::{goals::Side, paddles::HitPointsUi, spawning::ForState},
     events::MessageUiEvent,
     global_data::GlobalData,
-    systems::GameSystemSet,
 };
+
+use super::GameSystemSet;
 
 fn handle_spawn_ui_message_event(
     cached_assets: Res<CachedAssets>,

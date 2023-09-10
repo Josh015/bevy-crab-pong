@@ -8,8 +8,9 @@ use crate::{
         spawning::{Despawning, Spawning},
     },
     constants::*,
-    systems::GameSystemSet,
 };
+
+use super::GameSystemSet;
 
 fn reflect(d: Vec3, n: Vec3) -> Vec3 {
     (d - (2.0 * (d.dot(n) * n))).normalize()

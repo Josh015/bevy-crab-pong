@@ -7,8 +7,9 @@ use crate::{
         spawning::{Despawning, Spawning},
     },
     constants::*,
-    systems::GameSystemSet,
 };
+
+use super::GameSystemSet;
 
 // TODO: Make this work with all object movement, not just Balls?
 fn display_ball_movement_direction_gizmos(

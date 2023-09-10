@@ -9,9 +9,10 @@ use crate::{
     constants::*,
     events::MessageUiEvent,
     global_data::{GameOver, GlobalData},
-    screens::GameScreen,
     serialization::Config,
 };
+
+use super::GameScreen;
 
 fn spawn_start_menu_ui(
     config: Res<Config>,

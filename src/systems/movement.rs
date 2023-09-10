@@ -2,10 +2,17 @@ use bevy::prelude::*;
 use std::ops::{Add, Sub};
 
 use crate::{
-    components::{movement::*, paddles::Paddle, spawning::Spawning},
+    components::{
+        movement::{
+            Acceleration, Force, Heading, MaxSpeed, Speed, StoppingDistance,
+        },
+        paddles::Paddle,
+        spawning::Spawning,
+    },
     constants::*,
-    systems::GameSystemSet,
 };
+
+use super::GameSystemSet;
 
 fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
     let s = speed.abs().sub(delta_speed).max(0.0);
