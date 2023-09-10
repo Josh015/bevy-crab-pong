@@ -67,21 +67,25 @@ fn spawn_wall_in_goal(
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     goals_query: Query<(Entity, &Side), With<Goal>>,
-    paddles_query: Query<(Entity, &Parent), With<Paddle>>,
+    paddles_and_walls_query: Query<
+        (Entity, &Parent),
+        Or<(With<Paddle>, With<Wall>)>,
+    >,
 ) {
     for (goal_entity, goal_side) in &goals_query {
         if *goal_side != side {
             continue;
         }
 
-        // Despawn paddle in goal.
-        for (paddle_entity, parent) in &paddles_query {
-            if parent.get() != goal_entity {
-                continue;
+        // Despawn the existing paddle or wall in the goal.
+        for (entity, parent) in &paddles_and_walls_query {
+            if parent.get() == goal_entity {
+                commands
+                    .entity(entity)
+                    .remove::<AccelerationBundle>()
+                    .insert(Despawning::default());
+                break;
             }
-
-            commands.entity(paddle_entity).insert(Despawning::default());
-            break;
         }
 
         // Spawn wall in goal.
@@ -126,22 +130,26 @@ fn spawn_paddle_in_goal(
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    walls_query: Query<(Entity, &Parent), With<Wall>>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
+    paddles_and_walls_query: Query<
+        (Entity, &Parent),
+        Or<(With<Paddle>, With<Wall>)>,
+    >,
 ) {
     for (i, (goal_entity, goal_side)) in goals_query.iter().enumerate() {
         if *goal_side != side {
             continue;
         }
 
-        // Despawn wall in goal.
-        for (wall_entity, parent) in &walls_query {
-            if parent.get() != goal_entity {
-                continue;
+        // Despawn the existing paddle or wall in the goal.
+        for (entity, parent) in &paddles_and_walls_query {
+            if parent.get() == goal_entity {
+                commands
+                    .entity(entity)
+                    .remove::<AccelerationBundle>()
+                    .insert(Despawning::default());
+                break;
             }
-
-            commands.entity(wall_entity).insert(Despawning::default());
-            break;
         }
 
         // Spawn paddle in goal.

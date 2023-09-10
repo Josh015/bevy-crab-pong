@@ -43,11 +43,11 @@ fn reset_each_goals_hit_points(
     }
 }
 
-fn replace_walls_with_paddles(
-    walls_query: Query<&Side, With<Wall>>,
+fn give_each_goal_a_new_paddle(
+    goals_query: Query<&Side, With<Goal>>,
     mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
-    for side in &walls_query {
+    for side in &goals_query {
         spawn_in_goal_events.send(SpawnEvent::with_data(Object::Paddle, *side));
     }
 }
@@ -74,7 +74,7 @@ impl Plugin for StartMenuPlugin {
                 OnExit(GameScreen::StartMenu),
                 (
                     reset_each_goals_hit_points,
-                    replace_walls_with_paddles,
+                    give_each_goal_a_new_paddle,
                     spawn_starting_balls,
                 )
                     .chain(),
