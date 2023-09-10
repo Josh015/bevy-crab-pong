@@ -64,8 +64,8 @@ fn advance_spawning_progress(
         if progress.0 < FADE_PROGRESS_MAX {
             progress.0 = progress.0.max(FADE_PROGRESS_MIN) + step;
         } else {
-            info!("Entity({:?}): Ready", entity);
             commands.entity(entity).remove::<Spawning>();
+            info!("Entity({:?}): Spawned", entity);
         }
     }
 }
@@ -79,11 +79,11 @@ fn advance_despawning_progress(
     for (entity, mut progress) in &mut query {
         let step = config.fade_speed * time.delta_seconds();
 
-        if progress.0 > 0.0 {
+        if progress.0 > FADE_PROGRESS_MIN {
             progress.0 = progress.0.min(FADE_PROGRESS_MAX) - step;
         } else {
-            info!("Entity({:?}): Despawned", entity);
             commands.entity(entity).remove::<Despawning>();
+            info!("Entity({:?}): Despawned", entity);
         }
     }
 }
