@@ -3,14 +3,6 @@ use ron::de::from_reader;
 use serde::{de::DeserializeOwned, Deserialize};
 use std::{fs::File, path::PathBuf};
 
-/// Assigns a paddle to a team to determine the winner of each round.
-#[derive(Debug, Default, Deserialize, Clone, Copy, Eq, Hash, PartialEq)]
-pub enum Team {
-    #[default]
-    Enemies,
-    Allies,
-}
-
 /// Game settings read from a config file.
 #[derive(Debug, Deserialize, Resource)]
 pub struct Config {
@@ -41,9 +33,9 @@ pub struct ModeConfig {
 #[derive(Debug, Deserialize)]
 pub struct PaddleConfig {
     pub color: String,
-    pub team: Team,
+    pub team: u8,
     pub player: PlayerConfig,
-    pub hit_points: u32,
+    pub hit_points: u8,
 }
 
 #[derive(Debug, Deserialize, Eq, PartialEq)]

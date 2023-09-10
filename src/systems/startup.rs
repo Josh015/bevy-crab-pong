@@ -6,7 +6,7 @@ use crate::{
     components::{
         effects::{Ocean, SwayingCamera},
         goals::{Barrier, Goal, Side},
-        paddles::HitPointsUi,
+        scoring::HitPointsUi,
         spawning::Object,
     },
     constants::*,

@@ -4,7 +4,8 @@ use crate::{
     cached_assets::CachedAssets,
     components::{
         goals::Side,
-        paddles::{HitPointsUi, Paddle},
+        paddles::Paddle,
+        scoring::{HitPoints, HitPointsUi},
         spawning::ForState,
     },
     events::MessageUiEvent,
@@ -74,14 +75,13 @@ fn handle_spawn_ui_message_event(
 }
 
 fn update_goal_hit_points_ui(
-    paddles_query: Query<(&Paddle, &Side)>,
+    paddles_query: Query<(&HitPoints, &Side), With<Paddle>>,
     mut hp_ui_query: Query<(&mut Text, &Side), With<HitPointsUi>>,
 ) {
-    for (paddle, paddle_side) in &paddles_query {
+    for (hit_points, paddle_side) in &paddles_query {
         for (mut text, text_side) in &mut hp_ui_query {
             if text_side == paddle_side {
-                let hit_points = paddle.hit_points;
-                text.sections[0].value = hit_points.to_string();
+                text.sections[0].value = hit_points.0.to_string();
             }
         }
     }

@@ -6,12 +6,12 @@ use crate::{
         goals::Side,
         movement::{Force, StoppingDistance},
         paddles::{AiPlayer, Ball, KeyboardPlayer, Paddle, Target},
+        scoring::{HitPoints, Team},
         spawning::{Despawning, Object, Spawning},
     },
     constants::*,
     global_data::{GameOver, GlobalData},
     screens::GameScreen,
-    serialization::Team,
 };
 
 use super::GameSystemSet;
@@ -161,10 +161,10 @@ fn check_if_any_balls_have_scored_against_any_goals(
         (Entity, &GlobalTransform),
         (With<Ball>, Without<Spawning>, Without<Despawning>),
     >,
-    mut paddles_query: Query<(&mut Paddle, &Side)>,
+    mut paddles_query: Query<(&mut HitPoints, &Side), With<Paddle>>,
 ) {
     for (ball_entity, global_transform) in &balls_query {
-        for (mut paddle, side) in &mut paddles_query {
+        for (mut hit_points, side) in &mut paddles_query {
             // A ball will score against the goal it's closest to once it's
             // fully past the goal's paddle.
             let ball_distance = side.distance_to_ball(global_transform);
@@ -174,10 +174,10 @@ fn check_if_any_balls_have_scored_against_any_goals(
             }
 
             // Decrement the paddle's HP and potentially eliminate it.
-            paddle.hit_points = paddle.hit_points.saturating_sub(1);
+            hit_points.0 = hit_points.0.saturating_sub(1);
             info!("Ball({:?}): Scored Goal({:?})", ball_entity, side);
 
-            if paddle.hit_points == 0 {
+            if hit_points.0 == 0 {
                 paddle_eliminated_events.send(PaddleEliminatedEvent(*side));
                 info!("Ball({:?}): Eliminated Goal({:?})", ball_entity, side);
             }
@@ -205,17 +205,17 @@ fn check_for_game_over_conditions(
     mut global_data: ResMut<GlobalData>,
     mut next_game_screen: ResMut<NextState<GameScreen>>,
     mut paddle_eliminated_events: EventReader<PaddleEliminatedEvent>,
-    teams_query: Query<&Paddle>,
+    teams_query: Query<(&Team, &HitPoints), With<Paddle>>,
 ) {
     for PaddleEliminatedEvent(_) in paddle_eliminated_events.iter() {
         // See if player or enemies have lost enough paddles for a game over.
-        let has_player_won = teams_query.iter().all(|paddle| {
-            paddle.team == Team::Allies || paddle.hit_points == 0
-        });
+        let has_player_won = teams_query
+            .iter()
+            .all(|(team, hit_points)| team.0 == 0 || hit_points.0 == 0);
 
-        let has_player_lost = teams_query.iter().all(|paddle| {
-            paddle.team == Team::Enemies || paddle.hit_points == 0
-        });
+        let has_player_lost = teams_query
+            .iter()
+            .all(|(team, hit_points)| team.0 == 1 || hit_points.0 == 0);
 
         if !has_player_won && !has_player_lost {
             continue;

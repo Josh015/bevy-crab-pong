@@ -11,6 +11,7 @@ use crate::{
             VelocityBundle,
         },
         paddles::{AiPlayer, Ball, KeyboardPlayer, Paddle},
+        scoring::{HitPoints, Team},
         spawning::{
             Despawning, ForState, Object, Spawning, SpawningAnimation,
             SpawningBundle,
@@ -109,8 +110,8 @@ fn spawn_wall_in_goal(
             .entity(goal_entity)
             .with_children(|parent| {
                 parent.spawn((
-                    *goal_side,
                     Wall,
+                    *goal_side,
                     SpawningBundle {
                         spawning_animation: SpawningAnimation::Scale {
                             max_scale: WALL_SCALE,
@@ -163,11 +164,10 @@ fn spawn_paddle_in_goal(
             .entity(goal_entity)
             .with_children(|parent| {
                 let mut paddle = parent.spawn((
+                    Paddle,
                     *goal_side,
-                    Paddle {
-                        hit_points: paddle_config.hit_points,
-                        team: paddle_config.team,
-                    },
+                    Team(paddle_config.team),
+                    HitPoints(paddle_config.hit_points),
                     SpawningBundle {
                         spawning_animation: SpawningAnimation::Scale {
                             max_scale: PADDLE_SCALE,
