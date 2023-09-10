@@ -24,6 +24,7 @@
     "powf",
     "powi",
     "randomizer",
+    "respawning",
     "rngs",
     "rrggbb",
     "rustfmt",
