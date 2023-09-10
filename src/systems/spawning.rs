@@ -10,7 +10,7 @@ use crate::{
             Acceleration, AccelerationBundle, Heading, MaxSpeed, Speed,
             VelocityBundle,
         },
-        paddles::{AiInput, Ball, KeyboardInput, Paddle, Team},
+        paddles::{AiInput, Ball, KeyboardInput, Paddle},
         spawning::{
             Despawning, ForState, Object, Spawning, SpawningAnimation,
             SpawningBundle,
@@ -19,7 +19,7 @@ use crate::{
     constants::*,
     global_data::GlobalData,
     screens::GameScreen,
-    serialization::{Config, ControlledByConfig, TeamConfig},
+    serialization::{Config, ControlledByConfig},
 };
 
 #[derive(Event)]
@@ -27,13 +27,15 @@ struct RemoveGoalOccupantEvent(Entity);
 
 fn remove_goal_occupant(
     mut commands: Commands,
-    mut event_reader: EventReader<RemoveGoalOccupantEvent>,
+    mut remove_goal_occupant_events: EventReader<RemoveGoalOccupantEvent>,
     paddles_and_walls_query: Query<
         (Entity, &Parent),
         (Or<(With<Paddle>, With<Wall>)>, Without<Spawning>),
     >,
 ) {
-    for RemoveGoalOccupantEvent(goal_entity) in event_reader.iter() {
+    for RemoveGoalOccupantEvent(goal_entity) in
+        remove_goal_occupant_events.iter()
+    {
         for (entity, parent) in &paddles_and_walls_query {
             if parent.get() == *goal_entity {
                 commands
@@ -93,14 +95,14 @@ fn spawn_wall_in_goal(
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     goals_query: Query<(Entity, &Side), With<Goal>>,
-    mut remove_goal_occupant_writer: EventWriter<RemoveGoalOccupantEvent>,
+    mut remove_goal_occupant_events: EventWriter<RemoveGoalOccupantEvent>,
 ) {
     for (goal_entity, goal_side) in &goals_query {
         if *goal_side != side {
             continue;
         }
 
-        remove_goal_occupant_writer.send(RemoveGoalOccupantEvent(goal_entity));
+        remove_goal_occupant_events.send(RemoveGoalOccupantEvent(goal_entity));
 
         // Spawn wall in goal.
         let wall = commands
@@ -145,24 +147,27 @@ fn spawn_paddle_in_goal(
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
-    mut remove_goal_occupant_writer: EventWriter<RemoveGoalOccupantEvent>,
+    mut remove_goal_occupant_events: EventWriter<RemoveGoalOccupantEvent>,
 ) {
     for (i, (goal_entity, goal_side)) in goals_query.iter().enumerate() {
         if *goal_side != side {
             continue;
         }
 
-        remove_goal_occupant_writer.send(RemoveGoalOccupantEvent(goal_entity));
+        remove_goal_occupant_events.send(RemoveGoalOccupantEvent(goal_entity));
 
         // Spawn paddle in goal.
-        let goal_config = &config.modes[global_data.mode_index].goals[i];
+        let paddle_config = &config.modes[global_data.mode_index].paddles[i];
         let material_handle = cached_assets.paddle_materials[goal_side].clone();
         let paddle = commands
             .entity(goal_entity)
             .with_children(|parent| {
                 let mut paddle = parent.spawn((
                     *goal_side,
-                    Paddle,
+                    Paddle {
+                        hit_points: paddle_config.hit_points,
+                        team: paddle_config.team,
+                    },
                     SpawningBundle {
                         spawning_animation: SpawningAnimation::Scale {
                             max_scale: PADDLE_SCALE,
@@ -194,21 +199,16 @@ fn spawn_paddle_in_goal(
                         ),
                         ..default()
                     },
-                    if goal_config.team == TeamConfig::Enemies {
-                        Team::Enemies
-                    } else {
-                        Team::Allies
-                    },
                 ));
 
-                if goal_config.controlled_by == ControlledByConfig::AI {
+                if paddle_config.controlled_by == ControlledByConfig::AI {
                     paddle.insert(AiInput);
                 } else {
                     paddle.insert(KeyboardInput);
                 }
 
                 let material = materials.get_mut(&material_handle).unwrap();
-                material.base_color = Color::hex(&goal_config.color).unwrap()
+                material.base_color = Color::hex(&paddle_config.color).unwrap()
             })
             .id();
 

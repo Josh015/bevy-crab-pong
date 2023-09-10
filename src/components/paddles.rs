@@ -1,20 +1,17 @@
 use bevy::prelude::{Component, Entity};
 
+use crate::serialization::Team;
+
 /// Marks a [`Text`] entity to display the HP for an associated [`Paddle`].
 #[derive(Component)]
 pub struct HitPointsUi;
 
-/// Assigns a [`Paddle`] to a team to determine the winner of each round.
-#[derive(Clone, Component, Copy, Default, PartialEq, Debug)]
-pub enum Team {
-    #[default]
-    Enemies,
-    Allies,
-}
-
 /// Makes an entity that can move along a single access inside a goal.
 #[derive(Clone, Component, Eq, PartialEq, Debug, Hash)]
-pub struct Paddle;
+pub struct Paddle {
+    pub hit_points: u32,
+    pub team: Team,
+}
 
 /// Marks a [`Paddle`] entity as being controlled by the keyboard.
 #[derive(Component)]

@@ -3,20 +3,21 @@ use spew::prelude::SpawnEvent;
 
 use crate::{
     components::{
-        goals::{Goal, Side},
+        goals::Side,
         movement::{Force, StoppingDistance},
-        paddles::{AiInput, Ball, KeyboardInput, Paddle, Target, Team},
+        paddles::{AiInput, Ball, KeyboardInput, Paddle, Target},
         spawning::{Despawning, Object, Spawning},
     },
     constants::*,
     global_data::{GameOver, GlobalData},
     screens::GameScreen,
+    serialization::Team,
 };
 
 use super::GameSystemSet;
 
 #[derive(Event)]
-struct GoalEliminatedEvent(Side);
+struct PaddleEliminatedEvent(Side);
 
 fn replace_despawned_balls(
     mut removed: RemovedComponents<Ball>,
@@ -155,16 +156,15 @@ fn move_ai_paddles_toward_their_targeted_balls(
 
 fn check_if_any_balls_have_scored_against_any_goals(
     mut commands: Commands,
-    mut global_data: ResMut<GlobalData>,
-    mut goal_eliminated_writer: EventWriter<GoalEliminatedEvent>,
+    mut paddle_eliminated_events: EventWriter<PaddleEliminatedEvent>,
     balls_query: Query<
         (Entity, &GlobalTransform),
         (With<Ball>, Without<Spawning>, Without<Despawning>),
     >,
-    goals_query: Query<&Side, With<Goal>>,
+    mut paddles_query: Query<(&mut Paddle, &Side)>,
 ) {
     for (ball_entity, global_transform) in &balls_query {
-        for side in &goals_query {
+        for (mut paddle, side) in &mut paddles_query {
             // A ball will score against the goal it's closest to once it's
             // fully past the goal's paddle.
             let ball_distance = side.distance_to_ball(global_transform);
@@ -173,15 +173,12 @@ fn check_if_any_balls_have_scored_against_any_goals(
                 continue;
             }
 
-            // Decrement the goal's HP and potentially eliminate it.
-            let hit_points =
-                global_data.goals_hit_points.get_mut(side).unwrap();
-
-            *hit_points = hit_points.saturating_sub(1);
+            // Decrement the paddle's HP and potentially eliminate it.
+            paddle.hit_points = paddle.hit_points.saturating_sub(1);
             info!("Ball({:?}): Scored Goal({:?})", ball_entity, side);
 
-            if *hit_points == 0 {
-                goal_eliminated_writer.send(GoalEliminatedEvent(*side));
+            if paddle.hit_points == 0 {
+                paddle_eliminated_events.send(PaddleEliminatedEvent(*side));
                 info!("Ball({:?}): Eliminated Goal({:?})", ball_entity, side);
             }
 
@@ -193,10 +190,12 @@ fn check_if_any_balls_have_scored_against_any_goals(
 }
 
 fn block_eliminated_goals(
-    mut event_reader: EventReader<GoalEliminatedEvent>,
+    mut paddle_eliminated_events: EventReader<PaddleEliminatedEvent>,
     mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
-    for GoalEliminatedEvent(eliminated_side) in event_reader.iter() {
+    for PaddleEliminatedEvent(eliminated_side) in
+        paddle_eliminated_events.iter()
+    {
         spawn_in_goal_events
             .send(SpawnEvent::with_data(Object::Wall, *eliminated_side));
     }
@@ -205,21 +204,18 @@ fn block_eliminated_goals(
 fn check_for_game_over_conditions(
     mut global_data: ResMut<GlobalData>,
     mut next_game_screen: ResMut<NextState<GameScreen>>,
-    mut event_reader: EventReader<GoalEliminatedEvent>,
-    teams_query: Query<(&Team, &Side), With<Paddle>>,
+    mut paddle_eliminated_events: EventReader<PaddleEliminatedEvent>,
+    teams_query: Query<&Paddle>,
 ) {
-    // TODO: Need a more robust system that allows 4 teams!
-    for GoalEliminatedEvent(_) in event_reader.iter() {
+    for PaddleEliminatedEvent(_) in paddle_eliminated_events.iter() {
         // See if player or enemies have lost enough paddles for a game over.
-        let has_player_won = teams_query
-            .iter()
-            .filter(|(team, _)| **team == Team::Enemies)
-            .all(|(_, side)| global_data.goals_hit_points[side] == 0);
+        let has_player_won = teams_query.iter().all(|paddle| {
+            paddle.team == Team::Allies || paddle.hit_points == 0
+        });
 
-        let has_player_lost = teams_query
-            .iter()
-            .filter(|(team, _)| **team == Team::Allies)
-            .all(|(_, side)| global_data.goals_hit_points[side] == 0);
+        let has_player_lost = teams_query.iter().all(|paddle| {
+            paddle.team == Team::Enemies || paddle.hit_points == 0
+        });
 
         if !has_player_won && !has_player_lost {
             continue;
@@ -245,7 +241,7 @@ pub struct GameplayLogicPlugin;
 
 impl Plugin for GameplayLogicPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<GoalEliminatedEvent>().add_systems(
+        app.add_event::<PaddleEliminatedEvent>().add_systems(
             Update,
             (
                 replace_despawned_balls,

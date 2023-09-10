@@ -2,9 +2,12 @@ use bevy::prelude::*;
 
 use crate::{
     cached_assets::CachedAssets,
-    components::{goals::Side, paddles::HitPointsUi, spawning::ForState},
+    components::{
+        goals::Side,
+        paddles::{HitPointsUi, Paddle},
+        spawning::ForState,
+    },
     events::MessageUiEvent,
-    global_data::GlobalData,
 };
 
 use super::GameSystemSet;
@@ -12,12 +15,12 @@ use super::GameSystemSet;
 fn handle_spawn_ui_message_event(
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
-    mut event_reader: EventReader<MessageUiEvent>,
+    mut message_ui_events: EventReader<MessageUiEvent>,
 ) {
     for MessageUiEvent {
         message,
         game_screen,
-    } in event_reader.iter()
+    } in message_ui_events.iter()
     {
         commands
             .spawn((
@@ -71,12 +74,16 @@ fn handle_spawn_ui_message_event(
 }
 
 fn update_goal_hit_points_ui(
-    global_data: Res<GlobalData>,
-    mut query: Query<(&Side, &mut Text), With<HitPointsUi>>,
+    paddles_query: Query<(&Paddle, &Side)>,
+    mut hp_ui_query: Query<(&mut Text, &Side), With<HitPointsUi>>,
 ) {
-    for (side, mut text) in &mut query {
-        let hit_points = global_data.goals_hit_points[side];
-        text.sections[0].value = hit_points.to_string();
+    for (paddle, paddle_side) in &paddles_query {
+        for (mut text, text_side) in &mut hp_ui_query {
+            if text_side == paddle_side {
+                let hit_points = paddle.hit_points;
+                text.sections[0].value = hit_points.to_string();
+            }
+        }
     }
 }
 

@@ -33,20 +33,6 @@ fn spawn_start_menu_ui(
     });
 }
 
-fn reset_each_goals_hit_points(
-    config: Res<Config>,
-    mut global_data: ResMut<GlobalData>,
-) {
-    const SIDES: [Side; 4] = [Side::Top, Side::Right, Side::Bottom, Side::Left];
-    let goals = &config.modes[global_data.mode_index].goals;
-
-    for (i, side) in SIDES.iter().enumerate() {
-        global_data
-            .goals_hit_points
-            .insert(*side, goals[i].starting_hit_points);
-    }
-}
-
 fn give_each_goal_a_new_paddle(
     goals_query: Query<&Side, With<Goal>>,
     mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Side>>,
@@ -76,12 +62,7 @@ impl Plugin for StartMenuPlugin {
         app.add_systems(OnEnter(GameScreen::StartMenu), spawn_start_menu_ui)
             .add_systems(
                 OnExit(GameScreen::StartMenu),
-                (
-                    reset_each_goals_hit_points,
-                    give_each_goal_a_new_paddle,
-                    spawn_starting_balls,
-                )
-                    .chain(),
+                (give_each_goal_a_new_paddle, spawn_starting_balls).chain(),
             );
     }
 }

@@ -10,12 +10,10 @@ use crate::{
         spawning::Object,
     },
     constants::*,
-    global_data::GlobalData,
 };
 
 fn spawn_play_area(
     cached_assets: Res<CachedAssets>,
-    mut global_data: ResMut<GlobalData>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -79,7 +77,7 @@ fn spawn_play_area(
     // Goals
     let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
-    let goal_configs = [
+    let paddle_configs = [
         (
             2,
             Side::Top,
@@ -130,7 +128,7 @@ fn spawn_play_area(
         ),
     ];
 
-    for (i, side, style) in goal_configs.iter() {
+    for (i, side, style) in paddle_configs.iter() {
         // Goals
         commands
             .spawn((
@@ -140,7 +138,7 @@ fn spawn_play_area(
                     transform: Transform::from_rotation(Quat::from_axis_angle(
                         Vec3::Y,
                         std::f32::consts::TAU
-                            * (*i as f32 / goal_configs.len() as f32),
+                            * (*i as f32 / paddle_configs.len() as f32),
                     ))
                     .mul_transform(Transform::from_xyz(
                         0.0,
@@ -179,12 +177,12 @@ fn spawn_play_area(
 
         // Score
         commands.spawn((
-            HitPointsUi,
             *side,
+            HitPointsUi,
             TextBundle {
                 style: style.clone(),
                 text: Text::from_section(
-                    "",
+                    "0",
                     TextStyle {
                         font: cached_assets.menu_font.clone(),
                         font_size: 50.0,
@@ -197,7 +195,6 @@ fn spawn_play_area(
 
         // Walls
         spawn_in_goal_events.send(SpawnEvent::with_data(Object::Wall, *side));
-        global_data.goals_hit_points.insert(*side, 0);
     }
 }
 
