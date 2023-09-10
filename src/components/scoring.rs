@@ -1,6 +1,6 @@
-use bevy::prelude::Component;
+use bevy::prelude::*;
 
-/// Marks a [`Text`] entity to display the HP for an associated [`Paddle`].
+/// Marks a [`Text`] entity to display the HP for the associated [`HitPoints`].
 #[derive(Component)]
 pub struct HitPointsUi;
 

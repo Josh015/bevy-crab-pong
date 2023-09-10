@@ -2,16 +2,16 @@ use bevy::prelude::{Component, GlobalTransform, Vec3};
 
 use crate::constants::*;
 
-/// Marks a goal entity so that [`Paddle`] and [`Wall`] entities can use it
-/// as a parent, and so [`Ball`] entities can score against it.
+/// Marks a goal entity so that paddles and walls can use it as a parent, and
+/// so balls can score against it.
 #[derive(Component)]
 pub struct Goal;
 
-/// A component that makes an entity a wall in a [`Goal`].
+/// Makes an entity a wall that deflects all balls away from a goal.
 #[derive(Component)]
 pub struct Wall;
 
-/// Marks an entity as a corner barrier.
+/// Marks an entity as a barrier to deflect all balls away from a corner.
 #[derive(Component)]
 pub struct Barrier;
 

@@ -1,4 +1,4 @@
-use bevy::prelude::Component;
+use bevy::prelude::*;
 
 /// Marks an entity as an ocean with an animated texture effect.
 #[derive(Component, Default)]

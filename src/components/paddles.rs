@@ -12,7 +12,7 @@ pub struct KeyboardPlayer;
 #[derive(Component)]
 pub struct AiPlayer;
 
-/// The [`Ball`] entity targeted by an [`AiInput`] [`Paddle`] entity.
+/// The [`Ball`] entity targeted by an [`AiPlayer`] [`Paddle`] entity.
 #[derive(Component)]
 #[component(storage = "SparseSet")]
 pub struct Target(pub Entity);
