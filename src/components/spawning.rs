@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 /// Objects that can be spawned via Spew.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Object {
     Ball,
     Wall,
@@ -9,17 +9,17 @@ pub enum Object {
 }
 
 /// Tags an entity to only exist in the listed game states.
-#[derive(Component)]
+#[derive(Clone, Component, Debug, Default)]
 pub struct ForState<T: States> {
     pub states: Vec<T>,
 }
 
 /// Contains the [`SpawnAnimation`] progress for this entity.
-#[derive(Component, Default)]
+#[derive(Clone, Component, Debug, Default)]
 pub struct SpawnProgress(pub f32);
 
 /// Specifies an entity's spawning effect animation.
-#[derive(Clone, Component, Copy, Default, PartialEq, Debug)]
+#[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
 pub enum SpawnAnimation {
     /// Uses alpha-blending to fade in/out an entity.
     ///
@@ -42,17 +42,17 @@ pub enum SpawnAnimation {
 }
 
 /// Marks an entity to fade in and delay activation.
-#[derive(Clone, Component, Copy, Default, PartialEq, Debug)]
+#[derive(Clone, Component, Debug, Default)]
 #[component(storage = "SparseSet")]
 pub struct Spawning;
 
 /// Marks an entity to fade out and then despawn.
-#[derive(Clone, Component, Copy, Default, PartialEq, Debug)]
+#[derive(Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct Despawning;
 
 /// Marks an entity that needs spawn effects.
-#[derive(Bundle, Default)]
+#[derive(Bundle, Clone, Debug, Default)]
 pub struct SpawnEffectsBundle {
     pub spawn_animation: SpawnAnimation,
     pub spawn_progress: SpawnProgress,

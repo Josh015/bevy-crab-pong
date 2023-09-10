@@ -3,7 +3,7 @@ use bevy::prelude::{App, Event, Plugin};
 use crate::screens::GameScreen;
 
 /// An event fired when spawning a message UI.
-#[derive(Event)]
+#[derive(Event, Debug)]
 pub struct MessageUiEvent {
     pub message: String,
     pub game_screen: GameScreen,

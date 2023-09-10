@@ -38,7 +38,7 @@ pub struct PaddleConfig {
     pub hit_points: u8,
 }
 
-#[derive(Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
 pub enum PlayerConfig {
     Keyboard,
     AI,

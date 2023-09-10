@@ -4,15 +4,15 @@ use crate::constants::*;
 
 /// Marks a goal entity so that paddles and walls can use it as a parent, and
 /// so balls can score against it.
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Goal;
 
 /// Makes an entity a wall that deflects all balls away from a goal.
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Wall;
 
 /// Marks an entity as a barrier to deflect all balls away from a corner.
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Barrier;
 
 /// Assigns an entity to a given side of the arena.

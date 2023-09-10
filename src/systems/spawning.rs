@@ -42,7 +42,7 @@ fn remove_goal_occupant(
                 commands
                     .entity(entity)
                     .remove::<AccelerationBundle>()
-                    .insert(Despawning::default());
+                    .insert(Despawning);
                 break;
             }
         }

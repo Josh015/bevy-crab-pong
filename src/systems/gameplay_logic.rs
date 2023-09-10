@@ -16,7 +16,7 @@ use crate::{
 
 use super::GameSystemSet;
 
-#[derive(Event)]
+#[derive(Clone, Component, Debug, Event)]
 struct PaddleEliminatedEvent(Side);
 
 fn replace_despawned_balls(
@@ -183,7 +183,7 @@ fn check_if_any_balls_have_scored_against_any_goals(
             }
 
             // Start despawning the ball to prevent repeated scoring.
-            commands.entity(ball_entity).insert(Despawning::default());
+            commands.entity(ball_entity).insert(Despawning);
             break;
         }
     }
