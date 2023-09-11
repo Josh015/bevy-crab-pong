@@ -12,12 +12,28 @@ use crate::{
     constants::*,
     global_data::GlobalData,
     screens::GameScreen,
+    serialization::Config,
 };
 
 use super::GameSystemSet;
 
 #[derive(Clone, Component, Debug, Event)]
 struct GoalEliminatedEvent(Entity);
+
+fn spawn_balls_sequentially_as_needed(
+    config: Res<Config>,
+    global_data: Res<GlobalData>,
+    balls_query: Query<Entity, With<Ball>>,
+    spawning_balls_query: Query<Entity, (With<Ball>, With<Spawning>)>,
+    mut spawn_events: EventWriter<SpawnEvent<Object>>,
+) {
+    if balls_query.iter().len()
+        < config.modes[global_data.mode_index].max_ball_count
+        && spawning_balls_query.iter().len() < 1
+    {
+        spawn_events.send(SpawnEvent::new(Object::Ball));
+    }
+}
 
 fn handle_keyboard_input_for_player_controlled_paddles(
     keyboard_input: Res<Input<KeyCode>>,
@@ -145,14 +161,13 @@ fn move_ai_paddles_toward_their_targeted_balls(
 fn check_if_any_balls_have_scored_against_any_goals(
     mut commands: Commands,
     mut goal_eliminated_events: EventWriter<GoalEliminatedEvent>,
-    mut spawn_events: EventWriter<SpawnEvent<Object>>,
     balls_query: Query<
         (Entity, &GlobalTransform),
         (With<Ball>, Without<Spawning>, Without<Despawning>),
     >,
     mut paddles_query: Query<(&Parent, &mut HitPoints, &Side), With<Paddle>>,
 ) {
-    for (i, (ball_entity, global_transform)) in balls_query.iter().enumerate() {
+    for (ball_entity, global_transform) in &balls_query {
         for (parent, mut hit_points, side) in &mut paddles_query {
             // A ball will score against the goal it's closest to once it's
             // fully past the goal's paddle.
@@ -173,10 +188,6 @@ fn check_if_any_balls_have_scored_against_any_goals(
 
             // Despawn and replace the scoring ball.
             commands.entity(ball_entity).insert(Despawning);
-            spawn_events.send(
-                SpawnEvent::new(Object::Ball)
-                    .delay_seconds(i as f32 * BALL_SPAWN_DELAY_IN_SECONDS),
-            );
             break;
         }
     }
@@ -229,6 +240,7 @@ impl Plugin for GameplayLogicPlugin {
         app.add_event::<GoalEliminatedEvent>().add_systems(
             Update,
             (
+                spawn_balls_sequentially_as_needed,
                 handle_keyboard_input_for_player_controlled_paddles,
                 make_ai_paddles_target_the_balls_closest_to_their_goals,
                 move_ai_paddles_toward_their_targeted_balls,

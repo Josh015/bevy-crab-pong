@@ -17,7 +17,7 @@ cargo run --release
 ## TODO
 
 - [x] Fix issue with mode switching due to paddles not respawning between rounds.
-- [ ] Fix issue with ball spawning during paused screen.
+- [x] Fix issue with ball spawning during paused screen.
 - [ ] Fix issue where HP of surviving paddles is delayed in resetting for second round.
 - [ ] Make walls spawn fully-formed before window opens.
 - [ ] Add "reflections" in the water via mirrored geometry and water blending.

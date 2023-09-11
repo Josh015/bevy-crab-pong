@@ -3,7 +3,6 @@ use spew::prelude::SpawnEvent;
 
 use crate::{
     components::{goals::Goal, spawning::Object},
-    constants::*,
     events::MessageUiEvent,
     global_data::GlobalData,
     serialization::Config,
@@ -39,21 +38,6 @@ fn give_each_goal_a_new_paddle(
     }
 }
 
-fn spawn_starting_balls(
-    config: Res<Config>,
-    global_data: Res<GlobalData>,
-    mut spawn_events: EventWriter<SpawnEvent<Object>>,
-) {
-    for i in 0..config.modes[global_data.mode_index].max_ball_count {
-        // TODO: Need to finish clearing out old balls first, since they'll count towards round total if not!
-
-        spawn_events.send(
-            SpawnEvent::new(Object::Ball)
-                .delay_seconds(i as f32 * BALL_SPAWN_DELAY_IN_SECONDS),
-        );
-    }
-}
-
 pub struct StartMenuPlugin;
 
 impl Plugin for StartMenuPlugin {
@@ -61,7 +45,7 @@ impl Plugin for StartMenuPlugin {
         app.add_systems(OnEnter(GameScreen::StartMenu), spawn_start_menu_ui)
             .add_systems(
                 OnExit(GameScreen::StartMenu),
-                (give_each_goal_a_new_paddle, spawn_starting_balls).chain(),
+                give_each_goal_a_new_paddle.chain(),
             );
     }
 }
