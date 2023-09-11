@@ -6,7 +6,7 @@ use crate::{
         goals::Side,
         paddles::Paddle,
         scoring::{HitPoints, HitPointsUi},
-        spawning::ForState,
+        spawning::ForStates,
     },
     events::MessageUiEvent,
 };
@@ -25,9 +25,7 @@ fn handle_spawn_ui_message_event(
     {
         commands
             .spawn((
-                ForState {
-                    states: vec![*game_screen],
-                },
+                ForStates(vec![*game_screen]),
                 NodeBundle {
                     style: Style {
                         width: Val::Percent(100.0),

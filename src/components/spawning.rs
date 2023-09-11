@@ -10,9 +10,7 @@ pub enum Object {
 
 /// Tags an entity to only exist in the listed game states.
 #[derive(Clone, Component, Debug, Default)]
-pub struct ForState<T: States> {
-    pub states: Vec<T>,
-}
+pub struct ForStates<T: States>(pub Vec<T>);
 
 /// Contains the [`SpawnAnimation`] progress for this entity.
 #[derive(Clone, Component, Debug, Default)]

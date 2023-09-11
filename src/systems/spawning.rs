@@ -13,7 +13,7 @@ use crate::{
         paddles::{AiPlayer, Ball, KeyboardPlayer, Paddle},
         scoring::{HitPoints, Team},
         spawning::{
-            Despawning, ForState, Object, SpawnAnimation, SpawnEffectsBundle,
+            Despawning, ForStates, Object, SpawnAnimation, SpawnEffectsBundle,
             Spawning,
         },
     },
@@ -62,9 +62,7 @@ fn spawn_ball(
         .spawn((
             Ball,
             SpawnEffectsBundle::default(),
-            ForState {
-                states: vec![GameScreen::Playing, GameScreen::Paused],
-            },
+            ForStates(vec![GameScreen::Playing, GameScreen::Paused]),
             VelocityBundle {
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
                 speed: Speed(config.ball_speed),

@@ -1,7 +1,7 @@
 use bevy::{app::AppExit, prelude::*};
 
 use crate::{
-    components::spawning::{Despawning, ForState, SpawnAnimation},
+    components::spawning::{Despawning, ForStates, SpawnAnimation},
     global_data::GlobalData,
     serialization::Config,
 };
@@ -64,10 +64,10 @@ fn handle_game_screen_specific_inputs(
 fn despawn_invalid_entities_for_current_screen(
     mut commands: Commands,
     game_screen: Res<State<GameScreen>>,
-    mut query: Query<(Entity, &ForState<GameScreen>, Option<&SpawnAnimation>)>,
+    mut query: Query<(Entity, &ForStates<GameScreen>, Option<&SpawnAnimation>)>,
 ) {
-    for (entity, for_state, spawning_animation) in &mut query {
-        if !for_state.states.contains(game_screen.get()) {
+    for (entity, for_states, spawning_animation) in &mut query {
+        if !for_states.0.contains(game_screen.get()) {
             if spawning_animation.is_some() {
                 commands.entity(entity).insert(Despawning);
             } else {
