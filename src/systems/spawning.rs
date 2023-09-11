@@ -22,25 +22,6 @@ use crate::{
     serialization::{Config, PlayerConfig},
 };
 
-fn remove_previous_goal_occupant(
-    mut commands: Commands,
-    new_query: Query<(Entity, &Parent), Or<(Added<Paddle>, Added<Wall>)>>,
-    old_query: Query<(Entity, &Parent), Or<(With<Paddle>, With<Wall>)>>,
-) {
-    for (new_entity, new_parent) in &new_query {
-        for (old_entity, old_parent) in &old_query {
-            if old_parent.get() == new_parent.get() && new_entity != old_entity
-            {
-                commands
-                    .entity(old_entity)
-                    .remove::<AccelerationBundle>()
-                    .insert(Despawning);
-                break;
-            }
-        }
-    }
-}
-
 fn spawn_ball(
     config: Res<Config>,
     cached_assets: Res<CachedAssets>,
@@ -201,20 +182,38 @@ fn spawn_paddle_in_goal(
     }
 }
 
+fn remove_previous_goal_occupant(
+    mut commands: Commands,
+    new_query: Query<(Entity, &Parent), Or<(Added<Paddle>, Added<Wall>)>>,
+    old_query: Query<(Entity, &Parent), Or<(With<Paddle>, With<Wall>)>>,
+) {
+    for (new_entity, new_parent) in &new_query {
+        for (old_entity, old_parent) in &old_query {
+            if old_parent == new_parent && old_entity != new_entity {
+                commands
+                    .entity(old_entity)
+                    .remove::<AccelerationBundle>()
+                    .insert(Despawning);
+                break;
+            }
+        }
+    }
+}
+
 pub struct SpawningPlugin;
 
 impl Plugin for SpawningPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            remove_previous_goal_occupant.after(SpewSystemSet),
-        )
-        .add_plugins(SpewPlugin::<Object>::default())
-        .add_plugins(SpewPlugin::<Object, Side>::default())
-        .add_spawners((
-            (Object::Ball, spawn_ball),
-            (Object::Wall, spawn_wall_in_goal),
-            (Object::Paddle, spawn_paddle_in_goal),
-        ));
+        app.add_plugins(SpewPlugin::<Object>::default())
+            .add_plugins(SpewPlugin::<Object, Side>::default())
+            .add_spawners((
+                (Object::Ball, spawn_ball),
+                (Object::Wall, spawn_wall_in_goal),
+                (Object::Paddle, spawn_paddle_in_goal),
+            ))
+            .add_systems(
+                Update,
+                remove_previous_goal_occupant.after(SpewSystemSet),
+            );
     }
 }
