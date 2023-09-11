@@ -61,14 +61,10 @@ fn handle_game_state_specific_inputs(
     }
 }
 
-fn despawn_invalid_entities_for_state<const N: usize>(
+fn despawn_invalid_entities_for_state<S: States, const N: usize>(
     mut commands: Commands,
-    game_state: Res<State<GameState>>,
-    mut query: Query<(
-        Entity,
-        &ForStates<GameState, N>,
-        Option<&SpawnAnimation>,
-    )>,
+    game_state: Res<State<S>>,
+    mut query: Query<(Entity, &ForStates<S, N>, Option<&SpawnAnimation>)>,
 ) {
     for (entity, for_states, spawning_animation) in &mut query {
         if !for_states.0.contains(game_state.get()) {
@@ -89,9 +85,9 @@ impl Plugin for AllPlugin {
             .add_systems(
                 PostUpdate,
                 (
-                    despawn_invalid_entities_for_state::<1>,
-                    despawn_invalid_entities_for_state::<2>,
-                    despawn_invalid_entities_for_state::<3>,
+                    despawn_invalid_entities_for_state::<GameState, 1>,
+                    despawn_invalid_entities_for_state::<GameState, 2>,
+                    despawn_invalid_entities_for_state::<GameState, 3>,
                 )
                     .run_if(state_changed::<GameState>()),
             );
