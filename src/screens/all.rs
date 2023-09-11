@@ -61,10 +61,14 @@ fn handle_game_screen_specific_inputs(
     }
 }
 
-fn despawn_invalid_entities_when_changing_screens(
+fn despawn_invalid_entities_when_changing_screens<const N: usize>(
     mut commands: Commands,
     game_screen: Res<State<GameScreen>>,
-    mut query: Query<(Entity, &ForStates<GameScreen>, Option<&SpawnAnimation>)>,
+    mut query: Query<(
+        Entity,
+        &ForStates<GameScreen, N>,
+        Option<&SpawnAnimation>,
+    )>,
 ) {
     for (entity, for_states, spawning_animation) in &mut query {
         if !for_states.0.contains(game_screen.get()) {
@@ -84,7 +88,12 @@ impl Plugin for AllPlugin {
         app.add_systems(Update, handle_game_screen_specific_inputs)
             .add_systems(
                 PostUpdate,
-                despawn_invalid_entities_when_changing_screens
+                (
+                    despawn_invalid_entities_when_changing_screens::<1>,
+                    despawn_invalid_entities_when_changing_screens::<2>,
+                    despawn_invalid_entities_when_changing_screens::<3>,
+                    despawn_invalid_entities_when_changing_screens::<4>,
+                )
                     .run_if(state_changed::<GameScreen>()),
             );
     }

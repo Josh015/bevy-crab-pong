@@ -35,7 +35,7 @@ fn spawn_ball(
         .spawn((
             Ball,
             SpawnEffectsBundle::default(),
-            ForStates(vec![GameScreen::Playing, GameScreen::Paused]),
+            ForStates([GameScreen::Playing, GameScreen::Paused]),
             VelocityBundle {
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
                 speed: Speed(config.ball_speed),

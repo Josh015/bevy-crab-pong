@@ -25,7 +25,7 @@ fn handle_spawn_ui_message_event(
     {
         commands
             .spawn((
-                ForStates(vec![*game_screen]),
+                ForStates([*game_screen]),
                 NodeBundle {
                     style: Style {
                         width: Val::Percent(100.0),
