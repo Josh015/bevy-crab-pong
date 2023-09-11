@@ -10,7 +10,7 @@ use crate::{
         spawning::{Despawning, Object, Spawning},
     },
     constants::*,
-    global_data::{GameOver, GlobalData},
+    global_data::GlobalData,
     screens::GameScreen,
 };
 
@@ -208,28 +208,23 @@ fn check_for_game_over(
     teams_query: Query<(&Team, &HitPoints), With<Paddle>>,
 ) {
     for PaddleEliminatedEvent(_) in paddle_eliminated_events.iter() {
-        // See if player or enemies have lost enough paddles for a game over.
-        let has_player_won = teams_query
+        // Check if only one team still has HP.
+        let Some((survivor, _)) = teams_query.iter().find(|(_, hp)| hp.0 > 0)
+        else {
+            return;
+        };
+        let is_winner = teams_query
             .iter()
-            .all(|(team, hit_points)| team.0 == 0 || hit_points.0 == 0);
+            .all(|(team, hp)| team.0 == survivor.0 || hp.0 == 0);
 
-        let has_player_lost = teams_query
-            .iter()
-            .all(|(team, hit_points)| team.0 == 1 || hit_points.0 == 0);
-
-        if !has_player_won && !has_player_lost {
+        if !is_winner {
             continue;
         }
 
         // Declare a winner and navigate back to the Start Menu.
-        global_data.game_over = Some(if has_player_won {
-            GameOver::Won
-        } else {
-            GameOver::Lost
-        });
-
+        global_data.winning_team = Some(survivor.0);
         next_game_screen.set(GameScreen::StartMenu);
-        info!("Game Over: Player {:?}", global_data.game_over.unwrap());
+        info!("Game Over: Team {:?} won!", survivor.0);
     }
 }
 

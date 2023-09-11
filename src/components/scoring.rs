@@ -10,4 +10,4 @@ pub struct HitPoints(pub u8);
 
 // An entity's team for checking win conditions.
 #[derive(Clone, Component, Debug)]
-pub struct Team(pub u8);
+pub struct Team(pub usize);

@@ -10,8 +10,6 @@ pub struct Config {
     pub width: u32,
     pub height: u32,
     pub pause_message: String,
-    pub game_over_win_message: String,
-    pub game_over_lose_message: String,
     pub new_game_message: String,
     pub clear_color: Color,
     pub swaying_camera_speed: f32,
@@ -20,6 +18,7 @@ pub struct Config {
     pub paddle_seconds_to_max_speed: f32,
     pub ball_speed: f32,
     pub fade_speed: f32,
+    pub team_win_messages: Vec<String>,
     pub modes: Vec<ModeConfig>,
 }
 
@@ -33,7 +32,7 @@ pub struct ModeConfig {
 #[derive(Debug, Deserialize)]
 pub struct PaddleConfig {
     pub color: String,
-    pub team: u8,
+    pub team: usize,
     pub player: PlayerConfig,
     pub hit_points: u8,
 }

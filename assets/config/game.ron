@@ -3,8 +3,6 @@
   width: 800,
   height: 800,
   pause_message: "PAUSED",
-  game_over_win_message: "You win!\n",
-  game_over_lose_message: "You lose.\n",
   new_game_message: "
 ENTER for a new game.
 ESC to quit.
@@ -18,6 +16,10 @@ G to enable debugging.
   paddle_seconds_to_max_speed: 0.6, // 0.65
   fade_speed: 0.75,
   ball_speed: 0.5,
+  team_win_messages: [
+    "You win!\n",
+    "You lose.\n"
+  ],
   modes: [
     (
       name: "1xKeyboard vs 3xAI",

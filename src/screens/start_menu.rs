@@ -8,7 +8,7 @@ use crate::{
     },
     constants::*,
     events::MessageUiEvent,
-    global_data::{GameOver, GlobalData},
+    global_data::GlobalData,
     serialization::Config,
 };
 
@@ -19,9 +19,8 @@ fn spawn_start_menu_ui(
     global_data: Res<GlobalData>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
-    let mut message = String::from(match global_data.game_over {
-        Some(GameOver::Won) => &config.game_over_win_message,
-        Some(GameOver::Lost) => &config.game_over_lose_message,
+    let mut message = String::from(match global_data.winning_team {
+        Some(winning_team) => &config.team_win_messages[winning_team],
         _ => "",
     });
 
