@@ -1,7 +1,4 @@
 use bevy::prelude::*;
-use std::collections::HashMap;
-
-use crate::components::goals::Side;
 
 /// Assets that need to remain loaded at all times.
 #[derive(Debug, Resource)]
@@ -9,7 +6,7 @@ pub struct CachedAssets {
     pub menu_font: Handle<Font>,
     pub ball_mesh: Handle<Mesh>,
     pub paddle_mesh: Handle<Mesh>,
-    pub paddle_materials: HashMap<Side, Handle<StandardMaterial>>,
+    pub paddle_materials: [Handle<StandardMaterial>; 4],
     pub wall_mesh: Handle<Mesh>,
     pub wall_material: Handle<StandardMaterial>,
 }
@@ -30,6 +27,7 @@ impl FromWorld for CachedAssets {
                     sectors: 30,
                     stacks: 30,
                 })),
+                // TODO: Replace with crab model.
                 meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
                 meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             )
@@ -40,12 +38,13 @@ impl FromWorld for CachedAssets {
                 .unwrap();
 
             (
-                HashMap::from([
-                    (Side::Top, materials.add(Color::ORANGE.into())),
-                    (Side::Right, materials.add(Color::BLUE.into())),
-                    (Side::Bottom, materials.add(Color::RED.into())),
-                    (Side::Left, materials.add(Color::PURPLE.into())),
-                ]),
+                [
+                    // TODO: Replace with crab model textures.
+                    materials.add(Color::ORANGE.into()),
+                    materials.add(Color::BLUE.into()),
+                    materials.add(Color::RED.into()),
+                    materials.add(Color::PURPLE.into()),
+                ],
                 materials.add(Color::hex("00A400").unwrap().into()),
             )
         };
