@@ -117,7 +117,7 @@ fn spawn_paddle_in_goal(
     mut materials: ResMut<Assets<StandardMaterial>>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
-    for (i, (goal_entity, goal_side)) in goals_query.iter().enumerate() {
+    for (goal_entity, goal_side) in &goals_query {
         if *goal_side != side {
             continue;
         }
@@ -125,7 +125,7 @@ fn spawn_paddle_in_goal(
         // Spawn paddle in goal.
         let paddle_config =
             &config.modes[global_data.mode_index].paddles[goal_side];
-        let material_handle = cached_assets.paddle_materials[i].clone();
+        let material_handle = cached_assets.paddle_materials[goal_side].clone();
         let paddle = commands
             .entity(goal_entity)
             .with_children(|parent| {
