@@ -2,10 +2,7 @@ use bevy::prelude::*;
 use spew::prelude::SpawnEvent;
 
 use crate::{
-    components::{
-        goals::{Goal, Side},
-        spawning::Object,
-    },
+    components::{goals::Goal, spawning::Object},
     constants::*,
     events::MessageUiEvent,
     global_data::GlobalData,
@@ -33,11 +30,12 @@ fn spawn_start_menu_ui(
 }
 
 fn give_each_goal_a_new_paddle(
-    goals_query: Query<&Side, With<Goal>>,
-    mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Side>>,
+    goals_query: Query<Entity, With<Goal>>,
+    mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Entity>>,
 ) {
-    for side in &goals_query {
-        spawn_in_goal_events.send(SpawnEvent::with_data(Object::Paddle, *side));
+    for entity in &goals_query {
+        spawn_in_goal_events
+            .send(SpawnEvent::with_data(Object::Paddle, entity));
     }
 }
 

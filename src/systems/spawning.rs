@@ -63,124 +63,118 @@ fn spawn_ball(
 }
 
 fn spawn_wall_in_goal(
-    In(side): In<Side>,
+    In(goal_entity): In<Entity>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
-    goals_query: Query<(Entity, &Side), With<Goal>>,
+    goals_query: Query<&Side, With<Goal>>,
 ) {
-    for (goal_entity, goal_side) in &goals_query {
-        if *goal_side != side {
-            continue;
-        }
+    let Ok(goal_side) = goals_query.get(goal_entity) else {
+        return;
+    };
 
-        // Spawn wall in goal.
-        let wall = commands
-            .entity(goal_entity)
-            .with_children(|parent| {
-                parent.spawn((
-                    Wall,
-                    *goal_side,
-                    SpawnEffectsBundle {
-                        spawn_animation: SpawnAnimation::Scale {
-                            max_scale: WALL_SCALE,
-                            axis_mask: Vec3::new(0.0, 1.0, 1.0),
-                        },
-                        ..default()
+    // Spawn wall in goal.
+    let wall = commands
+        .entity(goal_entity)
+        .with_children(|parent| {
+            parent.spawn((
+                Wall,
+                *goal_side,
+                SpawnEffectsBundle {
+                    spawn_animation: SpawnAnimation::Scale {
+                        max_scale: WALL_SCALE,
+                        axis_mask: Vec3::new(0.0, 1.0, 1.0),
                     },
-                    PbrBundle {
-                        mesh: cached_assets.wall_mesh.clone(),
-                        material: cached_assets.wall_material.clone(),
-                        transform: Transform::from_matrix(
-                            Mat4::from_scale_rotation_translation(
-                                Vec3::splat(f32::EPSILON),
-                                Quat::IDENTITY,
-                                Vec3::new(0.0, WALL_HEIGHT, 0.0),
-                            ),
+                    ..default()
+                },
+                PbrBundle {
+                    mesh: cached_assets.wall_mesh.clone(),
+                    material: cached_assets.wall_material.clone(),
+                    transform: Transform::from_matrix(
+                        Mat4::from_scale_rotation_translation(
+                            Vec3::splat(f32::EPSILON),
+                            Quat::IDENTITY,
+                            Vec3::new(0.0, WALL_HEIGHT, 0.0),
                         ),
-                        ..default()
-                    },
-                ));
-            })
-            .id();
+                    ),
+                    ..default()
+                },
+            ));
+        })
+        .id();
 
-        info!("Wall({:?}): Spawned", wall);
-        break;
-    }
+    info!("Wall({:?}): Spawned", wall);
 }
 
 fn spawn_paddle_in_goal(
-    In(side): In<Side>,
+    In(goal_entity): In<Entity>,
     global_data: Res<GlobalData>,
     config: Res<Config>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    goals_query: Query<(Entity, &Side), With<Goal>>,
+    goals_query: Query<&Side, With<Goal>>,
 ) {
-    for (goal_entity, goal_side) in &goals_query {
-        if *goal_side != side {
-            continue;
-        }
+    let Ok(goal_side) = goals_query.get(goal_entity) else {
+        return;
+    };
 
-        // Spawn paddle in goal.
-        let paddle_config =
-            &config.modes[global_data.mode_index].paddles[goal_side];
-        let material_handle = cached_assets.paddle_materials[goal_side].clone();
-        let paddle = commands
-            .entity(goal_entity)
-            .with_children(|parent| {
-                let mut paddle = parent.spawn((
-                    Paddle,
-                    *goal_side,
-                    Team(paddle_config.team),
-                    HitPoints(paddle_config.hit_points),
-                    SpawnEffectsBundle {
-                        spawn_animation: SpawnAnimation::Scale {
-                            max_scale: PADDLE_SCALE,
-                            axis_mask: Vec3::ONE,
-                        },
+    // Spawn paddle in goal.
+    let paddle_config =
+        &config.modes[global_data.mode_index].paddles[goal_side];
+    let material_handle = cached_assets.paddle_materials[goal_side].clone();
+    let paddle = commands
+        .entity(goal_entity)
+        .with_children(|parent| {
+            let mut paddle = parent.spawn((
+                Paddle,
+                *goal_side,
+                Team(paddle_config.team),
+                HitPoints(paddle_config.hit_points),
+                SpawnEffectsBundle {
+                    spawn_animation: SpawnAnimation::Scale {
+                        max_scale: PADDLE_SCALE,
+                        axis_mask: Vec3::ONE,
+                    },
+                    ..default()
+                },
+                AccelerationBundle {
+                    velocity: VelocityBundle {
+                        heading: Heading(Vec3::X),
                         ..default()
                     },
-                    AccelerationBundle {
-                        velocity: VelocityBundle {
-                            heading: Heading(Vec3::X),
-                            ..default()
-                        },
-                        max_speed: MaxSpeed(config.paddle_max_speed),
-                        acceleration: Acceleration(
-                            config.paddle_max_speed
-                                / config.paddle_seconds_to_max_speed,
+                    max_speed: MaxSpeed(config.paddle_max_speed),
+                    acceleration: Acceleration(
+                        config.paddle_max_speed
+                            / config.paddle_seconds_to_max_speed,
+                    ),
+                    ..default()
+                },
+                PbrBundle {
+                    mesh: cached_assets.paddle_mesh.clone(),
+                    material: material_handle.clone(),
+                    transform: Transform::from_matrix(
+                        Mat4::from_scale_rotation_translation(
+                            Vec3::splat(f32::EPSILON),
+                            Quat::IDENTITY,
+                            GOAL_PADDLE_START_POSITION,
                         ),
-                        ..default()
-                    },
-                    PbrBundle {
-                        mesh: cached_assets.paddle_mesh.clone(),
-                        material: material_handle.clone(),
-                        transform: Transform::from_matrix(
-                            Mat4::from_scale_rotation_translation(
-                                Vec3::splat(f32::EPSILON),
-                                Quat::IDENTITY,
-                                GOAL_PADDLE_START_POSITION,
-                            ),
-                        ),
-                        ..default()
-                    },
-                ));
+                    ),
+                    ..default()
+                },
+            ));
 
-                if paddle_config.player == PlayerConfig::AI {
-                    paddle.insert(AiPlayer);
-                } else {
-                    paddle.insert(KeyboardPlayer);
-                }
+            if paddle_config.player == PlayerConfig::AI {
+                paddle.insert(AiPlayer);
+            } else {
+                paddle.insert(KeyboardPlayer);
+            }
 
-                let material = materials.get_mut(&material_handle).unwrap();
-                material.base_color = Color::hex(&paddle_config.color).unwrap()
-            })
-            .id();
+            let material = materials.get_mut(&material_handle).unwrap();
+            material.base_color = Color::hex(&paddle_config.color).unwrap()
+        })
+        .id();
 
-        info!("Paddle({:?}): Spawned", paddle);
-        break;
-    }
+    info!("Paddle({:?}): Spawned", paddle);
 }
 
 fn remove_previous_goal_occupant(
@@ -206,7 +200,7 @@ pub struct SpawningPlugin;
 impl Plugin for SpawningPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(SpewPlugin::<Object>::default())
-            .add_plugins(SpewPlugin::<Object, Side>::default())
+            .add_plugins(SpewPlugin::<Object, Entity>::default())
             .add_spawners((
                 (Object::Ball, spawn_ball),
                 (Object::Wall, spawn_wall_in_goal),

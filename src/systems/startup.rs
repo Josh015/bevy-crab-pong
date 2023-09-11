@@ -17,7 +17,7 @@ fn spawn_play_area(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Side>>,
+    mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Entity>>,
 ) {
     // Cameras
     commands.spawn((SwayingCamera, Camera3dBundle::default()));
@@ -79,31 +79,6 @@ fn spawn_play_area(
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
     let paddle_configs = [
         (
-            2,
-            Side::Top,
-            Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                justify_content: JustifyContent::Center,
-                top: Val::Px(5.0),
-                left: Val::Px(400.0),
-                ..default()
-            },
-        ),
-        (
-            1,
-            Side::Right,
-            Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                justify_content: JustifyContent::Center,
-                top: Val::Px(400.0),
-                right: Val::Px(5.0),
-                ..default()
-            },
-        ),
-        (
-            0,
             Side::Bottom,
             Style {
                 align_self: AlignSelf::FlexEnd,
@@ -115,7 +90,28 @@ fn spawn_play_area(
             },
         ),
         (
-            3,
+            Side::Right,
+            Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                top: Val::Px(400.0),
+                right: Val::Px(5.0),
+                ..default()
+            },
+        ),
+        (
+            Side::Top,
+            Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                top: Val::Px(5.0),
+                left: Val::Px(400.0),
+                ..default()
+            },
+        ),
+        (
             Side::Left,
             Style {
                 align_self: AlignSelf::FlexEnd,
@@ -128,9 +124,9 @@ fn spawn_play_area(
         ),
     ];
 
-    for (i, side, style) in paddle_configs.iter() {
+    for (i, (side, style)) in paddle_configs.iter().enumerate() {
         // Goals
-        commands
+        let goal = commands
             .spawn((
                 *side,
                 Goal,
@@ -138,7 +134,7 @@ fn spawn_play_area(
                     transform: Transform::from_rotation(Quat::from_axis_angle(
                         Vec3::Y,
                         std::f32::consts::TAU
-                            * (*i as f32 / paddle_configs.len() as f32),
+                            * (i as f32 / paddle_configs.len() as f32),
                     ))
                     .mul_transform(Transform::from_xyz(
                         0.0,
@@ -173,7 +169,11 @@ fn spawn_play_area(
                         ..default()
                     },
                 ));
-            });
+            })
+            .id();
+
+        // Walls
+        spawn_in_goal_events.send(SpawnEvent::with_data(Object::Wall, goal));
 
         // Score
         commands.spawn((
@@ -192,9 +192,6 @@ fn spawn_play_area(
                 ..default()
             },
         ));
-
-        // Walls
-        spawn_in_goal_events.send(SpawnEvent::with_data(Object::Wall, *side));
     }
 }
 
