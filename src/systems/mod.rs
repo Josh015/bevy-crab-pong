@@ -2,6 +2,7 @@ mod collisions;
 mod debugging;
 mod despawning;
 mod effects;
+mod environment;
 mod gameplay_logic;
 mod movement;
 mod spawning;
@@ -19,6 +20,7 @@ pub(super) enum GameSystemSet {
     Debugging,
     Despawning,
     Effects,
+    Environment,
     GameplayLogic,
     Movement,
     UserInterface,
@@ -33,7 +35,7 @@ pub struct SystemsPlugin;
 impl Plugin for SystemsPlugin {
     fn build(&self, app: &mut App) {
         app.configure_set(Update, GameSystemSet::UserInterface)
-            .configure_set(Update, GameSystemSet::Effects)
+            .configure_set(Update, GameSystemSet::Environment)
             .configure_set(
                 Update,
                 GameSystemSet::GameplayLogic
@@ -43,7 +45,7 @@ impl Plugin for SystemsPlugin {
             .configure_set(
                 Update,
                 GameSystemSet::Movement
-                    .after(GameSystemSet::Effects)
+                    .after(GameSystemSet::Environment)
                     .run_if(not(in_state(GameScreen::Paused))),
             )
             .configure_set(
@@ -54,8 +56,14 @@ impl Plugin for SystemsPlugin {
             )
             .configure_set(
                 PostUpdate,
-                GameSystemSet::Debugging
+                GameSystemSet::Effects
                     .after(GameSystemSet::Collisions)
+                    .run_if(not(in_state(GameScreen::Paused))),
+            )
+            .configure_set(
+                PostUpdate,
+                GameSystemSet::Debugging
+                    .after(GameSystemSet::Effects)
                     .before(GameSystemSet::Despawning)
                     .run_if(show_debugging_gizmos)
                     .run_if(not(in_state(GameScreen::StartMenu))),
@@ -71,6 +79,7 @@ impl Plugin for SystemsPlugin {
                 debugging::DebuggingPlugin,
                 despawning::DespawningPlugin,
                 effects::EffectsPlugin,
+                environment::EnvironmentPlugin,
                 gameplay_logic::GameplayLogicPlugin,
                 movement::MovementPlugin,
                 spawning::SpawningPlugin,
