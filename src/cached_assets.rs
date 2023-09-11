@@ -1,13 +1,10 @@
-use bevy::{prelude::*, utils::HashMap};
-
-use crate::components::goals::Side;
+use bevy::prelude::*;
 
 /// Assets that need to remain loaded at all times.
 #[derive(Debug, Resource)]
 pub struct CachedAssets {
     pub ball_mesh: Handle<Mesh>,
     pub paddle_mesh: Handle<Mesh>,
-    pub paddle_materials: HashMap<Side, Handle<StandardMaterial>>,
     pub wall_mesh: Handle<Mesh>,
     pub wall_material: Handle<StandardMaterial>,
 }
@@ -28,27 +25,17 @@ impl FromWorld for CachedAssets {
                 meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             )
         };
-        let (paddle_materials, wall_material) = {
+        let wall_material = {
             let mut materials = world
                 .get_resource_mut::<Assets<StandardMaterial>>()
                 .unwrap();
 
-            (
-                // TODO: Replace with crab model textures.
-                HashMap::from([
-                    (Side::Bottom, materials.add(Color::WHITE.into())),
-                    (Side::Right, materials.add(Color::WHITE.into())),
-                    (Side::Top, materials.add(Color::WHITE.into())),
-                    (Side::Left, materials.add(Color::WHITE.into())),
-                ]),
-                materials.add(Color::hex("00A400").unwrap().into()),
-            )
+            materials.add(Color::hex("00A400").unwrap().into())
         };
 
         Self {
             ball_mesh,
             paddle_mesh,
-            paddle_materials,
             wall_mesh,
             wall_material,
         }

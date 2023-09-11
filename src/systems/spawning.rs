@@ -18,7 +18,7 @@ use crate::{
     },
     constants::*,
     global_data::GlobalData,
-    serialization::{Config, PlayerConfig},
+    serialization::{Config, GameAssets, PlayerConfig},
     states::GameState,
 };
 
@@ -110,6 +110,7 @@ fn spawn_paddle_in_goal(
     global_data: Res<GlobalData>,
     config: Res<Config>,
     cached_assets: Res<CachedAssets>,
+    game_assets: Res<GameAssets>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     goals_query: Query<&Side, With<Goal>>,
@@ -121,7 +122,11 @@ fn spawn_paddle_in_goal(
     // Spawn paddle in goal.
     let paddle_config =
         &config.modes[global_data.mode_index].paddles[goal_side];
-    let material_handle = cached_assets.paddle_materials[goal_side].clone();
+    let material_handle = materials.add(StandardMaterial {
+        base_color_texture: Some(game_assets.image_paddle.clone()),
+        base_color: Color::hex(&paddle_config.color).unwrap(),
+        ..default()
+    });
     let paddle = commands
         .entity(goal_entity)
         .with_children(|parent| {
@@ -151,7 +156,7 @@ fn spawn_paddle_in_goal(
                 },
                 PbrBundle {
                     mesh: cached_assets.paddle_mesh.clone(),
-                    material: material_handle.clone(),
+                    material: material_handle,
                     transform: Transform::from_matrix(
                         Mat4::from_scale_rotation_translation(
                             Vec3::splat(f32::EPSILON),
@@ -159,6 +164,7 @@ fn spawn_paddle_in_goal(
                             GOAL_PADDLE_START_POSITION,
                         ),
                     ),
+
                     ..default()
                 },
             ));
@@ -168,9 +174,6 @@ fn spawn_paddle_in_goal(
             } else {
                 paddle.insert(KeyboardPlayer);
             }
-
-            let material = materials.get_mut(&material_handle).unwrap();
-            material.base_color = Color::hex(&paddle_config.color).unwrap()
         })
         .id();
 

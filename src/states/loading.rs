@@ -189,7 +189,7 @@ fn spawn_level(
                 text: Text::from_section(
                     "0",
                     TextStyle {
-                        font: game_assets.menu_font.clone(),
+                        font: game_assets.font_menu.clone(),
                         font_size: 50.0,
                         color: Color::RED,
                     },

@@ -1,5 +1,8 @@
 ({
-    "menu_font": File (
+    "fonts.menu": File (
         path: "fonts/FiraSans-Bold.ttf",
+    ),
+    "images.paddle": File (
+        path: "images/paddle.png",
     ),
 })

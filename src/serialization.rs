@@ -8,8 +8,11 @@ use crate::components::goals::Side;
 
 #[derive(AssetCollection, Resource)]
 pub struct GameAssets {
-    #[asset(key = "menu_font")]
-    pub menu_font: Handle<Font>,
+    #[asset(key = "fonts.menu")]
+    pub font_menu: Handle<Font>,
+
+    #[asset(key = "images.paddle")]
+    pub image_paddle: Handle<Image>,
 }
 
 /// Game settings read from a config file.

@@ -60,7 +60,7 @@ fn handle_spawn_ui_message_event(
                             text: Text::from_section(
                                 message.clone(),
                                 TextStyle {
-                                    font: game_assets.menu_font.clone(),
+                                    font: game_assets.font_menu.clone(),
                                     font_size: 30.0,
                                     color: Color::RED,
                                 },
