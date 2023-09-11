@@ -19,18 +19,6 @@ use super::GameSystemSet;
 #[derive(Clone, Component, Debug, Event)]
 struct GoalEliminatedEvent(Entity);
 
-fn replace_despawned_balls(
-    mut removed: RemovedComponents<Ball>,
-    mut spawn_events: EventWriter<SpawnEvent<Object>>,
-) {
-    for (i, _) in removed.iter().enumerate() {
-        spawn_events.send(
-            SpawnEvent::new(Object::Ball)
-                .delay_seconds(i as f32 * BALL_SPAWN_DELAY_IN_SECONDS),
-        );
-    }
-}
-
 fn handle_keyboard_input_for_player_controlled_paddles(
     keyboard_input: Res<Input<KeyCode>>,
     mut commands: Commands,
@@ -157,13 +145,14 @@ fn move_ai_paddles_toward_their_targeted_balls(
 fn check_if_any_balls_have_scored_against_any_goals(
     mut commands: Commands,
     mut goal_eliminated_events: EventWriter<GoalEliminatedEvent>,
+    mut spawn_events: EventWriter<SpawnEvent<Object>>,
     balls_query: Query<
         (Entity, &GlobalTransform),
         (With<Ball>, Without<Spawning>, Without<Despawning>),
     >,
     mut paddles_query: Query<(&Parent, &mut HitPoints, &Side), With<Paddle>>,
 ) {
-    for (ball_entity, global_transform) in &balls_query {
+    for (i, (ball_entity, global_transform)) in balls_query.iter().enumerate() {
         for (parent, mut hit_points, side) in &mut paddles_query {
             // A ball will score against the goal it's closest to once it's
             // fully past the goal's paddle.
@@ -182,8 +171,12 @@ fn check_if_any_balls_have_scored_against_any_goals(
                 info!("Ball({:?}): Eliminated Goal({:?})", ball_entity, side);
             }
 
-            // Start despawning the ball to prevent repeated scoring.
+            // Despawn and replace the scoring ball.
             commands.entity(ball_entity).insert(Despawning);
+            spawn_events.send(
+                SpawnEvent::new(Object::Ball)
+                    .delay_seconds(i as f32 * BALL_SPAWN_DELAY_IN_SECONDS),
+            );
             break;
         }
     }
@@ -236,7 +229,6 @@ impl Plugin for GameplayLogicPlugin {
         app.add_event::<GoalEliminatedEvent>().add_systems(
             Update,
             (
-                replace_despawned_balls,
                 handle_keyboard_input_for_player_controlled_paddles,
                 make_ai_paddles_target_the_balls_closest_to_their_goals,
                 move_ai_paddles_toward_their_targeted_balls,
