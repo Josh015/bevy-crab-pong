@@ -14,7 +14,6 @@ use crate::{
         scoring::{HitPoints, Team},
         spawning::{
             Despawning, ForStates, Object, SpawnAnimation, SpawnEffectsBundle,
-            Spawning,
         },
     },
     constants::*,
@@ -23,24 +22,17 @@ use crate::{
     serialization::{Config, PlayerConfig},
 };
 
-#[derive(Event)]
-struct RemoveGoalOccupantEvent(Entity);
-
-fn remove_goal_occupant(
+fn remove_previous_goal_occupant(
     mut commands: Commands,
-    mut remove_goal_occupant_events: EventReader<RemoveGoalOccupantEvent>,
-    paddles_and_walls_query: Query<
-        (Entity, &Parent),
-        (Or<(With<Paddle>, With<Wall>)>, Without<Spawning>),
-    >,
+    new_query: Query<(Entity, &Parent), Or<(Added<Paddle>, Added<Wall>)>>,
+    old_query: Query<(Entity, &Parent), Or<(With<Paddle>, With<Wall>)>>,
 ) {
-    for RemoveGoalOccupantEvent(goal_entity) in
-        remove_goal_occupant_events.iter()
-    {
-        for (entity, parent) in &paddles_and_walls_query {
-            if parent.get() == *goal_entity {
+    for (new_entity, new_parent) in &new_query {
+        for (old_entity, old_parent) in &old_query {
+            if old_parent.get() == new_parent.get() && new_entity != old_entity
+            {
                 commands
-                    .entity(entity)
+                    .entity(old_entity)
                     .remove::<AccelerationBundle>()
                     .insert(Despawning);
                 break;
@@ -94,14 +86,11 @@ fn spawn_wall_in_goal(
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     goals_query: Query<(Entity, &Side), With<Goal>>,
-    mut remove_goal_occupant_events: EventWriter<RemoveGoalOccupantEvent>,
 ) {
     for (goal_entity, goal_side) in &goals_query {
         if *goal_side != side {
             continue;
         }
-
-        remove_goal_occupant_events.send(RemoveGoalOccupantEvent(goal_entity));
 
         // Spawn wall in goal.
         let wall = commands
@@ -146,14 +135,11 @@ fn spawn_paddle_in_goal(
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
-    mut remove_goal_occupant_events: EventWriter<RemoveGoalOccupantEvent>,
 ) {
     for (i, (goal_entity, goal_side)) in goals_query.iter().enumerate() {
         if *goal_side != side {
             continue;
         }
-
-        remove_goal_occupant_events.send(RemoveGoalOccupantEvent(goal_entity));
 
         // Spawn paddle in goal.
         let paddle_config = &config.modes[global_data.mode_index].paddles[i];
@@ -219,14 +205,16 @@ pub struct SpawningPlugin;
 
 impl Plugin for SpawningPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<RemoveGoalOccupantEvent>()
-            .add_systems(Update, remove_goal_occupant.after(SpewSystemSet))
-            .add_plugins(SpewPlugin::<Object>::default())
-            .add_plugins(SpewPlugin::<Object, Side>::default())
-            .add_spawners((
-                (Object::Ball, spawn_ball),
-                (Object::Wall, spawn_wall_in_goal),
-                (Object::Paddle, spawn_paddle_in_goal),
-            ));
+        app.add_systems(
+            Update,
+            remove_previous_goal_occupant.after(SpewSystemSet),
+        )
+        .add_plugins(SpewPlugin::<Object>::default())
+        .add_plugins(SpewPlugin::<Object, Side>::default())
+        .add_spawners((
+            (Object::Ball, spawn_ball),
+            (Object::Wall, spawn_wall_in_goal),
+            (Object::Paddle, spawn_paddle_in_goal),
+        ));
     }
 }
