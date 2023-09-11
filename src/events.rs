@@ -1,12 +1,12 @@
 use bevy::prelude::{App, Event, Plugin};
 
-use crate::screens::GameScreen;
+use crate::states::GameState;
 
 /// An event fired when spawning a message UI.
 #[derive(Event, Debug)]
 pub struct MessageUiEvent {
     pub message: String,
-    pub game_screen: GameScreen,
+    pub game_state: GameState,
 }
 
 pub struct EventsPlugin;

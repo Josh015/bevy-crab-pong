@@ -20,12 +20,12 @@ fn handle_spawn_ui_message_event(
 ) {
     for MessageUiEvent {
         message,
-        game_screen,
+        game_state,
     } in message_ui_events.iter()
     {
         commands
             .spawn((
-                ForStates([*game_screen]),
+                ForStates([*game_state]),
                 NodeBundle {
                     style: Style {
                         width: Val::Percent(100.0),

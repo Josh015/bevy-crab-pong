@@ -5,8 +5,8 @@ mod components;
 mod constants;
 mod events;
 mod global_data;
-mod screens;
 mod serialization;
+mod states;
 mod systems;
 
 use bevy::{
@@ -39,7 +39,7 @@ fn main() {
             cached_assets::CachedAssetsPlugin,
             events::EventsPlugin,
             global_data::GlobalDataPlugin,
-            screens::ScreensPlugin,
+            states::ScreensPlugin,
             systems::SystemsPlugin,
         ))
         .run();

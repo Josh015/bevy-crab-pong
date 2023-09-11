@@ -6,14 +6,14 @@ use crate::{
     serialization::Config,
 };
 
-use super::GameScreen;
+use super::GameState;
 
-fn handle_game_screen_specific_inputs(
+fn handle_game_state_specific_inputs(
     keyboard_input: Res<Input<KeyCode>>,
-    game_screen: Res<State<GameScreen>>,
+    game_state: Res<State<GameState>>,
     config: Res<Config>,
     mut global_data: ResMut<GlobalData>,
-    mut next_game_screen: ResMut<NextState<GameScreen>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
@@ -24,10 +24,10 @@ fn handle_game_screen_specific_inputs(
         return;
     }
 
-    match game_screen.get() {
-        GameScreen::StartMenu => {
+    match game_state.get() {
+        GameState::StartMenu => {
             if keyboard_input.just_pressed(KeyCode::Return) {
-                next_game_screen.set(GameScreen::Playing);
+                next_game_state.set(GameState::Playing);
                 info!("New Game");
             } else if keyboard_input.just_pressed(KeyCode::Left)
                 && global_data.mode_index > 0
@@ -43,35 +43,35 @@ fn handle_game_screen_specific_inputs(
                 info!("Game Mode: {mode_name}");
             }
         },
-        GameScreen::Playing if keyboard_input.just_pressed(KeyCode::Space) => {
-            next_game_screen.set(GameScreen::Paused);
+        GameState::Playing if keyboard_input.just_pressed(KeyCode::Space) => {
+            next_game_state.set(GameState::Paused);
             info!("Paused");
         },
-        GameScreen::Paused if keyboard_input.just_pressed(KeyCode::Space) => {
-            next_game_screen.set(GameScreen::Playing);
+        GameState::Paused if keyboard_input.just_pressed(KeyCode::Space) => {
+            next_game_state.set(GameState::Playing);
             info!("Unpaused");
         },
-        GameScreen::Playing | GameScreen::Paused
+        GameState::Playing | GameState::Paused
             if keyboard_input.just_pressed(KeyCode::Back) =>
         {
-            next_game_screen.set(GameScreen::StartMenu);
+            next_game_state.set(GameState::StartMenu);
             info!("Start Menu");
         },
         _ => {},
     }
 }
 
-fn despawn_invalid_entities_when_changing_screens<const N: usize>(
+fn despawn_invalid_entities_for_state<const N: usize>(
     mut commands: Commands,
-    game_screen: Res<State<GameScreen>>,
+    game_state: Res<State<GameState>>,
     mut query: Query<(
         Entity,
-        &ForStates<GameScreen, N>,
+        &ForStates<GameState, N>,
         Option<&SpawnAnimation>,
     )>,
 ) {
     for (entity, for_states, spawning_animation) in &mut query {
-        if !for_states.0.contains(game_screen.get()) {
+        if !for_states.0.contains(game_state.get()) {
             if spawning_animation.is_some() {
                 commands.entity(entity).insert(Despawning);
             } else {
@@ -85,16 +85,15 @@ pub struct AllPlugin;
 
 impl Plugin for AllPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, handle_game_screen_specific_inputs)
+        app.add_systems(Update, handle_game_state_specific_inputs)
             .add_systems(
                 PostUpdate,
                 (
-                    despawn_invalid_entities_when_changing_screens::<1>,
-                    despawn_invalid_entities_when_changing_screens::<2>,
-                    despawn_invalid_entities_when_changing_screens::<3>,
-                    despawn_invalid_entities_when_changing_screens::<4>,
+                    despawn_invalid_entities_for_state::<1>,
+                    despawn_invalid_entities_for_state::<2>,
+                    despawn_invalid_entities_for_state::<3>,
                 )
-                    .run_if(state_changed::<GameScreen>()),
+                    .run_if(state_changed::<GameState>()),
             );
     }
 }

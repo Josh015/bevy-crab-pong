@@ -8,7 +8,7 @@ use crate::{
     serialization::Config,
 };
 
-use super::GameScreen;
+use super::GameState;
 
 fn spawn_start_menu_ui(
     config: Res<Config>,
@@ -24,7 +24,7 @@ fn spawn_start_menu_ui(
 
     ui_message_events.send(MessageUiEvent {
         message,
-        game_screen: GameScreen::StartMenu,
+        game_state: GameState::StartMenu,
     });
 }
 
@@ -42,9 +42,9 @@ pub struct StartMenuPlugin;
 
 impl Plugin for StartMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameScreen::StartMenu), spawn_start_menu_ui)
+        app.add_systems(OnEnter(GameState::StartMenu), spawn_start_menu_ui)
             .add_systems(
-                OnExit(GameScreen::StartMenu),
+                OnExit(GameState::StartMenu),
                 give_each_goal_a_new_paddle.chain(),
             );
     }

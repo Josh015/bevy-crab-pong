@@ -11,8 +11,8 @@ use crate::{
     },
     constants::*,
     global_data::GlobalData,
-    screens::GameScreen,
     serialization::Config,
+    states::GameState,
 };
 
 use super::GameSystemSet;
@@ -204,7 +204,7 @@ fn block_eliminated_goals(
 
 fn check_for_game_over(
     mut global_data: ResMut<GlobalData>,
-    mut next_game_screen: ResMut<NextState<GameScreen>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
     mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
     teams_query: Query<(&Team, &HitPoints), With<Paddle>>,
 ) {
@@ -224,7 +224,7 @@ fn check_for_game_over(
 
         // Declare a winner and navigate back to the Start Menu.
         global_data.winning_team = Some(survivor.0);
-        next_game_screen.set(GameScreen::StartMenu);
+        next_game_state.set(GameState::StartMenu);
         info!("Game Over: Team {:?} won!", survivor.0);
     }
 }

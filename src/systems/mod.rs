@@ -12,7 +12,7 @@ mod user_interface;
 use bevy::prelude::*;
 use spew::prelude::SpewSystemSet;
 
-use crate::{global_data::GlobalData, screens::GameScreen};
+use crate::{global_data::GlobalData, states::GameState};
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub(super) enum GameSystemSet {
@@ -40,25 +40,25 @@ impl Plugin for SystemsPlugin {
                 Update,
                 GameSystemSet::GameplayLogic
                     .before(SpewSystemSet)
-                    .run_if(in_state(GameScreen::Playing)),
+                    .run_if(in_state(GameState::Playing)),
             )
             .configure_set(
                 Update,
                 GameSystemSet::Movement
                     .after(GameSystemSet::Environment)
-                    .run_if(not(in_state(GameScreen::Paused))),
+                    .run_if(not(in_state(GameState::Paused))),
             )
             .configure_set(
                 PostUpdate,
                 GameSystemSet::Collisions
                     .after(GameSystemSet::Movement)
-                    .run_if(not(in_state(GameScreen::Paused))),
+                    .run_if(not(in_state(GameState::Paused))),
             )
             .configure_set(
                 PostUpdate,
                 GameSystemSet::Effects
                     .after(GameSystemSet::Collisions)
-                    .run_if(not(in_state(GameScreen::Paused))),
+                    .run_if(not(in_state(GameState::Paused))),
             )
             .configure_set(
                 PostUpdate,
@@ -66,13 +66,13 @@ impl Plugin for SystemsPlugin {
                     .after(GameSystemSet::Effects)
                     .before(GameSystemSet::Despawning)
                     .run_if(show_debugging_gizmos)
-                    .run_if(not(in_state(GameScreen::StartMenu))),
+                    .run_if(not(in_state(GameState::StartMenu))),
             )
             .configure_set(
                 PostUpdate,
                 GameSystemSet::Despawning
                     .after(GameSystemSet::Collisions)
-                    .run_if(not(in_state(GameScreen::Paused))),
+                    .run_if(not(in_state(GameState::Paused))),
             )
             .add_plugins((
                 collisions::CollisionsPlugin,

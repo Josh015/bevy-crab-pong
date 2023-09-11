@@ -18,8 +18,8 @@ use crate::{
     },
     constants::*,
     global_data::GlobalData,
-    screens::GameScreen,
     serialization::{Config, PlayerConfig},
+    states::GameState,
 };
 
 fn spawn_ball(
@@ -35,7 +35,7 @@ fn spawn_ball(
         .spawn((
             Ball,
             SpawnEffectsBundle::default(),
-            ForStates([GameScreen::Playing, GameScreen::Paused]),
+            ForStates([GameState::Playing, GameState::Paused]),
             VelocityBundle {
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
                 speed: Speed(config.ball_speed),
