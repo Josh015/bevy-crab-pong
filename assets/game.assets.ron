@@ -1,0 +1,5 @@
+({
+    "menu_font": File (
+        path: "fonts/FiraSans-Bold.ttf",
+    ),
+})

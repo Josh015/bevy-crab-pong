@@ -1,8 +1,8 @@
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 use spew::prelude::SpawnEvent;
 
 use crate::{
-    cached_assets::CachedAssets,
     components::{
         environment::{Ocean, SwayingCamera},
         goals::{Barrier, Goal, Side},
@@ -10,10 +10,15 @@ use crate::{
         spawning::Object,
     },
     constants::*,
+    serialization::GameAssets,
 };
 
-fn spawn_play_area(
-    cached_assets: Res<CachedAssets>,
+use super::GameState;
+
+pub struct LoadingPlugin;
+
+fn spawn_level(
+    game_assets: Res<GameAssets>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -184,7 +189,7 @@ fn spawn_play_area(
                 text: Text::from_section(
                     "0",
                     TextStyle {
-                        font: cached_assets.menu_font.clone(),
+                        font: game_assets.menu_font.clone(),
                         font_size: 50.0,
                         color: Color::RED,
                     },
@@ -195,10 +200,17 @@ fn spawn_play_area(
     }
 }
 
-pub struct StartupPlugin;
-
-impl Plugin for StartupPlugin {
+impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_play_area);
+        app.add_loading_state(
+            LoadingState::new(GameState::Loading)
+                .continue_to_state(GameState::StartMenu),
+        )
+        .add_dynamic_collection_to_loading_state::<_, StandardDynamicAssetCollection>(
+            GameState::Loading,
+            "game.assets.ron",
+        )
+        .add_collection_to_loading_state::<_, GameAssets>(GameState::Loading)
+        .add_systems(OnExit(GameState::Loading), spawn_level);
     }
 }

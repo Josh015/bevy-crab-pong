@@ -1,12 +1,16 @@
-use bevy::{
-    prelude::{Color, Resource},
-    utils::HashMap,
-};
+use bevy::{prelude::*, text::Font, utils::HashMap};
+use bevy_asset_loader::prelude::*;
 use ron::de::from_reader;
 use serde::{de::DeserializeOwned, Deserialize};
 use std::{fs::File, path::PathBuf};
 
 use crate::components::goals::Side;
+
+#[derive(AssetCollection, Resource)]
+pub struct GameAssets {
+    #[asset(key = "menu_font")]
+    pub menu_font: Handle<Font>,
+}
 
 /// Game settings read from a config file.
 #[derive(Debug, Deserialize, Resource)]

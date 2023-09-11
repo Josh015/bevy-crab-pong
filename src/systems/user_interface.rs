@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 
 use crate::{
-    cached_assets::CachedAssets,
     components::{
         goals::Side,
         paddles::Paddle,
@@ -9,12 +8,13 @@ use crate::{
         spawning::ForStates,
     },
     events::MessageUiEvent,
+    serialization::GameAssets,
 };
 
 use super::GameSystemSet;
 
 fn handle_spawn_ui_message_event(
-    cached_assets: Res<CachedAssets>,
+    game_assets: Res<GameAssets>,
     mut commands: Commands,
     mut message_ui_events: EventReader<MessageUiEvent>,
 ) {
@@ -60,7 +60,7 @@ fn handle_spawn_ui_message_event(
                             text: Text::from_section(
                                 message.clone(),
                                 TextStyle {
-                                    font: cached_assets.menu_font.clone(),
+                                    font: game_assets.menu_font.clone(),
                                     font_size: 30.0,
                                     color: Color::RED,
                                 },

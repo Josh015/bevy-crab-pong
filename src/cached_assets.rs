@@ -5,7 +5,6 @@ use crate::components::goals::Side;
 /// Assets that need to remain loaded at all times.
 #[derive(Debug, Resource)]
 pub struct CachedAssets {
-    pub menu_font: Handle<Font>,
     pub ball_mesh: Handle<Mesh>,
     pub paddle_mesh: Handle<Mesh>,
     pub paddle_materials: HashMap<Side, Handle<StandardMaterial>>,
@@ -15,11 +14,6 @@ pub struct CachedAssets {
 
 impl FromWorld for CachedAssets {
     fn from_world(world: &mut World) -> Self {
-        let menu_font = {
-            let asset_server = world.get_resource::<AssetServer>().unwrap();
-
-            asset_server.load("fonts/FiraSans-Bold.ttf")
-        };
         let (ball_mesh, paddle_mesh, wall_mesh) = {
             let mut meshes = world.get_resource_mut::<Assets<Mesh>>().unwrap();
 
@@ -52,7 +46,6 @@ impl FromWorld for CachedAssets {
         };
 
         Self {
-            menu_font,
             ball_mesh,
             paddle_mesh,
             paddle_materials,
