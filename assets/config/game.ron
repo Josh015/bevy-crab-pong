@@ -24,42 +24,42 @@ G to enable debugging.
     (
       name: "1xKeyboard vs 3xAI",
       max_ball_count: 2,
-      paddles: (
-        (color: "FFA600", team: 1, player: AI, hit_points: 5),
-        (color: "0000FF", team: 1, player: AI, hit_points: 5),
-        (color: "FF0000", team: 0, player: Keyboard, hit_points: 5),
-        (color: "7F007F", team: 1, player: AI, hit_points: 5),
-      ),
+      paddles: {
+        Top: (color: "FFA600", team: 1, player: AI, hit_points: 5),
+        Right: (color: "0000FF", team: 1, player: AI, hit_points: 5),
+        Bottom: (color: "FF0000", team: 0, player: Keyboard, hit_points: 5),
+        Left: (color: "7F007F", team: 1, player: AI, hit_points: 5),
+      },
     ),
     (
       name: "1xAI vs 3xAI",
       max_ball_count: 2,
-      paddles: (
-        (color: "FFA600", team: 1, player: AI, hit_points: 5),
-        (color: "0000FF", team: 1, player: AI, hit_points: 5),
-        (color: "FF0000", team: 0, player: AI, hit_points: 5),
-        (color: "7F007F", team: 1, player: AI, hit_points: 5),
-      ),
+      paddles: {
+        Top: (color: "FFA600", team: 1, player: AI, hit_points: 5),
+        Right: (color: "0000FF", team: 1, player: AI, hit_points: 5),
+        Bottom: (color: "FF0000", team: 0, player: AI, hit_points: 5),
+        Left: (color: "7F007F", team: 1, player: AI, hit_points: 5),
+      },
     ),
     (
       name: "2xAI vs 2xAI",
       max_ball_count: 2,
-      paddles: (
-        (color: "FFA600", team: 1, player: AI, hit_points: 5),
-        (color: "0000FF", team: 0, player: AI, hit_points: 5),
-        (color: "FF0000", team: 0, player: AI, hit_points: 5),
-        (color: "7F007F", team: 1, player: AI, hit_points: 5),
-      ),
+      paddles: {
+        Top: (color: "FFA600", team: 1, player: AI, hit_points: 5),
+        Right: (color: "0000FF", team: 0, player: AI, hit_points: 5),
+        Bottom: (color: "FF0000", team: 0, player: AI, hit_points: 5),
+        Left: (color: "7F007F", team: 1, player: AI, hit_points: 5),
+      },
     ),
     (
       name: "Multi-Ball Madness",
       max_ball_count: 10,
-      paddles: (
-        (color: "FFA600", team: 1, player: AI, hit_points: 50),
-        (color: "0000FF", team: 0, player: AI, hit_points: 50),
-        (color: "FF0000", team: 0, player: AI, hit_points: 50),
-        (color: "7F007F", team: 1, player: AI, hit_points: 50),
-      ),
+      paddles: {
+        Top: (color: "FFA600", team: 1, player: AI, hit_points: 50),
+        Right: (color: "0000FF", team: 0, player: AI, hit_points: 50),
+        Bottom: (color: "FF0000", team: 0, player: AI, hit_points: 50),
+        Left: (color: "7F007F", team: 1, player: AI, hit_points: 50),
+      },
     ),
 
     // TODO: Offer a "Pong" mode with 1x player, 1x AI, and 2x walls, 1x ball.

@@ -1,7 +1,12 @@
-use bevy::prelude::{Color, Resource};
+use bevy::{
+    prelude::{Color, Resource},
+    utils::HashMap,
+};
 use ron::de::from_reader;
 use serde::{de::DeserializeOwned, Deserialize};
 use std::{fs::File, path::PathBuf};
+
+use crate::components::goals::Side;
 
 /// Game settings read from a config file.
 #[derive(Debug, Deserialize, Resource)]
@@ -26,7 +31,7 @@ pub struct Config {
 pub struct ModeConfig {
     pub name: String,
     pub max_ball_count: usize,
-    pub paddles: [PaddleConfig; 4],
+    pub paddles: HashMap<Side, PaddleConfig>,
 }
 
 #[derive(Debug, Deserialize)]

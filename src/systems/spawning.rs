@@ -123,7 +123,8 @@ fn spawn_paddle_in_goal(
         }
 
         // Spawn paddle in goal.
-        let paddle_config = &config.modes[global_data.mode_index].paddles[i];
+        let paddle_config =
+            &config.modes[global_data.mode_index].paddles[goal_side];
         let material_handle = cached_assets.paddle_materials[i].clone();
         let paddle = commands
             .entity(goal_entity)

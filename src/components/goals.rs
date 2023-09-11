@@ -1,4 +1,5 @@
 use bevy::prelude::{Component, GlobalTransform, Vec3};
+use serde::Deserialize;
 
 use crate::constants::*;
 
@@ -16,7 +17,7 @@ pub struct Wall;
 pub struct Barrier;
 
 /// Assigns an entity to a given side of the arena.
-#[derive(Clone, Component, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Component, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
 pub enum Side {
     Top,
     Right,

@@ -47,6 +47,8 @@ fn spawn_starting_balls(
     mut spawn_events: EventWriter<SpawnEvent<Object>>,
 ) {
     for i in 0..config.modes[global_data.mode_index].max_ball_count {
+        // TODO: Need to finish clearing out old balls first, since they'll count towards round total if not!
+
         spawn_events.send(
             SpawnEvent::new(Object::Ball)
                 .delay_seconds(i as f32 * BALL_SPAWN_DELAY_IN_SECONDS),
