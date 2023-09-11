@@ -42,9 +42,9 @@ impl FromWorld for CachedAssets {
             (
                 // TODO: Replace with crab model textures.
                 HashMap::from([
-                    (Side::Top, materials.add(Color::WHITE.into())),
-                    (Side::Right, materials.add(Color::WHITE.into())),
                     (Side::Bottom, materials.add(Color::WHITE.into())),
+                    (Side::Right, materials.add(Color::WHITE.into())),
+                    (Side::Top, materials.add(Color::WHITE.into())),
                     (Side::Left, materials.add(Color::WHITE.into())),
                 ]),
                 materials.add(Color::hex("00A400").unwrap().into()),
