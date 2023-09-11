@@ -67,14 +67,12 @@ fn despawn_invalid_entities_for_current_screen(
     mut query: Query<(Entity, &ForState<GameScreen>, Option<&SpawnAnimation>)>,
 ) {
     for (entity, for_state, spawning_animation) in &mut query {
-        if for_state.states.contains(game_screen.get()) {
-            continue;
-        }
-
-        if spawning_animation.is_some() {
-            commands.entity(entity).insert(Despawning);
-        } else {
-            commands.entity(entity).despawn_recursive();
+        if !for_state.states.contains(game_screen.get()) {
+            if spawning_animation.is_some() {
+                commands.entity(entity).insert(Despawning);
+            } else {
+                commands.entity(entity).despawn_recursive();
+            }
         }
     }
 }
