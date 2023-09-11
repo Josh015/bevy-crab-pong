@@ -5,7 +5,7 @@ use crate::{
         Despawning, SpawnAnimation, SpawnProgress, Spawning,
     },
     constants::*,
-    serialization::Config,
+    serialization::{GameAssets, GameConfig},
 };
 
 use super::GameSystemSet;
@@ -25,12 +25,15 @@ fn start_despawning_entity(
 
 fn advance_spawning_progress(
     mut commands: Commands,
-    config: Res<Config>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
     time: Res<Time>,
     mut query: Query<(Entity, &mut SpawnProgress), With<Spawning>>,
 ) {
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
+
     for (entity, mut progress) in &mut query {
-        let step = config.fade_speed * time.delta_seconds();
+        let step = game_config.fade_speed * time.delta_seconds();
 
         if progress.0 < FADE_PROGRESS_MAX {
             progress.0 = progress.0.max(FADE_PROGRESS_MIN) + step;
@@ -43,12 +46,15 @@ fn advance_spawning_progress(
 
 fn advance_despawning_progress(
     mut commands: Commands,
-    config: Res<Config>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
     time: Res<Time>,
     mut query: Query<(Entity, &mut SpawnProgress), With<Despawning>>,
 ) {
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
+
     for (entity, mut progress) in &mut query {
-        let step = config.fade_speed * time.delta_seconds();
+        let step = game_config.fade_speed * time.delta_seconds();
 
         if progress.0 > FADE_PROGRESS_MIN {
             progress.0 = progress.0.min(FADE_PROGRESS_MAX) - step;

@@ -9,32 +9,29 @@ mod serialization;
 mod states;
 mod systems;
 
-use bevy::{
-    prelude::*,
-    window::{PresentMode, WindowResolution},
-};
+use std::time::Duration;
 
-use crate::serialization::*;
+use bevy::{asset::ChangeWatcher, prelude::*, window::PresentMode};
 
 fn main() {
-    let config: Config = load_config_from_ron_file("assets/config/game.ron");
-
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: config.title.clone(),
-                resolution: WindowResolution::new(
-                    config.width as f32,
-                    config.height as f32,
-                ),
-                present_mode: PresentMode::AutoVsync,
-                ..default()
-            }),
-            ..default()
-        }))
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        present_mode: PresentMode::AutoVsync,
+                        ..default()
+                    }),
+                    ..default()
+                })
+                .set(AssetPlugin {
+                    watch_for_changes: ChangeWatcher::with_delay(
+                        Duration::from_secs(1),
+                    ),
+                    ..Default::default()
+                }),
+        )
         .insert_resource(Msaa::default())
-        .insert_resource(ClearColor(config.clear_color))
-        .insert_resource(config)
         .add_plugins((
             cached_assets::CachedAssetsPlugin,
             events::EventsPlugin,

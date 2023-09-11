@@ -18,17 +18,19 @@ use crate::{
     },
     constants::*,
     global_data::GlobalData,
-    serialization::{Config, GameAssets, PlayerConfig},
+    serialization::{GameAssets, GameConfig, PlayerConfig},
     states::GameState,
 };
 
 fn spawn_ball(
-    config: Res<Config>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // Spawn a ball that will launch it in a random direction.
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
     let mut rng = SmallRng::from_entropy();
     let angle = rng.gen_range(0.0..std::f32::consts::TAU);
     let ball = commands
@@ -38,7 +40,7 @@ fn spawn_ball(
             ForStates([GameState::Playing, GameState::Paused]),
             VelocityBundle {
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
-                speed: Speed(config.ball_speed),
+                speed: Speed(game_config.ball_speed),
             },
             PbrBundle {
                 mesh: cached_assets.ball_mesh.clone(),
@@ -108,9 +110,9 @@ fn spawn_wall_in_goal(
 fn spawn_paddle_in_goal(
     In(goal_entity): In<Entity>,
     global_data: Res<GlobalData>,
-    config: Res<Config>,
     cached_assets: Res<CachedAssets>,
     game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     goals_query: Query<&Side, With<Goal>>,
@@ -119,14 +121,15 @@ fn spawn_paddle_in_goal(
         return;
     };
 
-    // Spawn paddle in goal.
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
     let paddle_config =
-        &config.modes[global_data.mode_index].paddles[goal_side];
+        &game_config.modes[global_data.mode_index].paddles[goal_side];
     let material_handle = materials.add(StandardMaterial {
         base_color_texture: Some(game_assets.image_paddle.clone()),
         base_color: Color::hex(&paddle_config.color).unwrap(),
         ..default()
     });
+
     let paddle = commands
         .entity(goal_entity)
         .with_children(|parent| {
@@ -147,10 +150,10 @@ fn spawn_paddle_in_goal(
                         heading: Heading(Vec3::X),
                         ..default()
                     },
-                    max_speed: MaxSpeed(config.paddle_max_speed),
+                    max_speed: MaxSpeed(game_config.paddle_max_speed),
                     acceleration: Acceleration(
-                        config.paddle_max_speed
-                            / config.paddle_seconds_to_max_speed,
+                        game_config.paddle_max_speed
+                            / game_config.paddle_seconds_to_max_speed,
                     ),
                     ..default()
                 },

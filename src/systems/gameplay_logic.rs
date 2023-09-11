@@ -11,7 +11,7 @@ use crate::{
     },
     constants::*,
     global_data::GlobalData,
-    serialization::Config,
+    serialization::{GameAssets, GameConfig},
     states::GameState,
 };
 
@@ -21,14 +21,17 @@ use super::GameSystemSet;
 struct GoalEliminatedEvent(Entity);
 
 fn spawn_balls_sequentially_as_needed(
-    config: Res<Config>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
     global_data: Res<GlobalData>,
     balls_query: Query<Entity, With<Ball>>,
     spawning_balls_query: Query<Entity, (With<Ball>, With<Spawning>)>,
     mut spawn_events: EventWriter<SpawnEvent<Object>>,
 ) {
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
+
     if balls_query.iter().len()
-        < config.modes[global_data.mode_index].max_ball_count
+        < game_config.modes[global_data.mode_index].max_ball_count
         && spawning_balls_query.iter().len() < 1
     {
         spawn_events.send(SpawnEvent::new(Object::Ball));

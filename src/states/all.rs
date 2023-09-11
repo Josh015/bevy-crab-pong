@@ -3,7 +3,7 @@ use bevy::{app::AppExit, prelude::*};
 use crate::{
     components::spawning::{Despawning, ForStates, SpawnAnimation},
     global_data::GlobalData,
-    serialization::Config,
+    serialization::{GameAssets, GameConfig},
 };
 
 use super::GameState;
@@ -11,7 +11,8 @@ use super::GameState;
 fn handle_game_state_specific_inputs(
     keyboard_input: Res<Input<KeyCode>>,
     game_state: Res<State<GameState>>,
-    config: Res<Config>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
     mut global_data: ResMut<GlobalData>,
     mut next_game_state: ResMut<NextState<GameState>>,
     mut app_exit_events: EventWriter<AppExit>,
@@ -24,6 +25,8 @@ fn handle_game_state_specific_inputs(
         return;
     }
 
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
+
     match game_state.get() {
         GameState::StartMenu => {
             if keyboard_input.just_pressed(KeyCode::Return) {
@@ -33,13 +36,13 @@ fn handle_game_state_specific_inputs(
                 && global_data.mode_index > 0
             {
                 global_data.mode_index -= 1;
-                let mode_name = &config.modes[global_data.mode_index].name;
+                let mode_name = &game_config.modes[global_data.mode_index].name;
                 info!("Game Mode: {mode_name}");
             } else if keyboard_input.just_pressed(KeyCode::Right)
-                && global_data.mode_index < config.modes.len() - 1
+                && global_data.mode_index < game_config.modes.len() - 1
             {
                 global_data.mode_index += 1;
-                let mode_name = &config.modes[global_data.mode_index].name;
+                let mode_name = &game_config.modes[global_data.mode_index].name;
                 info!("Game Mode: {mode_name}");
             }
         },
@@ -81,15 +84,19 @@ pub struct AllPlugin;
 
 impl Plugin for AllPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, handle_game_state_specific_inputs)
-            .add_systems(
-                PostUpdate,
-                (
-                    despawn_invalid_entities_for_state::<GameState, 1>,
-                    despawn_invalid_entities_for_state::<GameState, 2>,
-                    despawn_invalid_entities_for_state::<GameState, 3>,
-                )
-                    .run_if(state_changed::<GameState>()),
-            );
+        app.add_systems(
+            Update,
+            handle_game_state_specific_inputs
+                .run_if(not(in_state(GameState::Loading))),
+        )
+        .add_systems(
+            PostUpdate,
+            (
+                despawn_invalid_entities_for_state::<GameState, 1>,
+                despawn_invalid_entities_for_state::<GameState, 2>,
+                despawn_invalid_entities_for_state::<GameState, 3>,
+            )
+                .run_if(state_changed::<GameState>()),
+        );
     }
 }

@@ -1,4 +1,7 @@
 ({
+    "game.config": File (
+        path: "game.config.ron",
+    ),
     "fonts.menu": File (
         path: "fonts/FiraSans-Bold.ttf",
     ),

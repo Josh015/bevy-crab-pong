@@ -5,22 +5,24 @@ use crate::{
     components::{goals::Goal, spawning::Object},
     events::MessageUiEvent,
     global_data::GlobalData,
-    serialization::Config,
+    serialization::{GameAssets, GameConfig},
 };
 
 use super::GameState;
 
 fn spawn_start_menu_ui(
-    config: Res<Config>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
     global_data: Res<GlobalData>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
     let mut message = String::from(match global_data.winning_team {
-        Some(winning_team) => &config.team_win_messages[winning_team],
+        Some(winning_team) => &game_config.team_win_messages[winning_team],
         _ => "",
     });
 
-    message.push_str(&config.new_game_message);
+    message.push_str(&game_config.new_game_message);
 
     ui_message_events.send(MessageUiEvent {
         message,

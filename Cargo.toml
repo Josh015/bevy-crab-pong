@@ -11,7 +11,7 @@ rust-version = "1.64"
 # bevy = { git = 'https://github.com/bevyengine/bevy.git' }
 bevy = "0.11.0"
 bevy_asset_loader = { version = "0.17.0", features = ["standard_dynamic_assets"] }
+bevy_common_assets = { version = "0.7.0", features = ["ron"] }
 rand = { version = "0.8.5", features = ["small_rng"] }
-ron = "0.8.1"
 serde = { version = "1.0.188", features = ["serde_derive"] }
 spew = "0.3.0"

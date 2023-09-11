@@ -1,5 +1,6 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::WindowResolution};
 use bevy_asset_loader::prelude::*;
+use bevy_common_assets::ron::RonAssetPlugin;
 use spew::prelude::SpawnEvent;
 
 use crate::{
@@ -10,12 +11,30 @@ use crate::{
         spawning::Object,
     },
     constants::*,
-    serialization::GameAssets,
+    serialization::{GameAssets, GameConfig},
 };
 
 use super::GameState;
 
 pub struct LoadingPlugin;
+
+fn update_window(
+    mut window: Query<&mut Window>,
+    mut clear_color: ResMut<ClearColor>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
+) {
+    let mut window = window.single_mut();
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
+
+    window.title = game_config.title.to_owned();
+    window.resolution = WindowResolution::new(
+        game_config.width as f32,
+        game_config.height as f32,
+    )
+    .with_scale_factor_override(2.0);
+    clear_color.0 = game_config.clear_color;
+}
 
 fn spawn_level(
     game_assets: Res<GameAssets>,
@@ -202,7 +221,8 @@ fn spawn_level(
 
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_loading_state(
+        app.add_plugins(RonAssetPlugin::<GameConfig>::new(&["config.ron"]))
+        .add_loading_state(
             LoadingState::new(GameState::Loading)
                 .continue_to_state(GameState::StartMenu),
         )
@@ -211,6 +231,6 @@ impl Plugin for LoadingPlugin {
             "game.assets.ron",
         )
         .add_collection_to_loading_state::<_, GameAssets>(GameState::Loading)
-        .add_systems(OnExit(GameState::Loading), spawn_level);
+        .add_systems(OnExit(GameState::Loading), (update_window, spawn_level).chain());
     }
 }

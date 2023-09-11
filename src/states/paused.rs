@@ -1,15 +1,21 @@
 use bevy::prelude::*;
 
-use crate::{events::MessageUiEvent, serialization::Config};
+use crate::{
+    events::MessageUiEvent,
+    serialization::{GameAssets, GameConfig},
+};
 
 use super::GameState;
 
 fn spawn_pause_ui(
-    config: Res<Config>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
+
     ui_message_events.send(MessageUiEvent {
-        message: config.pause_message.clone(),
+        message: game_config.pause_message.clone(),
         game_state: GameState::Paused,
     });
 }
