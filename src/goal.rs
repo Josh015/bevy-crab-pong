@@ -35,7 +35,7 @@ pub struct Wall;
 #[derive(Component, Debug)]
 pub struct Barrier;
 
-/// Signals a goal being eliminated from the game when its paddle has zero HP.
+/// Signals a goal being eliminated from the game.
 #[derive(Clone, Component, Debug, Event)]
 pub struct GoalEliminatedEvent(pub Entity);
 

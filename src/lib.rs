@@ -36,7 +36,7 @@ impl Plugin for GamePlugin {
             spawning::SpawningPlugin,
             state::StatePlugin,
             swaying_camera::SwayingCameraPlugin,
-        ))
-        .add_plugins((team::TeamPlugin,));
+            team::TeamPlugin,
+        ));
     }
 }

@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     paddle::{HitPoints, Paddle},
+    resources::GameAssets,
     side::Side,
     state::AppState,
 };
@@ -14,12 +15,81 @@ pub struct HudPlugin;
 
 impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            update_goal_hit_points_ui
-                .chain()
-                .run_if(not(in_state(AppState::Loading))),
-        );
+        app.add_systems(OnExit(AppState::Loading), spawn_hud_ui)
+            .add_systems(
+                Update,
+                update_goal_hit_points_ui
+                    .chain()
+                    .run_if(not(in_state(AppState::Loading))),
+            );
+    }
+}
+
+fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
+    let paddle_configs = [
+        (
+            Side::Bottom,
+            Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                bottom: Val::Px(5.0),
+                right: Val::Px(400.0),
+                ..default()
+            },
+        ),
+        (
+            Side::Right,
+            Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                top: Val::Px(400.0),
+                right: Val::Px(5.0),
+                ..default()
+            },
+        ),
+        (
+            Side::Top,
+            Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                top: Val::Px(5.0),
+                left: Val::Px(400.0),
+                ..default()
+            },
+        ),
+        (
+            Side::Left,
+            Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                bottom: Val::Px(400.0),
+                left: Val::Px(5.0),
+                ..default()
+            },
+        ),
+    ];
+
+    for (side, style) in &paddle_configs {
+        commands.spawn((
+            *side,
+            HitPointsUi,
+            TextBundle {
+                style: style.clone(),
+                text: Text::from_section(
+                    "0",
+                    TextStyle {
+                        font: game_assets.font_menu.clone(),
+                        font_size: 50.0,
+                        color: Color::RED,
+                    },
+                ),
+                ..default()
+            },
+        ));
     }
 }
 
