@@ -1,12 +1,7 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
-use std::time::Duration;
-
 use bevy::{asset::ChangeWatcher, prelude::*, window::PresentMode};
-use bevy_crab_pong::{
-    events::EventsPlugin, resources::ResourcesPlugin, states::ScreensPlugin,
-    systems::SystemsPlugin,
-};
+use std::time::Duration;
 
 fn main() {
     App::new()
@@ -27,11 +22,6 @@ fn main() {
                 }),
         )
         .insert_resource(Msaa::default())
-        .add_plugins((
-            EventsPlugin,
-            ResourcesPlugin,
-            ScreensPlugin,
-            SystemsPlugin,
-        ))
+        .add_plugins(bevy_crab_pong::BevyCrabPongPlugin)
         .run();
 }
