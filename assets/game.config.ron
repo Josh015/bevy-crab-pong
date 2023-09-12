@@ -1,7 +1,4 @@
 (
-  title: "Bevy Crab Pong",
-  width: 800,
-  height: 800,
   pause_message: "PAUSED",
   new_game_message: "
 ENTER for a new game.
@@ -9,7 +6,6 @@ ESC to quit.
 WASD / ARROWS to move the paddle.
 G to enable debugging.
   ",
-  clear_color: Rgba(red: 0.7, green: 0.9, blue: 1.0, alpha: 1.0),
   swaying_camera_speed: 0.2,
   animated_water_speed: 0.01,
   paddle_max_speed: 2,

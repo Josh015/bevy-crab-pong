@@ -1,6 +1,10 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
-use bevy::{asset::ChangeWatcher, prelude::*, window::PresentMode};
+use bevy::{
+    asset::ChangeWatcher,
+    prelude::*,
+    window::{PresentMode, WindowResolution},
+};
 use std::time::Duration;
 
 fn main() {
@@ -9,6 +13,8 @@ fn main() {
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
+                        title: "Bevy Crab Pong".to_owned(),
+                        resolution: WindowResolution::new(800.0, 800.0),
                         present_mode: PresentMode::AutoVsync,
                         ..default()
                     }),
@@ -22,6 +28,7 @@ fn main() {
                 }),
         )
         .insert_resource(Msaa::default())
+        .insert_resource(ClearColor(Color::rgba(0.7, 0.9, 1.0, 1.0)))
         .add_plugins(bevy_crab_pong::GamePlugin)
         .run();
 }

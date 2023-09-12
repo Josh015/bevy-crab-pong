@@ -1,5 +1,4 @@
 mod all;
-mod loading;
 mod paused;
 mod start_menu;
 
@@ -11,7 +10,6 @@ impl Plugin for ScreensPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             all::AllPlugin,
-            loading::LoadingPlugin,
             paused::PausedPlugin,
             start_menu::StartMenuPlugin,
         ));

@@ -25,12 +25,8 @@ pub struct GameAssets {
 #[derive(Debug, Deserialize, Resource, TypeUuid, TypePath)]
 #[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c46"]
 pub struct GameConfig {
-    pub title: String,
-    pub width: u32,
-    pub height: u32,
     pub pause_message: String,
     pub new_game_message: String,
-    pub clear_color: Color,
     pub swaying_camera_speed: f32,
     pub animated_water_speed: f32,
     pub paddle_max_speed: f32,

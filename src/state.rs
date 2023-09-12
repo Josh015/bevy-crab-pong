@@ -1,6 +1,11 @@
 use bevy::{ecs::query::Has, prelude::*};
+use bevy_asset_loader::prelude::*;
+use bevy_common_assets::ron::RonAssetPlugin;
 
-use crate::spawning::{Despawning, SpawnAnimation};
+use crate::{
+    resources::{GameAssets, GameConfig},
+    spawning::{Despawning, SpawnAnimation},
+};
 
 /// Tags an entity to only exist in the listed game states.
 #[derive(Clone, Component, Debug)]
@@ -29,7 +34,16 @@ pub struct StatePlugin;
 
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<AppState>();
+        app.add_state::<AppState>().add_plugins(RonAssetPlugin::<GameConfig>::new(&["config.ron"]))
+        .add_loading_state(
+            LoadingState::new(AppState::Loading)
+                .continue_to_state(AppState::StartMenu),
+        )
+        .add_dynamic_collection_to_loading_state::<_, StandardDynamicAssetCollection>(
+            AppState::Loading,
+            "game.assets.ron",
+        )
+        .add_collection_to_loading_state::<_, GameAssets>(AppState::Loading);
 
         for state in AppState::variants() {
             app.add_systems(
