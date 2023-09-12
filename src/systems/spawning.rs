@@ -18,7 +18,7 @@ use crate::{
         },
     },
     constants::*,
-    global_data::GlobalData,
+    resources::SelectedGameMode,
     serialization::{GameAssets, GameConfig, PlayerConfig},
     states::GameState,
 };
@@ -117,7 +117,7 @@ fn spawn_wall_in_goal(
 
 fn spawn_paddle_in_goal(
     In(goal_entity): In<Entity>,
-    global_data: Res<GlobalData>,
+    selected_mode: Res<SelectedGameMode>,
     cached_assets: Res<CachedAssets>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
@@ -130,8 +130,7 @@ fn spawn_paddle_in_goal(
     };
 
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let paddle_config =
-        &game_config.modes[global_data.mode_index].paddles[goal_side];
+    let paddle_config = &game_config.modes[selected_mode.0].paddles[goal_side];
     let material_handle = materials.add(StandardMaterial {
         base_color_texture: Some(game_assets.image_paddle.clone()),
         base_color: Color::hex(&paddle_config.color).unwrap(),

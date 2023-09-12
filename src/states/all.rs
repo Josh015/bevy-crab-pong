@@ -2,7 +2,7 @@ use bevy::{app::AppExit, prelude::*};
 
 use crate::{
     components::spawning::{Despawning, ForStates, SpawnAnimation},
-    global_data::GlobalData,
+    resources::{IsDebuggingMode, SelectedGameMode},
     serialization::{GameAssets, GameConfig},
 };
 
@@ -13,7 +13,8 @@ fn handle_game_state_specific_inputs(
     game_state: Res<State<GameState>>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
-    mut global_data: ResMut<GlobalData>,
+    mut selected_mode: ResMut<SelectedGameMode>,
+    mut is_debugging_mode: ResMut<IsDebuggingMode>,
     mut next_game_state: ResMut<NextState<GameState>>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
@@ -21,7 +22,7 @@ fn handle_game_state_specific_inputs(
         app_exit_events.send(AppExit);
         return;
     } else if keyboard_input.just_pressed(KeyCode::G) {
-        global_data.is_debugging_enabled = !global_data.is_debugging_enabled;
+        is_debugging_mode.0 = !is_debugging_mode.0;
         return;
     }
 
@@ -34,16 +35,16 @@ fn handle_game_state_specific_inputs(
                 next_game_state.set(GameState::Playing);
                 info!("New Game");
             } else if keyboard_input.just_pressed(KeyCode::Left)
-                && global_data.mode_index > 0
+                && selected_mode.0 > 0
             {
-                global_data.mode_index -= 1;
-                let mode_name = &game_config.modes[global_data.mode_index].name;
+                selected_mode.0 -= 1;
+                let mode_name = &game_config.modes[selected_mode.0].name;
                 info!("Game Mode: {mode_name}");
             } else if keyboard_input.just_pressed(KeyCode::Right)
-                && global_data.mode_index < game_config.modes.len() - 1
+                && selected_mode.0 < game_config.modes.len() - 1
             {
-                global_data.mode_index += 1;
-                let mode_name = &game_config.modes[global_data.mode_index].name;
+                selected_mode.0 += 1;
+                let mode_name = &game_config.modes[selected_mode.0].name;
                 info!("Game Mode: {mode_name}");
             }
         },

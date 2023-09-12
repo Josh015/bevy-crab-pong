@@ -11,7 +11,7 @@ mod user_interface;
 use bevy::prelude::*;
 use spew::prelude::SpewSystemSet;
 
-use crate::{global_data::GlobalData, states::GameState};
+use crate::{resources::IsDebuggingMode, states::GameState};
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub(super) enum GameSystemSet {
@@ -25,8 +25,8 @@ pub(super) enum GameSystemSet {
     UserInterface,
 }
 
-fn show_debugging_gizmos(global_data: Res<GlobalData>) -> bool {
-    global_data.is_debugging_enabled
+fn show_debugging_gizmos(is_debugging_mode: Res<IsDebuggingMode>) -> bool {
+    is_debugging_mode.0
 }
 
 pub struct SystemsPlugin;

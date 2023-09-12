@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::WindowResolution};
+use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_common_assets::ron::RonAssetPlugin;
 use spew::prelude::SpawnEvent;

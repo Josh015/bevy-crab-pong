@@ -4,7 +4,7 @@ use spew::prelude::SpawnEvent;
 use crate::{
     components::{goals::Goal, spawning::Object},
     events::MessageUiEvent,
-    global_data::GlobalData,
+    resources::WinningTeam,
     serialization::{GameAssets, GameConfig},
 };
 
@@ -13,12 +13,12 @@ use super::GameState;
 fn spawn_start_menu_ui(
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
-    global_data: Res<GlobalData>,
+    winning_team: Option<Res<WinningTeam>>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let mut message = String::from(match global_data.winning_team {
-        Some(winning_team) => &game_config.team_win_messages[winning_team],
+    let mut message = String::from(match winning_team {
+        Some(winning_team) => &game_config.team_win_messages[winning_team.0],
         _ => "",
     });
 

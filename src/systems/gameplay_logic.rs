@@ -10,7 +10,7 @@ use crate::{
         spawning::{Despawning, Object, Spawning},
     },
     constants::*,
-    global_data::GlobalData,
+    resources::{SelectedGameMode, WinningTeam},
     serialization::{GameAssets, GameConfig},
     states::GameState,
 };
@@ -23,7 +23,7 @@ struct GoalEliminatedEvent(Entity);
 fn spawn_balls_sequentially_as_needed(
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
-    global_data: Res<GlobalData>,
+    selected_mode: Res<SelectedGameMode>,
     balls_query: Query<Entity, With<Ball>>,
     spawning_balls_query: Query<Entity, (With<Ball>, With<Spawning>)>,
     mut spawn_events: EventWriter<SpawnEvent<Object>>,
@@ -31,7 +31,7 @@ fn spawn_balls_sequentially_as_needed(
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
 
     if balls_query.iter().len()
-        < game_config.modes[global_data.mode_index].max_ball_count
+        < game_config.modes[selected_mode.0].max_ball_count
         && spawning_balls_query.iter().len() < 1
     {
         spawn_events.send(SpawnEvent::new(Object::Ball));
@@ -206,7 +206,7 @@ fn block_eliminated_goals(
 }
 
 fn check_for_game_over(
-    mut global_data: ResMut<GlobalData>,
+    mut commands: Commands,
     mut next_game_state: ResMut<NextState<GameState>>,
     mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
     teams_query: Query<(&Team, &HitPoints), With<Paddle>>,
@@ -226,7 +226,7 @@ fn check_for_game_over(
         }
 
         // Declare a winner and navigate back to the Start Menu.
-        global_data.winning_team = Some(survivor.0);
+        commands.insert_resource(WinningTeam(survivor.0));
         next_game_state.set(GameState::StartMenu);
         info!("Game Over: Team {:?} won!", survivor.0);
     }

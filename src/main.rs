@@ -4,7 +4,7 @@ mod cached_assets;
 mod components;
 mod constants;
 mod events;
-mod global_data;
+mod resources;
 mod serialization;
 mod states;
 mod systems;
@@ -35,7 +35,7 @@ fn main() {
         .add_plugins((
             cached_assets::CachedAssetsPlugin,
             events::EventsPlugin,
-            global_data::GlobalDataPlugin,
+            resources::ResourcesPlugin,
             states::ScreensPlugin,
             systems::SystemsPlugin,
         ))
