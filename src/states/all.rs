@@ -1,4 +1,4 @@
-use bevy::{app::AppExit, prelude::*};
+use bevy::{app::AppExit, ecs::query::Has, prelude::*};
 
 use crate::{
     components::{Despawning, ForStates, SpawnAnimation},
@@ -68,11 +68,11 @@ fn handle_game_state_specific_inputs(
 fn despawn_invalid_entities_for_state<S: States, const N: usize>(
     mut commands: Commands,
     game_state: Res<State<S>>,
-    mut query: Query<(Entity, &ForStates<S, N>, Option<&SpawnAnimation>)>,
+    query: Query<(Entity, &ForStates<S, N>, Has<SpawnAnimation>)>,
 ) {
-    for (entity, for_states, spawning_animation) in &mut query {
+    for (entity, for_states, has_spawning_animation) in &query {
         if !for_states.0.contains(game_state.get()) {
-            if spawning_animation.is_some() {
+            if has_spawning_animation {
                 commands.entity(entity).insert(Despawning);
             } else {
                 commands.entity(entity).despawn_recursive();

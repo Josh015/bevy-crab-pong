@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{ecs::query::Has, prelude::*};
 
 use crate::{
     components::{
@@ -11,10 +11,10 @@ use super::GameSystemSet;
 
 fn start_despawning_entity(
     mut commands: Commands,
-    query: Query<(Entity, Option<&Spawning>), Added<Despawning>>,
+    query: Query<(Entity, Has<Spawning>), Added<Despawning>>,
 ) {
-    for (entity, spawning) in &query {
-        if spawning.is_some() {
+    for (entity, has_spawning) in &query {
+        if has_spawning {
             commands.entity(entity).remove::<Spawning>();
         }
 
