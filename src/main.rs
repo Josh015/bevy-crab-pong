@@ -22,6 +22,6 @@ fn main() {
                 }),
         )
         .insert_resource(Msaa::default())
-        .add_plugins(bevy_crab_pong::BevyCrabPongPlugin)
+        .add_plugins(bevy_crab_pong::GamePlugin)
         .run();
 }

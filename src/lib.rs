@@ -7,9 +7,9 @@ pub mod resources;
 pub mod states;
 pub mod systems;
 
-pub struct BevyCrabPongPlugin;
+pub struct GamePlugin;
 
-impl Plugin for BevyCrabPongPlugin {
+impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             events::EventsPlugin,
