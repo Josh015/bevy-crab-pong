@@ -12,9 +12,9 @@ pub struct WinningTeam(pub usize);
 #[derive(Debug, Default, Resource)]
 pub struct IsDebuggingMode(pub bool);
 
-pub struct ResourcesPlugin;
+pub struct GlobalDataPlugin;
 
-impl Plugin for ResourcesPlugin {
+impl Plugin for GlobalDataPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<SelectedGameMode>()
             .init_resource::<IsDebuggingMode>();

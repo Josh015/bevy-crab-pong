@@ -10,8 +10,10 @@ use crate::{
         spawning::{Despawning, Object, Spawning},
     },
     constants::*,
-    resources::{SelectedGameMode, WinningTeam},
-    serialization::{GameAssets, GameConfig},
+    resources::{
+        config::{GameAssets, GameConfig},
+        global_data::{SelectedGameMode, WinningTeam},
+    },
     states::GameState,
 };
 

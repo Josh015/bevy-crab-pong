@@ -11,7 +11,7 @@ mod user_interface;
 use bevy::prelude::*;
 use spew::prelude::SpewSystemSet;
 
-use crate::{resources::IsDebuggingMode, states::GameState};
+use crate::{resources::global_data::IsDebuggingMode, states::GameState};
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub(super) enum GameSystemSet {

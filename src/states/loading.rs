@@ -11,7 +11,7 @@ use crate::{
         spawning::Object,
     },
     constants::*,
-    serialization::{GameAssets, GameConfig},
+    resources::config::{GameAssets, GameConfig},
 };
 
 use super::GameState;

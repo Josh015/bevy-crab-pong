@@ -8,7 +8,7 @@ use crate::{
         spawning::ForStates,
     },
     events::MessageUiEvent,
-    serialization::GameAssets,
+    resources::config::GameAssets,
 };
 
 use super::GameSystemSet;

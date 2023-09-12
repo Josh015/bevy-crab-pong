@@ -1,11 +1,9 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
-mod cached_assets;
 mod components;
 mod constants;
 mod events;
 mod resources;
-mod serialization;
 mod states;
 mod systems;
 
@@ -33,7 +31,6 @@ fn main() {
         )
         .insert_resource(Msaa::default())
         .add_plugins((
-            cached_assets::CachedAssetsPlugin,
             events::EventsPlugin,
             resources::ResourcesPlugin,
             states::ScreensPlugin,

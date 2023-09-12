@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     events::MessageUiEvent,
-    serialization::{GameAssets, GameConfig},
+    resources::config::{GameAssets, GameConfig},
 };
 
 use super::GameState;

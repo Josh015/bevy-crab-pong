@@ -4,8 +4,10 @@ use spew::prelude::SpawnEvent;
 use crate::{
     components::{goals::Goal, spawning::Object},
     events::MessageUiEvent,
-    resources::WinningTeam,
-    serialization::{GameAssets, GameConfig},
+    resources::{
+        config::{GameAssets, GameConfig},
+        global_data::WinningTeam,
+    },
 };
 
 use super::GameState;

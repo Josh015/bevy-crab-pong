@@ -3,7 +3,6 @@ use rand::{rngs::SmallRng, Rng, SeedableRng};
 use spew::prelude::*;
 
 use crate::{
-    cached_assets::CachedAssets,
     components::{
         goals::{Goal, Side, Wall},
         movement::{
@@ -18,8 +17,11 @@ use crate::{
         },
     },
     constants::*,
-    resources::SelectedGameMode,
-    serialization::{GameAssets, GameConfig, PlayerConfig},
+    resources::{
+        cached_assets::CachedAssets,
+        config::{GameAssets, GameConfig, PlayerConfig},
+        global_data::SelectedGameMode,
+    },
     states::GameState,
 };
 
