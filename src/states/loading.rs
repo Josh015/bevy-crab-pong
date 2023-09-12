@@ -28,11 +28,9 @@ fn update_window(
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
 
     window.title = game_config.title.to_owned();
-    window.resolution = WindowResolution::new(
-        game_config.width as f32,
-        game_config.height as f32,
-    )
-    .with_scale_factor_override(2.0);
+    window
+        .resolution
+        .set(game_config.width as f32, game_config.height as f32);
     clear_color.0 = game_config.clear_color;
 }
 
