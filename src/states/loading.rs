@@ -38,13 +38,21 @@ fn update_window(
 
 fn spawn_level(
     game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Entity>>,
 ) {
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
+
     // Cameras
-    commands.spawn((SwayingCamera, Camera3dBundle::default()));
+    commands.spawn((
+        SwayingCamera {
+            speed: game_config.swaying_camera_speed,
+        },
+        Camera3dBundle::default(),
+    ));
 
     // Light
     let light_transform = Mat4::from_euler(
@@ -65,7 +73,10 @@ fn spawn_level(
 
     // Ocean
     commands.spawn((
-        Ocean::default(),
+        Ocean {
+            speed: game_config.animated_water_speed,
+            ..default()
+        },
         PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Plane {
                 size: 100.0,

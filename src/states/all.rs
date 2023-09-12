@@ -25,10 +25,11 @@ fn handle_game_state_specific_inputs(
         return;
     }
 
-    let game_config = game_configs.get(&game_assets.game_config).unwrap();
-
     match game_state.get() {
         GameState::StartMenu => {
+            let game_config =
+                game_configs.get(&game_assets.game_config).unwrap();
+
             if keyboard_input.just_pressed(KeyCode::Return) {
                 next_game_state.set(GameState::Playing);
                 info!("New Game");

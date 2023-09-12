@@ -16,6 +16,10 @@ pub struct ForStates<T: States, const N: usize>(pub [T; N]);
 #[derive(Clone, Component, Debug, Default)]
 pub struct SpawnProgress(pub f32);
 
+/// Contains the [`SpawnAnimation`] playback speed.
+#[derive(Clone, Component, Debug, Default)]
+pub struct SpawnSpeed(pub f32);
+
 /// Specifies an entity's spawning effect animation.
 #[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
 pub enum SpawnAnimation {
@@ -54,5 +58,6 @@ pub struct Despawning;
 pub struct SpawnEffectsBundle {
     pub spawn_animation: SpawnAnimation,
     pub spawn_progress: SpawnProgress,
+    pub spawn_speed: SpawnSpeed,
     pub spawning: Spawning,
 }

@@ -14,6 +14,7 @@ use crate::{
         scoring::{HitPoints, Team},
         spawning::{
             Despawning, ForStates, Object, SpawnAnimation, SpawnEffectsBundle,
+            SpawnSpeed,
         },
     },
     constants::*,
@@ -36,7 +37,10 @@ fn spawn_ball(
     let ball = commands
         .spawn((
             Ball,
-            SpawnEffectsBundle::default(),
+            SpawnEffectsBundle {
+                spawn_speed: SpawnSpeed(game_config.spawn_speed),
+                ..default()
+            },
             ForStates([GameState::Playing, GameState::Paused]),
             VelocityBundle {
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
@@ -66,6 +70,8 @@ fn spawn_ball(
 
 fn spawn_wall_in_goal(
     In(goal_entity): In<Entity>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     goals_query: Query<&Side, With<Goal>>,
@@ -75,6 +81,7 @@ fn spawn_wall_in_goal(
     };
 
     // Spawn wall in goal.
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
     let wall = commands
         .entity(goal_entity)
         .with_children(|parent| {
@@ -86,6 +93,7 @@ fn spawn_wall_in_goal(
                         max_scale: WALL_SCALE,
                         axis_mask: Vec3::new(0.0, 1.0, 1.0),
                     },
+                    spawn_speed: SpawnSpeed(game_config.spawn_speed),
                     ..default()
                 },
                 PbrBundle {
@@ -143,6 +151,7 @@ fn spawn_paddle_in_goal(
                         max_scale: PADDLE_SCALE,
                         axis_mask: Vec3::ONE,
                     },
+                    spawn_speed: SpawnSpeed(game_config.spawn_speed),
                     ..default()
                 },
                 AccelerationBundle {

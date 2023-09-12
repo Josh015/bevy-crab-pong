@@ -4,9 +4,12 @@ use bevy::prelude::*;
 #[derive(Clone, Component, Debug, Default)]
 pub struct Ocean {
     pub scroll: f32,
+    pub speed: f32,
 }
 
 /// Marks a [`Camera3d`] entity to sway back and forth in a slow reciprocating
 /// motion while looking at the center of the arena.
 #[derive(Component, Debug)]
-pub struct SwayingCamera;
+pub struct SwayingCamera {
+    pub speed: f32,
+}

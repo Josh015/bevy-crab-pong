@@ -36,7 +36,7 @@ pub struct GameConfig {
     pub paddle_max_speed: f32,
     pub paddle_seconds_to_max_speed: f32,
     pub ball_speed: f32,
-    pub fade_speed: f32,
+    pub spawn_speed: f32,
     pub team_win_messages: Vec<String>,
     pub modes: Vec<ModeConfig>,
 }
