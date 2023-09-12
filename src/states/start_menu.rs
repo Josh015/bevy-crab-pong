@@ -2,12 +2,13 @@ use bevy::prelude::*;
 use spew::prelude::SpawnEvent;
 
 use crate::{
-    components::{Goal, Object},
-    events::MessageUiEvent,
-    resources::{GameAssets, GameConfig, WinningTeam},
+    goal::Goal,
+    hud::MessageUiEvent,
+    object::Object,
+    resources::{GameAssets, GameConfig},
+    state::AppState,
+    team::WinningTeam,
 };
-
-use super::GameState;
 
 fn spawn_start_menu_ui(
     game_assets: Res<GameAssets>,
@@ -25,7 +26,7 @@ fn spawn_start_menu_ui(
 
     ui_message_events.send(MessageUiEvent {
         message,
-        game_state: GameState::StartMenu,
+        game_state: AppState::StartMenu,
     });
 }
 
@@ -43,9 +44,9 @@ pub struct StartMenuPlugin;
 
 impl Plugin for StartMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::StartMenu), spawn_start_menu_ui)
+        app.add_systems(OnEnter(AppState::StartMenu), spawn_start_menu_ui)
             .add_systems(
-                OnExit(GameState::StartMenu),
+                OnExit(AppState::StartMenu),
                 give_each_goal_a_new_paddle.chain(),
             );
     }

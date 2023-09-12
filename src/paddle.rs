@@ -1,39 +1,76 @@
 use bevy::prelude::*;
-use spew::prelude::SpawnEvent;
 
 use crate::{
-    components::{
-        AiPlayer, Ball, Despawning, Force, HitPoints, KeyboardPlayer, Object,
-        Paddle, Side, Spawning, StoppingDistance, Target, Team,
+    arena::ARENA_CENTER_POINT,
+    ball::{Ball, BallSet},
+    goal::{
+        GoalEliminatedEvent, GOAL_PADDLE_MAX_POSITION_RANGE,
+        GOAL_PADDLE_MAX_POSITION_X,
     },
-    constants::*,
-    resources::{GameAssets, GameConfig, SelectedGameMode, WinningTeam},
-    states::GameState,
+    movement::{Force, MovementSet, Speed, StoppingDistance},
+    side::Side,
+    spawning::{Despawning, Spawning},
+    state::AppState,
 };
 
-use super::GameSystemSet;
+pub const PADDLE_WIDTH: f32 = 0.2;
+pub const PADDLE_DEPTH: f32 = 0.1;
+pub const PADDLE_HALF_WIDTH: f32 = 0.5 * PADDLE_WIDTH;
+pub const PADDLE_HALF_DEPTH: f32 = 0.5 * PADDLE_DEPTH;
+pub const PADDLE_SCALE: Vec3 =
+    Vec3::new(PADDLE_WIDTH, PADDLE_DEPTH, PADDLE_DEPTH);
+pub const PADDLE_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.5;
 
-#[derive(Clone, Component, Debug, Event)]
-struct GoalEliminatedEvent(Entity);
+/// Makes an entity that can move along a single access inside a goal.
+#[derive(Component, Debug)]
+pub struct Paddle;
 
-fn spawn_balls_sequentially_as_needed(
-    game_assets: Res<GameAssets>,
-    game_configs: Res<Assets<GameConfig>>,
-    selected_mode: Res<SelectedGameMode>,
-    balls_query: Query<Entity, With<Ball>>,
-    spawning_balls_query: Query<Entity, (With<Ball>, With<Spawning>)>,
-    mut spawn_events: EventWriter<SpawnEvent<Object>>,
-) {
-    let game_config = game_configs.get(&game_assets.game_config).unwrap();
+/// Marks a [`Paddle`] entity as being controlled by the keyboard.
+#[derive(Component, Debug)]
+pub struct KeyboardPlayer;
 
-    if balls_query.iter().len()
-        < game_config.modes[selected_mode.0].max_ball_count
-        && spawning_balls_query.iter().len() < 1
-    {
-        spawn_events.send(SpawnEvent::new(Object::Ball));
+/// Marks a [`Paddle`] entity as being controlled by AI.
+#[derive(Component, Debug)]
+pub struct AiPlayer;
+
+/// The [`Ball`] entity targeted by an [`AiPlayer`] [`Paddle`] entity.
+#[derive(Clone, Component, Debug)]
+#[component(storage = "SparseSet")]
+pub struct Target(pub Entity);
+
+// A paddle's HP which controls when they are eliminated and the game is over.
+#[derive(Clone, Component, Debug)]
+pub struct HitPoints(pub u8);
+
+pub struct PaddlePlugin;
+
+impl Plugin for PaddlePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            (
+                (
+                    handle_keyboard_input_for_player_controlled_paddles,
+                    make_ai_paddles_target_the_balls_closest_to_their_goals,
+                    move_ai_paddles_toward_their_targeted_balls,
+                )
+                    .chain()
+                    .before(MovementSet)
+                    .run_if(in_state(AppState::Playing)),
+                restrict_paddles_to_open_space_in_their_goals
+                    .after(MovementSet)
+                    .run_if(not(in_state(AppState::Loading)))
+                    .run_if(not(in_state(AppState::Paused))),
+            ),
+        )
+        .add_systems(
+            PostUpdate,
+            deduct_paddle_hp_and_potentially_eliminate_goal
+                .after(BallSet)
+                .run_if(in_state(AppState::Playing)),
+        );
     }
 }
-
 fn handle_keyboard_input_for_player_controlled_paddles(
     keyboard_input: Res<Input<KeyCode>>,
     mut commands: Commands,
@@ -127,7 +164,7 @@ fn move_ai_paddles_toward_their_targeted_balls(
 ) {
     for (entity, side, transform, stopping_distance, target) in &paddles_query {
         // Use the ball's goal position or default to the center of the goal.
-        let mut target_goal_position = FIELD_CENTER_POINT.x;
+        let mut target_goal_position = ARENA_CENTER_POINT.x;
 
         if let Some(target) = target {
             if let Ok(ball_transform) = balls_query.get(target.0) {
@@ -157,7 +194,37 @@ fn move_ai_paddles_toward_their_targeted_balls(
     }
 }
 
-fn check_if_any_balls_have_scored_against_any_goals(
+fn restrict_paddles_to_open_space_in_their_goals(
+    mut commands: Commands,
+    mut query: Query<
+        (Entity, &mut Transform, &mut Speed, &mut StoppingDistance),
+        (With<Paddle>, Without<Spawning>),
+    >,
+) {
+    for (entity, mut transform, mut speed, mut stopping_distance) in &mut query
+    {
+        // Limit paddle to bounds of the goal.
+        if !GOAL_PADDLE_MAX_POSITION_RANGE.contains(&transform.translation.x) {
+            transform.translation.x = transform
+                .translation
+                .x
+                .clamp(-GOAL_PADDLE_MAX_POSITION_X, GOAL_PADDLE_MAX_POSITION_X);
+            speed.0 = 0.0;
+            commands.entity(entity).remove::<Force>();
+        }
+
+        // Limit stopping distance to the bounds of the goal.
+        let stopped_position = transform.translation.x + stopping_distance.0;
+
+        if !GOAL_PADDLE_MAX_POSITION_RANGE.contains(&stopped_position) {
+            stopping_distance.0 = stopped_position.signum()
+                * GOAL_PADDLE_MAX_POSITION_X
+                - transform.translation.x;
+        }
+    }
+}
+
+fn deduct_paddle_hp_and_potentially_eliminate_goal(
     mut commands: Commands,
     mut goal_eliminated_events: EventWriter<GoalEliminatedEvent>,
     balls_query: Query<
@@ -189,66 +256,5 @@ fn check_if_any_balls_have_scored_against_any_goals(
             commands.entity(ball_entity).insert(Despawning);
             break;
         }
-    }
-}
-
-fn block_eliminated_goals(
-    mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
-    mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Entity>>,
-) {
-    for GoalEliminatedEvent(entity) in goal_eliminated_events.iter() {
-        spawn_in_goal_events.send(SpawnEvent::with_data(Object::Wall, *entity));
-    }
-}
-
-fn check_for_game_over(
-    mut commands: Commands,
-    mut next_game_state: ResMut<NextState<GameState>>,
-    mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
-    teams_query: Query<(&Team, &HitPoints), With<Paddle>>,
-) {
-    for GoalEliminatedEvent(_) in goal_eliminated_events.iter() {
-        // Check if only one team still has HP.
-        let Some((survivor, _)) = teams_query.iter().find(|(_, hp)| hp.0 > 0)
-        else {
-            return;
-        };
-        let is_winner = teams_query
-            .iter()
-            .all(|(team, hp)| team.0 == survivor.0 || hp.0 == 0);
-
-        if !is_winner {
-            continue;
-        }
-
-        // Declare a winner and navigate back to the Start Menu.
-        commands.insert_resource(WinningTeam(survivor.0));
-        next_game_state.set(GameState::StartMenu);
-        info!("Game Over: Team {:?} won!", survivor.0);
-    }
-}
-
-// TODO: Debug option to directly control single ball's exact position with
-// keyboard and see how paddles respond. Can go in goals, triggering a score and
-// ball return?
-
-pub struct GameplayLogicPlugin;
-
-impl Plugin for GameplayLogicPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_event::<GoalEliminatedEvent>().add_systems(
-            Update,
-            (
-                spawn_balls_sequentially_as_needed,
-                handle_keyboard_input_for_player_controlled_paddles,
-                make_ai_paddles_target_the_balls_closest_to_their_goals,
-                move_ai_paddles_toward_their_targeted_balls,
-                check_if_any_balls_have_scored_against_any_goals,
-                block_eliminated_goals,
-                check_for_game_over,
-            )
-                .chain()
-                .in_set(GameSystemSet::GameplayLogic),
-        );
     }
 }

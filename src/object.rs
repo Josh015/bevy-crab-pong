@@ -3,18 +3,48 @@ use rand::{rngs::SmallRng, Rng, SeedableRng};
 use spew::prelude::*;
 
 use crate::{
-    components::{
-        Acceleration, AccelerationBundle, AiPlayer, Ball, Despawning,
-        ForStates, Goal, Heading, HitPoints, KeyboardPlayer, MaxSpeed, Object,
-        Paddle, Side, SpawnAnimation, SpawnEffectsBundle, SpawnSpeed, Speed,
-        Team, VelocityBundle, Wall,
+    arena::ARENA_BALL_SPAWNER_POSITION,
+    ball::{Ball, BALL_DIAMETER},
+    goal::{Goal, Wall, GOAL_PADDLE_START_POSITION, WALL_HEIGHT, WALL_SCALE},
+    movement::{
+        Acceleration, AccelerationBundle, Heading, MaxSpeed, Speed,
+        VelocityBundle,
     },
-    constants::*,
+    paddle::{AiPlayer, HitPoints, KeyboardPlayer, Paddle, PADDLE_SCALE},
     resources::{
         CachedAssets, GameAssets, GameConfig, PlayerConfig, SelectedGameMode,
     },
-    states::GameState,
+    side::Side,
+    spawning::{Despawning, SpawnAnimation, SpawnEffectsBundle, SpawnSpeed},
+    state::{AppState, ForStates},
+    team::Team,
 };
+
+/// Objects that can be spawned via Spew.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum Object {
+    Ball,
+    Wall,
+    Paddle,
+}
+
+pub struct ObjectPlugin;
+
+impl Plugin for ObjectPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(SpewPlugin::<Object>::default())
+            .add_plugins(SpewPlugin::<Object, Entity>::default())
+            .add_spawners((
+                (Object::Ball, spawn_ball),
+                (Object::Wall, spawn_wall_in_goal),
+                (Object::Paddle, spawn_paddle_in_goal),
+            ))
+            .add_systems(
+                Update,
+                remove_previous_goal_occupant.after(SpewSystemSet),
+            );
+    }
+}
 
 fn spawn_ball(
     game_assets: Res<GameAssets>,
@@ -34,7 +64,7 @@ fn spawn_ball(
                 spawn_speed: SpawnSpeed(game_config.spawn_speed),
                 ..default()
             },
-            ForStates([GameState::Playing, GameState::Paused]),
+            ForStates([AppState::Playing, AppState::Paused]),
             VelocityBundle {
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
                 speed: Speed(game_config.ball_speed),
@@ -50,7 +80,7 @@ fn spawn_ball(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(BALL_DIAMETER),
                         Quat::IDENTITY,
-                        BALL_SPAWNER_POSITION,
+                        ARENA_BALL_SPAWNER_POSITION,
                     ),
                 ),
                 ..default()
@@ -199,23 +229,5 @@ fn remove_previous_goal_occupant(
                 break;
             }
         }
-    }
-}
-
-pub struct SpawningPlugin;
-
-impl Plugin for SpawningPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_plugins(SpewPlugin::<Object>::default())
-            .add_plugins(SpewPlugin::<Object, Entity>::default())
-            .add_spawners((
-                (Object::Ball, spawn_ball),
-                (Object::Wall, spawn_wall_in_goal),
-                (Object::Paddle, spawn_paddle_in_goal),
-            ))
-            .add_systems(
-                Update,
-                remove_previous_goal_occupant.after(SpewSystemSet),
-            );
     }
 }

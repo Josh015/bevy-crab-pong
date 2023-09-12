@@ -1,13 +1,45 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{
-        Ball, Barrier, Despawning, Heading, Paddle, Side, Spawning, Wall,
-    },
-    constants::*,
+    goal::{Barrier, Wall, BARRIER_RADIUS, WALL_RADIUS},
+    movement::Heading,
+    paddle::{Paddle, PADDLE_HALF_DEPTH, PADDLE_HALF_WIDTH},
+    side::Side,
+    spawning::{Despawning, Spawning},
+    state::AppState,
 };
 
-use super::GameSystemSet;
+pub const BALL_DIAMETER: f32 = 0.08;
+pub const BALL_HEIGHT: f32 = 0.05;
+pub const BALL_RADIUS: f32 = 0.5 * BALL_DIAMETER;
+
+/// Marks a ball entity that can collide and score.
+#[derive(Component, Debug)]
+pub struct Ball;
+
+#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
+pub struct BallSet;
+
+pub struct BallPlugin;
+
+impl Plugin for BallPlugin {
+    fn build(&self, app: &mut App) {
+        app.configure_set(
+            PostUpdate,
+            BallSet.run_if(in_state(AppState::Playing)),
+        )
+        .add_systems(
+            PostUpdate,
+            (
+                ball_to_ball_collisions,
+                ball_to_barrier_collisions,
+                ball_to_paddle_collisions,
+                ball_to_wall_collisions,
+            )
+                .in_set(BallSet),
+        );
+    }
+}
 
 fn reflect(d: Vec3, n: Vec3) -> Vec3 {
     (d - (2.0 * (d.dot(n) * n))).normalize()
@@ -163,24 +195,10 @@ fn ball_to_wall_collisions(
     }
 }
 
+// TODO: Debug option to directly control single ball's exact position with
+// keyboard and see how paddles respond. Can go in goals, triggering a score and
+// ball return?
+
 // TODO: Need a fix for the rare occasion when a ball just bounces infinitely
 // between two walls in a straight line? Maybe make all bounces slightly adjust
 // ball angle rather than pure reflection?
-
-pub struct CollisionsPlugin;
-
-impl Plugin for CollisionsPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(
-            PostUpdate,
-            (
-                ball_to_ball_collisions,
-                ball_to_barrier_collisions,
-                ball_to_paddle_collisions,
-                ball_to_wall_collisions,
-            )
-                .chain()
-                .in_set(GameSystemSet::Collisions),
-        );
-    }
-}

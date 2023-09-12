@@ -1,20 +1,20 @@
 use bevy::{app::AppExit, ecs::query::Has, prelude::*};
 
 use crate::{
-    components::{Despawning, ForStates, SpawnAnimation},
-    resources::{GameAssets, GameConfig, IsDebuggingMode, SelectedGameMode},
+    debug_mode::IsDebuggingMode,
+    resources::{GameAssets, GameConfig, SelectedGameMode},
+    spawning::{Despawning, SpawnAnimation},
+    state::{AppState, ForStates},
 };
-
-use super::GameState;
 
 fn handle_game_state_specific_inputs(
     keyboard_input: Res<Input<KeyCode>>,
-    game_state: Res<State<GameState>>,
+    game_state: Res<State<AppState>>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
     mut selected_mode: ResMut<SelectedGameMode>,
     mut is_debugging_mode: ResMut<IsDebuggingMode>,
-    mut next_game_state: ResMut<NextState<GameState>>,
+    mut next_game_state: ResMut<NextState<AppState>>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
@@ -26,12 +26,12 @@ fn handle_game_state_specific_inputs(
     }
 
     match game_state.get() {
-        GameState::StartMenu => {
+        AppState::StartMenu => {
             let game_config =
                 game_configs.get(&game_assets.game_config).unwrap();
 
             if keyboard_input.just_pressed(KeyCode::Return) {
-                next_game_state.set(GameState::Playing);
+                next_game_state.set(AppState::Playing);
                 info!("New Game");
             } else if keyboard_input.just_pressed(KeyCode::Left)
                 && selected_mode.0 > 0
@@ -47,18 +47,18 @@ fn handle_game_state_specific_inputs(
                 info!("Game Mode: {mode_name}");
             }
         },
-        GameState::Playing if keyboard_input.just_pressed(KeyCode::Space) => {
-            next_game_state.set(GameState::Paused);
+        AppState::Playing if keyboard_input.just_pressed(KeyCode::Space) => {
+            next_game_state.set(AppState::Paused);
             info!("Paused");
         },
-        GameState::Paused if keyboard_input.just_pressed(KeyCode::Space) => {
-            next_game_state.set(GameState::Playing);
+        AppState::Paused if keyboard_input.just_pressed(KeyCode::Space) => {
+            next_game_state.set(AppState::Playing);
             info!("Unpaused");
         },
-        GameState::Playing | GameState::Paused
+        AppState::Playing | AppState::Paused
             if keyboard_input.just_pressed(KeyCode::Back) =>
         {
-            next_game_state.set(GameState::StartMenu);
+            next_game_state.set(AppState::StartMenu);
             info!("Start Menu");
         },
         _ => {},
@@ -88,16 +88,16 @@ impl Plugin for AllPlugin {
         app.add_systems(
             Update,
             handle_game_state_specific_inputs
-                .run_if(not(in_state(GameState::Loading))),
+                .run_if(not(in_state(AppState::Loading))),
         )
         .add_systems(
             PostUpdate,
             (
-                despawn_invalid_entities_for_state::<GameState, 1>,
-                despawn_invalid_entities_for_state::<GameState, 2>,
-                despawn_invalid_entities_for_state::<GameState, 3>,
+                despawn_invalid_entities_for_state::<AppState, 1>,
+                despawn_invalid_entities_for_state::<AppState, 2>,
+                despawn_invalid_entities_for_state::<AppState, 3>,
             )
-                .run_if(state_changed::<GameState>()),
+                .run_if(state_changed::<AppState>()),
         );
     }
 }

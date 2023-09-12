@@ -1,14 +1,40 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{
-        AiPlayer, Ball, Despawning, Heading, Paddle, Spawning,
-        StoppingDistance, Target,
+    ball::Ball,
+    movement::{Heading, StoppingDistance},
+    paddle::{
+        AiPlayer, Paddle, Target, PADDLE_CENTER_HIT_AREA_PERCENTAGE,
+        PADDLE_WIDTH,
     },
-    constants::*,
+    spawning::{Despawning, Spawning},
 };
 
-use super::GameSystemSet;
+/// Toggles displaying debugging gizmos.
+#[derive(Debug, Default, Resource)]
+pub struct IsDebuggingMode(pub bool);
+
+pub struct DebugModePlugin;
+
+impl Plugin for DebugModePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            PostUpdate,
+            (
+                display_ball_movement_direction_gizmos,
+                display_paddle_predicted_stop_position_gizmos,
+                display_paddle_to_ball_targeting_gizmos,
+                display_ai_paddle_ideal_hit_area_gizmos,
+            )
+                .run_if(show_debugging_gizmos),
+        )
+        .init_resource::<IsDebuggingMode>();
+    }
+}
+
+fn show_debugging_gizmos(is_debugging_mode: Res<IsDebuggingMode>) -> bool {
+    is_debugging_mode.0
+}
 
 // TODO: Make this work with all object movement, not just Balls?
 fn display_ball_movement_direction_gizmos(
@@ -98,20 +124,3 @@ fn display_ai_paddle_ideal_hit_area_gizmos(
 }
 
 // TODO: Add debug visualizations for bounding shapes?
-
-pub struct DebuggingPlugin;
-
-impl Plugin for DebuggingPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(
-            PostUpdate,
-            (
-                display_ball_movement_direction_gizmos,
-                display_paddle_predicted_stop_position_gizmos,
-                display_paddle_to_ball_targeting_gizmos,
-                display_ai_paddle_ideal_hit_area_gizmos,
-            )
-                .in_set(GameSystemSet::Debugging),
-        );
-    }
-}

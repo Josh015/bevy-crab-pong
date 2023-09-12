@@ -1,12 +1,35 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{ForStates, HitPoints, HitPointsUi, Paddle, Side},
-    events::MessageUiEvent,
+    paddle::{HitPoints, Paddle},
     resources::GameAssets,
+    side::Side,
+    state::{AppState, ForStates},
 };
 
-use super::GameSystemSet;
+/// Marks a [`Text`] entity to display the HP for the associated [`HitPoints`].
+#[derive(Component, Debug)]
+pub struct HitPointsUi;
+
+/// An event fired when spawning a message UI.
+#[derive(Event, Debug)]
+pub struct MessageUiEvent {
+    pub message: String,
+    pub game_state: AppState,
+}
+
+pub struct HudPlugin;
+
+impl Plugin for HudPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_event::<MessageUiEvent>().add_systems(
+            Update,
+            (handle_spawn_ui_message_event, update_goal_hit_points_ui)
+                .chain()
+                .run_if(not(in_state(AppState::Loading))),
+        );
+    }
+}
 
 fn handle_spawn_ui_message_event(
     game_assets: Res<GameAssets>,
@@ -77,18 +100,5 @@ fn update_goal_hit_points_ui(
                 text.sections[0].value = hit_points.0.to_string();
             }
         }
-    }
-}
-
-pub struct UserInterfacePlugin;
-
-impl Plugin for UserInterfacePlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            (handle_spawn_ui_message_event, update_goal_hit_points_ui)
-                .chain()
-                .in_set(GameSystemSet::UserInterface),
-        );
     }
 }

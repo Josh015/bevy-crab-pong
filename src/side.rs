@@ -1,20 +1,7 @@
 use bevy::prelude::{Component, GlobalTransform, Vec3};
 use serde::Deserialize;
 
-use crate::constants::*;
-
-/// Marks a goal entity so that paddles and walls can use it as a parent, and
-/// so balls can score against it.
-#[derive(Component, Debug)]
-pub struct Goal;
-
-/// Makes an entity a wall that deflects all balls away from a goal.
-#[derive(Component, Debug)]
-pub struct Wall;
-
-/// Marks an entity as a barrier to deflect all balls away from a corner.
-#[derive(Component, Debug)]
-pub struct Barrier;
+use crate::{ball::BALL_RADIUS, goal::GOAL_HALF_WIDTH};
 
 /// Assigns an entity to a given side of the arena.
 #[derive(Clone, Component, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]

@@ -7,7 +7,7 @@ use bevy::{
 use bevy_asset_loader::prelude::*;
 use serde::Deserialize;
 
-use crate::components::Side;
+use crate::side::Side;
 
 #[derive(AssetCollection, Resource)]
 pub struct GameAssets {
@@ -44,7 +44,7 @@ pub struct GameConfig {
 #[derive(Debug, Deserialize)]
 pub struct ModeConfig {
     pub name: String,
-    pub max_ball_count: usize,
+    pub max_ball_count: u8,
     pub paddles: HashMap<Side, PaddleConfig>,
 }
 

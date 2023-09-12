@@ -4,14 +4,19 @@ use bevy_common_assets::ron::RonAssetPlugin;
 use spew::prelude::SpawnEvent;
 
 use crate::{
-    components::{
-        Barrier, Goal, HitPointsUi, Object, Ocean, Side, SwayingCamera,
+    arena::ARENA_CENTER_POINT,
+    goal::{
+        Barrier, Goal, BARRIER_DIAMETER, BARRIER_HEIGHT, GOAL_HALF_WIDTH,
+        GOAL_WIDTH,
     },
-    constants::*,
+    hud::HitPointsUi,
+    object::Object,
+    ocean::Ocean,
     resources::{GameAssets, GameConfig},
+    side::Side,
+    state::AppState,
+    swaying_camera::SwayingCamera,
 };
-
-use super::GameState;
 
 pub struct LoadingPlugin;
 
@@ -98,7 +103,7 @@ fn spawn_level(
             Mat4::from_scale_rotation_translation(
                 Vec3::splat(GOAL_WIDTH),
                 Quat::IDENTITY,
-                FIELD_CENTER_POINT,
+                ARENA_CENTER_POINT,
             ),
         ),
         ..default()
@@ -229,14 +234,14 @@ impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(RonAssetPlugin::<GameConfig>::new(&["config.ron"]))
         .add_loading_state(
-            LoadingState::new(GameState::Loading)
-                .continue_to_state(GameState::StartMenu),
+            LoadingState::new(AppState::Loading)
+                .continue_to_state(AppState::StartMenu),
         )
         .add_dynamic_collection_to_loading_state::<_, StandardDynamicAssetCollection>(
-            GameState::Loading,
+            AppState::Loading,
             "game.assets.ron",
         )
-        .add_collection_to_loading_state::<_, GameAssets>(GameState::Loading)
-        .add_systems(OnExit(GameState::Loading), (update_window, spawn_level).chain());
+        .add_collection_to_loading_state::<_, GameAssets>(AppState::Loading)
+        .add_systems(OnExit(AppState::Loading), (update_window, spawn_level).chain());
     }
 }

@@ -1,11 +1,10 @@
 use bevy::prelude::*;
 
 use crate::{
-    events::MessageUiEvent,
+    hud::MessageUiEvent,
     resources::{GameAssets, GameConfig},
+    state::AppState,
 };
-
-use super::GameState;
 
 fn spawn_pause_ui(
     game_assets: Res<GameAssets>,
@@ -16,7 +15,7 @@ fn spawn_pause_ui(
 
     ui_message_events.send(MessageUiEvent {
         message: game_config.pause_message.clone(),
-        game_state: GameState::Paused,
+        game_state: AppState::Paused,
     });
 }
 
@@ -24,6 +23,6 @@ pub struct PausedPlugin;
 
 impl Plugin for PausedPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Paused), spawn_pause_ui);
+        app.add_systems(OnEnter(AppState::Paused), spawn_pause_ui);
     }
 }
