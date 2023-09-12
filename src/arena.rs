@@ -35,7 +35,10 @@ pub struct ArenaPlugin;
 impl Plugin for ArenaPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnExit(AppState::Loading), spawn_level)
-            .add_systems(OnExit(AppState::StartMenu), initialize_arena_data)
+            .add_systems(
+                OnExit(AppState::StartMenu),
+                (initialize_arena_data, give_each_goal_a_new_paddle),
+            )
             .add_systems(
                 Update,
                 spawn_balls_sequentially_as_needed
@@ -56,6 +59,16 @@ fn initialize_arena_data(
     commands.insert_resource(Arena {
         max_ball_count: game_config.modes[selected_mode.0].max_ball_count,
     })
+}
+
+fn give_each_goal_a_new_paddle(
+    goals_query: Query<Entity, With<Goal>>,
+    mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Entity>>,
+) {
+    for entity in &goals_query {
+        spawn_in_goal_events
+            .send(SpawnEvent::with_data(Object::Paddle, entity));
+    }
 }
 
 fn spawn_balls_sequentially_as_needed(

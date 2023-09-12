@@ -14,7 +14,6 @@ pub mod resources;
 pub mod side;
 pub mod spawning;
 pub mod state;
-pub mod states;
 pub mod swaying_camera;
 pub mod team;
 
@@ -28,6 +27,7 @@ impl Plugin for GamePlugin {
             debug_mode::DebugModePlugin,
             goal::GoalPlugin,
             hud::HudPlugin,
+            menu::MenuPlugin,
             movement::MovementPlugin,
             object::ObjectPlugin,
             ocean::OceanPlugin,
@@ -35,9 +35,8 @@ impl Plugin for GamePlugin {
             resources::ResourcesPlugin,
             spawning::SpawningPlugin,
             state::StatePlugin,
-            states::ScreensPlugin,
             swaying_camera::SwayingCameraPlugin,
-            team::TeamPlugin,
-        ));
+        ))
+        .add_plugins((team::TeamPlugin,));
     }
 }
