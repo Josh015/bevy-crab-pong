@@ -10,7 +10,6 @@ G to enable debugging.
   animated_water_speed: 0.01,
   paddle_max_speed: 2,
   paddle_seconds_to_max_speed: 0.6, // 0.65
-  spawn_speed: 0.75,
   ball_speed: 0.5,
   team_win_messages: [
     "You win!\n",

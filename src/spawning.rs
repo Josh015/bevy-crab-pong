@@ -1,15 +1,21 @@
 use bevy::{ecs::query::Has, prelude::*};
 
-pub const FADE_PROGRESS_MIN: f32 = 0.0;
-pub const FADE_PROGRESS_MAX: f32 = 1.0;
+use crate::state::AppState;
+
+pub const SPAWNING_DURATION_IN_SECONDS: f32 = 1.0;
 
 /// Contains the [`SpawnAnimation`] progress for this entity.
-#[derive(Clone, Component, Debug, Default)]
-pub struct SpawnProgress(pub f32);
+#[derive(Clone, Component, Debug)]
+pub struct SpawningProgress(pub Timer);
 
-/// Contains the [`SpawnAnimation`] playback speed.
-#[derive(Clone, Component, Debug, Default)]
-pub struct SpawnSpeed(pub f32);
+impl Default for SpawningProgress {
+    fn default() -> Self {
+        Self(Timer::from_seconds(
+            SPAWNING_DURATION_IN_SECONDS,
+            TimerMode::Once,
+        ))
+    }
+}
 
 /// Specifies an entity's spawning effect animation.
 #[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
@@ -40,17 +46,29 @@ pub enum SpawnAnimation {
 pub struct Spawning;
 
 /// Marks an entity to fade out and then despawn.
-#[derive(Component, Debug)]
+#[derive(Clone, Component, Debug, Default)]
 #[component(storage = "SparseSet")]
 pub struct Despawning;
 
-/// Marks an entity that needs spawn effects.
+/// Marks an entity that needs to spawn with animation.
 #[derive(Bundle, Clone, Debug, Default)]
-pub struct SpawnEffectsBundle {
+pub struct SpawnAnimationBundle {
     pub spawn_animation: SpawnAnimation,
-    pub spawn_progress: SpawnProgress,
-    pub spawn_speed: SpawnSpeed,
+    pub spawning_bundle: SpawningBundle,
+}
+
+/// Marks an entity that needs to spawn.
+#[derive(Bundle, Clone, Debug, Default)]
+pub struct SpawningBundle {
+    pub spawning_progress: SpawningProgress,
     pub spawning: Spawning,
+}
+
+/// Marks an entity that needs to despawn.
+#[derive(Bundle, Clone, Debug, Default)]
+pub struct DespawningBundle {
+    pub spawning_progress: SpawningProgress,
+    pub despawning: Despawning,
 }
 
 pub struct SpawningPlugin;
@@ -61,11 +79,12 @@ impl Plugin for SpawningPlugin {
             PostUpdate,
             (
                 start_despawning_entity,
-                advance_spawning_progress,
-                advance_despawning_progress,
+                spawn_and_finish_animating,
+                despawn_when_finished_animating,
                 animate_fade_effect_on_entity,
             )
-                .chain(),
+                .chain()
+                .run_if(not(in_state(AppState::Paused))),
         )
         .add_systems(Last, finish_despawning_entity);
     }
@@ -84,69 +103,65 @@ fn start_despawning_entity(
     }
 }
 
-fn advance_spawning_progress(
+fn spawn_and_finish_animating(
     mut commands: Commands,
-    time: Res<Time>,
-    mut query: Query<(Entity, &mut SpawnProgress, &SpawnSpeed), With<Spawning>>,
+    query: Query<(Entity, &SpawningProgress), With<Spawning>>,
 ) {
-    for (entity, mut progress, spawn_speed) in &mut query {
-        let step = spawn_speed.0 * time.delta_seconds();
-
-        if progress.0 < FADE_PROGRESS_MAX {
-            progress.0 = progress.0.max(FADE_PROGRESS_MIN) + step;
-        } else {
-            commands.entity(entity).remove::<Spawning>();
+    for (entity, progress) in &query {
+        if progress.0.finished() {
+            commands.entity(entity).remove::<SpawningBundle>();
             info!("Entity({:?}): Spawned", entity);
         }
     }
 }
 
-fn advance_despawning_progress(
+fn despawn_when_finished_animating(
     mut commands: Commands,
-    time: Res<Time>,
-    mut query: Query<
-        (Entity, &mut SpawnProgress, &SpawnSpeed),
-        With<Despawning>,
-    >,
+    query: Query<(Entity, &SpawningProgress), With<Despawning>>,
 ) {
-    for (entity, mut progress, spawn_speed) in &mut query {
-        let step = spawn_speed.0 * time.delta_seconds();
-
-        if progress.0 > FADE_PROGRESS_MIN {
-            progress.0 = progress.0.min(FADE_PROGRESS_MAX) - step;
-        } else {
-            commands.entity(entity).remove::<Despawning>();
+    for (entity, progress) in &query {
+        if progress.0.finished() {
+            commands.entity(entity).remove::<DespawningBundle>();
             info!("Entity({:?}): Despawned", entity);
         }
     }
 }
 
 fn animate_fade_effect_on_entity(
+    time: Res<Time>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut query: Query<
-        (
-            &mut Transform,
-            &Handle<StandardMaterial>,
-            &SpawnAnimation,
-            &SpawnProgress,
-        ),
-        Or<(With<Spawning>, With<Despawning>)>,
-    >,
+    mut query: Query<(
+        &mut Transform,
+        &Handle<StandardMaterial>,
+        &SpawnAnimation,
+        &mut SpawningProgress,
+        Has<Despawning>,
+    )>,
 ) {
-    for (mut transform, material, animation, progress) in &mut query {
+    for (mut transform, material, animation, mut progress, has_despawning) in
+        &mut query
+    {
+        progress.0.tick(time.delta());
+
+        let weight = if has_despawning {
+            1.0 - progress.0.percent()
+        } else {
+            progress.0.percent()
+        };
+
         match *animation {
             SpawnAnimation::Scale {
                 max_scale,
                 axis_mask,
             } => {
-                transform.scale = (max_scale * axis_mask) * progress.0
-                    + (Vec3::ONE - axis_mask);
+                transform.scale =
+                    (max_scale * axis_mask) * weight + (Vec3::ONE - axis_mask);
             },
             SpawnAnimation::Opacity => {
                 let material = materials.get_mut(material).unwrap();
 
-                material.base_color.set_a(progress.0);
-                material.alpha_mode = if progress.0 < 1.0 {
+                material.base_color.set_a(weight);
+                material.alpha_mode = if weight < 1.0 {
                     AlphaMode::Blend
                 } else {
                     AlphaMode::Opaque

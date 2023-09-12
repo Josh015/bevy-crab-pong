@@ -9,7 +9,7 @@ use crate::{
     },
     movement::{Force, MovementSet, Speed, StoppingDistance},
     side::Side,
-    spawning::{Despawning, Spawning},
+    spawning::{Despawning, DespawningBundle, Spawning},
     state::AppState,
 };
 
@@ -253,7 +253,9 @@ fn deduct_paddle_hp_and_potentially_eliminate_goal(
             }
 
             // Despawn and replace the scoring ball.
-            commands.entity(ball_entity).insert(Despawning);
+            commands
+                .entity(ball_entity)
+                .insert(DespawningBundle::default());
             break;
         }
     }
