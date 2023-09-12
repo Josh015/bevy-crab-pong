@@ -2,10 +2,7 @@ use bevy::{app::AppExit, prelude::*};
 
 use crate::{
     components::{Despawning, ForStates, SpawnAnimation},
-    resources::{
-        config::{GameAssets, GameConfig},
-        global_data::{IsDebuggingMode, SelectedGameMode},
-    },
+    resources::{GameAssets, GameConfig, IsDebuggingMode, SelectedGameMode},
 };
 
 use super::GameState;

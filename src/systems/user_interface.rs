@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     components::{ForStates, HitPoints, HitPointsUi, Paddle, Side},
     events::MessageUiEvent,
-    resources::config::GameAssets,
+    resources::GameAssets,
 };
 
 use super::GameSystemSet;

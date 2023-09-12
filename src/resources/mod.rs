@@ -1,6 +1,10 @@
-pub mod cached_assets;
-pub mod config;
-pub mod global_data;
+mod cached_assets;
+mod config;
+mod global_data;
+
+pub use cached_assets::*;
+pub use config::*;
+pub use global_data::*;
 
 use bevy::prelude::{App, Plugin};
 

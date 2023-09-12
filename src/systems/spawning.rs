@@ -11,9 +11,7 @@ use crate::{
     },
     constants::*,
     resources::{
-        cached_assets::CachedAssets,
-        config::{GameAssets, GameConfig, PlayerConfig},
-        global_data::SelectedGameMode,
+        CachedAssets, GameAssets, GameConfig, PlayerConfig, SelectedGameMode,
     },
     states::GameState,
 };

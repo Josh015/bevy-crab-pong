@@ -8,7 +8,7 @@ use crate::{
         Barrier, Goal, HitPointsUi, Object, Ocean, Side, SwayingCamera,
     },
     constants::*,
-    resources::config::{GameAssets, GameConfig},
+    resources::{GameAssets, GameConfig},
 };
 
 use super::GameState;

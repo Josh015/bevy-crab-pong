@@ -7,10 +7,7 @@ use crate::{
         Paddle, Side, Spawning, StoppingDistance, Target, Team,
     },
     constants::*,
-    resources::{
-        config::{GameAssets, GameConfig},
-        global_data::{SelectedGameMode, WinningTeam},
-    },
+    resources::{GameAssets, GameConfig, SelectedGameMode, WinningTeam},
     states::GameState,
 };
 

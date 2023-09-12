@@ -4,10 +4,7 @@ use spew::prelude::SpawnEvent;
 use crate::{
     components::{Goal, Object},
     events::MessageUiEvent,
-    resources::{
-        config::{GameAssets, GameConfig},
-        global_data::WinningTeam,
-    },
+    resources::{GameAssets, GameConfig, WinningTeam},
 };
 
 use super::GameState;
