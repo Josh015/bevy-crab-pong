@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use spew::prelude::SpawnEvent;
 
 use crate::{
-    components::{goals::Goal, spawning::Object},
+    components::{Goal, Object},
     events::MessageUiEvent,
     resources::{
         config::{GameAssets, GameConfig},

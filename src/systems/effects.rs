@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::spawning::{
+    components::{
         Despawning, SpawnAnimation, SpawnProgress, SpawnSpeed, Spawning,
     },
     constants::*,

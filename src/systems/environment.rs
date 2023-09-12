@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::environment::{Ocean, SwayingCamera},
+    components::{Ocean, SwayingCamera},
     constants::*,
 };
 

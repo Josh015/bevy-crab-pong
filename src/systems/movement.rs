@@ -3,11 +3,8 @@ use std::ops::{Add, Sub};
 
 use crate::{
     components::{
-        movement::{
-            Acceleration, Force, Heading, MaxSpeed, Speed, StoppingDistance,
-        },
-        paddles::Paddle,
-        spawning::Spawning,
+        Acceleration, Force, Heading, MaxSpeed, Paddle, Spawning, Speed,
+        StoppingDistance,
     },
     constants::*,
 };

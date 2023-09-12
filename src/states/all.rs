@@ -1,7 +1,7 @@
 use bevy::{app::AppExit, prelude::*};
 
 use crate::{
-    components::spawning::{Despawning, ForStates, SpawnAnimation},
+    components::{Despawning, ForStates, SpawnAnimation},
     resources::{
         config::{GameAssets, GameConfig},
         global_data::{IsDebuggingMode, SelectedGameMode},

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::components::spawning::Despawning;
+use crate::components::Despawning;
 
 use super::GameSystemSet;
 

@@ -7,7 +7,7 @@ use bevy::{
 use bevy_asset_loader::prelude::*;
 use serde::Deserialize;
 
-use crate::components::goals::Side;
+use crate::components::Side;
 
 #[derive(AssetCollection, Resource)]
 pub struct GameAssets {

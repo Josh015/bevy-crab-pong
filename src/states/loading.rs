@@ -5,10 +5,7 @@ use spew::prelude::SpawnEvent;
 
 use crate::{
     components::{
-        environment::{Ocean, SwayingCamera},
-        goals::{Barrier, Goal, Side},
-        scoring::HitPointsUi,
-        spawning::Object,
+        Barrier, Goal, HitPointsUi, Object, Ocean, Side, SwayingCamera,
     },
     constants::*,
     resources::config::{GameAssets, GameConfig},

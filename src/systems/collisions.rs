@@ -2,10 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     components::{
-        goals::{Barrier, Side, Wall},
-        movement::Heading,
-        paddles::{Ball, Paddle},
-        spawning::{Despawning, Spawning},
+        Ball, Barrier, Despawning, Heading, Paddle, Side, Spawning, Wall,
     },
     constants::*,
 };

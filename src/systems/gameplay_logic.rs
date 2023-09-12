@@ -3,11 +3,8 @@ use spew::prelude::SpawnEvent;
 
 use crate::{
     components::{
-        goals::Side,
-        movement::{Force, StoppingDistance},
-        paddles::{AiPlayer, Ball, KeyboardPlayer, Paddle, Target},
-        scoring::{HitPoints, Team},
-        spawning::{Despawning, Object, Spawning},
+        AiPlayer, Ball, Despawning, Force, HitPoints, KeyboardPlayer, Object,
+        Paddle, Side, Spawning, StoppingDistance, Target, Team,
     },
     constants::*,
     resources::{

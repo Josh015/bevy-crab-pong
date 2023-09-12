@@ -1,12 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{
-        goals::Side,
-        paddles::Paddle,
-        scoring::{HitPoints, HitPointsUi},
-        spawning::ForStates,
-    },
+    components::{ForStates, HitPoints, HitPointsUi, Paddle, Side},
     events::MessageUiEvent,
     resources::config::GameAssets,
 };

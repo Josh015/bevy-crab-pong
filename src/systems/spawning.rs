@@ -4,17 +4,10 @@ use spew::prelude::*;
 
 use crate::{
     components::{
-        goals::{Goal, Side, Wall},
-        movement::{
-            Acceleration, AccelerationBundle, Heading, MaxSpeed, Speed,
-            VelocityBundle,
-        },
-        paddles::{AiPlayer, Ball, KeyboardPlayer, Paddle},
-        scoring::{HitPoints, Team},
-        spawning::{
-            Despawning, ForStates, Object, SpawnAnimation, SpawnEffectsBundle,
-            SpawnSpeed,
-        },
+        Acceleration, AccelerationBundle, AiPlayer, Ball, Despawning,
+        ForStates, Goal, Heading, HitPoints, KeyboardPlayer, MaxSpeed, Object,
+        Paddle, Side, SpawnAnimation, SpawnEffectsBundle, SpawnSpeed, Speed,
+        Team, VelocityBundle, Wall,
     },
     constants::*,
     resources::{
