@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
+    assets::GameAssets,
     paddle::{HitPoints, Paddle},
-    resources::GameAssets,
     side::Side,
     state::AppState,
 };

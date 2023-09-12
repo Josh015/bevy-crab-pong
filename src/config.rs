@@ -1,25 +1,11 @@
 use bevy::{
     prelude::*,
     reflect::{TypePath, TypeUuid},
-    text::Font,
     utils::HashMap,
 };
-use bevy_asset_loader::prelude::*;
 use serde::Deserialize;
 
 use crate::side::Side;
-
-#[derive(AssetCollection, Resource)]
-pub struct GameAssets {
-    #[asset(key = "game.config")]
-    pub game_config: Handle<GameConfig>,
-
-    #[asset(key = "fonts.menu")]
-    pub font_menu: Handle<Font>,
-
-    #[asset(key = "images.paddle")]
-    pub image_paddle: Handle<Image>,
-}
 
 /// Game settings read from a config file.
 #[derive(Debug, Deserialize, Resource, TypeUuid, TypePath)]
@@ -56,4 +42,16 @@ pub struct PaddleConfig {
 pub enum PlayerConfig {
     Keyboard,
     AI,
+}
+
+/// The currently-selected game mode.
+#[derive(Debug, Default, Resource)]
+pub struct GameMode(pub usize);
+
+pub struct ConfigPlugin;
+
+impl Plugin for ConfigPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<GameMode>();
+    }
 }

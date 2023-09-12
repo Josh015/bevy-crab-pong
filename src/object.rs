@@ -4,16 +4,15 @@ use spew::prelude::*;
 
 use crate::{
     arena::ARENA_BALL_SPAWNER_POSITION,
+    assets::{CachedAssets, GameAssets},
     ball::{Ball, BALL_DIAMETER},
+    config::{GameConfig, GameMode, PlayerConfig},
     goal::{Goal, Wall, GOAL_PADDLE_START_POSITION, WALL_HEIGHT, WALL_SCALE},
     movement::{
         Acceleration, AccelerationBundle, Heading, MaxSpeed, Speed,
         VelocityBundle,
     },
     paddle::{AiPlayer, HitPoints, KeyboardPlayer, Paddle, PADDLE_SCALE},
-    resources::{
-        CachedAssets, GameAssets, GameConfig, PlayerConfig, SelectedGameMode,
-    },
     side::Side,
     spawning::{Despawning, SpawnAnimation, SpawnEffectsBundle, SpawnSpeed},
     state::{AppState, ForStates},
@@ -140,7 +139,7 @@ fn spawn_wall_in_goal(
 
 fn spawn_paddle_in_goal(
     In(goal_entity): In<Entity>,
-    selected_mode: Res<SelectedGameMode>,
+    game_mode: Res<GameMode>,
     cached_assets: Res<CachedAssets>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
@@ -153,7 +152,7 @@ fn spawn_paddle_in_goal(
     };
 
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let paddle_config = &game_config.modes[selected_mode.0].paddles[goal_side];
+    let paddle_config = &game_config.modes[game_mode.0].paddles[goal_side];
     let material_handle = materials.add(StandardMaterial {
         base_color_texture: Some(game_assets.image_paddle.clone()),
         base_color: Color::hex(&paddle_config.color).unwrap(),

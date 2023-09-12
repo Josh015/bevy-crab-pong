@@ -1,4 +1,19 @@
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
+
+use crate::config::GameConfig;
+
+#[derive(AssetCollection, Resource)]
+pub struct GameAssets {
+    #[asset(key = "game.config")]
+    pub game_config: Handle<GameConfig>,
+
+    #[asset(key = "fonts.menu")]
+    pub font_menu: Handle<Font>,
+
+    #[asset(key = "images.paddle")]
+    pub image_paddle: Handle<Image>,
+}
 
 /// Assets that need to remain loaded at all times.
 #[derive(Debug, Resource)]
@@ -42,9 +57,9 @@ impl FromWorld for CachedAssets {
     }
 }
 
-pub struct CachedAssetsPlugin;
+pub struct AssetsPlugin;
 
-impl Plugin for CachedAssetsPlugin {
+impl Plugin for AssetsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<CachedAssets>();
     }

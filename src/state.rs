@@ -3,7 +3,8 @@ use bevy_asset_loader::prelude::*;
 use bevy_common_assets::ron::RonAssetPlugin;
 
 use crate::{
-    resources::{GameAssets, GameConfig},
+    assets::GameAssets,
+    config::GameConfig,
     spawning::{Despawning, SpawnAnimation},
 };
 

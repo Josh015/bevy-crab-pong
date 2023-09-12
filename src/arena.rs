@@ -2,14 +2,15 @@ use bevy::prelude::*;
 use spew::prelude::{SpawnEvent, SpewSystemSet};
 
 use crate::{
+    assets::GameAssets,
     ball::{Ball, BALL_HEIGHT},
+    config::{GameConfig, GameMode},
     goal::{
         Barrier, Goal, BARRIER_DIAMETER, BARRIER_HEIGHT, GOAL_HALF_WIDTH,
         GOAL_WIDTH,
     },
     object::Object,
     ocean::Ocean,
-    resources::{GameAssets, GameConfig, SelectedGameMode},
     side::Side,
     spawning::Spawning,
     state::AppState,
@@ -51,12 +52,12 @@ fn initialize_arena_data(
     mut commands: Commands,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
-    selected_mode: Res<SelectedGameMode>,
+    game_mode: Res<GameMode>,
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
 
     commands.insert_resource(Arena {
-        max_ball_count: game_config.modes[selected_mode.0].max_ball_count,
+        max_ball_count: game_config.modes[game_mode.0].max_ball_count,
     })
 }
 
