@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    ball::{Ball, Collider},
+    ball::Ball,
+    collider::Collider,
     movement::{Heading, Movement, StoppingDistance},
     paddle::{
         AiPlayer, Paddle, Target, PADDLE_CENTER_HIT_AREA_PERCENTAGE,

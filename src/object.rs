@@ -5,7 +5,8 @@ use spew::prelude::*;
 use crate::{
     arena::ARENA_BALL_SPAWNER_POSITION,
     assets::{CachedAssets, GameAssets},
-    ball::{Ball, Collider, BALL_DIAMETER},
+    ball::{Ball, BALL_DIAMETER},
+    collider::Collider,
     config::{GameConfig, GameMode, PlayerConfig},
     fade::{Fade, FadeAnimation, FadeBundle},
     goal::{Goal, Wall, GOAL_PADDLE_START_POSITION, WALL_HEIGHT, WALL_SCALE},

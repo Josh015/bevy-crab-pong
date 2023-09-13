@@ -2,7 +2,8 @@ use bevy::prelude::*;
 
 use crate::{
     arena::ARENA_CENTER_POINT,
-    ball::{Ball, BallSet, Collider},
+    ball::Ball,
+    collider::{Collider, ColliderSet},
     fade::Fade,
     goal::{
         GoalEliminatedEvent, GOAL_PADDLE_MAX_POSITION_RANGE,
@@ -66,7 +67,7 @@ impl Plugin for PaddlePlugin {
         .add_systems(
             PostUpdate,
             deduct_paddle_hp_and_potentially_eliminate_goal
-                .after(BallSet)
+                .after(ColliderSet)
                 .run_if(in_state(AppState::Playing)),
         );
     }

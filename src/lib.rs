@@ -3,6 +3,7 @@ use bevy::prelude::{App, Plugin};
 pub mod arena;
 pub mod assets;
 pub mod ball;
+pub mod collider;
 pub mod config;
 pub mod debug_mode;
 pub mod fade;
@@ -25,7 +26,7 @@ impl Plugin for GamePlugin {
         app.add_plugins((
             arena::ArenaPlugin,
             assets::AssetsPlugin,
-            ball::BallPlugin,
+            collider::ColliderPlugin,
             config::ConfigPlugin,
             debug_mode::DebugModePlugin,
             fade::FadePlugin,

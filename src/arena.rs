@@ -3,7 +3,8 @@ use spew::prelude::{SpawnEvent, SpewSystemSet};
 
 use crate::{
     assets::GameAssets,
-    ball::{Ball, Collider, BALL_HEIGHT},
+    ball::{Ball, BALL_HEIGHT},
+    collider::Collider,
     config::{GameConfig, GameMode},
     goal::{
         Barrier, Goal, BARRIER_DIAMETER, BARRIER_HEIGHT, GOAL_HALF_WIDTH,

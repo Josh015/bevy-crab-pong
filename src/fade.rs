@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{ball::Collider, movement::Movement, state::AppState};
+use crate::{collider::Collider, movement::Movement, state::AppState};
 
 pub const FADE_DURATION_IN_SECONDS: f32 = 1.0;
 
