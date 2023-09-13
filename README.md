@@ -16,16 +16,16 @@ cargo run --release
 
 ## TODO
 
-- [x] Fix issue with mode switching due to paddles not respawning between rounds.
+- [x] Fix issue with mode switching due to crabs not respawning between rounds.
 - [x] Fix issue with ball spawning during paused screen.
-- [ ] Fix issue where HP of surviving paddles is delayed in resetting for second round.
+- [ ] Fix issue where HP of surviving crabs is delayed in resetting for second round.
 - [ ] Make walls spawn fully-formed before window opens.
-- [ ] Add "reflections" in the water via mirrored geometry and water blending.
+- [ ] Add "reflections" in the ocean via mirrored geometry and ocean blending.
 - [ ] Switch to RT-based in-world UI.
 - [ ] Add a Ferris model (eg. [Ferris the Crab](https://sketchfab.com/3d-models/ferris-the-crab-e9bc16e19d1c4880b30d2aa5fd174887))
 - [ ] Adjust model textures to support color tinting.
 - [ ] Use updated scene textures rather than the originals?
-- [ ] Add water texture scrolling.
+- [ ] Add ocean texture scrolling.
 - [ ] Try to mimic the lighting of the original.
 - [ ] Add shadowed directional light for the sun?
 - [ ] Use a Rust gear logo texture?

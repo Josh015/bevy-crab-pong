@@ -6,6 +6,7 @@ pub mod ball;
 pub mod barrier;
 pub mod collider;
 pub mod config;
+pub mod crab;
 pub mod debug_mode;
 pub mod fade;
 pub mod goal;
@@ -14,7 +15,6 @@ pub mod menu;
 pub mod movement;
 pub mod object;
 pub mod ocean;
-pub mod paddle;
 pub mod side;
 pub mod state;
 pub mod swaying_camera;
@@ -38,7 +38,7 @@ impl Plugin for GamePlugin {
             movement::MovementPlugin,
             object::ObjectPlugin,
             ocean::OceanPlugin,
-            paddle::PaddlePlugin,
+            crab::CrabPlugin,
             state::StatePlugin,
             swaying_camera::SwayingCameraPlugin,
         ))

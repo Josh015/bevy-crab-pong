@@ -36,7 +36,7 @@ impl Plugin for ArenaPlugin {
         app.add_systems(OnExit(AppState::Loading), spawn_level)
             .add_systems(
                 OnExit(AppState::StartMenu),
-                (initialize_arena_data, give_each_goal_a_new_paddle),
+                (initialize_arena_data, give_each_goal_a_new_crab),
             )
             .add_systems(
                 Update,
@@ -60,13 +60,12 @@ fn initialize_arena_data(
     })
 }
 
-fn give_each_goal_a_new_paddle(
+fn give_each_goal_a_new_crab(
     goals_query: Query<Entity, With<Goal>>,
     mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Entity>>,
 ) {
     for entity in &goals_query {
-        spawn_in_goal_events
-            .send(SpawnEvent::with_data(Object::Paddle, entity));
+        spawn_in_goal_events.send(SpawnEvent::with_data(Object::Crab, entity));
     }
 }
 
@@ -121,7 +120,7 @@ fn spawn_level(
     // Ocean
     commands.spawn((
         Ocean {
-            speed: game_config.animated_water_speed,
+            speed: game_config.ocean_scroll_speed,
             ..default()
         },
         PbrBundle {

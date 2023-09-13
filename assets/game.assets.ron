@@ -5,7 +5,7 @@
     "fonts.menu": File (
         path: "fonts/FiraSans-Bold.ttf",
     ),
-    "images.paddle": File (
-        path: "images/paddle.png",
+    "images.crab": File (
+        path: "images/crab.png",
     ),
 })

@@ -3,11 +3,10 @@ use bevy::prelude::*;
 use crate::{
     ball::Ball,
     collider::Collider,
-    movement::{Heading, Movement, StoppingDistance},
-    paddle::{
-        AiPlayer, Paddle, Target, PADDLE_CENTER_HIT_AREA_PERCENTAGE,
-        PADDLE_WIDTH,
+    crab::{
+        AiPlayer, Crab, Target, CRAB_CENTER_HIT_AREA_PERCENTAGE, CRAB_WIDTH,
     },
+    movement::{Heading, Movement, StoppingDistance},
 };
 
 /// Toggles displaying debugging gizmos.
@@ -22,9 +21,9 @@ impl Plugin for DebugModePlugin {
             PostUpdate,
             (
                 display_ball_movement_direction_gizmos,
-                display_paddle_predicted_stop_position_gizmos,
-                display_paddle_to_ball_targeting_gizmos,
-                display_ai_paddle_ideal_hit_area_gizmos,
+                display_crab_predicted_stop_position_gizmos,
+                display_crab_to_ball_targeting_gizmos,
+                display_ai_crab_ideal_hit_area_gizmos,
             )
                 .run_if(show_debugging_gizmos),
         )
@@ -53,14 +52,14 @@ fn display_ball_movement_direction_gizmos(
     }
 }
 
-fn display_paddle_predicted_stop_position_gizmos(
-    paddles_query: Query<
+fn display_crab_predicted_stop_position_gizmos(
+    crabs_query: Query<
         (&GlobalTransform, &Heading, &StoppingDistance),
-        (With<Paddle>, With<Movement>),
+        (With<Crab>, With<Movement>),
     >,
     mut gizmos: Gizmos,
 ) {
-    for (global_transform, heading, stopping_distance) in &paddles_query {
+    for (global_transform, heading, stopping_distance) in &crabs_query {
         let mut stop_position_transform = global_transform.compute_transform();
         let global_heading = stop_position_transform.rotation * heading.0;
 
@@ -75,10 +74,10 @@ fn display_paddle_predicted_stop_position_gizmos(
     }
 }
 
-fn display_paddle_to_ball_targeting_gizmos(
-    paddles_query: Query<
+fn display_crab_to_ball_targeting_gizmos(
+    crabs_query: Query<
         (&GlobalTransform, &Target),
-        (With<AiPlayer>, With<Paddle>, With<Movement>),
+        (With<AiPlayer>, With<Crab>, With<Movement>),
     >,
     balls_query: Query<
         &GlobalTransform,
@@ -86,10 +85,10 @@ fn display_paddle_to_ball_targeting_gizmos(
     >,
     mut gizmos: Gizmos,
 ) {
-    for (paddle_transform, target) in &paddles_query {
+    for (crab_transform, target) in &crabs_query {
         if let Ok(ball_transform) = balls_query.get(target.0) {
             gizmos.line(
-                paddle_transform.translation(),
+                crab_transform.translation(),
                 ball_transform.translation(),
                 Color::PURPLE,
             );
@@ -97,18 +96,18 @@ fn display_paddle_to_ball_targeting_gizmos(
     }
 }
 
-fn display_ai_paddle_ideal_hit_area_gizmos(
-    paddles_query: Query<
+fn display_ai_crab_ideal_hit_area_gizmos(
+    crabs_query: Query<
         &GlobalTransform,
-        (With<Paddle>, With<AiPlayer>, With<Movement>),
+        (With<Crab>, With<AiPlayer>, With<Movement>),
     >,
     mut gizmos: Gizmos,
 ) {
-    for global_transform in &paddles_query {
+    for global_transform in &crabs_query {
         let mut hit_area_transform = global_transform.compute_transform();
 
         hit_area_transform.scale.x =
-            PADDLE_CENTER_HIT_AREA_PERCENTAGE * PADDLE_WIDTH;
+            CRAB_CENTER_HIT_AREA_PERCENTAGE * CRAB_WIDTH;
         gizmos.cuboid(hit_area_transform, Color::YELLOW);
     }
 }

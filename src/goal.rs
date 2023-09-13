@@ -2,19 +2,17 @@ use bevy::prelude::*;
 use spew::prelude::SpawnEvent;
 use std::ops::RangeInclusive;
 
-use crate::{
-    barrier::BARRIER_RADIUS, object::Object, paddle::PADDLE_HALF_WIDTH,
-};
+use crate::{barrier::BARRIER_RADIUS, crab::CRAB_HALF_WIDTH, object::Object};
 
 pub const GOAL_WIDTH: f32 = 1.0;
 pub const GOAL_HALF_WIDTH: f32 = 0.5 * GOAL_WIDTH;
-pub const GOAL_PADDLE_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
-pub const GOAL_PADDLE_MAX_POSITION_X: f32 =
-    GOAL_HALF_WIDTH - BARRIER_RADIUS - PADDLE_HALF_WIDTH;
-pub const GOAL_PADDLE_MAX_POSITION_RANGE: RangeInclusive<f32> =
-    -GOAL_PADDLE_MAX_POSITION_X..=GOAL_PADDLE_MAX_POSITION_X;
+pub const GOAL_CRAB_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
+pub const GOAL_CRAB_MAX_POSITION_X: f32 =
+    GOAL_HALF_WIDTH - BARRIER_RADIUS - CRAB_HALF_WIDTH;
+pub const GOAL_CRAB_MAX_POSITION_RANGE: RangeInclusive<f32> =
+    -GOAL_CRAB_MAX_POSITION_X..=GOAL_CRAB_MAX_POSITION_X;
 
-/// Marks a goal entity so that paddles and walls can use it as a parent, and
+/// Marks a goal entity so that crabs and walls can use it as a parent, and
 /// so balls can score against it.
 #[derive(Component, Debug)]
 pub struct Goal;

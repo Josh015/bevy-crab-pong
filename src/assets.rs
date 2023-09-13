@@ -11,22 +11,22 @@ pub struct GameAssets {
     #[asset(key = "fonts.menu")]
     pub font_menu: Handle<Font>,
 
-    #[asset(key = "images.paddle")]
-    pub image_paddle: Handle<Image>,
+    #[asset(key = "images.crab")]
+    pub image_crab: Handle<Image>,
 }
 
 /// Assets that need to remain loaded at all times.
 #[derive(Debug, Resource)]
 pub struct CachedAssets {
     pub ball_mesh: Handle<Mesh>,
-    pub paddle_mesh: Handle<Mesh>,
+    pub crab_mesh: Handle<Mesh>,
     pub wall_mesh: Handle<Mesh>,
     pub wall_material: Handle<StandardMaterial>,
 }
 
 impl FromWorld for CachedAssets {
     fn from_world(world: &mut World) -> Self {
-        let (ball_mesh, paddle_mesh, wall_mesh) = {
+        let (ball_mesh, crab_mesh, wall_mesh) = {
             let mut meshes = world.get_resource_mut::<Assets<Mesh>>().unwrap();
 
             (
@@ -50,7 +50,7 @@ impl FromWorld for CachedAssets {
 
         Self {
             ball_mesh,
-            paddle_mesh,
+            crab_mesh,
             wall_mesh,
             wall_material,
         }

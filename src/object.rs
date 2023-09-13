@@ -8,13 +8,13 @@ use crate::{
     ball::{Ball, BALL_DIAMETER},
     collider::Collider,
     config::{GameConfig, GameMode, PlayerConfig},
+    crab::{AiPlayer, Crab, HitPoints, KeyboardPlayer, CRAB_SCALE},
     fade::{Fade, FadeAnimation, FadeBundle},
-    goal::{Goal, GOAL_PADDLE_START_POSITION},
+    goal::{Goal, GOAL_CRAB_START_POSITION},
     movement::{
         Acceleration, AccelerationBundle, Heading, MaxSpeed, Movement, Speed,
         VelocityBundle,
     },
-    paddle::{AiPlayer, HitPoints, KeyboardPlayer, Paddle, PADDLE_SCALE},
     side::Side,
     state::{AppState, ForStates},
     team::Team,
@@ -26,7 +26,7 @@ use crate::{
 pub enum Object {
     Ball,
     Wall,
-    Paddle,
+    Crab,
 }
 
 pub struct ObjectPlugin;
@@ -38,7 +38,7 @@ impl Plugin for ObjectPlugin {
             .add_spawners((
                 (Object::Ball, spawn_ball),
                 (Object::Wall, spawn_wall_in_goal),
-                (Object::Paddle, spawn_paddle_in_goal),
+                (Object::Crab, spawn_crab_in_goal),
             ))
             .add_systems(
                 Update,
@@ -134,7 +134,7 @@ fn spawn_wall_in_goal(
     info!("Wall({:?}): Spawned", wall);
 }
 
-fn spawn_paddle_in_goal(
+fn spawn_crab_in_goal(
     In(goal_entity): In<Entity>,
     game_mode: Res<GameMode>,
     cached_assets: Res<CachedAssets>,
@@ -149,25 +149,25 @@ fn spawn_paddle_in_goal(
     };
 
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let paddle_config = &game_config.modes[game_mode.0].paddles[goal_side];
+    let crab_config = &game_config.modes[game_mode.0].crabs[goal_side];
     let material_handle = materials.add(StandardMaterial {
-        base_color_texture: Some(game_assets.image_paddle.clone()),
-        base_color: Color::hex(&paddle_config.color).unwrap(),
+        base_color_texture: Some(game_assets.image_crab.clone()),
+        base_color: Color::hex(&crab_config.color).unwrap(),
         ..default()
     });
 
-    let paddle = commands
+    let crab = commands
         .entity(goal_entity)
         .with_children(|parent| {
-            let mut paddle = parent.spawn((
-                Paddle,
+            let mut crab = parent.spawn((
+                Crab,
                 Collider,
                 *goal_side,
-                Team(paddle_config.team),
-                HitPoints(paddle_config.hit_points),
+                Team(crab_config.team),
+                HitPoints(crab_config.hit_points),
                 FadeBundle {
                     fade_animation: FadeAnimation::Scale {
-                        max_scale: PADDLE_SCALE,
+                        max_scale: CRAB_SCALE,
                         axis_mask: Vec3::ONE,
                     },
                     ..default()
@@ -177,21 +177,21 @@ fn spawn_paddle_in_goal(
                         heading: Heading(Vec3::X),
                         ..default()
                     },
-                    max_speed: MaxSpeed(game_config.paddle_max_speed),
+                    max_speed: MaxSpeed(game_config.crab_max_speed),
                     acceleration: Acceleration(
-                        game_config.paddle_max_speed
-                            / game_config.paddle_seconds_to_max_speed,
+                        game_config.crab_max_speed
+                            / game_config.crab_seconds_to_max_speed,
                     ),
                     ..default()
                 },
                 PbrBundle {
-                    mesh: cached_assets.paddle_mesh.clone(),
+                    mesh: cached_assets.crab_mesh.clone(),
                     material: material_handle,
                     transform: Transform::from_matrix(
                         Mat4::from_scale_rotation_translation(
                             Vec3::splat(f32::EPSILON),
                             Quat::IDENTITY,
-                            GOAL_PADDLE_START_POSITION,
+                            GOAL_CRAB_START_POSITION,
                         ),
                     ),
 
@@ -199,21 +199,21 @@ fn spawn_paddle_in_goal(
                 },
             ));
 
-            if paddle_config.player == PlayerConfig::AI {
-                paddle.insert(AiPlayer);
+            if crab_config.player == PlayerConfig::AI {
+                crab.insert(AiPlayer);
             } else {
-                paddle.insert(KeyboardPlayer);
+                crab.insert(KeyboardPlayer);
             }
         })
         .id();
 
-    info!("Paddle({:?}): Spawned", paddle);
+    info!("Crab({:?}): Spawned", crab);
 }
 
 fn remove_previous_goal_occupant(
     mut commands: Commands,
-    new_query: Query<(Entity, &Parent), Or<(Added<Paddle>, Added<Wall>)>>,
-    old_query: Query<(Entity, &Parent), Or<(With<Paddle>, With<Wall>)>>,
+    new_query: Query<(Entity, &Parent), Or<(Added<Crab>, Added<Wall>)>>,
+    old_query: Query<(Entity, &Parent), Or<(With<Crab>, With<Wall>)>>,
 ) {
     for (new_entity, new_parent) in &new_query {
         for (old_entity, old_parent) in &old_query {

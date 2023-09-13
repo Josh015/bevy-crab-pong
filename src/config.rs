@@ -14,9 +14,9 @@ pub struct GameConfig {
     pub pause_message: String,
     pub new_game_message: String,
     pub swaying_camera_speed: f32,
-    pub animated_water_speed: f32,
-    pub paddle_max_speed: f32,
-    pub paddle_seconds_to_max_speed: f32,
+    pub ocean_scroll_speed: f32,
+    pub crab_max_speed: f32,
+    pub crab_seconds_to_max_speed: f32,
     pub ball_speed: f32,
     pub team_win_messages: Vec<String>,
     pub modes: Vec<ModeConfig>,
@@ -26,11 +26,11 @@ pub struct GameConfig {
 pub struct ModeConfig {
     pub name: String,
     pub max_ball_count: u8,
-    pub paddles: HashMap<Side, PaddleConfig>,
+    pub crabs: HashMap<Side, CrabConfig>,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct PaddleConfig {
+pub struct CrabConfig {
     pub color: String,
     pub team: usize,
     pub player: PlayerConfig,

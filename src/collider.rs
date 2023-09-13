@@ -3,8 +3,8 @@ use bevy::prelude::*;
 use crate::{
     ball::{Ball, BALL_RADIUS},
     barrier::{Barrier, BARRIER_RADIUS},
+    crab::{Crab, CRAB_HALF_DEPTH, CRAB_HALF_WIDTH},
     movement::{Heading, Movement},
-    paddle::{Paddle, PADDLE_HALF_DEPTH, PADDLE_HALF_WIDTH},
     side::Side,
     state::AppState,
     wall::{Wall, WALL_RADIUS},
@@ -30,8 +30,8 @@ impl Plugin for ColliderPlugin {
             (
                 ball_and_ball_collisions,
                 barrier_and_ball_collisions,
-                paddle_and_ball_collisions,
-                wall_and_paddle_collisions,
+                crab_and_ball_collisions,
+                wall_and_crab_collisions,
             )
                 .in_set(ColliderSet),
         );
@@ -120,47 +120,46 @@ fn barrier_and_ball_collisions(
     }
 }
 
-fn paddle_and_ball_collisions(
+fn crab_and_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
         (With<Ball>, With<Movement>, With<Collider>),
     >,
-    paddles_query: Query<(&Side, &Transform), (With<Paddle>, With<Collider>)>,
+    crabs_query: Query<(&Side, &Transform), (With<Crab>, With<Collider>)>,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
-        for (side, transform) in &paddles_query {
+        for (side, transform) in &crabs_query {
             let goal_axis = side.axis();
             let ball_distance_to_goal = side.distance_to_ball(ball_transform);
             let ball_goal_position = side.get_ball_position(ball_transform);
-            let ball_to_paddle = transform.translation.x - ball_goal_position;
-            let ball_distance_to_paddle = ball_to_paddle.abs();
+            let ball_to_crab = transform.translation.x - ball_goal_position;
+            let ball_distance_to_crab = ball_to_crab.abs();
 
-            // Check that the ball is touching the paddle and facing the goal.
-            if ball_distance_to_goal > PADDLE_HALF_DEPTH
-                || ball_distance_to_paddle >= PADDLE_HALF_WIDTH
+            // Check that the ball is touching the crab and facing the goal.
+            if ball_distance_to_goal > CRAB_HALF_DEPTH
+                || ball_distance_to_crab >= CRAB_HALF_WIDTH
                 || ball_heading.0.dot(goal_axis) <= 0.0
             {
                 continue;
             }
 
             // Reverse the ball's direction and rotate it outward based on how
-            // far its position is from the paddle's center.
+            // far its position is from the crab's center.
             let rotation_away_from_center = Quat::from_rotation_y(
-                std::f32::consts::FRAC_PI_4
-                    * (ball_to_paddle / PADDLE_HALF_WIDTH),
+                std::f32::consts::FRAC_PI_4 * (ball_to_crab / CRAB_HALF_WIDTH),
             );
             commands
                 .entity(entity)
                 .insert(Heading(rotation_away_from_center * -ball_heading.0));
 
-            info!("Ball({:?}): Collided Paddle({:?})", entity, side);
+            info!("Ball({:?}): Collided Crab({:?})", entity, side);
             break;
         }
     }
 }
 
-fn wall_and_paddle_collisions(
+fn wall_and_crab_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
@@ -190,7 +189,7 @@ fn wall_and_paddle_collisions(
 }
 
 // TODO: Debug option to directly control single ball's exact position with
-// keyboard and see how paddles respond. Can go in goals, triggering a score and
+// keyboard and see how crabs respond. Can go in goals, triggering a score and
 // ball return?
 
 // TODO: Need a fix for the rare occasion when a ball just bounces infinitely

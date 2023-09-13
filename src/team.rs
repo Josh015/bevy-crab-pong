@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
+    crab::{Crab, HitPoints},
     goal::GoalEliminatedEvent,
-    paddle::{HitPoints, Paddle},
     state::AppState,
 };
 
@@ -18,7 +18,7 @@ fn check_for_winning_team(
     mut commands: Commands,
     mut next_game_state: ResMut<NextState<AppState>>,
     mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
-    teams_query: Query<(&Team, &HitPoints), With<Paddle>>,
+    teams_query: Query<(&Team, &HitPoints), With<Crab>>,
 ) {
     for GoalEliminatedEvent(_) in goal_eliminated_events.iter() {
         // Check if only one team still has HP.

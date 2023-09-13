@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     assets::GameAssets,
-    paddle::{HitPoints, Paddle},
+    crab::{Crab, HitPoints},
     side::Side,
     state::AppState,
 };
@@ -26,7 +26,7 @@ impl Plugin for HudPlugin {
 }
 
 fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
-    let paddle_configs = [
+    let crab_configs = [
         (
             Side::Bottom,
             Style {
@@ -73,7 +73,7 @@ fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
         ),
     ];
 
-    for (side, style) in &paddle_configs {
+    for (side, style) in &crab_configs {
         commands.spawn((
             *side,
             HitPointsUi,
@@ -94,12 +94,12 @@ fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
 }
 
 fn update_goal_hit_points_ui(
-    paddles_query: Query<(&HitPoints, &Side), With<Paddle>>,
+    crabs_query: Query<(&HitPoints, &Side), With<Crab>>,
     mut hp_ui_query: Query<(&mut Text, &Side), With<HitPointsUi>>,
 ) {
-    for (hit_points, paddle_side) in &paddles_query {
+    for (hit_points, crab_side) in &crabs_query {
         for (mut text, text_side) in &mut hp_ui_query {
-            if text_side == paddle_side {
+            if text_side == crab_side {
                 text.sections[0].value = hit_points.0.to_string();
             }
         }
