@@ -25,12 +25,12 @@ impl Plugin for WallPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             PostUpdate,
-            wall_and_crab_collisions.in_set(ColliderSet),
+            wall_and_ball_collisions.in_set(ColliderSet),
         );
     }
 }
 
-fn wall_and_crab_collisions(
+fn wall_and_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
