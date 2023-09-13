@@ -3,6 +3,7 @@ use bevy::prelude::{App, Plugin};
 pub mod arena;
 pub mod assets;
 pub mod ball;
+pub mod barrier;
 pub mod collider;
 pub mod config;
 pub mod debug_mode;

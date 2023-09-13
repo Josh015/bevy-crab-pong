@@ -2,11 +2,9 @@ use bevy::prelude::*;
 use spew::prelude::SpawnEvent;
 use std::ops::RangeInclusive;
 
-use crate::{object::Object, paddle::PADDLE_HALF_WIDTH};
-
-pub const BARRIER_DIAMETER: f32 = 0.12;
-pub const BARRIER_RADIUS: f32 = 0.5 * BARRIER_DIAMETER;
-pub const BARRIER_HEIGHT: f32 = 0.2;
+use crate::{
+    barrier::BARRIER_RADIUS, object::Object, paddle::PADDLE_HALF_WIDTH,
+};
 
 pub const GOAL_WIDTH: f32 = 1.0;
 pub const GOAL_HALF_WIDTH: f32 = 0.5 * GOAL_WIDTH;
@@ -31,10 +29,6 @@ pub struct Goal;
 #[derive(Component, Debug)]
 pub struct Wall;
 
-/// Marks an entity as a barrier to deflect all balls away from a corner.
-#[derive(Component, Debug)]
-pub struct Barrier;
-
 /// Signals a goal being eliminated from the game.
 #[derive(Clone, Component, Debug, Event)]
 pub struct GoalEliminatedEvent(pub Entity);
@@ -44,11 +38,11 @@ pub struct GoalPlugin;
 impl Plugin for GoalPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<GoalEliminatedEvent>()
-            .add_systems(PostUpdate, block_eliminated_goals);
+            .add_systems(PostUpdate, block_eliminated_goals_with_walls);
     }
 }
 
-fn block_eliminated_goals(
+fn block_eliminated_goals_with_walls(
     mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
     mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Entity>>,
 ) {
