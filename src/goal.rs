@@ -4,11 +4,13 @@ use std::ops::RangeInclusive;
 
 use crate::{
     barrier::BARRIER_RADIUS,
-    crab::{Crab, CRAB_HALF_WIDTH},
     fade::Fade,
     movement::Movement,
-    object::Object,
-    wall::Wall,
+    object::{
+        crab::{Crab, CRAB_HALF_WIDTH},
+        wall::Wall,
+        Object,
+    },
 };
 
 pub const GOAL_WIDTH: f32 = 1.0;

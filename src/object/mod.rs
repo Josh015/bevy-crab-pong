@@ -1,24 +1,30 @@
+pub mod ball;
+pub mod crab;
+pub mod wall;
+
 use bevy::prelude::*;
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 use spew::prelude::*;
 
 use crate::{
     assets::{CachedAssets, GameAssets},
-    ball::{Ball, BALL_DIAMETER},
     beach::BEACH_BALL_SPAWNER_POSITION,
     collider::Collider,
     config::{GameConfig, GameMode, PlayerConfig},
-    crab::{AiPlayer, Crab, HitPoints, KeyboardPlayer, CRAB_SCALE},
     fade::{FadeAnimation, FadeBundle},
     goal::{Goal, GOAL_CRAB_START_POSITION},
     movement::{
         Acceleration, AccelerationBundle, Heading, MaxSpeed, Speed,
         VelocityBundle,
     },
+    object::{
+        ball::{Ball, BALL_DIAMETER},
+        crab::{AiPlayer, Crab, HitPoints, KeyboardPlayer, CRAB_SCALE},
+        wall::{Wall, WALL_HEIGHT, WALL_SCALE},
+    },
     side::Side,
     state::{AppState, ForStates},
     team::Team,
-    wall::{Wall, WALL_HEIGHT, WALL_SCALE},
 };
 
 /// Objects that can be spawned via Spew.
@@ -38,8 +44,15 @@ impl Plugin for ObjectPlugin {
             (Object::Wall, spawn_wall_in_goal),
             (Object::Crab, spawn_crab_in_goal),
         ))
-        .add_plugins(SpewPlugin::<Object>::default())
-        .add_plugins(SpewPlugin::<Object, Entity>::default());
+        .add_plugins((
+            SpewPlugin::<Object>::default(),
+            SpewPlugin::<Object, Entity>::default(),
+        ))
+        .add_plugins((
+            ball::BallPlugin,
+            crab::CrabPlugin,
+            wall::WallPlugin,
+        ));
     }
 }
 

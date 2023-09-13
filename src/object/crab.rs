@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 
 use crate::{
-    ball::Ball,
     collider::{Collider, ColliderSet},
     debug_mode::DebugModeSet,
     fade::Fade,
@@ -12,6 +11,7 @@ use crate::{
     movement::{
         Force, Heading, Movement, MovementSet, Speed, StoppingDistance,
     },
+    object::ball::Ball,
     side::Side,
     state::AppState,
 };
