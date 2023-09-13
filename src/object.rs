@@ -5,11 +5,11 @@ use spew::prelude::*;
 use crate::{
     assets::{CachedAssets, GameAssets},
     ball::{Ball, BALL_DIAMETER},
-    beach::BEACH_BALL_SPAWNER_POSITION,
+    beach::{Beach, BEACH_BALL_SPAWNER_POSITION},
     collider::Collider,
     config::{GameConfig, GameMode, PlayerConfig},
     crab::{AiPlayer, Crab, HitPoints, KeyboardPlayer, CRAB_SCALE},
-    fade::{FadeAnimation, FadeBundle},
+    fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
     goal::{Goal, GOAL_CRAB_START_POSITION},
     movement::{
         Acceleration, AccelerationBundle, Heading, MaxSpeed, Speed,
@@ -91,6 +91,7 @@ fn spawn_wall_in_goal(
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     goals_query: Query<&Side, With<Goal>>,
+    beach: Option<Res<Beach>>,
 ) {
     let Ok(goal_side) = goals_query.get(goal_entity) else {
         return;
@@ -109,7 +110,14 @@ fn spawn_wall_in_goal(
                         max_scale: WALL_SCALE,
                         axis_mask: Vec3::new(0.0, 1.0, 1.0),
                     },
-                    ..default()
+                    fade: Fade::In(Timer::from_seconds(
+                        if beach.is_none() {
+                            0.0
+                        } else {
+                            FADE_DURATION_IN_SECONDS
+                        },
+                        TimerMode::Once,
+                    )),
                 },
                 PbrBundle {
                     mesh: cached_assets.wall_mesh.clone(),

@@ -57,7 +57,7 @@ fn initialize_beach_data(
 
     commands.insert_resource(Beach {
         max_ball_count: game_config.modes[game_mode.0].max_ball_count,
-    })
+    });
 }
 
 fn give_each_goal_a_new_crab(
