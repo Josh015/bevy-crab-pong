@@ -48,7 +48,7 @@ fn ball_and_ball_collisions(
             continue;
         }
 
-        // Deflect balls away from each other.
+        // Deflect both balls away from each other.
         let axis1 = b1_to_b2_vector.normalize();
         let axis2 = -axis1;
         let is_b1_facing_b2 = heading1.0.dot(axis1) > 0.0;

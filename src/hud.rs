@@ -26,7 +26,7 @@ impl Plugin for HudPlugin {
 }
 
 fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
-    let crab_configs = [
+    let hp_ui_configs = [
         (
             Side::Bottom,
             Style {
@@ -73,7 +73,7 @@ fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
         ),
     ];
 
-    for (side, style) in &crab_configs {
+    for (side, style) in &hp_ui_configs {
         commands.spawn((
             *side,
             HitPointsUi,

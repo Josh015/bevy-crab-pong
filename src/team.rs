@@ -14,6 +14,17 @@ pub struct Team(pub usize);
 #[derive(Debug, Default, Resource)]
 pub struct WinningTeam(pub usize);
 
+pub struct TeamPlugin;
+
+impl Plugin for TeamPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            PostUpdate,
+            check_for_winning_team.run_if(in_state(AppState::Playing)),
+        );
+    }
+}
+
 fn check_for_winning_team(
     mut commands: Commands,
     mut next_game_state: ResMut<NextState<AppState>>,
@@ -38,16 +49,5 @@ fn check_for_winning_team(
         commands.insert_resource(WinningTeam(survivor.0));
         next_game_state.set(AppState::StartMenu);
         info!("Game Over: Team {:?} won!", survivor.0);
-    }
-}
-
-pub struct TeamPlugin;
-
-impl Plugin for TeamPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(
-            PostUpdate,
-            check_for_winning_team.run_if(in_state(AppState::Playing)),
-        );
     }
 }
