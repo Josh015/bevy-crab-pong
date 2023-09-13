@@ -7,14 +7,14 @@ use crate::{
     assets::{CachedAssets, GameAssets},
     ball::{Ball, BALL_DIAMETER},
     config::{GameConfig, GameMode, PlayerConfig},
+    fade::{FadeAnimation, FadeAnimationBundle, FadeBundle},
     goal::{Goal, Wall, GOAL_PADDLE_START_POSITION, WALL_HEIGHT, WALL_SCALE},
     movement::{
-        Acceleration, AccelerationBundle, Heading, MaxSpeed, Speed,
+        Acceleration, AccelerationBundle, Active, Heading, MaxSpeed, Speed,
         VelocityBundle,
     },
     paddle::{AiPlayer, HitPoints, KeyboardPlayer, Paddle, PADDLE_SCALE},
     side::Side,
-    spawning::{DespawningBundle, SpawnAnimation, SpawnAnimationBundle},
     state::{AppState, ForStates},
     team::Team,
 };
@@ -59,7 +59,7 @@ fn spawn_ball(
     let ball = commands
         .spawn((
             Ball,
-            SpawnAnimationBundle::default(),
+            FadeAnimationBundle::default(),
             ForStates([AppState::Playing, AppState::Paused]),
             VelocityBundle {
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
@@ -104,8 +104,8 @@ fn spawn_wall_in_goal(
             parent.spawn((
                 Wall,
                 *goal_side,
-                SpawnAnimationBundle {
-                    spawn_animation: SpawnAnimation::Scale {
+                FadeAnimationBundle {
+                    fade_animation: FadeAnimation::Scale {
                         max_scale: WALL_SCALE,
                         axis_mask: Vec3::new(0.0, 1.0, 1.0),
                     },
@@ -160,8 +160,8 @@ fn spawn_paddle_in_goal(
                 *goal_side,
                 Team(paddle_config.team),
                 HitPoints(paddle_config.hit_points),
-                SpawnAnimationBundle {
-                    spawn_animation: SpawnAnimation::Scale {
+                FadeAnimationBundle {
+                    fade_animation: FadeAnimation::Scale {
                         max_scale: PADDLE_SCALE,
                         axis_mask: Vec3::ONE,
                     },
@@ -215,8 +215,8 @@ fn remove_previous_goal_occupant(
             if old_parent == new_parent && old_entity != new_entity {
                 commands
                     .entity(old_entity)
-                    .remove::<AccelerationBundle>()
-                    .insert(DespawningBundle::default());
+                    .remove::<Active>()
+                    .insert(FadeBundle::fade_out());
                 break;
             }
         }

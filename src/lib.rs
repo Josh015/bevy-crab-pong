@@ -5,6 +5,7 @@ pub mod assets;
 pub mod ball;
 pub mod config;
 pub mod debug_mode;
+pub mod fade;
 pub mod goal;
 pub mod hud;
 pub mod menu;
@@ -13,7 +14,6 @@ pub mod object;
 pub mod ocean;
 pub mod paddle;
 pub mod side;
-pub mod spawning;
 pub mod state;
 pub mod swaying_camera;
 pub mod team;
@@ -28,6 +28,7 @@ impl Plugin for GamePlugin {
             ball::BallPlugin,
             config::ConfigPlugin,
             debug_mode::DebugModePlugin,
+            fade::FadePlugin,
             goal::GoalPlugin,
             hud::HudPlugin,
             menu::MenuPlugin,
@@ -35,7 +36,6 @@ impl Plugin for GamePlugin {
             object::ObjectPlugin,
             ocean::OceanPlugin,
             paddle::PaddlePlugin,
-            spawning::SpawningPlugin,
             state::StatePlugin,
             swaying_camera::SwayingCameraPlugin,
         ))

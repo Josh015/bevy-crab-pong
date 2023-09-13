@@ -2,12 +2,12 @@ use bevy::prelude::*;
 
 use crate::{
     ball::Ball,
+    fade::Fade,
     movement::{Heading, StoppingDistance},
     paddle::{
         AiPlayer, Paddle, Target, PADDLE_CENTER_HIT_AREA_PERCENTAGE,
         PADDLE_WIDTH,
     },
-    spawning::{Despawning, Spawning},
 };
 
 /// Toggles displaying debugging gizmos.
@@ -40,7 +40,7 @@ fn show_debugging_gizmos(is_debugging_mode: Res<IsDebuggingMode>) -> bool {
 fn display_ball_movement_direction_gizmos(
     balls_query: Query<
         (&GlobalTransform, &Heading),
-        (With<Ball>, Without<Spawning>, Without<Despawning>),
+        (With<Ball>, Without<Fade>),
     >,
     mut gizmos: Gizmos,
 ) {
@@ -56,7 +56,7 @@ fn display_ball_movement_direction_gizmos(
 fn display_paddle_predicted_stop_position_gizmos(
     paddles_query: Query<
         (&GlobalTransform, &Heading, &StoppingDistance),
-        (With<Paddle>, Without<Spawning>, Without<Despawning>),
+        (With<Paddle>, Without<Fade>),
     >,
     mut gizmos: Gizmos,
 ) {
@@ -78,17 +78,9 @@ fn display_paddle_predicted_stop_position_gizmos(
 fn display_paddle_to_ball_targeting_gizmos(
     paddles_query: Query<
         (&GlobalTransform, &Target),
-        (
-            With<AiPlayer>,
-            With<Paddle>,
-            Without<Spawning>,
-            Without<Despawning>,
-        ),
+        (With<AiPlayer>, With<Paddle>, Without<Fade>),
     >,
-    balls_query: Query<
-        &GlobalTransform,
-        (With<Ball>, Without<Spawning>, Without<Despawning>),
-    >,
+    balls_query: Query<&GlobalTransform, (With<Ball>, Without<Fade>)>,
     mut gizmos: Gizmos,
 ) {
     for (paddle_transform, target) in &paddles_query {
@@ -105,12 +97,7 @@ fn display_paddle_to_ball_targeting_gizmos(
 fn display_ai_paddle_ideal_hit_area_gizmos(
     paddles_query: Query<
         &GlobalTransform,
-        (
-            With<Paddle>,
-            With<AiPlayer>,
-            Without<Spawning>,
-            Without<Despawning>,
-        ),
+        (With<Paddle>, With<AiPlayer>, Without<Fade>),
     >,
     mut gizmos: Gizmos,
 ) {

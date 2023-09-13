@@ -3,13 +3,13 @@ use bevy::prelude::*;
 use crate::{
     arena::ARENA_CENTER_POINT,
     ball::{Ball, BallSet},
+    fade::{Fade, FadeBundle},
     goal::{
         GoalEliminatedEvent, GOAL_PADDLE_MAX_POSITION_RANGE,
         GOAL_PADDLE_MAX_POSITION_X,
     },
     movement::{Force, MovementSet, Speed, StoppingDistance},
     side::Side,
-    spawning::{Despawning, DespawningBundle, Spawning},
     state::AppState,
 };
 
@@ -76,12 +76,7 @@ fn handle_keyboard_input_for_player_controlled_paddles(
     mut commands: Commands,
     paddles_query: Query<
         Entity,
-        (
-            With<Paddle>,
-            With<KeyboardPlayer>,
-            Without<Spawning>,
-            Without<Despawning>,
-        ),
+        (With<Paddle>, With<KeyboardPlayer>, Without<Fade>),
     >,
 ) {
     // Makes a Paddle entity move left/right in response to the
@@ -107,17 +102,9 @@ fn make_ai_paddles_target_the_balls_closest_to_their_goals(
     mut commands: Commands,
     paddles_query: Query<
         (Entity, &Side),
-        (
-            With<Paddle>,
-            With<AiPlayer>,
-            Without<Spawning>,
-            Without<Despawning>,
-        ),
+        (With<Paddle>, With<AiPlayer>, Without<Fade>),
     >,
-    balls_query: Query<
-        (Entity, &GlobalTransform),
-        (With<Ball>, Without<Spawning>, Without<Despawning>),
-    >,
+    balls_query: Query<(Entity, &GlobalTransform), (With<Ball>, Without<Fade>)>,
 ) {
     for (paddle_entity, side) in &paddles_query {
         let mut closest_ball_distance = std::f32::MAX;
@@ -150,17 +137,9 @@ fn move_ai_paddles_toward_their_targeted_balls(
             &StoppingDistance,
             Option<&Target>,
         ),
-        (
-            With<Paddle>,
-            With<AiPlayer>,
-            Without<Spawning>,
-            Without<Despawning>,
-        ),
+        (With<Paddle>, With<AiPlayer>, Without<Fade>),
     >,
-    balls_query: Query<
-        &GlobalTransform,
-        (With<Ball>, Without<Spawning>, Without<Despawning>),
-    >,
+    balls_query: Query<&GlobalTransform, (With<Ball>, Without<Fade>)>,
 ) {
     for (entity, side, transform, stopping_distance, target) in &paddles_query {
         // Use the ball's goal position or default to the center of the goal.
@@ -198,7 +177,7 @@ fn restrict_paddles_to_open_space_in_their_goals(
     mut commands: Commands,
     mut query: Query<
         (Entity, &mut Transform, &mut Speed, &mut StoppingDistance),
-        (With<Paddle>, Without<Spawning>),
+        (With<Paddle>, Without<Fade>),
     >,
 ) {
     for (entity, mut transform, mut speed, mut stopping_distance) in &mut query
@@ -227,10 +206,7 @@ fn restrict_paddles_to_open_space_in_their_goals(
 fn deduct_paddle_hp_and_potentially_eliminate_goal(
     mut commands: Commands,
     mut goal_eliminated_events: EventWriter<GoalEliminatedEvent>,
-    balls_query: Query<
-        (Entity, &GlobalTransform),
-        (With<Ball>, Without<Spawning>, Without<Despawning>),
-    >,
+    balls_query: Query<(Entity, &GlobalTransform), (With<Ball>, Without<Fade>)>,
     mut paddles_query: Query<(&Parent, &mut HitPoints, &Side), With<Paddle>>,
 ) {
     for (ball_entity, global_transform) in &balls_query {
@@ -253,9 +229,7 @@ fn deduct_paddle_hp_and_potentially_eliminate_goal(
             }
 
             // Despawn and replace the scoring ball.
-            commands
-                .entity(ball_entity)
-                .insert(DespawningBundle::default());
+            commands.entity(ball_entity).insert(FadeBundle::fade_out());
             break;
         }
     }

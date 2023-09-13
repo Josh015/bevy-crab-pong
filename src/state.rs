@@ -5,7 +5,7 @@ use bevy_common_assets::ron::RonAssetPlugin;
 use crate::{
     assets::GameAssets,
     config::GameConfig,
-    spawning::{DespawningBundle, SpawnAnimation},
+    fade::{FadeAnimation, FadeBundle},
 };
 
 /// Tags an entity to only exist in the listed game states.
@@ -62,12 +62,12 @@ impl Plugin for StatePlugin {
 fn despawn_invalid_entities_for_state<S: States, const N: usize>(
     mut commands: Commands,
     game_state: Res<State<S>>,
-    query: Query<(Entity, &ForStates<S, N>, Has<SpawnAnimation>)>,
+    query: Query<(Entity, &ForStates<S, N>, Has<FadeAnimation>)>,
 ) {
     for (entity, for_states, has_spawning_animation) in &query {
         if !for_states.0.contains(game_state.get()) {
             if has_spawning_animation {
-                commands.entity(entity).insert(DespawningBundle::default());
+                commands.entity(entity).insert(FadeBundle::fade_out());
             } else {
                 commands.entity(entity).despawn_recursive();
             }

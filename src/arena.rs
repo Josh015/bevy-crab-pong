@@ -5,6 +5,7 @@ use crate::{
     assets::GameAssets,
     ball::{Ball, BALL_HEIGHT},
     config::{GameConfig, GameMode},
+    fade::Fade,
     goal::{
         Barrier, Goal, BARRIER_DIAMETER, BARRIER_HEIGHT, GOAL_HALF_WIDTH,
         GOAL_WIDTH,
@@ -12,7 +13,6 @@ use crate::{
     object::Object,
     ocean::Ocean,
     side::Side,
-    spawning::Spawning,
     state::AppState,
     swaying_camera::SwayingCamera,
 };
@@ -73,12 +73,12 @@ fn give_each_goal_a_new_paddle(
 
 fn spawn_balls_sequentially_as_needed(
     arena: Res<Arena>,
-    balls_query: Query<Entity, With<Ball>>,
-    spawning_balls_query: Query<Entity, (With<Ball>, With<Spawning>)>,
+    balls_query: Query<&Ball>,
+    fading_balls_query: Query<&Fade, With<Ball>>,
     mut spawn_events: EventWriter<SpawnEvent<Object>>,
 ) {
     if balls_query.iter().len() < arena.max_ball_count as usize
-        && spawning_balls_query.iter().len() < 1
+        && !fading_balls_query.iter().any(|fade| *fade == Fade::In)
     {
         spawn_events.send(SpawnEvent::new(Object::Ball));
     }

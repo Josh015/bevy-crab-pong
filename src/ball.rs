@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 
 use crate::{
+    fade::Fade,
     goal::{Barrier, Wall, BARRIER_RADIUS, WALL_RADIUS},
     movement::Heading,
     paddle::{Paddle, PADDLE_HALF_DEPTH, PADDLE_HALF_WIDTH},
     side::Side,
-    spawning::{Despawning, Spawning},
     state::AppState,
 };
 
@@ -49,7 +49,7 @@ fn ball_to_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, Without<Spawning>, Without<Despawning>),
+        (With<Ball>, Without<Fade>),
     >,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
@@ -88,7 +88,7 @@ fn ball_to_barrier_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, Without<Spawning>, Without<Despawning>),
+        (With<Ball>, Without<Fade>),
     >,
     barriers_query: Query<&GlobalTransform, With<Barrier>>,
 ) {
@@ -127,12 +127,9 @@ fn ball_to_paddle_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, Without<Spawning>, Without<Despawning>),
+        (With<Ball>, Without<Fade>),
     >,
-    paddles_query: Query<
-        (&Side, &Transform),
-        (With<Paddle>, Without<Despawning>),
-    >,
+    paddles_query: Query<(&Side, &Transform), (With<Paddle>, Without<Fade>)>,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
         for (side, transform) in &paddles_query {
@@ -170,9 +167,9 @@ fn ball_to_wall_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, Without<Spawning>, Without<Despawning>),
+        (With<Ball>, Without<Fade>),
     >,
-    walls_query: Query<&Side, (With<Wall>, Without<Despawning>)>,
+    walls_query: Query<&Side, (With<Wall>, Without<Fade>)>,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
         for side in &walls_query {

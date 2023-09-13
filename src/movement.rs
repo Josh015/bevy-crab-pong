@@ -1,7 +1,11 @@
 use bevy::prelude::*;
 use std::ops::{Add, Sub};
 
-use crate::{spawning::Spawning, state::AppState};
+use crate::state::AppState;
+
+/// Marks an entity as ready to move.
+#[derive(Component)]
+pub struct Active;
 
 /// Whether the entity has positive or negative force acting on it.
 #[derive(Clone, Component, Copy, Debug, Eq, Hash, PartialEq)]
@@ -79,7 +83,7 @@ fn acceleration(
     time: Res<Time>,
     mut query: Query<
         (&mut Speed, &Acceleration, &Force, &MaxSpeed),
-        Without<Spawning>,
+        With<Active>,
     >,
 ) {
     for (mut speed, acceleration, force, max_speed) in &mut query {
@@ -100,7 +104,7 @@ fn deceleration(
     time: Res<Time>,
     mut query: Query<
         (&mut Speed, &Acceleration),
-        (Without<Force>, Without<Spawning>),
+        (Without<Force>, With<Active>),
     >,
 ) {
     for (mut speed, acceleration) in &mut query {
@@ -111,7 +115,7 @@ fn deceleration(
 
 fn velocity(
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &Heading, &Speed), Without<Spawning>>,
+    mut query: Query<(&mut Transform, &Heading, &Speed), With<Active>>,
 ) {
     for (mut transform, heading, speed) in &mut query {
         transform.translation += heading.0 * (speed.0 * time.delta_seconds());
@@ -121,7 +125,7 @@ fn velocity(
 fn stopping_distance(
     mut query: Query<
         (&mut StoppingDistance, &Acceleration, &Speed),
-        Without<Spawning>,
+        With<Active>,
     >,
 ) {
     for (mut stopping_distance, acceleration, speed) in &mut query {
