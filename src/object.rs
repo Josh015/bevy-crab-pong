@@ -59,7 +59,7 @@ fn spawn_ball(
             Ball,
             Collider,
             FadeBundle::default(),
-            ForStates([AppState::Playing, AppState::Paused]),
+            ForStates(vec![AppState::Playing, AppState::Paused]),
             VelocityBundle {
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
                 speed: Speed(game_config.ball_speed),

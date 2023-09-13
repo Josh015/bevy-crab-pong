@@ -10,7 +10,7 @@ use crate::{
 
 /// Tags an entity to only exist in the listed game states.
 #[derive(Clone, Component, Debug)]
-pub struct ForStates<T: States, const N: usize>(pub [T; N]);
+pub struct ForStates<S: States>(pub Vec<S>);
 
 // All the app's possible states.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, States)]
@@ -49,20 +49,16 @@ impl Plugin for StatePlugin {
         for state in AppState::variants() {
             app.add_systems(
                 OnEnter(state),
-                (
-                    despawn_invalid_entities_for_state::<AppState, 1>,
-                    despawn_invalid_entities_for_state::<AppState, 2>,
-                    despawn_invalid_entities_for_state::<AppState, 3>,
-                ),
+                despawn_invalid_entities_for_state::<AppState>,
             );
         }
     }
 }
 
-fn despawn_invalid_entities_for_state<S: States, const N: usize>(
+fn despawn_invalid_entities_for_state<S: States>(
     mut commands: Commands,
     game_state: Res<State<S>>,
-    query: Query<(Entity, &ForStates<S, N>, Has<FadeAnimation>)>,
+    query: Query<(Entity, &ForStates<S>, Has<FadeAnimation>)>,
 ) {
     for (entity, for_states, has_fade_animation) in &query {
         if !for_states.0.contains(game_state.get()) {
