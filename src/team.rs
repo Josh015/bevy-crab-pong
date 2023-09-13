@@ -41,13 +41,12 @@ fn check_for_winning_team(
             .iter()
             .all(|(team, hp)| team.0 == survivor.0 || hp.0 == 0);
 
-        if !is_winner {
-            continue;
-        }
-
         // Declare a winner and navigate back to the Start Menu.
-        commands.insert_resource(WinningTeam(survivor.0));
-        next_game_state.set(AppState::StartMenu);
-        info!("Game Over: Team {:?} won!", survivor.0);
+        if is_winner {
+            commands.insert_resource(WinningTeam(survivor.0));
+            next_game_state.set(AppState::StartMenu);
+            info!("Game Over: Team {:?} won!", survivor.0);
+            break;
+        }
     }
 }
