@@ -28,11 +28,11 @@ impl Plugin for BarrierPlugin {
 
 fn barrier_and_ball_collisions(
     mut commands: Commands,
-    barriers_query: Query<&GlobalTransform, (With<Barrier>, With<Collider>)>,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
         (With<Ball>, With<Movement>, With<Collider>),
     >,
+    barriers_query: Query<&GlobalTransform, (With<Barrier>, With<Collider>)>,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
         for barrier_transform in &barriers_query {
