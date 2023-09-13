@@ -4,7 +4,7 @@ use crate::{ball::Collider, movement::Movement, state::AppState};
 
 pub const FADE_DURATION_IN_SECONDS: f32 = 1.0;
 
-/// Marks an entity to fade in/out and delay activation.
+/// Makes an entity fade in/out and delay activation/despawning respectively.
 #[derive(Clone, Component, Debug, Eq, PartialEq)]
 #[component(storage = "SparseSet")]
 pub enum Fade {
@@ -57,7 +57,7 @@ pub enum FadeAnimation {
     },
 }
 
-/// Assigns an entity an animation and gets it to start fading in.
+/// Assigns an entity an animation and gets it to start fading.
 #[derive(Bundle, Clone, Debug, Default)]
 pub struct FadeBundle {
     pub fade_animation: FadeAnimation,
@@ -70,18 +70,20 @@ impl Plugin for FadePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            start_fade_out.run_if(not(in_state(AppState::Paused))),
+            pre_fade_out.run_if(not(in_state(AppState::Paused))),
         )
         .add_systems(
             PostUpdate,
-            animate_fade_effect_on_entity
-                .run_if(not(in_state(AppState::Paused))),
+            animate_fade_effect.run_if(not(in_state(AppState::Paused))),
         )
-        .add_systems(Last, finish_fading);
+        .add_systems(
+            Last,
+            finish_fading.run_if(not(in_state(AppState::Paused))),
+        );
     }
 }
 
-fn start_fade_out(
+fn pre_fade_out(
     mut commands: Commands,
     query: Query<(Entity, &Fade), Added<Fade>>,
 ) {
@@ -92,7 +94,7 @@ fn start_fade_out(
     }
 }
 
-fn animate_fade_effect_on_entity(
+fn animate_fade_effect(
     time: Res<Time>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<(
