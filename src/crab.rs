@@ -9,7 +9,9 @@ use crate::{
         GoalEliminatedEvent, GOAL_CRAB_MAX_POSITION_RANGE,
         GOAL_CRAB_MAX_POSITION_X,
     },
-    movement::{Force, Movement, MovementSet, Speed, StoppingDistance},
+    movement::{
+        Force, Heading, Movement, MovementSet, Speed, StoppingDistance,
+    },
     side::Side,
     state::AppState,
 };
@@ -65,9 +67,12 @@ impl Plugin for CrabPlugin {
         )
         .add_systems(
             PostUpdate,
-            deduct_crab_hp_and_potentially_eliminate_goal
-                .after(ColliderSet)
-                .run_if(in_state(AppState::Playing)),
+            (
+                crab_and_ball_collisions,
+                deduct_crab_hp_and_potentially_eliminate_goal,
+            )
+                .chain()
+                .in_set(ColliderSet),
         );
     }
 }
@@ -205,6 +210,45 @@ fn restrict_crabs_to_open_space_in_their_goals(
             stopping_distance.0 = stopped_position.signum()
                 * GOAL_CRAB_MAX_POSITION_X
                 - transform.translation.x;
+        }
+    }
+}
+
+fn crab_and_ball_collisions(
+    mut commands: Commands,
+    balls_query: Query<
+        (Entity, &GlobalTransform, &Heading),
+        (With<Ball>, With<Movement>, With<Collider>),
+    >,
+    crabs_query: Query<(&Side, &Transform), (With<Crab>, With<Collider>)>,
+) {
+    for (entity, ball_transform, ball_heading) in &balls_query {
+        for (side, transform) in &crabs_query {
+            let goal_axis = side.axis();
+            let ball_distance_to_goal = side.distance_to_ball(ball_transform);
+            let ball_goal_position = side.get_ball_position(ball_transform);
+            let ball_to_crab = transform.translation.x - ball_goal_position;
+            let ball_distance_to_crab = ball_to_crab.abs();
+
+            // Check that the ball is touching the crab and facing the goal.
+            if ball_distance_to_goal > CRAB_HALF_DEPTH
+                || ball_distance_to_crab >= CRAB_HALF_WIDTH
+                || ball_heading.0.dot(goal_axis) <= 0.0
+            {
+                continue;
+            }
+
+            // Reverse the ball's direction and rotate it outward based on how
+            // far its position is from the crab's center.
+            let rotation_away_from_center = Quat::from_rotation_y(
+                std::f32::consts::FRAC_PI_4 * (ball_to_crab / CRAB_HALF_WIDTH),
+            );
+            commands
+                .entity(entity)
+                .insert(Heading(rotation_away_from_center * -ball_heading.0));
+
+            info!("Ball({:?}): Collided Crab({:?})", entity, side);
+            break;
         }
     }
 }
