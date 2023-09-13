@@ -22,13 +22,11 @@ pub struct CachedAssets {
     pub crab_mesh: Handle<Mesh>,
     pub wall_mesh: Handle<Mesh>,
     pub wall_material: Handle<StandardMaterial>,
-    pub barrier_mesh: Handle<Mesh>,
-    pub barrier_material: Handle<StandardMaterial>,
 }
 
 impl FromWorld for CachedAssets {
     fn from_world(world: &mut World) -> Self {
-        let (ball_mesh, crab_mesh, wall_mesh, barrier_mesh) = {
+        let (ball_mesh, crab_mesh, wall_mesh) = {
             let mut meshes = world.get_resource_mut::<Assets<Mesh>>().unwrap();
 
             (
@@ -40,18 +38,14 @@ impl FromWorld for CachedAssets {
                 // TODO: Replace with crab model.
                 meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
                 meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             )
         };
-        let (wall_material, barrier_material) = {
+        let wall_material = {
             let mut materials = world
                 .get_resource_mut::<Assets<StandardMaterial>>()
                 .unwrap();
 
-            (
-                materials.add(Color::hex("00A400").unwrap().into()),
-                materials.add(Color::hex("750000").unwrap().into()),
-            )
+            materials.add(Color::hex("00A400").unwrap().into())
         };
 
         Self {
@@ -59,8 +53,6 @@ impl FromWorld for CachedAssets {
             crab_mesh,
             wall_mesh,
             wall_material,
-            barrier_mesh,
-            barrier_material,
         }
     }
 }

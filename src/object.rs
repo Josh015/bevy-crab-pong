@@ -7,7 +7,6 @@ pub enum Object {
     Ball,
     Wall,
     Crab,
-    Barrier,
 }
 
 pub struct ObjectPlugin;

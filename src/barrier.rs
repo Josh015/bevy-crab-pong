@@ -1,13 +1,9 @@
 use bevy::prelude::*;
-use spew::prelude::*;
 
 use crate::{
-    assets::CachedAssets,
     ball::{Ball, BALL_RADIUS},
     collider::{Collider, ColliderSet},
-    goal::GOAL_HALF_WIDTH,
     movement::{Heading, Movement},
-    object::Object,
     util::reflect,
 };
 
@@ -23,50 +19,11 @@ pub struct BarrierPlugin;
 
 impl Plugin for BarrierPlugin {
     fn build(&self, app: &mut App) {
-        app.add_spawners(((Object::Barrier, spawn_barrier_in_goal),))
-            .add_systems(
-                PostUpdate,
-                barrier_and_ball_collisions.in_set(ColliderSet),
-            );
+        app.add_systems(
+            PostUpdate,
+            barrier_and_ball_collisions.in_set(ColliderSet),
+        );
     }
-}
-
-fn spawn_barrier_in_goal(
-    In(goal_entity): In<Entity>,
-    cached_assets: Res<CachedAssets>,
-    mut commands: Commands,
-) {
-    let barrier = commands
-        .entity(goal_entity)
-        .with_children(|parent| {
-            parent.spawn((
-                Barrier,
-                Collider,
-                PbrBundle {
-                    mesh: cached_assets.barrier_mesh.clone(),
-                    material: cached_assets.barrier_material.clone(),
-                    transform: Transform::from_matrix(
-                        Mat4::from_scale_rotation_translation(
-                            Vec3::new(
-                                BARRIER_DIAMETER,
-                                BARRIER_HEIGHT,
-                                BARRIER_DIAMETER,
-                            ),
-                            Quat::IDENTITY,
-                            Vec3::new(
-                                GOAL_HALF_WIDTH,
-                                0.5 * BARRIER_HEIGHT,
-                                0.0,
-                            ),
-                        ),
-                    ),
-                    ..default()
-                },
-            ));
-        })
-        .id();
-
-    info!("Barrier({:?}): Spawned", barrier);
 }
 
 fn barrier_and_ball_collisions(

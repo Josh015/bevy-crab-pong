@@ -4,6 +4,8 @@ use spew::prelude::{SpawnEvent, SpewSystemSet};
 use crate::{
     assets::GameAssets,
     ball::{Ball, BALL_HEIGHT},
+    barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT},
+    collider::Collider,
     config::{GameConfig, GameMode},
     goal::{Goal, GOAL_HALF_WIDTH, GOAL_WIDTH},
     movement::Movement,
@@ -154,6 +156,8 @@ fn spawn_level(
     });
 
     // Goals
+    let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
+    let barrier_material = materials.add(Color::hex("750000").unwrap().into());
     const SIDES: [Side; 4] = [Side::Bottom, Side::Right, Side::Top, Side::Left];
 
     for (i, side) in SIDES.iter().enumerate() {
@@ -175,9 +179,36 @@ fn spawn_level(
                     ..default()
                 },
             ))
+            .with_children(|parent| {
+                // Barrier
+                parent.spawn((
+                    Barrier,
+                    Collider,
+                    PbrBundle {
+                        mesh: unit_cube.clone(),
+                        material: barrier_material.clone(),
+                        transform: Transform::from_matrix(
+                            Mat4::from_scale_rotation_translation(
+                                Vec3::new(
+                                    BARRIER_DIAMETER,
+                                    BARRIER_HEIGHT,
+                                    BARRIER_DIAMETER,
+                                ),
+                                Quat::IDENTITY,
+                                Vec3::new(
+                                    GOAL_HALF_WIDTH,
+                                    0.5 * BARRIER_HEIGHT,
+                                    0.0,
+                                ),
+                            ),
+                        ),
+                        ..default()
+                    },
+                ));
+            })
             .id();
 
-        spawn_in_goal_events.send(SpawnEvent::with_data(Object::Barrier, goal));
+        // Walls
         spawn_in_goal_events.send(SpawnEvent::with_data(Object::Wall, goal));
     }
 }
