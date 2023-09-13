@@ -10,7 +10,7 @@ use crate::{
     fade::{Fade, FadeAnimation, FadeBundle},
     goal::{Goal, Wall, GOAL_PADDLE_START_POSITION, WALL_HEIGHT, WALL_SCALE},
     movement::{
-        Acceleration, AccelerationBundle, Active, Heading, MaxSpeed, Speed,
+        Acceleration, AccelerationBundle, Heading, MaxSpeed, Movement, Speed,
         VelocityBundle,
     },
     paddle::{AiPlayer, HitPoints, KeyboardPlayer, Paddle, PADDLE_SCALE},
@@ -218,7 +218,7 @@ fn remove_previous_goal_occupant(
             if old_parent == new_parent && old_entity != new_entity {
                 commands
                     .entity(old_entity)
-                    .remove::<Active>()
+                    .remove::<Movement>()
                     .insert(Fade::default_out());
                 break;
             }

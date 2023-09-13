@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{ball::Collider, movement::Active, state::AppState};
+use crate::{ball::Collider, movement::Movement, state::AppState};
 
 pub const FADE_DURATION_IN_SECONDS: f32 = 1.0;
 
@@ -141,8 +141,8 @@ fn finish_fading(mut commands: Commands, query: Query<(Entity, &Fade)>) {
         match fade {
             Fade::In(progress) => {
                 if progress.finished() {
-                    commands.entity(entity).remove::<Fade>().insert(Active);
-                    info!("Entity({:?}): Active", entity);
+                    commands.entity(entity).remove::<Fade>().insert(Movement);
+                    info!("Entity({:?}): Started Moving", entity);
                 }
             },
             Fade::Out(progress) => {

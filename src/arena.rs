@@ -9,7 +9,7 @@ use crate::{
         Barrier, Goal, BARRIER_DIAMETER, BARRIER_HEIGHT, GOAL_HALF_WIDTH,
         GOAL_WIDTH,
     },
-    movement::Active,
+    movement::Movement,
     object::Object,
     ocean::Ocean,
     side::Side,
@@ -74,11 +74,11 @@ fn give_each_goal_a_new_paddle(
 fn spawn_balls_sequentially_as_needed(
     arena: Res<Arena>,
     balls_query: Query<Entity, With<Ball>>,
-    inactive_balls_query: Query<Entity, (With<Ball>, Without<Active>)>,
+    non_moving_balls_query: Query<Entity, (With<Ball>, Without<Movement>)>,
     mut spawn_events: EventWriter<SpawnEvent<Object>>,
 ) {
     if balls_query.iter().len() < arena.max_ball_count as usize
-        && inactive_balls_query.iter().len() < 1
+        && non_moving_balls_query.iter().len() < 1
     {
         spawn_events.send(SpawnEvent::new(Object::Ball));
     }

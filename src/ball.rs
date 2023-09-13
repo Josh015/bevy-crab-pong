@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     goal::{Barrier, Wall, BARRIER_RADIUS, WALL_RADIUS},
-    movement::{Active, Heading},
+    movement::{Heading, Movement},
     paddle::{Paddle, PADDLE_HALF_DEPTH, PADDLE_HALF_WIDTH},
     side::Side,
     state::AppState,
@@ -52,7 +52,7 @@ fn ball_to_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, With<Active>, With<Collider>),
+        (With<Ball>, With<Movement>, With<Collider>),
     >,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
@@ -91,7 +91,7 @@ fn ball_to_barrier_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, With<Active>, With<Collider>),
+        (With<Ball>, With<Movement>, With<Collider>),
     >,
     barriers_query: Query<&GlobalTransform, (With<Barrier>, With<Collider>)>,
 ) {
@@ -130,7 +130,7 @@ fn ball_to_paddle_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, With<Active>, With<Collider>),
+        (With<Ball>, With<Movement>, With<Collider>),
     >,
     paddles_query: Query<(&Side, &Transform), (With<Paddle>, With<Collider>)>,
 ) {
@@ -170,7 +170,7 @@ fn ball_to_wall_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, With<Active>, With<Collider>),
+        (With<Ball>, With<Movement>, With<Collider>),
     >,
     walls_query: Query<&Side, (With<Wall>, With<Collider>)>,
 ) {
