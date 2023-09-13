@@ -223,11 +223,11 @@ fn restrict_crabs_to_open_space_in_their_goals(
 
 fn crab_and_ball_collisions(
     mut commands: Commands,
+    crabs_query: Query<(&Side, &Transform), (With<Crab>, With<Collider>)>,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
         (With<Ball>, With<Movement>, With<Collider>),
     >,
-    crabs_query: Query<(&Side, &Transform), (With<Crab>, With<Collider>)>,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
         for (side, transform) in &crabs_query {
