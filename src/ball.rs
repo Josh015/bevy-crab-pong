@@ -36,35 +36,41 @@ fn ball_and_ball_collisions(
         (With<Ball>, With<Movement>, With<Collider>),
     >,
 ) {
-    for (entity, ball_transform, ball_heading) in &balls_query {
-        for (entity2, transform2, _) in &balls_query {
-            // Prevent balls from colliding with themselves.
-            if entity == entity2 {
-                continue;
-            }
+    for [(entity1, transform1, heading1), (entity2, transform2, heading2)] in
+        balls_query.iter_combinations()
+    {
+        // Check that both balls are close enough to touch.
+        let translation1 = transform1.translation();
+        let translation2 = transform2.translation();
+        let b1_to_b2_vector = translation2 - translation1;
 
-            let ball_to_ball_distance = ball_transform
-                .translation()
-                .distance(transform2.translation());
-            let axis = (transform2.translation()
-                - ball_transform.translation())
-            .normalize();
-
-            // Check that the ball is touching the other ball and facing it.
-            if ball_to_ball_distance > 2.0 * BALL_RADIUS
-                || ball_heading.0.dot(axis) <= 0.0
-            {
-                continue;
-            }
-
-            // Deflect the ball away from the other ball.
-            commands
-                .entity(entity)
-                .insert(Heading(reflect(ball_heading.0, axis)));
-
-            info!("Ball({:?}): Collided Ball({:?})", entity, entity2);
-            break;
+        if b1_to_b2_vector.length() > BALL_RADIUS + BALL_RADIUS {
+            continue;
         }
+
+        // Deflect balls away from each other.
+        let axis1 = b1_to_b2_vector.normalize();
+        let axis2 = -axis1;
+        let is_b1_facing_b2 = heading1.0.dot(axis1) > 0.0;
+        let is_b2_facing_b1 = heading2.0.dot(axis2) > 0.0;
+
+        if is_b1_facing_b2 {
+            commands
+                .entity(entity1)
+                .insert(Heading(reflect(heading1.0, axis1)));
+        } else if is_b2_facing_b1 {
+            commands.entity(entity1).insert(Heading(axis2));
+        }
+
+        if is_b2_facing_b1 {
+            commands
+                .entity(entity2)
+                .insert(Heading(reflect(heading2.0, axis2)));
+        } else if is_b1_facing_b2 {
+            commands.entity(entity2).insert(Heading(axis1));
+        }
+
+        info!("Ball({:?}): Collided Ball({:?})", entity1, entity2);
     }
 }
 
