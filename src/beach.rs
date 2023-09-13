@@ -179,9 +179,9 @@ fn spawn_level(
                     ..default()
                 },
             ))
-            .with_children(|parent| {
+            .with_children(|builder| {
                 // Barrier
-                parent.spawn((
+                builder.spawn((
                     Barrier,
                     Collider,
                     PbrBundle {

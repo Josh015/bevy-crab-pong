@@ -87,8 +87,8 @@ fn handle_spawn_ui_message_event(
                     ..default()
                 },
             ))
-            .with_children(|parent| {
-                parent
+            .with_children(|builder| {
+                builder
                     .spawn(NodeBundle {
                         style: Style {
                             width: Val::Percent(100.0),
@@ -101,8 +101,8 @@ fn handle_spawn_ui_message_event(
                         background_color: Color::NONE.into(),
                         ..default()
                     })
-                    .with_children(|parent| {
-                        parent.spawn(TextBundle {
+                    .with_children(|builder| {
+                        builder.spawn(TextBundle {
                             style: Style {
                                 margin: UiRect::all(Val::Px(5.0)),
                                 ..default()

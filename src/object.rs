@@ -100,8 +100,8 @@ fn spawn_wall_in_goal(
     // Spawn wall in goal.
     let wall = commands
         .entity(goal_entity)
-        .with_children(|parent| {
-            parent.spawn((
+        .with_children(|builder| {
+            builder.spawn((
                 Wall,
                 Collider,
                 *goal_side,
@@ -162,8 +162,8 @@ fn spawn_crab_in_goal(
 
     let crab = commands
         .entity(goal_entity)
-        .with_children(|parent| {
-            let mut crab = parent.spawn((
+        .with_children(|builder| {
+            let mut crab = builder.spawn((
                 Crab,
                 Collider,
                 *goal_side,
