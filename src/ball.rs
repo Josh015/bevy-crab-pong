@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     collider::{Collider, ColliderSet},
+    debug_mode::DebugModeSet,
     movement::{Heading, Movement},
     util::reflect,
 };
@@ -20,7 +21,10 @@ impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             PostUpdate,
-            ball_and_ball_collisions.in_set(ColliderSet),
+            (
+                ball_and_ball_collisions.in_set(ColliderSet),
+                display_ball_movement_direction_gizmos.in_set(DebugModeSet),
+            ),
         );
     }
 }
@@ -61,6 +65,22 @@ fn ball_and_ball_collisions(
             info!("Ball({:?}): Collided Ball({:?})", entity, entity2);
             break;
         }
+    }
+}
+
+fn display_ball_movement_direction_gizmos(
+    balls_query: Query<
+        (&GlobalTransform, &Heading),
+        (With<Ball>, With<Movement>),
+    >,
+    mut gizmos: Gizmos,
+) {
+    for (global_transform, heading) in &balls_query {
+        gizmos.line(
+            global_transform.translation(),
+            global_transform.translation() + heading.0 * 20.0,
+            Color::RED,
+        )
     }
 }
 

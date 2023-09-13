@@ -19,3 +19,5 @@ impl Plugin for ColliderPlugin {
         );
     }
 }
+
+// TODO: Add debug visualizations for bounding shapes?
