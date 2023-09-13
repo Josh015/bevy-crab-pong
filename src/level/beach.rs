@@ -3,19 +3,21 @@ use spew::prelude::{SpawnEvent, SpewSystemSet};
 
 use crate::{
     assets::GameAssets,
-    barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT},
     collider::Collider,
     config::{GameConfig, GameMode},
-    goal::{Goal, GOAL_HALF_WIDTH, GOAL_WIDTH},
+    level::{
+        barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT},
+        goal::{Goal, GOAL_HALF_WIDTH, GOAL_WIDTH},
+        ocean::Ocean,
+        side::Side,
+        swaying_camera::SwayingCamera,
+    },
     movement::Movement,
     object::{
         ball::{Ball, BALL_HEIGHT},
         Object,
     },
-    ocean::Ocean,
-    side::Side,
     state::AppState,
-    swaying_camera::SwayingCamera,
 };
 
 pub const BEACH_CENTER_POINT: Vec3 = Vec3::ZERO;

@@ -5,7 +5,7 @@ use bevy::{
 };
 use serde::Deserialize;
 
-use crate::side::Side;
+use crate::level::side::Side;
 
 /// Game settings read from a config file.
 #[derive(Debug, Deserialize, Resource, TypeUuid, TypePath)]

@@ -3,8 +3,8 @@ use spew::prelude::*;
 use std::ops::RangeInclusive;
 
 use crate::{
-    barrier::BARRIER_RADIUS,
     fade::Fade,
+    level::barrier::BARRIER_RADIUS,
     movement::Movement,
     object::{
         crab::{Crab, CRAB_HALF_WIDTH},

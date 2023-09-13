@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    beach::BEACH_CENTER_POINT, goal::GOAL_HALF_WIDTH, state::AppState,
+    level::beach::BEACH_CENTER_POINT, level::goal::GOAL_HALF_WIDTH,
+    state::AppState,
 };
 
 /// Marks a [`Camera3d`] entity to sway back and forth in a slow reciprocating
