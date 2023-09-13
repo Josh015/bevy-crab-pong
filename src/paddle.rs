@@ -239,7 +239,7 @@ fn deduct_paddle_hp_and_potentially_eliminate_goal(
             }
 
             // Despawn and replace the scoring ball.
-            commands.entity(ball_entity).insert(Fade::default_out());
+            commands.entity(ball_entity).insert(Fade::out_default());
             break;
         }
     }

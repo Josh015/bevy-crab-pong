@@ -13,14 +13,14 @@ pub enum Fade {
 }
 
 impl Fade {
-    pub fn default_in() -> Self {
+    pub fn in_default() -> Self {
         Self::In(Timer::from_seconds(
             FADE_DURATION_IN_SECONDS,
             TimerMode::Once,
         ))
     }
 
-    pub fn default_out() -> Self {
+    pub fn out_default() -> Self {
         Self::Out(Timer::from_seconds(
             FADE_DURATION_IN_SECONDS,
             TimerMode::Once,
@@ -30,7 +30,7 @@ impl Fade {
 
 impl Default for Fade {
     fn default() -> Self {
-        Self::default_in()
+        Self::in_default()
     }
 }
 

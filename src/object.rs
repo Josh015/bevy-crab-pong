@@ -219,7 +219,7 @@ fn remove_previous_goal_occupant(
                 commands
                     .entity(old_entity)
                     .remove::<Movement>()
-                    .insert(Fade::default_out());
+                    .insert(Fade::out_default());
                 break;
             }
         }
