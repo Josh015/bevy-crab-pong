@@ -1,20 +1,25 @@
 use bevy::prelude::*;
+use spew::prelude::*;
 
 use crate::{
+    assets::{CachedAssets, GameAssets},
     ball::Ball,
-    beach::BEACH_CENTER_POINT,
     collider::{Collider, ColliderSet},
+    config::{GameConfig, GameMode, PlayerConfig},
     debug_mode::DebugModeSet,
-    fade::Fade,
+    fade::{Fade, FadeAnimation, FadeBundle},
     goal::{
-        GoalEliminatedEvent, GOAL_CRAB_MAX_POSITION_RANGE,
-        GOAL_CRAB_MAX_POSITION_X,
+        Goal, GoalEliminatedEvent, GOAL_CRAB_MAX_POSITION_RANGE,
+        GOAL_CRAB_MAX_POSITION_X, GOAL_CRAB_START_POSITION,
     },
     movement::{
-        Force, Heading, Movement, MovementSet, Speed, StoppingDistance,
+        Acceleration, AccelerationBundle, Force, Heading, MaxSpeed, Movement,
+        MovementSet, Speed, StoppingDistance, VelocityBundle,
     },
+    object::Object,
     side::Side,
     state::AppState,
+    team::Team,
 };
 
 pub const CRAB_WIDTH: f32 = 0.2;
@@ -49,38 +54,116 @@ pub struct CrabPlugin;
 
 impl Plugin for CrabPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            (
+        app.add_spawners(((Object::Crab, spawn_crab_in_goal),))
+            .add_systems(
+                Update,
                 (
-                    handle_keyboard_input_for_player_controlled_crabs,
-                    make_ai_crabs_target_the_balls_closest_to_their_goals,
-                    move_ai_crabs_toward_their_targeted_balls,
-                )
-                    .chain()
-                    .before(MovementSet)
-                    .run_if(in_state(AppState::Playing)),
-                restrict_crabs_to_open_space_in_their_goals.after(MovementSet),
-            ),
-        )
-        .add_systems(
-            PostUpdate,
-            (
+                    (
+                        handle_keyboard_input_for_player_controlled_crabs,
+                        make_ai_crabs_target_the_balls_closest_to_their_goals,
+                        move_ai_crabs_toward_their_targeted_balls,
+                    )
+                        .chain()
+                        .before(MovementSet)
+                        .run_if(in_state(AppState::Playing)),
+                    restrict_crabs_to_open_space_in_their_goals
+                        .after(MovementSet),
+                ),
+            )
+            .add_systems(
+                PostUpdate,
                 (
-                    crab_and_ball_collisions,
-                    deduct_crab_hp_and_potentially_eliminate_goal,
-                )
-                    .chain()
-                    .in_set(ColliderSet),
-                (
-                    display_crab_predicted_stop_position_gizmos,
-                    display_crab_to_ball_targeting_gizmos,
-                    display_ai_crab_ideal_hit_area_gizmos,
-                )
-                    .in_set(DebugModeSet),
-            ),
-        );
+                    (
+                        crab_and_ball_collisions,
+                        deduct_crab_hp_and_potentially_eliminate_goal,
+                    )
+                        .chain()
+                        .in_set(ColliderSet),
+                    (
+                        display_crab_predicted_stop_position_gizmos,
+                        display_crab_to_ball_targeting_gizmos,
+                        display_ai_crab_ideal_hit_area_gizmos,
+                    )
+                        .in_set(DebugModeSet),
+                ),
+            );
     }
+}
+
+fn spawn_crab_in_goal(
+    In(goal_entity): In<Entity>,
+    game_mode: Res<GameMode>,
+    cached_assets: Res<CachedAssets>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
+    mut commands: Commands,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    goals_query: Query<&Side, With<Goal>>,
+) {
+    let Ok(goal_side) = goals_query.get(goal_entity) else {
+        return;
+    };
+
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
+    let crab_config = &game_config.modes[game_mode.0].crabs[goal_side];
+    let material_handle = materials.add(StandardMaterial {
+        base_color_texture: Some(game_assets.image_crab.clone()),
+        base_color: Color::hex(&crab_config.color).unwrap(),
+        ..default()
+    });
+
+    let crab = commands
+        .entity(goal_entity)
+        .with_children(|parent| {
+            let mut crab = parent.spawn((
+                Crab,
+                Collider,
+                *goal_side,
+                Team(crab_config.team),
+                HitPoints(crab_config.hit_points),
+                FadeBundle {
+                    fade_animation: FadeAnimation::Scale {
+                        max_scale: CRAB_SCALE,
+                        axis_mask: Vec3::ONE,
+                    },
+                    ..default()
+                },
+                AccelerationBundle {
+                    velocity: VelocityBundle {
+                        heading: Heading(Vec3::X),
+                        ..default()
+                    },
+                    max_speed: MaxSpeed(game_config.crab_max_speed),
+                    acceleration: Acceleration(
+                        game_config.crab_max_speed
+                            / game_config.crab_seconds_to_max_speed,
+                    ),
+                    ..default()
+                },
+                PbrBundle {
+                    mesh: cached_assets.crab_mesh.clone(),
+                    material: material_handle,
+                    transform: Transform::from_matrix(
+                        Mat4::from_scale_rotation_translation(
+                            Vec3::splat(f32::EPSILON),
+                            Quat::IDENTITY,
+                            GOAL_CRAB_START_POSITION,
+                        ),
+                    ),
+
+                    ..default()
+                },
+            ));
+
+            if crab_config.player == PlayerConfig::AI {
+                crab.insert(AiPlayer);
+            } else {
+                crab.insert(KeyboardPlayer);
+            }
+        })
+        .id();
+
+    info!("Crab({:?}): Spawned", crab);
 }
 
 fn handle_keyboard_input_for_player_controlled_crabs(
@@ -161,7 +244,7 @@ fn move_ai_crabs_toward_their_targeted_balls(
 ) {
     for (entity, side, transform, stopping_distance, target) in &crabs_query {
         // Use the ball's goal position or default to the center of the goal.
-        let mut target_goal_position = BEACH_CENTER_POINT.x;
+        let mut target_goal_position = GOAL_CRAB_START_POSITION.x;
 
         if let Some(target) = target {
             if let Ok(ball_transform) = balls_query.get(target.0) {

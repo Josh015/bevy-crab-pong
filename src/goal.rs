@@ -1,8 +1,15 @@
 use bevy::prelude::*;
-use spew::prelude::SpawnEvent;
+use spew::prelude::*;
 use std::ops::RangeInclusive;
 
-use crate::{barrier::BARRIER_RADIUS, crab::CRAB_HALF_WIDTH, object::Object};
+use crate::{
+    barrier::BARRIER_RADIUS,
+    crab::{Crab, CRAB_HALF_WIDTH},
+    fade::Fade,
+    movement::Movement,
+    object::Object,
+    wall::Wall,
+};
 
 pub const GOAL_WIDTH: f32 = 1.0;
 pub const GOAL_HALF_WIDTH: f32 = 0.5 * GOAL_WIDTH;
@@ -26,7 +33,29 @@ pub struct GoalPlugin;
 impl Plugin for GoalPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<GoalEliminatedEvent>()
+            .add_systems(
+                Update,
+                allow_only_one_crab_or_wall_in_a_goal.after(SpewSystemSet),
+            )
             .add_systems(PostUpdate, block_eliminated_goals_with_walls);
+    }
+}
+
+fn allow_only_one_crab_or_wall_in_a_goal(
+    mut commands: Commands,
+    new_query: Query<(Entity, &Parent), Or<(Added<Crab>, Added<Wall>)>>,
+    old_query: Query<(Entity, &Parent), Or<(With<Crab>, With<Wall>)>>,
+) {
+    for (new_entity, new_parent) in &new_query {
+        for (old_entity, old_parent) in &old_query {
+            if old_parent == new_parent && old_entity != new_entity {
+                commands
+                    .entity(old_entity)
+                    .remove::<Movement>()
+                    .insert(Fade::out_default());
+                break;
+            }
+        }
     }
 }
 
