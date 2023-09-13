@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    fade::Fade,
     goal::{Barrier, Wall, BARRIER_RADIUS, WALL_RADIUS},
-    movement::Heading,
+    movement::{Active, Heading},
     paddle::{Paddle, PADDLE_HALF_DEPTH, PADDLE_HALF_WIDTH},
     side::Side,
     state::AppState,
@@ -17,7 +16,7 @@ pub const BALL_RADIUS: f32 = 0.5 * BALL_DIAMETER;
 #[derive(Component, Debug)]
 pub struct Ball;
 
-/// Marks a non-ball entity as being able to deflect a ball upon collision.
+/// Marks an entity as being able to deflect a ball upon collision.
 #[derive(Component, Debug)]
 pub struct Collider;
 
@@ -53,7 +52,7 @@ fn ball_to_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, Without<Fade>),
+        (With<Ball>, With<Active>, With<Collider>),
     >,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
@@ -92,9 +91,9 @@ fn ball_to_barrier_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, Without<Fade>, With<Collider>),
+        (With<Ball>, With<Active>, With<Collider>),
     >,
-    barriers_query: Query<&GlobalTransform, With<Barrier>>,
+    barriers_query: Query<&GlobalTransform, (With<Barrier>, With<Collider>)>,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
         for barrier_transform in &barriers_query {
@@ -131,7 +130,7 @@ fn ball_to_paddle_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, Without<Fade>),
+        (With<Ball>, With<Active>, With<Collider>),
     >,
     paddles_query: Query<(&Side, &Transform), (With<Paddle>, With<Collider>)>,
 ) {
@@ -171,7 +170,7 @@ fn ball_to_wall_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, Without<Fade>),
+        (With<Ball>, With<Active>, With<Collider>),
     >,
     walls_query: Query<&Side, (With<Wall>, With<Collider>)>,
 ) {

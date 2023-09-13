@@ -1,32 +1,40 @@
 use bevy::prelude::*;
 
-use crate::{movement::Active, state::AppState};
+use crate::{ball::Collider, movement::Active, state::AppState};
 
-pub const SPAWNING_DURATION_IN_SECONDS: f32 = 1.0;
+pub const FADE_DURATION_IN_SECONDS: f32 = 1.0;
 
 /// Marks an entity to fade in/out and delay activation.
-#[derive(Clone, Component, Copy, Debug, Default, Eq, Hash, PartialEq)]
+#[derive(Clone, Component, Debug, Eq, PartialEq)]
 #[component(storage = "SparseSet")]
 pub enum Fade {
-    #[default]
-    In,
-    Out,
+    In(Timer),
+    Out(Timer),
 }
 
-/// Contains the [`FadeAnimation`] progress for this entity.
-#[derive(Clone, Component, Debug)]
-pub struct FadeProgress(pub Timer);
+impl Fade {
+    pub fn default_in() -> Self {
+        Self::In(Timer::from_seconds(
+            FADE_DURATION_IN_SECONDS,
+            TimerMode::Once,
+        ))
+    }
 
-impl Default for FadeProgress {
-    fn default() -> Self {
-        Self(Timer::from_seconds(
-            SPAWNING_DURATION_IN_SECONDS,
+    pub fn default_out() -> Self {
+        Self::Out(Timer::from_seconds(
+            FADE_DURATION_IN_SECONDS,
             TimerMode::Once,
         ))
     }
 }
 
-/// Specifies an entity's spawning effect animation.
+impl Default for Fade {
+    fn default() -> Self {
+        Self::default_in()
+    }
+}
+
+/// Specifies an entity's fade effect animation.
 #[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
 pub enum FadeAnimation {
     /// Uses alpha-blending to fade in/out an entity.
@@ -51,32 +59,9 @@ pub enum FadeAnimation {
 
 /// Assigns an entity an animation and gets it to start fading in.
 #[derive(Bundle, Clone, Debug, Default)]
-pub struct FadeAnimationBundle {
-    pub fade_animation: FadeAnimation,
-    pub fade_bundle: FadeBundle,
-}
-
-/// Provides basics to start fading an entity.
-#[derive(Bundle, Clone, Debug, Default)]
 pub struct FadeBundle {
-    pub spawning_progress: FadeProgress,
+    pub fade_animation: FadeAnimation,
     pub fade: Fade,
-}
-
-impl FadeBundle {
-    pub fn fade_in() -> Self {
-        Self {
-            fade: Fade::In,
-            ..default()
-        }
-    }
-
-    pub fn fade_out() -> Self {
-        Self {
-            fade: Fade::Out,
-            ..default()
-        }
-    }
 }
 
 pub struct FadePlugin;
@@ -84,12 +69,26 @@ pub struct FadePlugin;
 impl Plugin for FadePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
+            Update,
+            start_fade_out.run_if(not(in_state(AppState::Paused))),
+        )
+        .add_systems(
             PostUpdate,
             animate_fade_effect_on_entity
-                .chain()
                 .run_if(not(in_state(AppState::Paused))),
         )
         .add_systems(Last, finish_fading);
+    }
+}
+
+fn start_fade_out(
+    mut commands: Commands,
+    query: Query<(Entity, &Fade), Added<Fade>>,
+) {
+    for (entity, fade) in &query {
+        if matches!(fade, Fade::Out(_)) {
+            commands.entity(entity).remove::<Collider>();
+        }
     }
 }
 
@@ -99,18 +98,20 @@ fn animate_fade_effect_on_entity(
     mut query: Query<(
         &mut Transform,
         &Handle<StandardMaterial>,
-        &Fade,
+        &mut Fade,
         &FadeAnimation,
-        &mut FadeProgress,
     )>,
 ) {
-    for (mut transform, material, fade, animation, mut progress) in &mut query {
-        progress.0.tick(time.delta());
-
-        let weight = if *fade == Fade::In {
-            progress.0.percent()
-        } else {
-            1.0 - progress.0.percent()
+    for (mut transform, material, mut fade, animation) in &mut query {
+        let weight = match *fade {
+            Fade::In(ref mut progress) => {
+                progress.tick(time.delta());
+                progress.percent()
+            },
+            Fade::Out(ref mut progress) => {
+                progress.tick(time.delta());
+                1.0 - progress.percent()
+            },
         };
 
         match *animation {
@@ -135,25 +136,21 @@ fn animate_fade_effect_on_entity(
     }
 }
 
-fn finish_fading(
-    mut commands: Commands,
-    query: Query<(Entity, &Fade, &FadeProgress)>,
-) {
-    for (entity, fade, progress) in &query {
-        if progress.0.finished() {
-            match fade {
-                Fade::In => {
-                    commands
-                        .entity(entity)
-                        .insert(Active)
-                        .remove::<FadeBundle>();
+fn finish_fading(mut commands: Commands, query: Query<(Entity, &Fade)>) {
+    for (entity, fade) in &query {
+        match fade {
+            Fade::In(progress) => {
+                if progress.finished() {
+                    commands.entity(entity).remove::<Fade>().insert(Active);
                     info!("Entity({:?}): Active", entity);
-                },
-                Fade::Out => {
+                }
+            },
+            Fade::Out(progress) => {
+                if progress.finished() {
                     commands.entity(entity).despawn_recursive();
                     info!("Entity({:?}): Despawned", entity);
-                },
-            }
+                }
+            },
         }
     }
 }

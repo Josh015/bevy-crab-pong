@@ -7,7 +7,7 @@ use crate::{
     assets::{CachedAssets, GameAssets},
     ball::{Ball, Collider, BALL_DIAMETER},
     config::{GameConfig, GameMode, PlayerConfig},
-    fade::{FadeAnimation, FadeAnimationBundle, FadeBundle},
+    fade::{Fade, FadeAnimation, FadeBundle},
     goal::{Goal, Wall, GOAL_PADDLE_START_POSITION, WALL_HEIGHT, WALL_SCALE},
     movement::{
         Acceleration, AccelerationBundle, Active, Heading, MaxSpeed, Speed,
@@ -59,7 +59,8 @@ fn spawn_ball(
     let ball = commands
         .spawn((
             Ball,
-            FadeAnimationBundle::default(),
+            Collider,
+            FadeBundle::default(),
             ForStates([AppState::Playing, AppState::Paused]),
             VelocityBundle {
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
@@ -105,7 +106,7 @@ fn spawn_wall_in_goal(
                 Wall,
                 Collider,
                 *goal_side,
-                FadeAnimationBundle {
+                FadeBundle {
                     fade_animation: FadeAnimation::Scale {
                         max_scale: WALL_SCALE,
                         axis_mask: Vec3::new(0.0, 1.0, 1.0),
@@ -162,7 +163,7 @@ fn spawn_paddle_in_goal(
                 *goal_side,
                 Team(paddle_config.team),
                 HitPoints(paddle_config.hit_points),
-                FadeAnimationBundle {
+                FadeBundle {
                     fade_animation: FadeAnimation::Scale {
                         max_scale: PADDLE_SCALE,
                         axis_mask: Vec3::ONE,
@@ -218,8 +219,7 @@ fn remove_previous_goal_occupant(
                 commands
                     .entity(old_entity)
                     .remove::<Active>()
-                    .remove::<Collider>()
-                    .insert(FadeBundle::fade_out());
+                    .insert(Fade::default_out());
                 break;
             }
         }
