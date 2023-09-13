@@ -1,9 +1,9 @@
 use bevy::prelude::{App, Plugin};
 
-pub mod arena;
 pub mod assets;
 pub mod ball;
 pub mod barrier;
+pub mod beach;
 pub mod collider;
 pub mod config;
 pub mod crab;
@@ -26,10 +26,11 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
-            arena::ArenaPlugin,
             assets::AssetsPlugin,
+            beach::BeachPlugin,
             collider::ColliderPlugin,
             config::ConfigPlugin,
+            crab::CrabPlugin,
             debug_mode::DebugModePlugin,
             fade::FadePlugin,
             goal::GoalPlugin,
@@ -38,7 +39,6 @@ impl Plugin for GamePlugin {
             movement::MovementPlugin,
             object::ObjectPlugin,
             ocean::OceanPlugin,
-            crab::CrabPlugin,
             state::StatePlugin,
             swaying_camera::SwayingCameraPlugin,
         ))

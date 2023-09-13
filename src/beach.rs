@@ -16,27 +16,27 @@ use crate::{
     swaying_camera::SwayingCamera,
 };
 
-pub const ARENA_CENTER_POINT: Vec3 = Vec3::ZERO;
-pub const ARENA_BALL_SPAWNER_POSITION: Vec3 = Vec3::new(
-    ARENA_CENTER_POINT.x,
-    ARENA_CENTER_POINT.y + BALL_HEIGHT,
-    ARENA_CENTER_POINT.z,
+pub const BEACH_CENTER_POINT: Vec3 = Vec3::ZERO;
+pub const BEACH_BALL_SPAWNER_POSITION: Vec3 = Vec3::new(
+    BEACH_CENTER_POINT.x,
+    BEACH_CENTER_POINT.y + BALL_HEIGHT,
+    BEACH_CENTER_POINT.z,
 );
 
 /// Global data related to the play area.
 #[derive(Debug, Default, Resource)]
-pub struct Arena {
+pub struct Beach {
     max_ball_count: u8,
 }
 
-pub struct ArenaPlugin;
+pub struct BeachPlugin;
 
-impl Plugin for ArenaPlugin {
+impl Plugin for BeachPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnExit(AppState::Loading), spawn_level)
             .add_systems(
                 OnExit(AppState::StartMenu),
-                (initialize_arena_data, give_each_goal_a_new_crab),
+                (initialize_beach_data, give_each_goal_a_new_crab),
             )
             .add_systems(
                 Update,
@@ -47,7 +47,7 @@ impl Plugin for ArenaPlugin {
     }
 }
 
-fn initialize_arena_data(
+fn initialize_beach_data(
     mut commands: Commands,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
@@ -55,7 +55,7 @@ fn initialize_arena_data(
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
 
-    commands.insert_resource(Arena {
+    commands.insert_resource(Beach {
         max_ball_count: game_config.modes[game_mode.0].max_ball_count,
     })
 }
@@ -70,12 +70,12 @@ fn give_each_goal_a_new_crab(
 }
 
 fn spawn_balls_sequentially_as_needed(
-    arena: Res<Arena>,
+    beach: Res<Beach>,
     balls_query: Query<Entity, With<Ball>>,
     non_moving_balls_query: Query<Entity, (With<Ball>, Without<Movement>)>,
     mut spawn_events: EventWriter<SpawnEvent<Object>>,
 ) {
-    if balls_query.iter().len() < arena.max_ball_count as usize
+    if balls_query.iter().len() < beach.max_ball_count as usize
         && non_moving_balls_query.iter().len() < 1
     {
         spawn_events.send(SpawnEvent::new(Object::Ball));
@@ -149,7 +149,7 @@ fn spawn_level(
             Mat4::from_scale_rotation_translation(
                 Vec3::splat(GOAL_WIDTH),
                 Quat::IDENTITY,
-                ARENA_CENTER_POINT,
+                BEACH_CENTER_POINT,
             ),
         ),
         ..default()

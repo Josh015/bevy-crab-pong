@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    arena::ARENA_CENTER_POINT,
     ball::Ball,
+    beach::BEACH_CENTER_POINT,
     collider::{Collider, ColliderSet},
     fade::Fade,
     goal::{
@@ -150,7 +150,7 @@ fn move_ai_crabs_toward_their_targeted_balls(
 ) {
     for (entity, side, transform, stopping_distance, target) in &crabs_query {
         // Use the ball's goal position or default to the center of the goal.
-        let mut target_goal_position = ARENA_CENTER_POINT.x;
+        let mut target_goal_position = BEACH_CENTER_POINT.x;
 
         if let Some(target) = target {
             if let Ok(ball_transform) = balls_query.get(target.0) {

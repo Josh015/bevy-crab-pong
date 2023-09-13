@@ -3,9 +3,9 @@ use rand::{rngs::SmallRng, Rng, SeedableRng};
 use spew::prelude::*;
 
 use crate::{
-    arena::ARENA_BALL_SPAWNER_POSITION,
     assets::{CachedAssets, GameAssets},
     ball::{Ball, BALL_DIAMETER},
+    beach::BEACH_BALL_SPAWNER_POSITION,
     collider::Collider,
     config::{GameConfig, GameMode, PlayerConfig},
     crab::{AiPlayer, Crab, HitPoints, KeyboardPlayer, CRAB_SCALE},
@@ -79,7 +79,7 @@ fn spawn_ball(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(BALL_DIAMETER),
                         Quat::IDENTITY,
-                        ARENA_BALL_SPAWNER_POSITION,
+                        BEACH_BALL_SPAWNER_POSITION,
                     ),
                 ),
                 ..default()

@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 use crate::{ball::BALL_RADIUS, goal::GOAL_HALF_WIDTH};
 
-/// Assigns an entity to a given side of the arena.
+/// Assigns an entity to a given side of the beach.
 #[derive(Clone, Component, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
 pub enum Side {
     Bottom = 0,
@@ -15,7 +15,7 @@ pub enum Side {
 impl Side {
     /// Perpendicular distance from a given goal to a ball's edge.
     ///
-    /// Positive distances for inside the arena, negative for out of bounds.
+    /// Positive distances for inside the beach, negative for out of bounds.
     pub fn distance_to_ball(&self, ball_transform: &GlobalTransform) -> f32 {
         let ball_translation = ball_transform.translation();
 
