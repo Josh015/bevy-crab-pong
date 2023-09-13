@@ -1,14 +1,10 @@
 use bevy::prelude::*;
-use spew::prelude::*;
 
 use crate::{
-    assets::CachedAssets,
     ball::Ball,
     collider::{Collider, ColliderSet},
-    fade::{FadeAnimation, FadeBundle},
-    goal::{Goal, GOAL_WIDTH},
+    goal::GOAL_WIDTH,
     movement::{Heading, Movement},
-    object::Object,
     side::Side,
     util::reflect,
 };
@@ -27,56 +23,11 @@ pub struct WallPlugin;
 
 impl Plugin for WallPlugin {
     fn build(&self, app: &mut App) {
-        app.add_spawners(((Object::Wall, spawn_wall_in_goal),))
-            .add_systems(
-                PostUpdate,
-                wall_and_crab_collisions.in_set(ColliderSet),
-            );
+        app.add_systems(
+            PostUpdate,
+            wall_and_crab_collisions.in_set(ColliderSet),
+        );
     }
-}
-
-fn spawn_wall_in_goal(
-    In(goal_entity): In<Entity>,
-    cached_assets: Res<CachedAssets>,
-    mut commands: Commands,
-    goals_query: Query<&Side, With<Goal>>,
-) {
-    let Ok(goal_side) = goals_query.get(goal_entity) else {
-        return;
-    };
-
-    // Spawn wall in goal.
-    let wall = commands
-        .entity(goal_entity)
-        .with_children(|parent| {
-            parent.spawn((
-                Wall,
-                Collider,
-                *goal_side,
-                FadeBundle {
-                    fade_animation: FadeAnimation::Scale {
-                        max_scale: WALL_SCALE,
-                        axis_mask: Vec3::new(0.0, 1.0, 1.0),
-                    },
-                    ..default()
-                },
-                PbrBundle {
-                    mesh: cached_assets.wall_mesh.clone(),
-                    material: cached_assets.wall_material.clone(),
-                    transform: Transform::from_matrix(
-                        Mat4::from_scale_rotation_translation(
-                            Vec3::splat(f32::EPSILON),
-                            Quat::IDENTITY,
-                            Vec3::new(0.0, WALL_HEIGHT, 0.0),
-                        ),
-                    ),
-                    ..default()
-                },
-            ));
-        })
-        .id();
-
-    info!("Wall({:?}): Spawned", wall);
 }
 
 fn wall_and_crab_collisions(
