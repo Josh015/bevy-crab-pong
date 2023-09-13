@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 
 use crate::{
+    ball::Ball,
     collider::{Collider, ColliderSet},
     goal::GOAL_WIDTH,
     movement::{Heading, Movement},
-    object::ball::Ball,
     side::Side,
     util::reflect,
 };

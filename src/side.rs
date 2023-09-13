@@ -1,7 +1,7 @@
 use bevy::prelude::{Component, GlobalTransform, Vec3};
 use serde::Deserialize;
 
-use crate::{goal::GOAL_HALF_WIDTH, object::ball::BALL_RADIUS};
+use crate::{ball::BALL_RADIUS, goal::GOAL_HALF_WIDTH};
 
 /// Assigns an entity to a given side of the beach.
 #[derive(Clone, Component, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]

@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
+    ball::{Ball, BALL_RADIUS},
     collider::{Collider, ColliderSet},
     movement::{Heading, Movement},
-    object::ball::{Ball, BALL_RADIUS},
     util::reflect,
 };
 

@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
+    crab::{Crab, HitPoints},
     goal::GoalEliminatedEvent,
-    object::crab::{Crab, HitPoints},
     state::AppState,
 };
 
