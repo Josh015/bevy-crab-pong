@@ -8,14 +8,11 @@ use spew::prelude::*;
 
 use crate::{
     assets::{CachedAssets, GameAssets},
+    beach::BEACH_BALL_SPAWNER_POSITION,
     collider::Collider,
     config::{GameConfig, GameMode, PlayerConfig},
     fade::{FadeAnimation, FadeBundle},
-    level::{
-        beach::BEACH_BALL_SPAWNER_POSITION,
-        goal::{Goal, GOAL_CRAB_START_POSITION},
-        side::Side,
-    },
+    goal::{Goal, GOAL_CRAB_START_POSITION},
     movement::{
         Acceleration, AccelerationBundle, Heading, MaxSpeed, Speed,
         VelocityBundle,
@@ -25,6 +22,7 @@ use crate::{
         crab::{AiPlayer, Crab, HitPoints, KeyboardPlayer, CRAB_SCALE},
         wall::{Wall, WALL_HEIGHT, WALL_SCALE},
     },
+    side::Side,
     state::{AppState, ForStates},
     team::Team,
 };

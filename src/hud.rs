@@ -2,8 +2,8 @@ use bevy::prelude::*;
 
 use crate::{
     assets::GameAssets,
-    level::side::Side,
     object::crab::{Crab, HitPoints},
+    side::Side,
     state::AppState,
 };
 

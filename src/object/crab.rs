@@ -4,17 +4,15 @@ use crate::{
     collider::{Collider, ColliderSet},
     debug_mode::DebugModeSet,
     fade::Fade,
-    level::{
-        goal::{
-            GoalEliminatedEvent, GOAL_CRAB_MAX_POSITION_RANGE,
-            GOAL_CRAB_MAX_POSITION_X, GOAL_CRAB_START_POSITION,
-        },
-        side::Side,
+    goal::{
+        GoalEliminatedEvent, GOAL_CRAB_MAX_POSITION_RANGE,
+        GOAL_CRAB_MAX_POSITION_X, GOAL_CRAB_START_POSITION,
     },
     movement::{
         Force, Heading, Movement, MovementSet, Speed, StoppingDistance,
     },
     object::ball::Ball,
+    side::Side,
     state::AppState,
 };
 
