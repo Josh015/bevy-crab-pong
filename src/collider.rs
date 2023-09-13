@@ -3,11 +3,11 @@ use bevy::prelude::*;
 use crate::{
     ball::{Ball, BALL_RADIUS},
     barrier::{Barrier, BARRIER_RADIUS},
-    goal::{Wall, WALL_RADIUS},
     movement::{Heading, Movement},
     paddle::{Paddle, PADDLE_HALF_DEPTH, PADDLE_HALF_WIDTH},
     side::Side,
     state::AppState,
+    wall::{Wall, WALL_RADIUS},
 };
 
 /// Marks a collidable entity.

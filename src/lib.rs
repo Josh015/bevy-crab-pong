@@ -19,6 +19,7 @@ pub mod side;
 pub mod state;
 pub mod swaying_camera;
 pub mod team;
+pub mod wall;
 
 pub struct GamePlugin;
 

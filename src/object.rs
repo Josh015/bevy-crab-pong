@@ -9,7 +9,7 @@ use crate::{
     collider::Collider,
     config::{GameConfig, GameMode, PlayerConfig},
     fade::{Fade, FadeAnimation, FadeBundle},
-    goal::{Goal, Wall, GOAL_PADDLE_START_POSITION, WALL_HEIGHT, WALL_SCALE},
+    goal::{Goal, GOAL_PADDLE_START_POSITION},
     movement::{
         Acceleration, AccelerationBundle, Heading, MaxSpeed, Movement, Speed,
         VelocityBundle,
@@ -18,6 +18,7 @@ use crate::{
     side::Side,
     state::{AppState, ForStates},
     team::Team,
+    wall::{Wall, WALL_HEIGHT, WALL_SCALE},
 };
 
 /// Objects that can be spawned via Spew.
