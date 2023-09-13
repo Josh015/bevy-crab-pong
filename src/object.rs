@@ -5,7 +5,7 @@ use spew::prelude::*;
 use crate::{
     arena::ARENA_BALL_SPAWNER_POSITION,
     assets::{CachedAssets, GameAssets},
-    ball::{Ball, BALL_DIAMETER},
+    ball::{Ball, Collider, BALL_DIAMETER},
     config::{GameConfig, GameMode, PlayerConfig},
     fade::{FadeAnimation, FadeAnimationBundle, FadeBundle},
     goal::{Goal, Wall, GOAL_PADDLE_START_POSITION, WALL_HEIGHT, WALL_SCALE},
@@ -103,6 +103,7 @@ fn spawn_wall_in_goal(
         .with_children(|parent| {
             parent.spawn((
                 Wall,
+                Collider,
                 *goal_side,
                 FadeAnimationBundle {
                     fade_animation: FadeAnimation::Scale {
@@ -157,6 +158,7 @@ fn spawn_paddle_in_goal(
         .with_children(|parent| {
             let mut paddle = parent.spawn((
                 Paddle,
+                Collider,
                 *goal_side,
                 Team(paddle_config.team),
                 HitPoints(paddle_config.hit_points),
@@ -216,6 +218,7 @@ fn remove_previous_goal_occupant(
                 commands
                     .entity(old_entity)
                     .remove::<Active>()
+                    .remove::<Collider>()
                     .insert(FadeBundle::fade_out());
                 break;
             }

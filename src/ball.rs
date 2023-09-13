@@ -17,6 +17,10 @@ pub const BALL_RADIUS: f32 = 0.5 * BALL_DIAMETER;
 #[derive(Component, Debug)]
 pub struct Ball;
 
+/// Marks a non-ball entity as being able to deflect a ball upon collision.
+#[derive(Component, Debug)]
+pub struct Collider;
+
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct BallSet;
 
@@ -88,7 +92,7 @@ fn ball_to_barrier_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, Without<Fade>),
+        (With<Ball>, Without<Fade>, With<Collider>),
     >,
     barriers_query: Query<&GlobalTransform, With<Barrier>>,
 ) {
@@ -129,7 +133,7 @@ fn ball_to_paddle_collisions(
         (Entity, &GlobalTransform, &Heading),
         (With<Ball>, Without<Fade>),
     >,
-    paddles_query: Query<(&Side, &Transform), (With<Paddle>, Without<Fade>)>,
+    paddles_query: Query<(&Side, &Transform), (With<Paddle>, With<Collider>)>,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
         for (side, transform) in &paddles_query {
@@ -169,7 +173,7 @@ fn ball_to_wall_collisions(
         (Entity, &GlobalTransform, &Heading),
         (With<Ball>, Without<Fade>),
     >,
-    walls_query: Query<&Side, (With<Wall>, Without<Fade>)>,
+    walls_query: Query<&Side, (With<Wall>, With<Collider>)>,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
         for side in &walls_query {

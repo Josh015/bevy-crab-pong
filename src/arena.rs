@@ -3,7 +3,7 @@ use spew::prelude::{SpawnEvent, SpewSystemSet};
 
 use crate::{
     assets::GameAssets,
-    ball::{Ball, BALL_HEIGHT},
+    ball::{Ball, Collider, BALL_HEIGHT},
     config::{GameConfig, GameMode},
     fade::Fade,
     goal::{
@@ -185,6 +185,7 @@ fn spawn_level(
                 // Barrier
                 parent.spawn((
                     Barrier,
+                    Collider,
                     PbrBundle {
                         mesh: unit_cube.clone(),
                         material: barrier_material.clone(),
