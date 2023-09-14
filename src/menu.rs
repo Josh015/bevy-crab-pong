@@ -3,7 +3,7 @@ use bevy::{app::AppExit, prelude::*};
 use crate::{
     assets::{GameAssets, GameConfig},
     debug_mode::IsDebuggingMode,
-    game::Game,
+    game::{Game, WinningTeam},
     state::{ForStates, GameState},
 };
 
@@ -32,12 +32,12 @@ impl Plugin for MenuPlugin {
 fn spawn_start_menu_ui(
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
-    game: Res<Game>,
+    winning_team: Option<Res<WinningTeam>>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let mut message = String::from(match game.winning_team {
-        Some(winning_team) => &game_config.team_win_messages[winning_team],
+    let mut message = String::from(match winning_team {
+        Some(winning_team) => &game_config.team_win_messages[winning_team.0],
         _ => "",
     });
 

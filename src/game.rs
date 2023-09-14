@@ -13,13 +13,16 @@ pub struct Competitor {
     pub hit_points: u8,
 }
 
-/// Global data related to the play area.
+/// Global game data.
 #[derive(Debug, Default, Resource)]
 pub struct Game {
     pub mode: usize,
     pub competitors: HashMap<Side, Competitor>,
-    pub winning_team: Option<usize>,
 }
+
+/// The team that won the previous round.
+#[derive(Debug, Default, Resource)]
+pub struct WinningTeam(pub usize);
 
 pub struct GamePlugin;
 
@@ -50,12 +53,12 @@ fn reset_competitors(
 
     game.competitors.clear();
 
-    for (side, crab) in &mode.competitors {
+    for (side, competitor) in &mode.competitors {
         game.competitors.insert(
             *side,
             Competitor {
-                team: crab.team,
-                hit_points: u8::from(crab.hit_points),
+                team: competitor.team,
+                hit_points: u8::from(competitor.hit_points),
             },
         );
     }
@@ -81,40 +84,30 @@ fn decrement_competitor_hp_when_its_goal_is_scored(
 }
 
 fn check_for_winning_team(
+    mut commands: Commands,
     mut next_game_state: ResMut<NextState<GameState>>,
     mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
-    mut game: ResMut<Game>,
+    game: Res<Game>,
 ) {
     // Check if only one team's competitors still have HP.
     for GoalEliminatedEvent(_) in goal_eliminated_events.iter() {
-        let winning_team = {
-            let survivor = game
-                .competitors
-                .iter()
-                .find(|(_, competitor)| competitor.hit_points > 0);
-
-            if let Some((_, survivor)) = survivor {
-                let is_winner =
-                    game.competitors.iter().all(|(_, competitor)| {
-                        competitor.team == survivor.team
-                            || competitor.hit_points == 0
-                    });
-
-                if is_winner {
-                    Some(survivor.team)
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
+        let Some((_, survivor)) = game
+            .competitors
+            .iter()
+            .find(|(_, competitor)| competitor.hit_points > 0)
+        else {
+            continue;
         };
 
+        let is_winner = game.competitors.iter().all(|(_, competitor)| {
+            competitor.team == survivor.team || competitor.hit_points == 0
+        });
+
         // Declare a winner and navigate back to the Start Menu.
-        if let Some(winning_team) = winning_team {
-            game.winning_team = Some(winning_team);
+        if is_winner {
+            commands.insert_resource(WinningTeam(survivor.team));
             next_game_state.set(GameState::StartMenu);
-            info!("Game Over: Team {:?} won!", winning_team);
+            info!("Game Over: Team {:?} won!", survivor.team);
             break;
         }
     }
