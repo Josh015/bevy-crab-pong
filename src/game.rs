@@ -1,18 +1,13 @@
 use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
-    assets::GameAssets,
-    config::GameConfig,
-    goal::{Goal, GoalScoredEvent},
-    side::Side,
+    assets::GameAssets, config::GameConfig, goal::GoalScoredEvent, side::Side,
     state::AppState,
 };
 
 /// Signals a goal being eliminated from the game.
 #[derive(Clone, Component, Debug, Event)]
-pub struct CompetitorEliminatedEvent {
-    pub goal: Entity,
-}
+pub struct CompetitorEliminatedEvent(pub Side);
 
 #[derive(Debug, Default)]
 pub struct Competitor {
@@ -72,14 +67,10 @@ fn reset_competitors(
 fn decrement_competitor_hp_when_its_goal_is_scored(
     mut goal_scored_events: EventReader<GoalScoredEvent>,
     mut competitor_eliminated_events: EventWriter<CompetitorEliminatedEvent>,
-    goals_query: Query<&Side, With<Goal>>,
     mut game: ResMut<Game>,
 ) {
     // Decrement a competitor's HP and potentially eliminate its goal.
-    for GoalScoredEvent(goal_entity) in goal_scored_events.iter() {
-        let Ok(side) = goals_query.get(*goal_entity) else {
-            continue;
-        };
+    for GoalScoredEvent(side) in goal_scored_events.iter() {
         let Some(competitor) = game.competitors.get_mut(side) else {
             continue;
         };
@@ -87,8 +78,7 @@ fn decrement_competitor_hp_when_its_goal_is_scored(
         competitor.hit_points = competitor.hit_points.saturating_sub(1);
 
         if competitor.hit_points == 0 {
-            competitor_eliminated_events
-                .send(CompetitorEliminatedEvent { goal: *goal_entity });
+            competitor_eliminated_events.send(CompetitorEliminatedEvent(*side));
         }
     }
 }
@@ -99,9 +89,7 @@ fn check_for_winning_team(
     mut game: ResMut<Game>,
 ) {
     // Check if only one team's competitors still have HP.
-    for CompetitorEliminatedEvent { goal: _ } in
-        competitor_eliminated_events.iter()
-    {
+    for CompetitorEliminatedEvent(_) in competitor_eliminated_events.iter() {
         let winning_team = {
             let survivor = game
                 .competitors

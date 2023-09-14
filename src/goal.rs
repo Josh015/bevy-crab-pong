@@ -11,7 +11,7 @@ use crate::{
     game::CompetitorEliminatedEvent,
     movement::Movement,
     object::Object,
-    side::Side,
+    side::{Side, SIDES},
     wall::Wall,
 };
 
@@ -30,7 +30,7 @@ pub struct Goal;
 
 /// Signals a goal being scored in by a ball.
 #[derive(Clone, Component, Debug, Event)]
-pub struct GoalScoredEvent(pub Entity);
+pub struct GoalScoredEvent(pub Side);
 
 pub struct GoalPlugin;
 
@@ -77,16 +77,15 @@ fn check_if_any_balls_have_scored_in_any_goals(
         (Entity, &GlobalTransform),
         (With<Ball>, With<Movement>, With<Collider>),
     >,
-    goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
     // If a ball passes a goal's crab then despawn it and raise an event.
     for (ball_entity, global_transform) in &balls_query {
-        for (goal_entity, side) in &goals_query {
+        for side in SIDES {
             let ball_distance = side.distance_to_ball(global_transform);
 
             if ball_distance <= -CRAB_HALF_DEPTH {
                 commands.entity(ball_entity).insert(Fade::out_default());
-                goal_scored_events.send(GoalScoredEvent(goal_entity));
+                goal_scored_events.send(GoalScoredEvent(side));
                 info!("Ball({:?}): Scored Goal({:?})", ball_entity, side);
             }
         }
@@ -95,12 +94,10 @@ fn check_if_any_balls_have_scored_in_any_goals(
 
 fn block_eliminated_goals_with_walls(
     mut competitor_eliminated_events: EventReader<CompetitorEliminatedEvent>,
-    mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Entity>>,
+    mut spawn_on_side_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
-    for CompetitorEliminatedEvent { goal } in
-        competitor_eliminated_events.iter()
-    {
-        spawn_in_goal_events.send(SpawnEvent::with_data(Object::Wall, *goal));
-        info!("Goal({:?}): Eliminated", goal);
+    for CompetitorEliminatedEvent(side) in competitor_eliminated_events.iter() {
+        spawn_on_side_events.send(SpawnEvent::with_data(Object::Wall, *side));
+        info!("Goal({:?}): Eliminated", side);
     }
 }

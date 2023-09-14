@@ -12,7 +12,7 @@ use crate::{
     movement::Movement,
     object::Object,
     ocean::Ocean,
-    side::Side,
+    side::{Side, SIDES},
     state::AppState,
     swaying_camera::SwayingCamera,
 };
@@ -62,11 +62,10 @@ fn initialize_beach_data(
 }
 
 fn give_each_goal_a_new_crab(
-    goals_query: Query<Entity, With<Goal>>,
-    mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Entity>>,
+    mut spawn_on_side_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
-    for entity in &goals_query {
-        spawn_in_goal_events.send(SpawnEvent::with_data(Object::Crab, entity));
+    for side in SIDES {
+        spawn_on_side_events.send(SpawnEvent::with_data(Object::Crab, side));
     }
 }
 
@@ -89,7 +88,7 @@ fn spawn_level(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Entity>>,
+    mut spawn_on_side_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
 
@@ -159,11 +158,10 @@ fn spawn_level(
     // Goals
     let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
-    const SIDES: [Side; 4] = [Side::Bottom, Side::Right, Side::Top, Side::Left];
 
     for (i, side) in SIDES.iter().enumerate() {
         // Goals
-        let goal = commands
+        commands
             .spawn((
                 *side,
                 Goal,
@@ -206,10 +204,9 @@ fn spawn_level(
                         ..default()
                     },
                 ));
-            })
-            .id();
+            });
 
         // Walls
-        spawn_in_goal_events.send(SpawnEvent::with_data(Object::Wall, goal));
+        spawn_on_side_events.send(SpawnEvent::with_data(Object::Wall, *side));
     }
 }

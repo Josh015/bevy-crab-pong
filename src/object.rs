@@ -35,11 +35,11 @@ impl Plugin for ObjectPlugin {
     fn build(&self, app: &mut App) {
         app.add_spawners((
             (Object::Ball, spawn_ball),
-            (Object::Wall, spawn_wall_in_goal),
-            (Object::Crab, spawn_crab_in_goal),
+            (Object::Wall, spawn_wall_on_side),
+            (Object::Crab, spawn_crab_on_side),
         ))
         .add_plugins(SpewPlugin::<Object>::default())
-        .add_plugins(SpewPlugin::<Object, Entity>::default());
+        .add_plugins(SpewPlugin::<Object, Side>::default());
     }
 }
 
@@ -86,128 +86,125 @@ fn spawn_ball(
     info!("Ball({:?}): Spawned", ball);
 }
 
-fn spawn_wall_in_goal(
-    In(goal_entity): In<Entity>,
+fn spawn_wall_on_side(
+    In(goal_side): In<Side>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
-    goals_query: Query<&Side, With<Goal>>,
     beach: Option<Res<Beach>>,
+    goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
-    let Ok(goal_side) = goals_query.get(goal_entity) else {
+    let Some((goal_entity, _)) =
+        goals_query.iter().find(|(_, side)| **side == goal_side)
+    else {
         return;
     };
 
     // Spawn wall in goal.
-    let wall = commands
-        .entity(goal_entity)
-        .with_children(|builder| {
-            builder.spawn((
-                Wall,
-                Collider,
-                *goal_side,
-                FadeBundle {
-                    fade_animation: FadeAnimation::Scale {
-                        max_scale: WALL_SCALE,
-                        axis_mask: Vec3::new(0.0, 1.0, 1.0),
+    commands.entity(goal_entity).with_children(|builder| {
+        builder.spawn((
+            Wall,
+            Collider,
+            goal_side,
+            FadeBundle {
+                fade_animation: FadeAnimation::Scale {
+                    max_scale: WALL_SCALE,
+                    axis_mask: Vec3::new(0.0, 1.0, 1.0),
+                },
+                fade: Fade::In(Timer::from_seconds(
+                    if beach.is_none() {
+                        0.0
+                    } else {
+                        FADE_DURATION_IN_SECONDS
                     },
-                    fade: Fade::In(Timer::from_seconds(
-                        if beach.is_none() {
-                            0.0
-                        } else {
-                            FADE_DURATION_IN_SECONDS
-                        },
-                        TimerMode::Once,
-                    )),
-                },
-                PbrBundle {
-                    mesh: cached_assets.wall_mesh.clone(),
-                    material: cached_assets.wall_material.clone(),
-                    transform: Transform::from_matrix(
-                        Mat4::from_scale_rotation_translation(
-                            Vec3::splat(f32::EPSILON),
-                            Quat::IDENTITY,
-                            Vec3::new(0.0, WALL_HEIGHT, 0.0),
-                        ),
+                    TimerMode::Once,
+                )),
+            },
+            PbrBundle {
+                mesh: cached_assets.wall_mesh.clone(),
+                material: cached_assets.wall_material.clone(),
+                transform: Transform::from_matrix(
+                    Mat4::from_scale_rotation_translation(
+                        Vec3::splat(f32::EPSILON),
+                        Quat::IDENTITY,
+                        Vec3::new(0.0, WALL_HEIGHT, 0.0),
                     ),
-                    ..default()
-                },
-            ));
-        })
-        .id();
+                ),
+                ..default()
+            },
+        ));
+    });
 
-    info!("Wall({:?}): Spawned", wall);
+    info!("Wall({:?}): Spawned", goal_side);
 }
 
-fn spawn_crab_in_goal(
-    In(goal_entity): In<Entity>,
+fn spawn_crab_on_side(
+    In(goal_side): In<Side>,
     game: Res<Game>,
     cached_assets: Res<CachedAssets>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    goals_query: Query<&Side, With<Goal>>,
+    goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
-    let Ok(goal_side) = goals_query.get(goal_entity) else {
+    let Some((goal_entity, _)) =
+        goals_query.iter().find(|(_, side)| **side == goal_side)
+    else {
         return;
     };
-
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let crab_config = &game_config.modes[game.mode].competitors[goal_side];
+    let crab_config = &game_config.modes[game.mode].competitors[&goal_side];
     let material_handle = materials.add(StandardMaterial {
         base_color_texture: Some(game_assets.image_crab.clone()),
         base_color: Color::hex(&crab_config.color).unwrap(),
         ..default()
     });
 
-    let crab = commands
-        .entity(goal_entity)
-        .with_children(|builder| {
-            let mut crab = builder.spawn((
-                Crab,
-                Collider,
-                *goal_side,
-                FadeBundle {
-                    fade_animation: FadeAnimation::Scale {
-                        max_scale: CRAB_SCALE,
-                        axis_mask: Vec3::ONE,
-                    },
+    commands.entity(goal_entity).with_children(|builder| {
+        let mut crab = builder.spawn((
+            Crab,
+            Collider,
+            goal_side,
+            FadeBundle {
+                fade_animation: FadeAnimation::Scale {
+                    max_scale: CRAB_SCALE,
+                    axis_mask: Vec3::ONE,
+                },
+                ..default()
+            },
+            AccelerationBundle {
+                velocity: VelocityBundle {
+                    heading: Heading(Vec3::X),
                     ..default()
                 },
-                AccelerationBundle {
-                    velocity: VelocityBundle {
-                        heading: Heading(Vec3::X),
-                        ..default()
-                    },
-                    max_speed: MaxSpeed(game_config.crab_max_speed),
-                    acceleration: Acceleration(
-                        game_config.crab_max_speed
-                            / game_config.crab_seconds_to_max_speed,
+                max_speed: MaxSpeed(game_config.crab_max_speed),
+                acceleration: Acceleration(
+                    game_config.crab_max_speed
+                        / game_config.crab_seconds_to_max_speed,
+                ),
+                ..default()
+            },
+            PbrBundle {
+                mesh: cached_assets.crab_mesh.clone(),
+                material: material_handle,
+                transform: Transform::from_matrix(
+                    Mat4::from_scale_rotation_translation(
+                        Vec3::splat(f32::EPSILON),
+                        Quat::IDENTITY,
+                        GOAL_CRAB_START_POSITION,
                     ),
-                    ..default()
-                },
-                PbrBundle {
-                    mesh: cached_assets.crab_mesh.clone(),
-                    material: material_handle,
-                    transform: Transform::from_matrix(
-                        Mat4::from_scale_rotation_translation(
-                            Vec3::splat(f32::EPSILON),
-                            Quat::IDENTITY,
-                            GOAL_CRAB_START_POSITION,
-                        ),
-                    ),
+                ),
 
-                    ..default()
-                },
-            ));
+                ..default()
+            },
+        ));
 
-            if crab_config.player == PlayerConfig::AI {
-                crab.insert(AiPlayer);
-            } else {
-                crab.insert(KeyboardPlayer);
-            }
-        })
-        .id();
+        if crab_config.player == PlayerConfig::AI {
+            crab.insert(AiPlayer);
+        } else {
+            crab.insert(KeyboardPlayer);
+        }
+    });
 
-    info!("Crab({:?}): Spawned", crab);
+    info!("Crab({:?}): Spawned", goal_side);
 }

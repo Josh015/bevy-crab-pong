@@ -3,6 +3,8 @@ use serde::Deserialize;
 
 use crate::{ball::BALL_RADIUS, goal::GOAL_HALF_WIDTH};
 
+pub const SIDES: [Side; 4] = [Side::Bottom, Side::Right, Side::Top, Side::Left];
+
 /// Assigns an entity to a given side of the beach.
 #[derive(Clone, Component, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
 pub enum Side {
