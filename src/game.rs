@@ -51,7 +51,7 @@ fn reset_teams_and_hit_points(
             *side,
             Competitor {
                 team: crab.team,
-                hit_points: crab.hit_points,
+                hit_points: u8::from(crab.hit_points),
             },
         );
     }

@@ -57,7 +57,7 @@ fn initialize_beach_data(
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
 
     commands.insert_resource(Beach {
-        max_ball_count: game_config.modes[game.mode].max_ball_count,
+        max_ball_count: u8::from(game_config.modes[game.mode].max_ball_count),
     });
 }
 

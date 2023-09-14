@@ -1,3 +1,5 @@
+use std::num::NonZeroU8;
+
 use bevy::{
     prelude::*,
     reflect::{TypePath, TypeUuid},
@@ -25,7 +27,7 @@ pub struct GameConfig {
 #[derive(Debug, Deserialize)]
 pub struct ModeConfig {
     pub name: String,
-    pub max_ball_count: u8,
+    pub max_ball_count: NonZeroU8,
     pub competitors: HashMap<Side, CompetitorConfig>,
 }
 
@@ -34,7 +36,7 @@ pub struct CompetitorConfig {
     pub color: String,
     pub team: usize,
     pub player: PlayerConfig,
-    pub hit_points: u8,
+    pub hit_points: NonZeroU8,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
