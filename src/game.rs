@@ -37,7 +37,7 @@ impl Plugin for GamePlugin {
             .add_systems(
                 PostUpdate,
                 (
-                    decrement_competitor_hp_when_its_goal_is_scored,
+                    decrement_competitor_hp_when_their_goal_gets_scored,
                     check_for_game_over_and_winner,
                 )
                     .chain()
@@ -68,7 +68,7 @@ fn reset_competitors(
     }
 }
 
-fn decrement_competitor_hp_when_its_goal_is_scored(
+fn decrement_competitor_hp_when_their_goal_gets_scored(
     mut goal_scored_events: EventReader<GoalScoredEvent>,
     mut goal_eliminated_events: EventWriter<GoalEliminatedEvent>,
     mut competitors: ResMut<Competitors>,
