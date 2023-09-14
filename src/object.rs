@@ -5,10 +5,10 @@ use crate::{
     assets::{CachedAssets, GameAssets, GameConfig, PlayerConfig},
     beach::Beach,
     collider::Collider,
-    crab::{AiPlayer, Crab, KeyboardPlayer, CRAB_SCALE},
+    crab::{AiPlayer, Crab, KeyboardPlayer, CRAB_SCALE, CRAB_START_POSITION},
     fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
     game::GameMode,
-    goal::{Goal, GOAL_CRAB_START_POSITION},
+    goal::Goal,
     movement::{
         Acceleration, AccelerationBundle, Heading, MaxSpeed, VelocityBundle,
     },
@@ -142,7 +142,7 @@ fn spawn_crab_on_side(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(f32::EPSILON),
                         Quat::IDENTITY,
-                        GOAL_CRAB_START_POSITION,
+                        CRAB_START_POSITION,
                     ),
                 ),
 

@@ -1,13 +1,12 @@
 use bevy::prelude::*;
+use std::ops::RangeInclusive;
 
 use crate::{
     ball::Ball,
+    barrier::BARRIER_RADIUS,
     collider::{Collider, ColliderSet},
     debug_mode::DebugModeSet,
-    goal::{
-        GOAL_CRAB_MAX_POSITION_RANGE, GOAL_CRAB_MAX_POSITION_X,
-        GOAL_CRAB_START_POSITION,
-    },
+    goal::GOAL_HALF_WIDTH,
     movement::{
         Force, Heading, Movement, MovementSet, Speed, StoppingDistance,
     },
@@ -21,6 +20,11 @@ pub const CRAB_HALF_WIDTH: f32 = 0.5 * CRAB_WIDTH;
 pub const CRAB_HALF_DEPTH: f32 = 0.5 * CRAB_DEPTH;
 pub const CRAB_SCALE: Vec3 = Vec3::new(CRAB_WIDTH, CRAB_DEPTH, CRAB_DEPTH);
 pub const CRAB_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.5;
+pub const CRAB_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
+pub const CRAB_POSITION_X_MAX: f32 =
+    GOAL_HALF_WIDTH - BARRIER_RADIUS - CRAB_HALF_WIDTH;
+pub const CRAB_POSITION_X_MAX_RANGE: RangeInclusive<f32> =
+    -CRAB_POSITION_X_MAX..=CRAB_POSITION_X_MAX;
 
 /// Makes a crab entity that can deflect balls and move sideways inside a goal.
 #[derive(Component, Debug)]
@@ -54,7 +58,7 @@ impl Plugin for CrabPlugin {
                     .chain()
                     .before(MovementSet)
                     .run_if(in_state(GameState::Playing)),
-                restrict_crabs_to_open_space_in_their_goals.after(MovementSet),
+                restrict_crab_movement_range.after(MovementSet),
             ),
         )
         .add_systems(
@@ -150,7 +154,7 @@ fn move_ai_crabs_toward_their_targeted_balls(
 ) {
     for (entity, side, transform, stopping_distance, target) in &crabs_query {
         // Use the ball's goal position or default to the center of the goal.
-        let mut target_goal_position = GOAL_CRAB_START_POSITION.x;
+        let mut target_goal_position = CRAB_START_POSITION.x;
 
         if let Some(target) = target {
             if let Ok(ball_transform) = balls_query.get(target.0) {
@@ -179,7 +183,7 @@ fn move_ai_crabs_toward_their_targeted_balls(
     }
 }
 
-fn restrict_crabs_to_open_space_in_their_goals(
+fn restrict_crab_movement_range(
     mut commands: Commands,
     mut query: Query<
         (Entity, &mut Transform, &mut Speed, &mut StoppingDistance),
@@ -189,11 +193,11 @@ fn restrict_crabs_to_open_space_in_their_goals(
     for (entity, mut transform, mut speed, mut stopping_distance) in &mut query
     {
         // Limit crab to bounds of the goal.
-        if !GOAL_CRAB_MAX_POSITION_RANGE.contains(&transform.translation.x) {
+        if !CRAB_POSITION_X_MAX_RANGE.contains(&transform.translation.x) {
             transform.translation.x = transform
                 .translation
                 .x
-                .clamp(-GOAL_CRAB_MAX_POSITION_X, GOAL_CRAB_MAX_POSITION_X);
+                .clamp(-CRAB_POSITION_X_MAX, CRAB_POSITION_X_MAX);
             speed.0 = 0.0;
             commands.entity(entity).remove::<Force>();
         }
@@ -201,9 +205,9 @@ fn restrict_crabs_to_open_space_in_their_goals(
         // Limit stopping distance to the bounds of the goal.
         let stopped_position = transform.translation.x + stopping_distance.0;
 
-        if !GOAL_CRAB_MAX_POSITION_RANGE.contains(&stopped_position) {
+        if !CRAB_POSITION_X_MAX_RANGE.contains(&stopped_position) {
             stopping_distance.0 = stopped_position.signum()
-                * GOAL_CRAB_MAX_POSITION_X
+                * CRAB_POSITION_X_MAX
                 - transform.translation.x;
         }
     }

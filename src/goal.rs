@@ -1,12 +1,10 @@
 use bevy::prelude::*;
 use spew::prelude::*;
-use std::ops::RangeInclusive;
 
 use crate::{
     ball::Ball,
-    barrier::BARRIER_RADIUS,
     collider::{Collider, ColliderSet},
-    crab::{Crab, CRAB_HALF_DEPTH, CRAB_HALF_WIDTH},
+    crab::{Crab, CRAB_HALF_DEPTH},
     fade::Fade,
     movement::Movement,
     object::Object,
@@ -16,11 +14,6 @@ use crate::{
 
 pub const GOAL_WIDTH: f32 = 1.0;
 pub const GOAL_HALF_WIDTH: f32 = 0.5 * GOAL_WIDTH;
-pub const GOAL_CRAB_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
-pub const GOAL_CRAB_MAX_POSITION_X: f32 =
-    GOAL_HALF_WIDTH - BARRIER_RADIUS - CRAB_HALF_WIDTH;
-pub const GOAL_CRAB_MAX_POSITION_RANGE: RangeInclusive<f32> =
-    -GOAL_CRAB_MAX_POSITION_X..=GOAL_CRAB_MAX_POSITION_X;
 
 /// Marks a goal entity so that crabs and walls can use it as a parent, and
 /// so balls can score against it.
