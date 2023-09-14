@@ -5,7 +5,6 @@ pub mod ball;
 pub mod barrier;
 pub mod beach;
 pub mod collider;
-pub mod config;
 pub mod crab;
 pub mod debug_mode;
 pub mod fade;

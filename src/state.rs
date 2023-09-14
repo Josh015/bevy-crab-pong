@@ -3,8 +3,7 @@ use bevy_asset_loader::prelude::*;
 use bevy_common_assets::ron::RonAssetPlugin;
 
 use crate::{
-    assets::GameAssets,
-    config::GameConfig,
+    assets::{GameAssets, GameConfig},
     fade::{Fade, FadeAnimation},
 };
 

@@ -1,8 +1,7 @@
 use bevy::{app::AppExit, prelude::*};
 
 use crate::{
-    assets::GameAssets,
-    config::GameConfig,
+    assets::{GameAssets, GameConfig},
     debug_mode::IsDebuggingMode,
     game::Game,
     state::{AppState, ForStates},

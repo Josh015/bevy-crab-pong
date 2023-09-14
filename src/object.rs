@@ -3,11 +3,10 @@ use rand::{rngs::SmallRng, Rng, SeedableRng};
 use spew::prelude::*;
 
 use crate::{
-    assets::{CachedAssets, GameAssets},
+    assets::{CachedAssets, GameAssets, GameConfig, PlayerConfig},
     ball::{Ball, BALL_DIAMETER},
     beach::{Beach, BEACH_BALL_SPAWNER_POSITION},
     collider::Collider,
-    config::{GameConfig, PlayerConfig},
     crab::{AiPlayer, Crab, KeyboardPlayer, CRAB_SCALE},
     fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
     game::Game,

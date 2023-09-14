@@ -2,11 +2,10 @@ use bevy::prelude::*;
 use spew::prelude::{SpawnEvent, SpewSystemSet};
 
 use crate::{
-    assets::GameAssets,
+    assets::{GameAssets, GameConfig},
     ball::{Ball, BALL_HEIGHT},
     barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT},
     collider::Collider,
-    config::GameConfig,
     game::Game,
     goal::{Goal, GOAL_HALF_WIDTH, GOAL_WIDTH},
     movement::Movement,

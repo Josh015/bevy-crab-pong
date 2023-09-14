@@ -1,7 +1,9 @@
 use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
-    assets::GameAssets, config::GameConfig, goal::GoalScoredEvent, side::Side,
+    assets::{GameAssets, GameConfig},
+    goal::GoalScoredEvent,
+    side::Side,
     state::AppState,
 };
 
