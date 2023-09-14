@@ -41,8 +41,7 @@ impl Plugin for CrabPlugin {
             PostUpdate,
             (
                 crab_and_ball_collisions.in_set(ColliderSet),
-                (display_crab_predicted_stop_position_gizmos,)
-                    .in_set(DebugModeSet),
+                display_predicted_stop_position_gizmos.in_set(DebugModeSet),
             ),
         );
     }
@@ -117,7 +116,7 @@ fn crab_and_ball_collisions(
     }
 }
 
-fn display_crab_predicted_stop_position_gizmos(
+fn display_predicted_stop_position_gizmos(
     crabs_query: Query<
         (&GlobalTransform, &Heading, &StoppingDistance),
         (With<Crab>, With<Movement>),

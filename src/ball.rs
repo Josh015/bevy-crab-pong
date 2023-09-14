@@ -23,7 +23,7 @@ impl Plugin for BallPlugin {
             PostUpdate,
             (
                 ball_and_ball_collisions.in_set(ColliderSet),
-                display_ball_movement_direction_gizmos.in_set(DebugModeSet),
+                display_movement_direction_gizmos.in_set(DebugModeSet),
             ),
         );
     }
@@ -72,7 +72,7 @@ fn ball_and_ball_collisions(
     }
 }
 
-fn display_ball_movement_direction_gizmos(
+fn display_movement_direction_gizmos(
     balls_query: Query<
         (&GlobalTransform, &Heading),
         (With<Ball>, With<Movement>),

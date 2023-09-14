@@ -40,7 +40,7 @@ impl Plugin for AiPlugin {
             PostUpdate,
             ((
                 display_crab_to_ball_targeting_gizmos,
-                display_ai_crab_ideal_hit_area_gizmos,
+                display_crab_ideal_hit_area_gizmos,
             )
                 .in_set(DebugModeSet),),
         );
@@ -149,7 +149,7 @@ fn display_crab_to_ball_targeting_gizmos(
     }
 }
 
-fn display_ai_crab_ideal_hit_area_gizmos(
+fn display_crab_ideal_hit_area_gizmos(
     crabs_query: Query<
         &GlobalTransform,
         (With<Crab>, With<PlayerAi>, With<Movement>),
