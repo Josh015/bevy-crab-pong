@@ -11,7 +11,7 @@ use crate::{
     game::CompetitorEliminatedEvent,
     movement::Movement,
     object::Object,
-    side::{Side, SIDES},
+    side::Side,
     wall::Wall,
 };
 
@@ -77,15 +77,16 @@ fn check_if_any_balls_have_scored_in_any_goals(
         (Entity, &GlobalTransform),
         (With<Ball>, With<Movement>, With<Collider>),
     >,
+    crabs_query: Query<&Side, (With<Crab>, With<Movement>, With<Collider>)>,
 ) {
-    // If a ball passes a goal's crab then despawn it and raise an event.
+    // If a ball passes a goal's alive crab then despawn it and raise an event.
     for (ball_entity, global_transform) in &balls_query {
-        for side in SIDES {
+        for side in &crabs_query {
             let ball_distance = side.distance_to_ball(global_transform);
 
             if ball_distance <= -CRAB_HALF_DEPTH {
                 commands.entity(ball_entity).insert(Fade::out_default());
-                goal_scored_events.send(GoalScoredEvent(side));
+                goal_scored_events.send(GoalScoredEvent(*side));
                 info!("Ball({:?}): Scored Goal({:?})", ball_entity, side);
             }
         }
