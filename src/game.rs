@@ -2,14 +2,10 @@ use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
     assets::{GameAssets, GameConfig},
-    goal::GoalScoredEvent,
+    goal::{GoalEliminatedEvent, GoalScoredEvent},
     side::Side,
     state::GameState,
 };
-
-/// Signals a goal being eliminated from the game.
-#[derive(Clone, Component, Debug, Event)]
-pub struct CompetitorEliminatedEvent(pub Side);
 
 #[derive(Debug, Default)]
 pub struct Competitor {
@@ -30,7 +26,6 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Game>()
-            .add_event::<GoalScoredEvent>()
             .add_systems(OnExit(GameState::Loading), reset_competitors)
             .add_systems(OnExit(GameState::StartMenu), reset_competitors)
             .add_systems(
@@ -68,7 +63,7 @@ fn reset_competitors(
 
 fn decrement_competitor_hp_when_its_goal_is_scored(
     mut goal_scored_events: EventReader<GoalScoredEvent>,
-    mut competitor_eliminated_events: EventWriter<CompetitorEliminatedEvent>,
+    mut goal_eliminated_events: EventWriter<GoalEliminatedEvent>,
     mut game: ResMut<Game>,
 ) {
     // Decrement a competitor's HP and potentially eliminate its goal.
@@ -80,18 +75,18 @@ fn decrement_competitor_hp_when_its_goal_is_scored(
         competitor.hit_points = competitor.hit_points.saturating_sub(1);
 
         if competitor.hit_points == 0 {
-            competitor_eliminated_events.send(CompetitorEliminatedEvent(*side));
+            goal_eliminated_events.send(GoalEliminatedEvent(*side));
         }
     }
 }
 
 fn check_for_winning_team(
     mut next_game_state: ResMut<NextState<GameState>>,
-    mut competitor_eliminated_events: EventReader<CompetitorEliminatedEvent>,
+    mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
     mut game: ResMut<Game>,
 ) {
     // Check if only one team's competitors still have HP.
-    for CompetitorEliminatedEvent(_) in competitor_eliminated_events.iter() {
+    for GoalEliminatedEvent(_) in goal_eliminated_events.iter() {
         let winning_team = {
             let survivor = game
                 .competitors
