@@ -7,8 +7,9 @@ use crate::{
     state::GameState,
 };
 
+/// A member of a competing team.
 #[derive(Debug, Default)]
-pub struct Competitor {
+pub struct TeamMember {
     pub team: usize,
     pub hit_points: u8,
 }
@@ -17,8 +18,11 @@ pub struct Competitor {
 #[derive(Debug, Default, Resource)]
 pub struct Game {
     pub mode: usize,
-    pub competitors: HashMap<Side, Competitor>,
 }
+
+/// All the competitors in the current game.
+#[derive(Debug, Default, Resource)]
+pub struct Competitors(pub HashMap<Side, TeamMember>);
 
 /// The team that won the previous round.
 #[derive(Debug, Default, Resource)]
@@ -29,6 +33,7 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Game>()
+            .init_resource::<Competitors>()
             .add_systems(OnExit(GameState::Loading), reset_competitors)
             .add_systems(OnExit(GameState::StartMenu), reset_competitors)
             .add_systems(
@@ -44,19 +49,20 @@ impl Plugin for GamePlugin {
 }
 
 fn reset_competitors(
-    mut game: ResMut<Game>,
+    mut competitors: ResMut<Competitors>,
+    game: Res<Game>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
     let mode = &game_config.modes[game.mode];
 
-    game.competitors.clear();
+    competitors.0.clear();
 
     for (side, competitor) in &mode.competitors {
-        game.competitors.insert(
+        competitors.0.insert(
             *side,
-            Competitor {
+            TeamMember {
                 team: competitor.team,
                 hit_points: u8::from(competitor.hit_points),
             },
@@ -67,11 +73,11 @@ fn reset_competitors(
 fn decrement_competitor_hp_when_its_goal_is_scored(
     mut goal_scored_events: EventReader<GoalScoredEvent>,
     mut goal_eliminated_events: EventWriter<GoalEliminatedEvent>,
-    mut game: ResMut<Game>,
+    mut competitors: ResMut<Competitors>,
 ) {
     // Decrement a competitor's HP and potentially eliminate its goal.
     for GoalScoredEvent(side) in goal_scored_events.iter() {
-        let Some(competitor) = game.competitors.get_mut(side) else {
+        let Some(competitor) = competitors.0.get_mut(side) else {
             continue;
         };
 
@@ -87,19 +93,19 @@ fn check_for_winning_team(
     mut commands: Commands,
     mut next_game_state: ResMut<NextState<GameState>>,
     mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
-    game: Res<Game>,
+    competitors: Res<Competitors>,
 ) {
     // Check if only one team's competitors still have HP.
     for GoalEliminatedEvent(_) in goal_eliminated_events.iter() {
-        let Some((_, survivor)) = game
-            .competitors
+        let Some((_, survivor)) = competitors
+            .0
             .iter()
             .find(|(_, competitor)| competitor.hit_points > 0)
         else {
             continue;
         };
 
-        let is_winner = game.competitors.iter().all(|(_, competitor)| {
+        let is_winner = competitors.0.iter().all(|(_, competitor)| {
             competitor.team == survivor.team || competitor.hit_points == 0
         });
 

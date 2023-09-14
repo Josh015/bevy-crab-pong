@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{assets::GameAssets, game::Game, side::Side, state::GameState};
+use crate::{
+    assets::GameAssets, game::Competitors, side::Side, state::GameState,
+};
 
 /// Marks a [`Text`] entity to display the HP for the associated [`HitPoints`].
 #[derive(Component, Debug)]
@@ -89,11 +91,11 @@ fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
 }
 
 fn update_goal_hit_points_ui(
-    game: Res<Game>,
+    competitors: Res<Competitors>,
     mut hp_ui_query: Query<(&mut Text, &Side), With<HitPointsUi>>,
 ) {
     for (mut text, side) in &mut hp_ui_query {
-        let competitor = &game.competitors[side];
+        let competitor = &competitors.0[side];
 
         text.sections[0].value = competitor.hit_points.to_string();
     }
