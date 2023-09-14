@@ -17,10 +17,10 @@ G to enable debugging.
   ],
   modes: [
     (
-      name: "1xKeyboard vs 3xAI",
+      name: "1xInput vs 3xAI",
       ball_count: 2,
       competitors: {
-        Bottom: (color: "FF0000", team: 0, player: Keyboard, hit_points: 5),
+        Bottom: (color: "FF0000", team: 0, player: Input, hit_points: 5),
         Right: (color: "0000FF", team: 1, player: AI, hit_points: 5),
         Top: (color: "FFA600", team: 1, player: AI, hit_points: 5),
         Left: (color: "7F007F", team: 1, player: AI, hit_points: 5),

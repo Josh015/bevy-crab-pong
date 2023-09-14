@@ -2,16 +2,17 @@ use bevy::prelude::*;
 use spew::prelude::*;
 
 use crate::{
-    assets::{CachedAssets, GameAssets, GameConfig, PlayerConfig},
+    assets::{CachedAssets, GameAssets, GameConfig, Player},
     beach::Beach,
     collider::Collider,
-    crab::{AiPlayer, Crab, KeyboardPlayer, CRAB_SCALE, CRAB_START_POSITION},
+    crab::{Crab, CRAB_SCALE, CRAB_START_POSITION},
     fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
     game::GameMode,
     goal::Goal,
     movement::{
         Acceleration, AccelerationBundle, Heading, MaxSpeed, VelocityBundle,
     },
+    player::{ai::PlayerAi, input::PlayerInput},
     side::Side,
     wall::{Wall, WALL_HEIGHT, WALL_SCALE},
 };
@@ -150,10 +151,10 @@ fn spawn_crab_on_side(
             },
         ));
 
-        if crab_config.player == PlayerConfig::AI {
-            crab.insert(AiPlayer);
+        if crab_config.player == Player::AI {
+            crab.insert(PlayerAi);
         } else {
-            crab.insert(KeyboardPlayer);
+            crab.insert(PlayerInput);
         }
     });
 

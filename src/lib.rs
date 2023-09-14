@@ -1,4 +1,4 @@
-use bevy::prelude::{App, Plugin};
+use bevy::prelude::*;
 
 pub mod assets;
 pub mod ball;
@@ -15,6 +15,7 @@ pub mod menu;
 pub mod movement;
 pub mod object;
 pub mod ocean;
+pub mod player;
 pub mod side;
 pub mod state;
 pub mod swaying_camera;
@@ -43,6 +44,7 @@ impl Plugin for GamePlugin {
             ocean::OceanPlugin,
         ))
         .add_plugins((
+            player::PlayerPlugin,
             state::StatePlugin,
             swaying_camera::SwayingCameraPlugin,
             wall::WallPlugin,

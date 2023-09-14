@@ -35,13 +35,13 @@ pub struct ModeConfig {
 pub struct CompetitorConfig {
     pub color: String,
     pub team: usize,
-    pub player: PlayerConfig,
+    pub player: Player,
     pub hit_points: NonZeroU8,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
-pub enum PlayerConfig {
-    Keyboard,
+pub enum Player {
+    Input,
     AI,
 }
 
