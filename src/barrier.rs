@@ -36,13 +36,13 @@ fn barrier_and_ball_collisions(
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
         for barrier_transform in &barriers_query {
-            let ball_to_barrier_distance = ball_transform
-                .translation()
-                .distance(barrier_transform.translation());
+            let ball_translation = ball_transform.translation();
+            let barrier_translation = barrier_transform.translation();
+            let ball_to_barrier_distance =
+                ball_translation.distance(barrier_translation);
 
             // Prevent balls from deflecting through the floor.
-            let mut axis =
-                barrier_transform.translation() - ball_transform.translation();
+            let mut axis = barrier_translation - ball_translation;
 
             axis.y = 0.0;
             axis = axis.normalize();
