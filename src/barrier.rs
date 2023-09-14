@@ -32,23 +32,23 @@ fn barrier_and_ball_collisions(
         (Entity, &GlobalTransform, &Heading),
         (With<Ball>, With<Movement>, With<Collider>),
     >,
-    barriers_query: Query<&GlobalTransform, (With<Barrier>, With<Collider>)>,
+    barriers_query: Query<
+        (Entity, &GlobalTransform),
+        (With<Barrier>, With<Collider>),
+    >,
 ) {
-    for (entity, ball_transform, ball_heading) in &balls_query {
-        for barrier_transform in &barriers_query {
-            let ball_translation = ball_transform.translation();
-            let barrier_translation = barrier_transform.translation();
-            let ball_to_barrier_distance =
-                ball_translation.distance(barrier_translation);
-
+    for (ball_entity, ball_transform, ball_heading) in &balls_query {
+        for (barrier_entity, barrier_transform) in &barriers_query {
             // Prevent balls from deflecting through the floor.
-            let mut axis = barrier_translation - ball_translation;
+            let delta =
+                barrier_transform.translation() - ball_transform.translation();
+            let mut axis = delta;
 
             axis.y = 0.0;
             axis = axis.normalize();
 
             // Check that the ball is touching the barrier and facing it.
-            if ball_to_barrier_distance > BARRIER_RADIUS + BALL_RADIUS
+            if delta.length() > BARRIER_RADIUS + BALL_RADIUS
                 || ball_heading.0.dot(axis) <= 0.0
             {
                 continue;
@@ -56,10 +56,13 @@ fn barrier_and_ball_collisions(
 
             // Deflect the ball away from the barrier.
             commands
-                .entity(entity)
+                .entity(ball_entity)
                 .insert(Heading(reflect(ball_heading.0, axis)));
 
-            info!("Ball({:?}): Collided Barrier", entity);
+            info!(
+                "Ball({:?}): Collided Barrier({:?})",
+                ball_entity, barrier_entity
+            );
             break;
         }
     }

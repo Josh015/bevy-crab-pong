@@ -40,16 +40,14 @@ fn ball_and_ball_collisions(
         balls_query.iter_combinations()
     {
         // Check that both balls are close enough to touch.
-        let translation1 = transform1.translation();
-        let translation2 = transform2.translation();
-        let b1_to_b2_vector = translation2 - translation1;
+        let delta = transform2.translation() - transform1.translation();
 
-        if b1_to_b2_vector.length() > BALL_RADIUS + BALL_RADIUS {
+        if delta.length() > BALL_RADIUS + BALL_RADIUS {
             continue;
         }
 
         // Deflect both balls away from each other.
-        let axis1 = b1_to_b2_vector.normalize();
+        let axis1 = delta.normalize();
         let axis2 = -axis1;
         let is_b1_facing_b2 = heading1.0.dot(axis1) > 0.0;
         let is_b2_facing_b1 = heading2.0.dot(axis2) > 0.0;
