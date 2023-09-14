@@ -6,6 +6,7 @@ use crate::{
     collider::{Collider, ColliderSet},
     crab::{Crab, CRAB_HALF_DEPTH},
     fade::Fade,
+    game::GameSet,
     movement::Movement,
     object::Object,
     side::Side,
@@ -41,10 +42,10 @@ impl Plugin for GoalPlugin {
             .add_systems(
                 PostUpdate,
                 (
-                    check_if_any_balls_have_scored_in_any_goals,
-                    block_eliminated_goals_with_walls,
-                )
-                    .after(ColliderSet),
+                    check_if_any_balls_have_scored_in_any_goals
+                        .after(ColliderSet),
+                    block_eliminated_goals_with_walls.after(GameSet),
+                ),
             );
     }
 }

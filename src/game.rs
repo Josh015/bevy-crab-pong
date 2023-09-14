@@ -2,6 +2,7 @@ use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
     assets::{GameAssets, GameConfig},
+    collider::ColliderSet,
     goal::{GoalEliminatedEvent, GoalScoredEvent},
     side::Side,
     state::GameState,
@@ -26,12 +27,17 @@ pub struct Competitors(pub HashMap<Side, TeamMember>);
 #[derive(Debug, Default, Resource)]
 pub struct WinningTeam(pub usize);
 
+/// Systems that must run game rules at the end.
+#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
+pub struct GameSet;
+
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<GameMode>()
             .init_resource::<Competitors>()
+            .configure_set(PostUpdate, GameSet.after(ColliderSet))
             .add_systems(OnExit(GameState::Loading), reset_competitors)
             .add_systems(OnExit(GameState::StartMenu), reset_competitors)
             .add_systems(
@@ -41,7 +47,7 @@ impl Plugin for GamePlugin {
                     check_for_game_over_and_winner,
                 )
                     .chain()
-                    .run_if(in_state(GameState::Playing)),
+                    .in_set(GameSet),
             );
     }
 }

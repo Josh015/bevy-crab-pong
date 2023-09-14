@@ -48,9 +48,9 @@ G to enable debugging.
     ),
     (
       name: "This game is RIGGED!",
-      ball_count: 2,
+      ball_count: 3,
       competitors: {
-        Bottom: (color: "FF0000", team: 0, player: AI, hit_points: 25),
+        Bottom: (color: "FF0000", team: 0, player: AI, hit_points: 50),
         Right: (color: "0000FF", team: 1, player: AI, hit_points: 1),
         Top: (color: "FFA600", team: 1, player: AI, hit_points: 1),
         Left: (color: "7F007F", team: 1, player: AI, hit_points: 1),

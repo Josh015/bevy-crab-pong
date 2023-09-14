@@ -5,6 +5,7 @@ use crate::{movement::MovementSet, state::GameState};
 pub mod ai;
 pub mod input;
 
+/// Systems that must control crabs.
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct PlayerSet;
 
