@@ -1,29 +1,24 @@
 use bevy::prelude::*;
-use rand::{rngs::SmallRng, Rng, SeedableRng};
 use spew::prelude::*;
 
 use crate::{
     assets::{CachedAssets, GameAssets, GameConfig, PlayerConfig},
-    ball::{Ball, BALL_DIAMETER},
-    beach::{Beach, BEACH_BALL_SPAWNER_POSITION},
+    beach::Beach,
     collider::Collider,
     crab::{AiPlayer, Crab, KeyboardPlayer, CRAB_SCALE},
     fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
     game::GameMode,
     goal::{Goal, GOAL_CRAB_START_POSITION},
     movement::{
-        Acceleration, AccelerationBundle, Heading, MaxSpeed, Speed,
-        VelocityBundle,
+        Acceleration, AccelerationBundle, Heading, MaxSpeed, VelocityBundle,
     },
     side::Side,
-    state::{ForStates, GameState},
     wall::{Wall, WALL_HEIGHT, WALL_SCALE},
 };
 
 /// Objects that can be spawned via Spew.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Object {
-    Ball,
     Wall,
     Crab,
 }
@@ -33,56 +28,12 @@ pub struct ObjectPlugin;
 impl Plugin for ObjectPlugin {
     fn build(&self, app: &mut App) {
         app.add_spawners((
-            (Object::Ball, spawn_ball),
             (Object::Wall, spawn_wall_on_side),
             (Object::Crab, spawn_crab_on_side),
         ))
         .add_plugins(SpewPlugin::<Object>::default())
         .add_plugins(SpewPlugin::<Object, Side>::default());
     }
-}
-
-fn spawn_ball(
-    game_assets: Res<GameAssets>,
-    game_configs: Res<Assets<GameConfig>>,
-    cached_assets: Res<CachedAssets>,
-    mut commands: Commands,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    // Spawn a ball that will launch it in a random direction.
-    let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let mut rng = SmallRng::from_entropy();
-    let angle = rng.gen_range(0.0..std::f32::consts::TAU);
-    let ball = commands
-        .spawn((
-            Ball,
-            Collider,
-            FadeBundle::default(),
-            ForStates(vec![GameState::Playing, GameState::Paused]),
-            VelocityBundle {
-                heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
-                speed: Speed(game_config.ball_speed),
-            },
-            PbrBundle {
-                mesh: cached_assets.ball_mesh.clone(),
-                material: materials.add(StandardMaterial {
-                    alpha_mode: AlphaMode::Blend,
-                    base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),
-                    ..default()
-                }),
-                transform: Transform::from_matrix(
-                    Mat4::from_scale_rotation_translation(
-                        Vec3::splat(BALL_DIAMETER),
-                        Quat::IDENTITY,
-                        BEACH_BALL_SPAWNER_POSITION,
-                    ),
-                ),
-                ..default()
-            },
-        ))
-        .id();
-
-    info!("Ball({:?}): Spawned", ball);
 }
 
 fn spawn_wall_on_side(
