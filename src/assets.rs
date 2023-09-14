@@ -27,7 +27,7 @@ pub struct GameConfig {
 #[derive(Debug, Deserialize)]
 pub struct ModeConfig {
     pub name: String,
-    pub max_ball_count: NonZeroU8,
+    pub ball_count: NonZeroU8,
     pub competitors: HashMap<Side, CompetitorConfig>,
 }
 

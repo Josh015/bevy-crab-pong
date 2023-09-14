@@ -18,7 +18,7 @@ G to enable debugging.
   modes: [
     (
       name: "1xKeyboard vs 3xAI",
-      max_ball_count: 2,
+      ball_count: 2,
       competitors: {
         Bottom: (color: "FF0000", team: 0, player: Keyboard, hit_points: 5),
         Right: (color: "0000FF", team: 1, player: AI, hit_points: 5),
@@ -28,7 +28,7 @@ G to enable debugging.
     ),
     (
       name: "1xAI vs 3xAI",
-      max_ball_count: 2,
+      ball_count: 2,
       competitors: {
         Bottom: (color: "FF0000", team: 0, player: AI, hit_points: 5),
         Right: (color: "0000FF", team: 1, player: AI, hit_points: 5),
@@ -38,7 +38,7 @@ G to enable debugging.
     ),
     (
       name: "2xAI vs 2xAI",
-      max_ball_count: 2,
+      ball_count: 2,
       competitors: {
         Bottom: (color: "FF0000", team: 0, player: AI, hit_points: 5),
         Right: (color: "0000FF", team: 0, player: AI, hit_points: 5),
@@ -48,7 +48,7 @@ G to enable debugging.
     ),
     (
       name: "This game is RIGGED!",
-      max_ball_count: 2,
+      ball_count: 2,
       competitors: {
         Bottom: (color: "FF0000", team: 0, player: AI, hit_points: 25),
         Right: (color: "0000FF", team: 1, player: AI, hit_points: 1),
@@ -58,7 +58,7 @@ G to enable debugging.
     ),
     (
       name: "Multi-Ball Madness",
-      max_ball_count: 10,
+      ball_count: 10,
       competitors: {
         Bottom: (color: "FF0000", team: 0, player: AI, hit_points: 50),
         Right: (color: "0000FF", team: 0, player: AI, hit_points: 50),

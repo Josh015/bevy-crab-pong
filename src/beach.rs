@@ -28,7 +28,7 @@ pub const BEACH_BALL_SPAWNER_POSITION: Vec3 = Vec3::new(
 /// Global data related to the play area.
 #[derive(Debug, Default, Resource)]
 pub struct Beach {
-    max_ball_count: u8,
+    ball_count: u8,
 }
 
 pub struct BeachPlugin;
@@ -187,7 +187,7 @@ fn initialize_beach_data(
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
 
     commands.insert_resource(Beach {
-        max_ball_count: u8::from(game_config.modes[game_mode.0].max_ball_count),
+        ball_count: u8::from(game_config.modes[game_mode.0].ball_count),
     });
 }
 
@@ -210,7 +210,7 @@ fn spawn_balls_sequentially_as_needed(
     non_moving_balls_query: Query<Entity, (With<Ball>, Without<Movement>)>,
 ) {
     // Make balls spawn, fade in, and then launch one at a time.
-    if balls_query.iter().len() >= beach.max_ball_count as usize
+    if balls_query.iter().len() >= beach.ball_count as usize
         || non_moving_balls_query.iter().len() >= 1
     {
         return;
