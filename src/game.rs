@@ -38,7 +38,7 @@ impl Plugin for GamePlugin {
                 PostUpdate,
                 (
                     decrement_competitor_hp_when_its_goal_is_scored,
-                    check_for_winning_team,
+                    check_for_game_over_and_winner,
                 )
                     .chain()
                     .run_if(in_state(GameState::Playing)),
@@ -47,10 +47,10 @@ impl Plugin for GamePlugin {
 }
 
 fn reset_competitors(
-    mut competitors: ResMut<Competitors>,
     game_mode: Res<GameMode>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
+    mut competitors: ResMut<Competitors>,
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
     let mode = &game_config.modes[game_mode.0];
@@ -87,7 +87,7 @@ fn decrement_competitor_hp_when_its_goal_is_scored(
     }
 }
 
-fn check_for_winning_team(
+fn check_for_game_over_and_winner(
     mut commands: Commands,
     mut next_game_state: ResMut<NextState<GameState>>,
     mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,

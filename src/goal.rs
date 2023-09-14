@@ -43,7 +43,7 @@ impl Plugin for GoalPlugin {
             .add_event::<GoalEliminatedEvent>()
             .add_systems(
                 Update,
-                allow_only_one_crab_or_wall_in_a_goal.after(SpewSystemSet),
+                allow_only_one_crab_or_wall_per_goal.after(SpewSystemSet),
             )
             .add_systems(
                 PostUpdate,
@@ -56,7 +56,7 @@ impl Plugin for GoalPlugin {
     }
 }
 
-fn allow_only_one_crab_or_wall_in_a_goal(
+fn allow_only_one_crab_or_wall_per_goal(
     mut commands: Commands,
     new_query: Query<(Entity, &Parent), Or<(Added<Crab>, Added<Wall>)>>,
     old_query: Query<(Entity, &Parent), Or<(With<Crab>, With<Wall>)>>,

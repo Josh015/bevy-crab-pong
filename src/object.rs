@@ -151,6 +151,7 @@ fn spawn_crab_on_side(
     else {
         return;
     };
+
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
     let crab_config = &game_config.modes[game_mode.0].competitors[&goal_side];
     let material_handle = materials.add(StandardMaterial {
