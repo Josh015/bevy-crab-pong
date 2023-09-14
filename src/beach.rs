@@ -6,7 +6,7 @@ use crate::{
     ball::{Ball, BALL_HEIGHT},
     barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT},
     collider::Collider,
-    game::Game,
+    game::GameMode,
     goal::{Goal, GOAL_HALF_WIDTH, GOAL_WIDTH},
     movement::Movement,
     object::Object,
@@ -49,14 +49,14 @@ impl Plugin for BeachPlugin {
 
 fn initialize_beach_data(
     mut commands: Commands,
+    game_mode: Res<GameMode>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
-    game: Res<Game>,
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
 
     commands.insert_resource(Beach {
-        max_ball_count: u8::from(game_config.modes[game.mode].max_ball_count),
+        max_ball_count: u8::from(game_config.modes[game_mode.0].max_ball_count),
     });
 }
 

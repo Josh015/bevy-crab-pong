@@ -9,7 +9,7 @@ use crate::{
     collider::Collider,
     crab::{AiPlayer, Crab, KeyboardPlayer, CRAB_SCALE},
     fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
-    game::Game,
+    game::GameMode,
     goal::{Goal, GOAL_CRAB_START_POSITION},
     movement::{
         Acceleration, AccelerationBundle, Heading, MaxSpeed, Speed,
@@ -138,8 +138,8 @@ fn spawn_wall_on_side(
 
 fn spawn_crab_on_side(
     In(goal_side): In<Side>,
-    game: Res<Game>,
     cached_assets: Res<CachedAssets>,
+    game_mode: Res<GameMode>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
     mut commands: Commands,
@@ -152,7 +152,7 @@ fn spawn_crab_on_side(
         return;
     };
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let crab_config = &game_config.modes[game.mode].competitors[&goal_side];
+    let crab_config = &game_config.modes[game_mode.0].competitors[&goal_side];
     let material_handle = materials.add(StandardMaterial {
         base_color_texture: Some(game_assets.image_crab.clone()),
         base_color: Color::hex(&crab_config.color).unwrap(),

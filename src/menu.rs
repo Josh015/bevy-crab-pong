@@ -3,7 +3,7 @@ use bevy::{app::AppExit, prelude::*};
 use crate::{
     assets::{GameAssets, GameConfig},
     debug_mode::IsDebuggingMode,
-    game::{Game, WinningTeam},
+    game::{GameMode, WinningTeam},
     state::{ForStates, GameState},
 };
 
@@ -126,7 +126,7 @@ fn handle_menu_inputs(
     game_state: Res<State<GameState>>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
-    mut game: ResMut<Game>,
+    mut game_mode: ResMut<GameMode>,
     mut is_debugging_mode: ResMut<IsDebuggingMode>,
     mut next_game_state: ResMut<NextState<GameState>>,
     mut app_exit_events: EventWriter<AppExit>,
@@ -148,16 +148,16 @@ fn handle_menu_inputs(
                 next_game_state.set(GameState::Playing);
                 info!("New Game");
             } else if keyboard_input.just_pressed(KeyCode::Left)
-                && game.mode > 0
+                && game_mode.0 > 0
             {
-                game.mode -= 1;
-                let mode_name = &game_config.modes[game.mode].name;
+                game_mode.0 -= 1;
+                let mode_name = &game_config.modes[game_mode.0].name;
                 info!("Game Mode: {mode_name}");
             } else if keyboard_input.just_pressed(KeyCode::Right)
-                && game.mode < game_config.modes.len() - 1
+                && game_mode.0 < game_config.modes.len() - 1
             {
-                game.mode += 1;
-                let mode_name = &game_config.modes[game.mode].name;
+                game_mode.0 += 1;
+                let mode_name = &game_config.modes[game_mode.0].name;
                 info!("Game Mode: {mode_name}");
             }
         },

@@ -14,11 +14,9 @@ pub struct TeamMember {
     pub hit_points: u8,
 }
 
-/// Global game data.
+/// The currently selected game mode.
 #[derive(Debug, Default, Resource)]
-pub struct Game {
-    pub mode: usize,
-}
+pub struct GameMode(pub usize);
 
 /// All the competitors in the current game.
 #[derive(Debug, Default, Resource)]
@@ -32,7 +30,7 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Game>()
+        app.init_resource::<GameMode>()
             .init_resource::<Competitors>()
             .add_systems(OnExit(GameState::Loading), reset_competitors)
             .add_systems(OnExit(GameState::StartMenu), reset_competitors)
@@ -50,12 +48,12 @@ impl Plugin for GamePlugin {
 
 fn reset_competitors(
     mut competitors: ResMut<Competitors>,
-    game: Res<Game>,
+    game_mode: Res<GameMode>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let mode = &game_config.modes[game.mode];
+    let mode = &game_config.modes[game_mode.0];
 
     competitors.0.clear();
 
