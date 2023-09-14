@@ -104,7 +104,7 @@ fn crab_and_ball_collisions(
             // Reverse the ball's direction and rotate it outward based on how
             // far its position is from the crab's center.
             let rotation_away_from_center = Quat::from_rotation_y(
-                std::f32::consts::FRAC_PI_4 * (ball_to_crab / CRAB_HALF_WIDTH),
+                std::f32::consts::FRAC_PI_2 * (ball_to_crab / CRAB_HALF_WIDTH),
             );
             commands
                 .entity(entity)
