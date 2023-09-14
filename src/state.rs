@@ -30,6 +30,10 @@ impl GameState {
     }
 }
 
+/// Runs after everything has finished loading.
+#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
+pub struct LoadedSet;
+
 pub struct StatePlugin;
 
 impl Plugin for StatePlugin {
@@ -43,7 +47,11 @@ impl Plugin for StatePlugin {
             GameState::Loading,
             "game.assets.ron",
         )
-        .add_collection_to_loading_state::<_, GameAssets>(GameState::Loading);
+        .add_collection_to_loading_state::<_, GameAssets>(GameState::Loading)
+        .configure_set(
+            Update,
+            LoadedSet.run_if(not(in_state(GameState::Loading))),
+        );
 
         for state in GameState::variants() {
             app.add_systems(

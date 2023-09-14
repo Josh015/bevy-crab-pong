@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    beach::BEACH_CENTER_POINT, goal::GOAL_HALF_WIDTH, state::GameState,
+    beach::BEACH_CENTER_POINT, goal::GOAL_HALF_WIDTH, state::LoadedSet,
 };
 
 /// Marks a [`Camera3d`] entity to sway back and forth in a slow reciprocating
@@ -16,8 +16,7 @@ impl Plugin for SwayingCameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            make_camera_slowly_sway_back_and_forth
-                .run_if(not(in_state(GameState::Loading))),
+            make_camera_slowly_sway_back_and_forth.in_set(LoadedSet),
         );
     }
 }

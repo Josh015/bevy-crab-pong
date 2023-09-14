@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 
 use crate::{
-    assets::GameAssets, game::Competitors, side::Side, state::GameState,
+    assets::GameAssets,
+    game::Competitors,
+    side::Side,
+    state::{GameState, LoadedSet},
 };
 
 /// Marks a [`Text`] entity to display the HP for the associated [`HitPoints`].
@@ -15,9 +18,7 @@ impl Plugin for HudPlugin {
         app.add_systems(OnExit(GameState::Loading), spawn_hud_ui)
             .add_systems(
                 Update,
-                update_goal_hit_points_ui
-                    .chain()
-                    .run_if(not(in_state(GameState::Loading))),
+                update_goal_hit_points_ui.chain().in_set(LoadedSet),
             );
     }
 }

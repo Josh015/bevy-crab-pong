@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::ops::{Add, Sub};
 
-use crate::state::GameState;
+use crate::state::{GameState, LoadedSet};
 
 /// Marks an entity as able to move.
 #[derive(Component)]
@@ -62,7 +62,7 @@ impl Plugin for MovementPlugin {
         app.configure_set(
             Update,
             MovementSet
-                .run_if(not(in_state(GameState::Loading)))
+                .in_set(LoadedSet)
                 .run_if(not(in_state(GameState::Paused))),
         )
         .add_systems(

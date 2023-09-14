@@ -4,7 +4,7 @@ use crate::{
     assets::{GameAssets, GameConfig},
     debug_mode::IsDebuggingMode,
     game::{GameMode, WinningTeam},
-    state::{ForStates, GameState},
+    state::{ForStates, GameState, LoadedSet},
 };
 
 /// An event fired when spawning a message UI.
@@ -24,7 +24,7 @@ impl Plugin for MenuPlugin {
             .add_systems(
                 Update,
                 (handle_spawn_ui_message_event, handle_menu_inputs)
-                    .run_if(not(in_state(GameState::Loading))),
+                    .in_set(LoadedSet),
             );
     }
 }
