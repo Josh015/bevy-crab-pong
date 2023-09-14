@@ -47,6 +47,16 @@ G to enable debugging.
       },
     ),
     (
+      name: "This game is RIGGED!",
+      max_ball_count: 2,
+      competitors: {
+        Bottom: (color: "FF0000", team: 0, player: AI, hit_points: 25),
+        Right: (color: "0000FF", team: 1, player: AI, hit_points: 1),
+        Top: (color: "FFA600", team: 1, player: AI, hit_points: 1),
+        Left: (color: "7F007F", team: 1, player: AI, hit_points: 1),
+      },
+    ),
+    (
       name: "Multi-Ball Madness",
       max_ball_count: 10,
       competitors: {
