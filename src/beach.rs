@@ -49,81 +49,6 @@ impl Plugin for BeachPlugin {
     }
 }
 
-fn initialize_beach_data(
-    mut commands: Commands,
-    game_mode: Res<GameMode>,
-    game_assets: Res<GameAssets>,
-    game_configs: Res<Assets<GameConfig>>,
-) {
-    let game_config = game_configs.get(&game_assets.game_config).unwrap();
-
-    commands.insert_resource(Beach {
-        max_ball_count: u8::from(game_config.modes[game_mode.0].max_ball_count),
-    });
-}
-
-fn give_each_goal_a_new_crab(
-    mut spawn_on_side_events: EventWriter<SpawnEvent<Object, Side>>,
-) {
-    for side in SIDES {
-        spawn_on_side_events.send(SpawnEvent::with_data(Object::Crab, side));
-    }
-}
-
-fn spawn_balls_sequentially_as_needed(
-    mut commands: Commands,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    cached_assets: Res<CachedAssets>,
-    game_assets: Res<GameAssets>,
-    game_configs: Res<Assets<GameConfig>>,
-    beach: Res<Beach>,
-    balls_query: Query<Entity, With<Ball>>,
-    non_moving_balls_query: Query<Entity, (With<Ball>, Without<Movement>)>,
-) {
-    // Make balls spawn, fade in, and then launch one at a time.
-    if balls_query.iter().len() >= beach.max_ball_count as usize
-        || non_moving_balls_query.iter().len() >= 1
-    {
-        return;
-    }
-
-    // Spawn a ball that will launch it in a random direction.
-    let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let mut rng = SmallRng::from_entropy();
-    let angle = rng.gen_range(0.0..std::f32::consts::TAU);
-    let (angle_sin, angle_cos) = angle.sin_cos();
-    let ball = commands
-        .spawn((
-            Ball,
-            Collider,
-            FadeBundle::default(),
-            ForStates(vec![GameState::Playing, GameState::Paused]),
-            VelocityBundle {
-                heading: Heading(Vec3::new(angle_cos, 0.0, angle_sin)),
-                speed: Speed(game_config.ball_speed),
-            },
-            PbrBundle {
-                mesh: cached_assets.ball_mesh.clone(),
-                material: materials.add(StandardMaterial {
-                    alpha_mode: AlphaMode::Blend,
-                    base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),
-                    ..default()
-                }),
-                transform: Transform::from_matrix(
-                    Mat4::from_scale_rotation_translation(
-                        Vec3::splat(BALL_DIAMETER),
-                        Quat::IDENTITY,
-                        BEACH_BALL_SPAWNER_POSITION,
-                    ),
-                ),
-                ..default()
-            },
-        ))
-        .id();
-
-    info!("Ball({:?}): Spawned", ball);
-}
-
 fn spawn_level(
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
@@ -251,4 +176,79 @@ fn spawn_level(
         // Walls
         spawn_on_side_events.send(SpawnEvent::with_data(Object::Wall, *side));
     }
+}
+
+fn initialize_beach_data(
+    mut commands: Commands,
+    game_mode: Res<GameMode>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
+) {
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
+
+    commands.insert_resource(Beach {
+        max_ball_count: u8::from(game_config.modes[game_mode.0].max_ball_count),
+    });
+}
+
+fn give_each_goal_a_new_crab(
+    mut spawn_on_side_events: EventWriter<SpawnEvent<Object, Side>>,
+) {
+    for side in SIDES {
+        spawn_on_side_events.send(SpawnEvent::with_data(Object::Crab, side));
+    }
+}
+
+fn spawn_balls_sequentially_as_needed(
+    mut commands: Commands,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    cached_assets: Res<CachedAssets>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
+    beach: Res<Beach>,
+    balls_query: Query<Entity, With<Ball>>,
+    non_moving_balls_query: Query<Entity, (With<Ball>, Without<Movement>)>,
+) {
+    // Make balls spawn, fade in, and then launch one at a time.
+    if balls_query.iter().len() >= beach.max_ball_count as usize
+        || non_moving_balls_query.iter().len() >= 1
+    {
+        return;
+    }
+
+    // Spawn a ball that will launch it in a random direction.
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
+    let mut rng = SmallRng::from_entropy();
+    let angle = rng.gen_range(0.0..std::f32::consts::TAU);
+    let (angle_sin, angle_cos) = angle.sin_cos();
+    let ball = commands
+        .spawn((
+            Ball,
+            Collider,
+            FadeBundle::default(),
+            ForStates(vec![GameState::Playing, GameState::Paused]),
+            VelocityBundle {
+                heading: Heading(Vec3::new(angle_cos, 0.0, angle_sin)),
+                speed: Speed(game_config.ball_speed),
+            },
+            PbrBundle {
+                mesh: cached_assets.ball_mesh.clone(),
+                material: materials.add(StandardMaterial {
+                    alpha_mode: AlphaMode::Blend,
+                    base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),
+                    ..default()
+                }),
+                transform: Transform::from_matrix(
+                    Mat4::from_scale_rotation_translation(
+                        Vec3::splat(BALL_DIAMETER),
+                        Quat::IDENTITY,
+                        BEACH_BALL_SPAWNER_POSITION,
+                    ),
+                ),
+                ..default()
+            },
+        ))
+        .id();
+
+    info!("Ball({:?}): Spawned", ball);
 }
