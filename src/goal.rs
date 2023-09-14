@@ -3,11 +3,15 @@ use spew::prelude::*;
 use std::ops::RangeInclusive;
 
 use crate::{
+    ball::Ball,
     barrier::BARRIER_RADIUS,
-    crab::{Crab, CRAB_HALF_WIDTH},
+    collider::{Collider, ColliderSet},
+    crab::{Crab, CRAB_HALF_DEPTH, CRAB_HALF_WIDTH},
     fade::Fade,
+    game::Game,
     movement::Movement,
     object::Object,
+    side::Side,
     wall::Wall,
 };
 
@@ -37,7 +41,15 @@ impl Plugin for GoalPlugin {
                 Update,
                 allow_only_one_crab_or_wall_in_a_goal.after(SpewSystemSet),
             )
-            .add_systems(PostUpdate, block_eliminated_goals_with_walls);
+            .add_systems(
+                PostUpdate,
+                (
+                    goal_scored_and_potentially_eliminated,
+                    block_eliminated_goals_with_walls,
+                )
+                    .chain()
+                    .after(ColliderSet),
+            );
     }
 }
 
@@ -55,6 +67,45 @@ fn allow_only_one_crab_or_wall_in_a_goal(
                     .insert(Fade::out_default());
                 break;
             }
+        }
+    }
+}
+
+fn goal_scored_and_potentially_eliminated(
+    mut commands: Commands,
+    mut goal_eliminated_events: EventWriter<GoalEliminatedEvent>,
+    balls_query: Query<
+        (Entity, &GlobalTransform),
+        (With<Ball>, With<Movement>, With<Collider>),
+    >,
+    mut goals_query: Query<(Entity, &Side), With<Goal>>,
+    mut game: ResMut<Game>,
+) {
+    for (ball_entity, global_transform) in &balls_query {
+        for (entity, side) in &mut goals_query {
+            // A ball will score against the goal it's closest to once it's
+            // fully past the goal's crab.
+            let ball_distance = side.distance_to_ball(global_transform);
+
+            if ball_distance > -CRAB_HALF_DEPTH {
+                continue;
+            }
+
+            // Decrement the crab's HP and potentially eliminate it.
+            let Some(competitor) = game.competitors.get_mut(side) else {
+                continue;
+            };
+            competitor.hit_points = competitor.hit_points.saturating_sub(1);
+            info!("Ball({:?}): Scored Goal({:?})", ball_entity, side);
+
+            if competitor.hit_points == 0 {
+                goal_eliminated_events.send(GoalEliminatedEvent(entity));
+                info!("Ball({:?}): Eliminated Goal({:?})", ball_entity, side);
+            }
+
+            // Despawn and replace the scoring ball.
+            commands.entity(ball_entity).insert(Fade::out_default());
+            break;
         }
     }
 }

@@ -6,7 +6,8 @@ use crate::{
     ball::{Ball, BALL_HEIGHT},
     barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT},
     collider::Collider,
-    config::{GameConfig, GameMode},
+    config::GameConfig,
+    game::Game,
     goal::{Goal, GOAL_HALF_WIDTH, GOAL_WIDTH},
     movement::Movement,
     object::Object,
@@ -51,12 +52,12 @@ fn initialize_beach_data(
     mut commands: Commands,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
-    game_mode: Res<GameMode>,
+    game: Res<Game>,
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
 
     commands.insert_resource(Beach {
-        max_ball_count: game_config.modes[game_mode.0].max_ball_count,
+        max_ball_count: game_config.modes[game.mode].max_ball_count,
     });
 }
 

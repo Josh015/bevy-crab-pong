@@ -2,10 +2,10 @@ use bevy::{app::AppExit, prelude::*};
 
 use crate::{
     assets::GameAssets,
-    config::{GameConfig, GameMode},
+    config::GameConfig,
     debug_mode::IsDebuggingMode,
+    game::Game,
     state::{AppState, ForStates},
-    team::WinningTeam,
 };
 
 /// An event fired when spawning a message UI.
@@ -33,12 +33,12 @@ impl Plugin for MenuPlugin {
 fn spawn_start_menu_ui(
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
-    winning_team: Option<Res<WinningTeam>>,
+    game: Res<Game>,
     mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let mut message = String::from(match winning_team {
-        Some(winning_team) => &game_config.team_win_messages[winning_team.0],
+    let mut message = String::from(match game.winning_team {
+        Some(winning_team) => &game_config.team_win_messages[winning_team],
         _ => "",
     });
 
@@ -127,7 +127,7 @@ fn handle_menu_inputs(
     game_state: Res<State<AppState>>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
-    mut game_mode: ResMut<GameMode>,
+    mut game: ResMut<Game>,
     mut is_debugging_mode: ResMut<IsDebuggingMode>,
     mut next_game_state: ResMut<NextState<AppState>>,
     mut app_exit_events: EventWriter<AppExit>,
@@ -149,16 +149,16 @@ fn handle_menu_inputs(
                 next_game_state.set(AppState::Playing);
                 info!("New Game");
             } else if keyboard_input.just_pressed(KeyCode::Left)
-                && game_mode.0 > 0
+                && game.mode > 0
             {
-                game_mode.0 -= 1;
-                let mode_name = &game_config.modes[game_mode.0].name;
+                game.mode -= 1;
+                let mode_name = &game_config.modes[game.mode].name;
                 info!("Game Mode: {mode_name}");
             } else if keyboard_input.just_pressed(KeyCode::Right)
-                && game_mode.0 < game_config.modes.len() - 1
+                && game.mode < game_config.modes.len() - 1
             {
-                game_mode.0 += 1;
-                let mode_name = &game_config.modes[game_mode.0].name;
+                game.mode += 1;
+                let mode_name = &game_config.modes[game.mode].name;
                 info!("Game Mode: {mode_name}");
             }
         },

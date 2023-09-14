@@ -16,10 +16,6 @@ cargo run --release
 
 ## TODO
 
-- [x] Fix issue with mode switching due to crabs not respawning between rounds.
-- [x] Fix issue with ball spawning during paused screen.
-- [x] Make walls spawn fully-formed before scene appears.
-- [ ] Fix issue where HP of surviving crabs is delayed in resetting for second round.
 - [ ] Add "reflections" in the ocean via mirrored geometry and ocean blending.
 - [ ] Switch to RT-based in-world UI.
 - [ ] Add a Ferris model (eg. [Ferris the Crab](https://sketchfab.com/3d-models/ferris-the-crab-e9bc16e19d1c4880b30d2aa5fd174887))

@@ -26,11 +26,11 @@ pub struct GameConfig {
 pub struct ModeConfig {
     pub name: String,
     pub max_ball_count: u8,
-    pub crabs: HashMap<Side, CrabConfig>,
+    pub competitors: HashMap<Side, CompetitorConfig>,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct CrabConfig {
+pub struct CompetitorConfig {
     pub color: String,
     pub team: usize,
     pub player: PlayerConfig,
@@ -41,16 +41,4 @@ pub struct CrabConfig {
 pub enum PlayerConfig {
     Keyboard,
     AI,
-}
-
-/// The currently-selected game mode.
-#[derive(Debug, Default, Resource)]
-pub struct GameMode(pub usize);
-
-pub struct ConfigPlugin;
-
-impl Plugin for ConfigPlugin {
-    fn build(&self, app: &mut App) {
-        app.init_resource::<GameMode>();
-    }
 }

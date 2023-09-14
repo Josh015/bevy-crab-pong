@@ -7,9 +7,10 @@ use crate::{
     ball::{Ball, BALL_DIAMETER},
     beach::{Beach, BEACH_BALL_SPAWNER_POSITION},
     collider::Collider,
-    config::{GameConfig, GameMode, PlayerConfig},
-    crab::{AiPlayer, Crab, HitPoints, KeyboardPlayer, CRAB_SCALE},
+    config::{GameConfig, PlayerConfig},
+    crab::{AiPlayer, Crab, KeyboardPlayer, CRAB_SCALE},
     fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
+    game::Game,
     goal::{Goal, GOAL_CRAB_START_POSITION},
     movement::{
         Acceleration, AccelerationBundle, Heading, MaxSpeed, Speed,
@@ -17,7 +18,6 @@ use crate::{
     },
     side::Side,
     state::{AppState, ForStates},
-    team::Team,
     wall::{Wall, WALL_HEIGHT, WALL_SCALE},
 };
 
@@ -140,7 +140,7 @@ fn spawn_wall_in_goal(
 
 fn spawn_crab_in_goal(
     In(goal_entity): In<Entity>,
-    game_mode: Res<GameMode>,
+    game: Res<Game>,
     cached_assets: Res<CachedAssets>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
@@ -153,7 +153,7 @@ fn spawn_crab_in_goal(
     };
 
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let crab_config = &game_config.modes[game_mode.0].crabs[goal_side];
+    let crab_config = &game_config.modes[game.mode].competitors[goal_side];
     let material_handle = materials.add(StandardMaterial {
         base_color_texture: Some(game_assets.image_crab.clone()),
         base_color: Color::hex(&crab_config.color).unwrap(),
@@ -167,8 +167,6 @@ fn spawn_crab_in_goal(
                 Crab,
                 Collider,
                 *goal_side,
-                Team(crab_config.team),
-                HitPoints(crab_config.hit_points),
                 FadeBundle {
                     fade_animation: FadeAnimation::Scale {
                         max_scale: CRAB_SCALE,

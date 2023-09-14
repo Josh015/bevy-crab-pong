@@ -4,10 +4,9 @@ use crate::{
     ball::Ball,
     collider::{Collider, ColliderSet},
     debug_mode::DebugModeSet,
-    fade::Fade,
     goal::{
-        GoalEliminatedEvent, GOAL_CRAB_MAX_POSITION_RANGE,
-        GOAL_CRAB_MAX_POSITION_X, GOAL_CRAB_START_POSITION,
+        GOAL_CRAB_MAX_POSITION_RANGE, GOAL_CRAB_MAX_POSITION_X,
+        GOAL_CRAB_START_POSITION,
     },
     movement::{
         Force, Heading, Movement, MovementSet, Speed, StoppingDistance,
@@ -40,10 +39,6 @@ pub struct AiPlayer;
 #[component(storage = "SparseSet")]
 pub struct Target(pub Entity);
 
-// A crab's HP which controls when they are eliminated and the game is over.
-#[derive(Clone, Component, Debug)]
-pub struct HitPoints(pub u8);
-
 pub struct CrabPlugin;
 
 impl Plugin for CrabPlugin {
@@ -65,12 +60,7 @@ impl Plugin for CrabPlugin {
         .add_systems(
             PostUpdate,
             (
-                (
-                    crab_and_ball_collisions,
-                    deduct_crab_hp_and_potentially_eliminate_goal,
-                )
-                    .chain()
-                    .in_set(ColliderSet),
+                crab_and_ball_collisions.in_set(ColliderSet),
                 (
                     display_crab_predicted_stop_position_gizmos,
                     display_crab_to_ball_targeting_gizmos,
@@ -253,41 +243,6 @@ fn crab_and_ball_collisions(
                 .insert(Heading(rotation_away_from_center * -ball_heading.0));
 
             info!("Ball({:?}): Collided Crab({:?})", entity, side);
-            break;
-        }
-    }
-}
-
-fn deduct_crab_hp_and_potentially_eliminate_goal(
-    mut commands: Commands,
-    mut goal_eliminated_events: EventWriter<GoalEliminatedEvent>,
-    balls_query: Query<
-        (Entity, &GlobalTransform),
-        (With<Ball>, With<Movement>, With<Collider>),
-    >,
-    mut crabs_query: Query<(&Parent, &mut HitPoints, &Side), With<Crab>>,
-) {
-    for (ball_entity, global_transform) in &balls_query {
-        for (parent, mut hit_points, side) in &mut crabs_query {
-            // A ball will score against the goal it's closest to once it's
-            // fully past the goal's crab.
-            let ball_distance = side.distance_to_ball(global_transform);
-
-            if ball_distance > -CRAB_HALF_DEPTH {
-                continue;
-            }
-
-            // Decrement the crab's HP and potentially eliminate it.
-            hit_points.0 = hit_points.0.saturating_sub(1);
-            info!("Ball({:?}): Scored Goal({:?})", ball_entity, side);
-
-            if hit_points.0 == 0 {
-                goal_eliminated_events.send(GoalEliminatedEvent(parent.get()));
-                info!("Ball({:?}): Eliminated Goal({:?})", ball_entity, side);
-            }
-
-            // Despawn and replace the scoring ball.
-            commands.entity(ball_entity).insert(Fade::out_default());
             break;
         }
     }

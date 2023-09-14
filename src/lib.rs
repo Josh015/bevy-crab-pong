@@ -9,6 +9,7 @@ pub mod config;
 pub mod crab;
 pub mod debug_mode;
 pub mod fade;
+pub mod game;
 pub mod goal;
 pub mod hud;
 pub mod menu;
@@ -18,7 +19,6 @@ pub mod ocean;
 pub mod side;
 pub mod state;
 pub mod swaying_camera;
-pub mod team;
 pub mod util;
 pub mod wall;
 
@@ -32,10 +32,10 @@ impl Plugin for GamePlugin {
             barrier::BarrierPlugin,
             beach::BeachPlugin,
             collider::ColliderPlugin,
-            config::ConfigPlugin,
             crab::CrabPlugin,
             debug_mode::DebugModePlugin,
             fade::FadePlugin,
+            game::GamePlugin,
             goal::GoalPlugin,
             hud::HudPlugin,
             menu::MenuPlugin,
@@ -46,7 +46,6 @@ impl Plugin for GamePlugin {
         .add_plugins((
             state::StatePlugin,
             swaying_camera::SwayingCameraPlugin,
-            team::TeamPlugin,
             wall::WallPlugin,
         ));
     }
