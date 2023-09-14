@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::state::AppState;
+use crate::state::GameState;
 
 /// Marks a collidable entity.
 #[derive(Component, Debug)]
@@ -15,7 +15,7 @@ impl Plugin for ColliderPlugin {
     fn build(&self, app: &mut App) {
         app.configure_set(
             PostUpdate,
-            ColliderSet.run_if(in_state(AppState::Playing)),
+            ColliderSet.run_if(in_state(GameState::Playing)),
         );
     }
 }

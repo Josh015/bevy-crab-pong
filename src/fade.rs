@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{collider::Collider, movement::Movement, state::AppState};
+use crate::{collider::Collider, movement::Movement, state::GameState};
 
 pub const FADE_DURATION_IN_SECONDS: f32 = 1.0;
 
@@ -70,15 +70,15 @@ impl Plugin for FadePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            pre_fade_out.run_if(not(in_state(AppState::Paused))),
+            pre_fade_out.run_if(not(in_state(GameState::Paused))),
         )
         .add_systems(
             PostUpdate,
-            animate_fade_effect.run_if(not(in_state(AppState::Paused))),
+            animate_fade_effect.run_if(not(in_state(GameState::Paused))),
         )
         .add_systems(
             Last,
-            finish_fading.run_if(not(in_state(AppState::Paused))),
+            finish_fading.run_if(not(in_state(GameState::Paused))),
         );
     }
 }

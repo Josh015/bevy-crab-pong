@@ -12,7 +12,7 @@ use crate::{
     object::Object,
     ocean::Ocean,
     side::{Side, SIDES},
-    state::AppState,
+    state::GameState,
     swaying_camera::SwayingCamera,
 };
 
@@ -33,16 +33,16 @@ pub struct BeachPlugin;
 
 impl Plugin for BeachPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnExit(AppState::Loading), spawn_level)
+        app.add_systems(OnExit(GameState::Loading), spawn_level)
             .add_systems(
-                OnExit(AppState::StartMenu),
+                OnExit(GameState::StartMenu),
                 (initialize_beach_data, give_each_goal_a_new_crab),
             )
             .add_systems(
                 Update,
                 spawn_balls_sequentially_as_needed
                     .before(SpewSystemSet)
-                    .run_if(in_state(AppState::Playing)),
+                    .run_if(in_state(GameState::Playing)),
             );
     }
 }

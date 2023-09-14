@@ -16,7 +16,7 @@ use crate::{
         VelocityBundle,
     },
     side::Side,
-    state::{AppState, ForStates},
+    state::{ForStates, GameState},
     wall::{Wall, WALL_HEIGHT, WALL_SCALE},
 };
 
@@ -58,7 +58,7 @@ fn spawn_ball(
             Ball,
             Collider,
             FadeBundle::default(),
-            ForStates(vec![AppState::Playing, AppState::Paused]),
+            ForStates(vec![GameState::Playing, GameState::Paused]),
             VelocityBundle {
                 heading: Heading(Vec3::new(angle.cos(), 0.0, angle.sin())),
                 speed: Speed(game_config.ball_speed),

@@ -12,7 +12,7 @@ use crate::{
         Force, Heading, Movement, MovementSet, Speed, StoppingDistance,
     },
     side::Side,
-    state::AppState,
+    state::GameState,
 };
 
 pub const CRAB_WIDTH: f32 = 0.2;
@@ -53,7 +53,7 @@ impl Plugin for CrabPlugin {
                 )
                     .chain()
                     .before(MovementSet)
-                    .run_if(in_state(AppState::Playing)),
+                    .run_if(in_state(GameState::Playing)),
                 restrict_crabs_to_open_space_in_their_goals.after(MovementSet),
             ),
         )

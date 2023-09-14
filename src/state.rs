@@ -13,7 +13,7 @@ pub struct ForStates<S: States>(pub Vec<S>);
 
 // All the app's possible states.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, States)]
-pub enum AppState {
+pub enum GameState {
     #[default]
     Loading,
     StartMenu,
@@ -21,12 +21,12 @@ pub enum AppState {
     Paused,
 }
 
-impl AppState {
-    pub const ANY_GAME_STATE: &[AppState; 2] =
-        &[AppState::Playing, AppState::Paused];
+impl GameState {
+    pub const ANY_GAME_STATE: &[GameState; 2] =
+        &[GameState::Playing, GameState::Paused];
 
     pub fn is_any_game_state(&self) -> bool {
-        AppState::ANY_GAME_STATE.contains(self)
+        GameState::ANY_GAME_STATE.contains(self)
     }
 }
 
@@ -34,21 +34,21 @@ pub struct StatePlugin;
 
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<AppState>().add_plugins(RonAssetPlugin::<GameConfig>::new(&["config.ron"]))
+        app.add_state::<GameState>().add_plugins(RonAssetPlugin::<GameConfig>::new(&["config.ron"]))
         .add_loading_state(
-            LoadingState::new(AppState::Loading)
-                .continue_to_state(AppState::StartMenu),
+            LoadingState::new(GameState::Loading)
+                .continue_to_state(GameState::StartMenu),
         )
         .add_dynamic_collection_to_loading_state::<_, StandardDynamicAssetCollection>(
-            AppState::Loading,
+            GameState::Loading,
             "game.assets.ron",
         )
-        .add_collection_to_loading_state::<_, GameAssets>(AppState::Loading);
+        .add_collection_to_loading_state::<_, GameAssets>(GameState::Loading);
 
-        for state in AppState::variants() {
+        for state in GameState::variants() {
             app.add_systems(
                 OnEnter(state),
-                despawn_invalid_entities_for_state::<AppState>,
+                despawn_invalid_entities_for_state::<GameState>,
             );
         }
     }

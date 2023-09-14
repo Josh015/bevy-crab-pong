@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{assets::GameAssets, game::Game, side::Side, state::AppState};
+use crate::{assets::GameAssets, game::Game, side::Side, state::GameState};
 
 /// Marks a [`Text`] entity to display the HP for the associated [`HitPoints`].
 #[derive(Component, Debug)]
@@ -10,12 +10,12 @@ pub struct HudPlugin;
 
 impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnExit(AppState::Loading), spawn_hud_ui)
+        app.add_systems(OnExit(GameState::Loading), spawn_hud_ui)
             .add_systems(
                 Update,
                 update_goal_hit_points_ui
                     .chain()
-                    .run_if(not(in_state(AppState::Loading))),
+                    .run_if(not(in_state(GameState::Loading))),
             );
     }
 }

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::state::AppState;
+use crate::state::GameState;
 
 /// Marks an entity as an ocean with an animated texture effect.
 #[derive(Clone, Component, Debug, Default)]
@@ -16,7 +16,7 @@ impl Plugin for OceanPlugin {
         app.add_systems(
             Update,
             animate_ocean_with_scrolling_texture_effect
-                .run_if(not(in_state(AppState::Loading))),
+                .run_if(not(in_state(GameState::Loading))),
         );
     }
 }

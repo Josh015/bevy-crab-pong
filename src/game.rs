@@ -4,7 +4,7 @@ use crate::{
     assets::{GameAssets, GameConfig},
     goal::GoalScoredEvent,
     side::Side,
-    state::AppState,
+    state::GameState,
 };
 
 /// Signals a goal being eliminated from the game.
@@ -31,8 +31,8 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Game>()
             .add_event::<GoalScoredEvent>()
-            .add_systems(OnExit(AppState::Loading), reset_competitors)
-            .add_systems(OnExit(AppState::StartMenu), reset_competitors)
+            .add_systems(OnExit(GameState::Loading), reset_competitors)
+            .add_systems(OnExit(GameState::StartMenu), reset_competitors)
             .add_systems(
                 PostUpdate,
                 (
@@ -40,7 +40,7 @@ impl Plugin for GamePlugin {
                     check_for_winning_team,
                 )
                     .chain()
-                    .run_if(in_state(AppState::Playing)),
+                    .run_if(in_state(GameState::Playing)),
             );
     }
 }
@@ -86,7 +86,7 @@ fn decrement_competitor_hp_when_its_goal_is_scored(
 }
 
 fn check_for_winning_team(
-    mut next_game_state: ResMut<NextState<AppState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
     mut competitor_eliminated_events: EventReader<CompetitorEliminatedEvent>,
     mut game: ResMut<Game>,
 ) {
@@ -118,7 +118,7 @@ fn check_for_winning_team(
         // Declare a winner and navigate back to the Start Menu.
         if let Some(winning_team) = winning_team {
             game.winning_team = Some(winning_team);
-            next_game_state.set(AppState::StartMenu);
+            next_game_state.set(GameState::StartMenu);
             info!("Game Over: Team {:?} won!", winning_team);
             break;
         }

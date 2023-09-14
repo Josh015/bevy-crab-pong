@@ -4,14 +4,14 @@ use crate::{
     assets::{GameAssets, GameConfig},
     debug_mode::IsDebuggingMode,
     game::Game,
-    state::{AppState, ForStates},
+    state::{ForStates, GameState},
 };
 
 /// An event fired when spawning a message UI.
 #[derive(Event, Debug)]
 pub struct MessageUiEvent {
     pub message: String,
-    pub game_state: AppState,
+    pub game_state: GameState,
 }
 
 pub struct MenuPlugin;
@@ -19,12 +19,12 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<MessageUiEvent>()
-            .add_systems(OnEnter(AppState::StartMenu), spawn_start_menu_ui)
-            .add_systems(OnEnter(AppState::Paused), spawn_pause_ui)
+            .add_systems(OnEnter(GameState::StartMenu), spawn_start_menu_ui)
+            .add_systems(OnEnter(GameState::Paused), spawn_pause_ui)
             .add_systems(
                 Update,
                 (handle_spawn_ui_message_event, handle_menu_inputs)
-                    .run_if(not(in_state(AppState::Loading))),
+                    .run_if(not(in_state(GameState::Loading))),
             );
     }
 }
@@ -45,7 +45,7 @@ fn spawn_start_menu_ui(
 
     ui_message_events.send(MessageUiEvent {
         message,
-        game_state: AppState::StartMenu,
+        game_state: GameState::StartMenu,
     });
 }
 
@@ -58,7 +58,7 @@ fn spawn_pause_ui(
 
     ui_message_events.send(MessageUiEvent {
         message: game_config.pause_message.clone(),
-        game_state: AppState::Paused,
+        game_state: GameState::Paused,
     });
 }
 
@@ -123,12 +123,12 @@ fn handle_spawn_ui_message_event(
 
 fn handle_menu_inputs(
     keyboard_input: Res<Input<KeyCode>>,
-    game_state: Res<State<AppState>>,
+    game_state: Res<State<GameState>>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
     mut game: ResMut<Game>,
     mut is_debugging_mode: ResMut<IsDebuggingMode>,
-    mut next_game_state: ResMut<NextState<AppState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
@@ -140,12 +140,12 @@ fn handle_menu_inputs(
     }
 
     match game_state.get() {
-        AppState::StartMenu => {
+        GameState::StartMenu => {
             let game_config =
                 game_configs.get(&game_assets.game_config).unwrap();
 
             if keyboard_input.just_pressed(KeyCode::Return) {
-                next_game_state.set(AppState::Playing);
+                next_game_state.set(GameState::Playing);
                 info!("New Game");
             } else if keyboard_input.just_pressed(KeyCode::Left)
                 && game.mode > 0
@@ -161,18 +161,18 @@ fn handle_menu_inputs(
                 info!("Game Mode: {mode_name}");
             }
         },
-        AppState::Playing if keyboard_input.just_pressed(KeyCode::Space) => {
-            next_game_state.set(AppState::Paused);
+        GameState::Playing if keyboard_input.just_pressed(KeyCode::Space) => {
+            next_game_state.set(GameState::Paused);
             info!("Paused");
         },
-        AppState::Paused if keyboard_input.just_pressed(KeyCode::Space) => {
-            next_game_state.set(AppState::Playing);
+        GameState::Paused if keyboard_input.just_pressed(KeyCode::Space) => {
+            next_game_state.set(GameState::Playing);
             info!("Unpaused");
         },
-        AppState::Playing | AppState::Paused
+        GameState::Playing | GameState::Paused
             if keyboard_input.just_pressed(KeyCode::Back) =>
         {
-            next_game_state.set(AppState::StartMenu);
+            next_game_state.set(GameState::StartMenu);
             info!("Start Menu");
         },
         _ => {},
