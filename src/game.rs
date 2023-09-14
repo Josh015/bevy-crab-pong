@@ -1,9 +1,18 @@
 use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
-    assets::GameAssets, config::GameConfig, goal::GoalEliminatedEvent,
-    side::Side, state::AppState,
+    assets::GameAssets,
+    config::GameConfig,
+    goal::{Goal, GoalScoredEvent},
+    side::Side,
+    state::AppState,
 };
+
+/// Signals a goal being eliminated from the game.
+#[derive(Clone, Component, Debug, Event)]
+pub struct CompetitorEliminatedEvent {
+    pub goal: Entity,
+}
 
 #[derive(Debug, Default)]
 pub struct Competitor {
@@ -24,19 +33,22 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Game>()
-            .add_systems(OnExit(AppState::Loading), reset_teams_and_hit_points)
-            .add_systems(
-                OnExit(AppState::StartMenu),
-                reset_teams_and_hit_points,
-            )
+            .add_event::<GoalScoredEvent>()
+            .add_systems(OnExit(AppState::Loading), reset_competitors)
+            .add_systems(OnExit(AppState::StartMenu), reset_competitors)
             .add_systems(
                 PostUpdate,
-                check_for_winning_team.run_if(in_state(AppState::Playing)),
+                (
+                    decrement_competitor_hp_when_its_goal_is_scored,
+                    check_for_winning_team,
+                )
+                    .chain()
+                    .run_if(in_state(AppState::Playing)),
             );
     }
 }
 
-fn reset_teams_and_hit_points(
+fn reset_competitors(
     mut game: ResMut<Game>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
@@ -57,13 +69,39 @@ fn reset_teams_and_hit_points(
     }
 }
 
+fn decrement_competitor_hp_when_its_goal_is_scored(
+    mut goal_scored_events: EventReader<GoalScoredEvent>,
+    mut competitor_eliminated_events: EventWriter<CompetitorEliminatedEvent>,
+    goals_query: Query<&Side, With<Goal>>,
+    mut game: ResMut<Game>,
+) {
+    // Decrement a competitor's HP and potentially eliminate its goal.
+    for GoalScoredEvent(goal_entity) in goal_scored_events.iter() {
+        let Ok(side) = goals_query.get(*goal_entity) else {
+            continue;
+        };
+        let Some(competitor) = game.competitors.get_mut(side) else {
+            continue;
+        };
+
+        competitor.hit_points = competitor.hit_points.saturating_sub(1);
+
+        if competitor.hit_points == 0 {
+            competitor_eliminated_events
+                .send(CompetitorEliminatedEvent { goal: *goal_entity });
+        }
+    }
+}
+
 fn check_for_winning_team(
     mut next_game_state: ResMut<NextState<AppState>>,
-    mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
+    mut competitor_eliminated_events: EventReader<CompetitorEliminatedEvent>,
     mut game: ResMut<Game>,
 ) {
     // Check if only one team's competitors still have HP.
-    for GoalEliminatedEvent(_) in goal_eliminated_events.iter() {
+    for CompetitorEliminatedEvent { goal: _ } in
+        competitor_eliminated_events.iter()
+    {
         let winning_team = {
             let survivor = game
                 .competitors

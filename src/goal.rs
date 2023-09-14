@@ -8,7 +8,7 @@ use crate::{
     collider::{Collider, ColliderSet},
     crab::{Crab, CRAB_HALF_DEPTH, CRAB_HALF_WIDTH},
     fade::Fade,
-    game::Game,
+    game::CompetitorEliminatedEvent,
     movement::Movement,
     object::Object,
     side::Side,
@@ -28,15 +28,15 @@ pub const GOAL_CRAB_MAX_POSITION_RANGE: RangeInclusive<f32> =
 #[derive(Component, Debug)]
 pub struct Goal;
 
-/// Signals a goal being eliminated from the game.
+/// Signals a goal being scored in by a ball.
 #[derive(Clone, Component, Debug, Event)]
-pub struct GoalEliminatedEvent(pub Entity);
+pub struct GoalScoredEvent(pub Entity);
 
 pub struct GoalPlugin;
 
 impl Plugin for GoalPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<GoalEliminatedEvent>()
+        app.add_event::<CompetitorEliminatedEvent>()
             .add_systems(
                 Update,
                 allow_only_one_crab_or_wall_in_a_goal.after(SpewSystemSet),
@@ -44,10 +44,9 @@ impl Plugin for GoalPlugin {
             .add_systems(
                 PostUpdate,
                 (
-                    goal_scored_and_potentially_eliminated,
+                    check_if_any_balls_have_scored_in_any_goals,
                     block_eliminated_goals_with_walls,
                 )
-                    .chain()
                     .after(ColliderSet),
             );
     }
@@ -71,50 +70,37 @@ fn allow_only_one_crab_or_wall_in_a_goal(
     }
 }
 
-fn goal_scored_and_potentially_eliminated(
+fn check_if_any_balls_have_scored_in_any_goals(
     mut commands: Commands,
-    mut goal_eliminated_events: EventWriter<GoalEliminatedEvent>,
+    mut goal_scored_events: EventWriter<GoalScoredEvent>,
     balls_query: Query<
         (Entity, &GlobalTransform),
         (With<Ball>, With<Movement>, With<Collider>),
     >,
-    mut goals_query: Query<(Entity, &Side), With<Goal>>,
-    mut game: ResMut<Game>,
+    goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
+    // If a ball passes a goal's crab then despawn it and raise an event.
     for (ball_entity, global_transform) in &balls_query {
-        for (entity, side) in &mut goals_query {
-            // A ball will score against the goal it's closest to once it's
-            // fully past the goal's crab.
+        for (goal_entity, side) in &goals_query {
             let ball_distance = side.distance_to_ball(global_transform);
 
-            if ball_distance > -CRAB_HALF_DEPTH {
-                continue;
+            if ball_distance <= -CRAB_HALF_DEPTH {
+                commands.entity(ball_entity).insert(Fade::out_default());
+                goal_scored_events.send(GoalScoredEvent(goal_entity));
+                info!("Ball({:?}): Scored Goal({:?})", ball_entity, side);
             }
-
-            // Decrement the crab's HP and potentially eliminate it.
-            let Some(competitor) = game.competitors.get_mut(side) else {
-                continue;
-            };
-            competitor.hit_points = competitor.hit_points.saturating_sub(1);
-            info!("Ball({:?}): Scored Goal({:?})", ball_entity, side);
-
-            if competitor.hit_points == 0 {
-                goal_eliminated_events.send(GoalEliminatedEvent(entity));
-                info!("Ball({:?}): Eliminated Goal({:?})", ball_entity, side);
-            }
-
-            // Despawn and replace the scoring ball.
-            commands.entity(ball_entity).insert(Fade::out_default());
-            break;
         }
     }
 }
 
 fn block_eliminated_goals_with_walls(
-    mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
+    mut competitor_eliminated_events: EventReader<CompetitorEliminatedEvent>,
     mut spawn_in_goal_events: EventWriter<SpawnEvent<Object, Entity>>,
 ) {
-    for GoalEliminatedEvent(entity) in goal_eliminated_events.iter() {
-        spawn_in_goal_events.send(SpawnEvent::with_data(Object::Wall, *entity));
+    for CompetitorEliminatedEvent { goal } in
+        competitor_eliminated_events.iter()
+    {
+        spawn_in_goal_events.send(SpawnEvent::with_data(Object::Wall, *goal));
+        info!("Goal({:?}): Eliminated", goal);
     }
 }
