@@ -9,7 +9,7 @@ G to enable debugging.
   swaying_camera_speed: 0.2,
   ocean_scroll_speed: 0.01,
   crab_max_speed: 2,
-  crab_seconds_to_max_speed: 0.6, // 0.65
+  crab_seconds_to_max_speed: 0.6,
   ball_speed: 0.5,
   team_win_messages: [
     "You win!\n",
