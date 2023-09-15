@@ -5,7 +5,7 @@ use crate::{
     ball::{Ball, BALL_RADIUS},
     barrier::BARRIER_RADIUS,
     collider::{Collider, ColliderSet},
-    debug_mode::DebugModeSet,
+    debug_mode::{DebugModeSet, DEBUGGING_RAY_LENGTH},
     goal::GOAL_HALF_WIDTH,
     movement::{
         Force, Heading, Movement, MovementSet, Speed, StoppingDistance,
@@ -156,7 +156,7 @@ fn display_predicted_ball_deflection_direction_gizmos(
 ) {
     for (ball_transform, ball_heading) in &balls_query {
         for (side, transform, crab_global_transform) in &crabs_query {
-            // Check that the ball is touching the crab and facing the goal.
+            // Check that the ball is near the crab and facing the goal.
             let axis = side.axis();
             let ball_goal_position = side.get_ball_position(ball_transform);
             let ball_to_crab = transform.translation.x - ball_goal_position;
@@ -175,7 +175,8 @@ fn display_predicted_ball_deflection_direction_gizmos(
             gizmos.line(
                 crab_global_transform.translation(),
                 crab_global_transform.translation()
-                    + 20.0 * (rotation_away_from_center * -axis),
+                    + DEBUGGING_RAY_LENGTH
+                        * (rotation_away_from_center * -axis),
                 Color::WHITE,
             );
         }

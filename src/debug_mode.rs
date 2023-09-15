@@ -2,6 +2,8 @@ use bevy::prelude::*;
 
 use crate::collider::ColliderSet;
 
+pub const DEBUGGING_RAY_LENGTH: f32 = 20.0;
+
 /// Toggles displaying debugging gizmos.
 #[derive(Debug, Default, Resource)]
 pub struct IsDebuggingMode(pub bool);

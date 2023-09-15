@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     collider::{Collider, ColliderSet},
-    debug_mode::DebugModeSet,
+    debug_mode::{DebugModeSet, DEBUGGING_RAY_LENGTH},
     movement::{Heading, Movement},
     util::reflect,
 };
@@ -82,7 +82,7 @@ fn display_movement_direction_gizmos(
     for (global_transform, heading) in &balls_query {
         gizmos.line(
             global_transform.translation(),
-            global_transform.translation() + heading.0 * 20.0,
+            global_transform.translation() + heading.0 * DEBUGGING_RAY_LENGTH,
             Color::RED,
         )
     }
