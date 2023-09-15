@@ -11,7 +11,6 @@ use crate::{
         Force, Heading, Movement, MovementSet, Speed, StoppingDistance,
     },
     side::Side,
-    util::reflect,
 };
 
 pub const CRAB_WIDTH: f32 = 0.2;
@@ -41,7 +40,11 @@ impl Plugin for CrabPlugin {
             PostUpdate,
             (
                 crab_and_ball_collisions.in_set(ColliderSet),
-                display_predicted_stop_position_gizmos.in_set(DebugModeSet),
+                (
+                    display_predicted_stop_position_gizmos,
+                    display_predicted_ball_deflection_direction_gizmos,
+                )
+                    .in_set(DebugModeSet),
             ),
         );
     }
@@ -102,18 +105,15 @@ fn crab_and_ball_collisions(
                 continue;
             }
 
-            // Rotate the ball's reflected vector outward based on how far its
-            // position is from the crab's center to add some unpredictability.
+            // Rotate paddle axis away based on ball distance to the center of
+            // the paddle. A little less predictable than simply deflecting it.
             let rotation_away_from_center = Quat::from_rotation_y(
-                std::f32::consts::FRAC_PI_8
-                    * 0.1
-                    * (ball_to_crab / CRAB_HALF_WIDTH),
+                std::f32::consts::FRAC_PI_4 * (ball_to_crab / CRAB_HALF_WIDTH),
             );
 
-            commands.entity(entity).insert(Heading(reflect(
-                ball_heading.0,
-                rotation_away_from_center * -axis,
-            )));
+            commands
+                .entity(entity)
+                .insert(Heading(rotation_away_from_center * -axis));
 
             info!("Ball({:?}): Collided Crab({:?})", entity, side);
             break;
@@ -140,5 +140,44 @@ fn display_predicted_stop_position_gizmos(
             Color::BLUE,
         );
         gizmos.cuboid(stop_position_transform, Color::GREEN);
+    }
+}
+
+fn display_predicted_ball_deflection_direction_gizmos(
+    balls_query: Query<
+        (&GlobalTransform, &Heading),
+        (With<Ball>, With<Movement>, With<Collider>),
+    >,
+    crabs_query: Query<
+        (&Side, &Transform, &GlobalTransform),
+        (With<Crab>, With<Collider>),
+    >,
+    mut gizmos: Gizmos,
+) {
+    for (ball_transform, ball_heading) in &balls_query {
+        for (side, transform, crab_global_transform) in &crabs_query {
+            // Check that the ball is touching the crab and facing the goal.
+            let axis = side.axis();
+            let ball_goal_position = side.get_ball_position(ball_transform);
+            let ball_to_crab = transform.translation.x - ball_goal_position;
+            let ball_to_crab_distance = ball_transform
+                .translation()
+                .distance(crab_global_transform.translation());
+
+            if ball_to_crab_distance > 0.25 || ball_heading.0.dot(axis) <= 0.0 {
+                continue;
+            }
+
+            let rotation_away_from_center = Quat::from_rotation_y(
+                std::f32::consts::FRAC_PI_4 * (ball_to_crab / CRAB_HALF_WIDTH),
+            );
+
+            gizmos.line(
+                crab_global_transform.translation(),
+                crab_global_transform.translation()
+                    + 20.0 * (rotation_away_from_center * -axis),
+                Color::WHITE,
+            );
+        }
     }
 }
