@@ -9,7 +9,7 @@ use crate::{
     collider::Collider,
     fade::FadeBundle,
     game::GameMode,
-    goal::{Goal, GOAL_HALF_WIDTH, GOAL_WIDTH},
+    goal::{Goal, GOAL_WIDTH},
     movement::{Heading, Movement, Speed, VelocityBundle},
     object::Object,
     ocean::Ocean,
@@ -140,7 +140,7 @@ fn spawn_level(
                     .mul_transform(Transform::from_xyz(
                         0.0,
                         0.0,
-                        GOAL_HALF_WIDTH,
+                        0.5 * GOAL_WIDTH,
                     )),
                     ..default()
                 },
@@ -162,7 +162,7 @@ fn spawn_level(
                                 ),
                                 Quat::IDENTITY,
                                 Vec3::new(
-                                    GOAL_HALF_WIDTH,
+                                    0.5 * GOAL_WIDTH,
                                     0.5 * BARRIER_HEIGHT,
                                     0.0,
                                 ),

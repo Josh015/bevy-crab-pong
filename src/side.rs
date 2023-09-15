@@ -1,7 +1,7 @@
 use bevy::prelude::{Component, GlobalTransform, Vec3};
 use serde::Deserialize;
 
-use crate::goal::GOAL_HALF_WIDTH;
+use crate::goal::GOAL_WIDTH;
 
 pub const SIDES: [Side; 4] = [Side::Bottom, Side::Right, Side::Top, Side::Left];
 
@@ -22,10 +22,10 @@ impl Side {
         let ball_translation = ball_transform.translation();
 
         match *self {
-            Self::Bottom => GOAL_HALF_WIDTH - ball_translation.z,
-            Self::Right => GOAL_HALF_WIDTH - ball_translation.x,
-            Self::Top => GOAL_HALF_WIDTH + ball_translation.z,
-            Self::Left => GOAL_HALF_WIDTH + ball_translation.x,
+            Self::Bottom => (0.5 * GOAL_WIDTH) - ball_translation.z,
+            Self::Right => (0.5 * GOAL_WIDTH) - ball_translation.x,
+            Self::Top => (0.5 * GOAL_WIDTH) + ball_translation.z,
+            Self::Left => (0.5 * GOAL_WIDTH) + ball_translation.x,
         }
     }
 

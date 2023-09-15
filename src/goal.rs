@@ -14,7 +14,6 @@ use crate::{
 };
 
 pub const GOAL_WIDTH: f32 = 1.0;
-pub const GOAL_HALF_WIDTH: f32 = 0.5 * GOAL_WIDTH;
 
 /// Marks a goal entity so that crabs and walls can use it as a parent, and
 /// so balls can score against it.

@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     ball::Ball,
     collider::Collider,
-    crab::{Crab, CRAB_HALF_WIDTH, CRAB_START_POSITION, CRAB_WIDTH},
+    crab::{Crab, CRAB_START_POSITION, CRAB_WIDTH},
     debug_mode::DebugModeSet,
     movement::{Force, Movement, StoppingDistance},
     side::Side,
@@ -111,7 +111,7 @@ fn move_ai_crabs_toward_their_targeted_balls(
             (crab_stop_position - target_goal_position).abs();
 
         if distance_from_crab_center
-            < CRAB_HALF_WIDTH * AI_CENTER_HIT_AREA_PERCENTAGE
+            < 0.5 * CRAB_WIDTH * AI_CENTER_HIT_AREA_PERCENTAGE
         {
             commands.entity(entity).remove::<Force>();
         } else {

@@ -6,7 +6,7 @@ use crate::{
     barrier::BARRIER_RADIUS,
     collider::{Collider, ColliderSet},
     debug_mode::{DebugModeSet, DEBUGGING_RAY_LENGTH},
-    goal::GOAL_HALF_WIDTH,
+    goal::GOAL_WIDTH,
     movement::{
         Force, Heading, Movement, MovementSet, Speed, StoppingDistance,
     },
@@ -15,12 +15,10 @@ use crate::{
 
 pub const CRAB_WIDTH: f32 = 0.2;
 pub const CRAB_DEPTH: f32 = 0.1;
-pub const CRAB_HALF_WIDTH: f32 = 0.5 * CRAB_WIDTH;
-pub const CRAB_HALF_DEPTH: f32 = 0.5 * CRAB_DEPTH;
 pub const CRAB_SCALE: Vec3 = Vec3::new(CRAB_WIDTH, CRAB_DEPTH, CRAB_DEPTH);
 pub const CRAB_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
 pub const CRAB_POSITION_X_MAX: f32 =
-    GOAL_HALF_WIDTH - BARRIER_RADIUS - CRAB_HALF_WIDTH;
+    (0.5 * GOAL_WIDTH) - BARRIER_RADIUS - (0.5 * CRAB_WIDTH);
 pub const CRAB_POSITION_X_MAX_RANGE: RangeInclusive<f32> =
     -CRAB_POSITION_X_MAX..=CRAB_POSITION_X_MAX;
 
@@ -98,9 +96,9 @@ fn crab_and_ball_collisions(
                 crab_transform.translation.x - ball_goal_position;
             let ball_distance_to_crab = ball_to_crab.abs();
 
-            if ball_distance_to_goal > BALL_RADIUS + CRAB_HALF_DEPTH
-                || ball_distance_to_crab > BALL_RADIUS + CRAB_HALF_WIDTH
-                || ball_heading.0.dot(axis) <= 0.0
+            if ball_distance_to_goal > BALL_RADIUS + (0.5 * CRAB_DEPTH)
+                || ball_distance_to_crab > BALL_RADIUS + (0.5 * CRAB_WIDTH)
+                || ball_heading.0.dot(axis) <= -0.5 * CRAB_DEPTH
             {
                 continue;
             }
@@ -185,7 +183,7 @@ fn calculate_ball_deflection_direction(
     // crab. This way players can influence where the ball will go.
     let rotation_away_from_center = Quat::from_rotation_y(
         std::f32::consts::FRAC_PI_4
-            * (ball_to_crab_horizontal_distance / CRAB_HALF_WIDTH)
+            * (ball_to_crab_horizontal_distance / (0.5 * CRAB_WIDTH))
                 .clamp(-1.0, 1.0),
     );
 
