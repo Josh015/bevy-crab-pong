@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    ball::Ball,
+    ball::{Ball, BALL_RADIUS},
     collider::{Collider, ColliderSet},
     goal::GOAL_WIDTH,
     movement::{Heading, Movement},
@@ -44,7 +44,9 @@ fn wall_and_ball_collisions(
             let axis = side.axis();
 
             // Check that the ball is touching and facing the wall.
-            if ball_distance > WALL_RADIUS || ball_heading.0.dot(axis) <= 0.0 {
+            if ball_distance > BALL_RADIUS + WALL_RADIUS
+                || ball_heading.0.dot(axis) <= 0.0
+            {
                 continue;
             }
 

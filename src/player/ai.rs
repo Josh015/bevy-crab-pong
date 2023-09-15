@@ -1,18 +1,17 @@
 use bevy::prelude::*;
 
 use crate::{
-    ball::Ball,
+    ball::{Ball, BALL_RADIUS},
     collider::Collider,
-    crab::{
-        Crab, CRAB_CENTER_HIT_AREA_PERCENTAGE, CRAB_HALF_WIDTH,
-        CRAB_START_POSITION, CRAB_WIDTH,
-    },
+    crab::{Crab, CRAB_HALF_WIDTH, CRAB_START_POSITION, CRAB_WIDTH},
     debug_mode::DebugModeSet,
     movement::{Force, Movement, StoppingDistance},
     side::Side,
 };
 
 use super::PlayerSet;
+
+pub const AI_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.50;
 
 /// Marks a [`Crab`] entity as being controlled by AI.
 #[derive(Component, Debug)]
@@ -112,7 +111,7 @@ fn move_ai_crabs_toward_their_targeted_balls(
             (crab_stop_position - target_goal_position).abs();
 
         if distance_from_crab_center
-            < CRAB_CENTER_HIT_AREA_PERCENTAGE * CRAB_HALF_WIDTH
+            < BALL_RADIUS + CRAB_HALF_WIDTH * AI_CENTER_HIT_AREA_PERCENTAGE
         {
             commands.entity(entity).remove::<Force>();
         } else {
@@ -159,8 +158,7 @@ fn display_crab_ideal_hit_area_gizmos(
     for global_transform in &crabs_query {
         let mut hit_area_transform = global_transform.compute_transform();
 
-        hit_area_transform.scale.x =
-            CRAB_CENTER_HIT_AREA_PERCENTAGE * CRAB_WIDTH;
+        hit_area_transform.scale.x = AI_CENTER_HIT_AREA_PERCENTAGE * CRAB_WIDTH;
         gizmos.cuboid(hit_area_transform, Color::YELLOW);
     }
 }

@@ -1,7 +1,7 @@
 use bevy::prelude::{Component, GlobalTransform, Vec3};
 use serde::Deserialize;
 
-use crate::{ball::BALL_RADIUS, goal::GOAL_HALF_WIDTH};
+use crate::goal::GOAL_HALF_WIDTH;
 
 pub const SIDES: [Side; 4] = [Side::Bottom, Side::Right, Side::Top, Side::Left];
 
@@ -15,17 +15,17 @@ pub enum Side {
 }
 
 impl Side {
-    /// Perpendicular distance from a given goal to a ball's edge.
+    /// Perpendicular distance from a given goal to a ball's center.
     ///
     /// Positive distances for inside the beach, negative for out of bounds.
     pub fn distance_to_ball(&self, ball_transform: &GlobalTransform) -> f32 {
         let ball_translation = ball_transform.translation();
 
         match *self {
-            Self::Bottom => GOAL_HALF_WIDTH - ball_translation.z - BALL_RADIUS,
-            Self::Right => GOAL_HALF_WIDTH - ball_translation.x - BALL_RADIUS,
-            Self::Top => GOAL_HALF_WIDTH + ball_translation.z - BALL_RADIUS,
-            Self::Left => GOAL_HALF_WIDTH + ball_translation.x - BALL_RADIUS,
+            Self::Bottom => GOAL_HALF_WIDTH - ball_translation.z,
+            Self::Right => GOAL_HALF_WIDTH - ball_translation.x,
+            Self::Top => GOAL_HALF_WIDTH + ball_translation.z,
+            Self::Left => GOAL_HALF_WIDTH + ball_translation.x,
         }
     }
 
