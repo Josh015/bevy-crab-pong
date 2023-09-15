@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    ball::{Ball, BALL_RADIUS},
+    ball::Ball,
     collider::Collider,
     crab::{Crab, CRAB_HALF_WIDTH, CRAB_START_POSITION, CRAB_WIDTH},
     debug_mode::DebugModeSet,
@@ -11,7 +11,7 @@ use crate::{
 
 use super::PlayerSet;
 
-pub const AI_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.50;
+pub const AI_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.70;
 
 /// Marks a [`Crab`] entity as being controlled by AI.
 #[derive(Component, Debug)]
@@ -111,7 +111,7 @@ fn move_ai_crabs_toward_their_targeted_balls(
             (crab_stop_position - target_goal_position).abs();
 
         if distance_from_crab_center
-            < BALL_RADIUS + CRAB_HALF_WIDTH * AI_CENTER_HIT_AREA_PERCENTAGE
+            < CRAB_HALF_WIDTH * AI_CENTER_HIT_AREA_PERCENTAGE
         {
             commands.entity(entity).remove::<Force>();
         } else {
