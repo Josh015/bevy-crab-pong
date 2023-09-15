@@ -44,13 +44,11 @@ fn spawn_wall_on_side(
     beach: Option<Res<Beach>>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
-    let Some((goal_entity, _)) =
-        goals_query.iter().find(|(_, side)| **side == goal_side)
-    else {
-        return;
-    };
+    let (goal_entity, _) = goals_query
+        .iter()
+        .find(|(_, side)| **side == goal_side)
+        .unwrap();
 
-    // Spawn wall in goal.
     commands.entity(goal_entity).with_children(|builder| {
         builder.spawn((
             Wall,
@@ -98,12 +96,6 @@ fn spawn_crab_on_side(
     mut materials: ResMut<Assets<StandardMaterial>>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
-    let Some((goal_entity, _)) =
-        goals_query.iter().find(|(_, side)| **side == goal_side)
-    else {
-        return;
-    };
-
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
     let crab_config = &game_config.modes[game_mode.0].competitors[&goal_side];
     let material_handle = materials.add(StandardMaterial {
@@ -111,6 +103,10 @@ fn spawn_crab_on_side(
         base_color: Color::hex(&crab_config.color).unwrap(),
         ..default()
     });
+    let (goal_entity, _) = goals_query
+        .iter()
+        .find(|(_, side)| **side == goal_side)
+        .unwrap();
 
     commands.entity(goal_entity).with_children(|builder| {
         let mut crab = builder.spawn((
