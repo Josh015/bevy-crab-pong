@@ -3,7 +3,7 @@ use bevy::{prelude::*, utils::HashMap};
 use crate::{
     assets::{GameAssets, GameConfig},
     collider::ColliderSet,
-    goal::{GoalEliminatedEvent, GoalScoredEvent},
+    goal::GoalScoredEvent,
     side::Side,
     state::GameState,
 };
@@ -19,7 +19,7 @@ pub struct TeamMember {
 #[derive(Debug, Default, Resource)]
 pub struct GameMode(pub usize);
 
-/// All the competitors in the current game.
+/// All the competitors in the current round.
 #[derive(Debug, Default, Resource)]
 pub struct Competitors(pub HashMap<Side, TeamMember>);
 
@@ -27,7 +27,11 @@ pub struct Competitors(pub HashMap<Side, TeamMember>);
 #[derive(Debug, Default, Resource)]
 pub struct WinningTeam(pub usize);
 
-/// Systems that must run game rules at the end.
+/// Signals that a competitor has been eliminated from the game.
+#[derive(Clone, Component, Debug, Event)]
+pub struct CompetitorEliminatedEvent(pub Side);
+
+/// Set containing game rules systems.
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct GameSet;
 
@@ -37,6 +41,7 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<GameMode>()
             .init_resource::<Competitors>()
+            .add_event::<CompetitorEliminatedEvent>()
             .configure_set(PostUpdate, GameSet.after(ColliderSet))
             .add_systems(OnExit(GameState::Loading), reset_competitors)
             .add_systems(OnExit(GameState::StartMenu), reset_competitors)
@@ -76,7 +81,7 @@ fn reset_competitors(
 
 fn decrement_competitor_hp_when_their_goal_gets_scored(
     mut goal_scored_events: EventReader<GoalScoredEvent>,
-    mut goal_eliminated_events: EventWriter<GoalEliminatedEvent>,
+    mut competitor_eliminated_events: EventWriter<CompetitorEliminatedEvent>,
     mut competitors: ResMut<Competitors>,
 ) {
     // Decrement a competitor's HP and potentially eliminate its goal.
@@ -88,7 +93,7 @@ fn decrement_competitor_hp_when_their_goal_gets_scored(
         competitor.hit_points = competitor.hit_points.saturating_sub(1);
 
         if competitor.hit_points == 0 {
-            goal_eliminated_events.send(GoalEliminatedEvent(*side));
+            competitor_eliminated_events.send(CompetitorEliminatedEvent(*side));
         }
     }
 }
@@ -96,11 +101,11 @@ fn decrement_competitor_hp_when_their_goal_gets_scored(
 fn check_for_game_over_and_winner(
     mut commands: Commands,
     mut next_game_state: ResMut<NextState<GameState>>,
-    mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
+    mut competitor_eliminated_events: EventReader<CompetitorEliminatedEvent>,
     competitors: Res<Competitors>,
 ) {
     // Check if only one team's competitors still have HP.
-    for GoalEliminatedEvent(_) in goal_eliminated_events.iter() {
+    for CompetitorEliminatedEvent(_) in competitor_eliminated_events.iter() {
         let Some((_, survivor)) = competitors
             .0
             .iter()
@@ -117,6 +122,7 @@ fn check_for_game_over_and_winner(
         if is_winner {
             commands.insert_resource(WinningTeam(survivor.team));
             next_game_state.set(GameState::StartMenu);
+            competitor_eliminated_events.clear();
             info!("Game Over: Team {:?} won!", survivor.team);
             break;
         }

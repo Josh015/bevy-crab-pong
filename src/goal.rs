@@ -6,7 +6,7 @@ use crate::{
     collider::{Collider, ColliderSet},
     crab::Crab,
     fade::Fade,
-    game::GameSet,
+    game::{CompetitorEliminatedEvent, GameSet},
     movement::Movement,
     object::Object,
     side::Side,
@@ -21,20 +21,15 @@ pub const GOAL_HALF_WIDTH: f32 = 0.5 * GOAL_WIDTH;
 #[derive(Component, Debug)]
 pub struct Goal;
 
-/// Signals a goal being scored in by a ball.
+/// Signals that a goal has been scored in by a ball.
 #[derive(Clone, Component, Debug, Event)]
 pub struct GoalScoredEvent(pub Side);
-
-/// Signals a goal being eliminated from the game.
-#[derive(Clone, Component, Debug, Event)]
-pub struct GoalEliminatedEvent(pub Side);
 
 pub struct GoalPlugin;
 
 impl Plugin for GoalPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<GoalScoredEvent>()
-            .add_event::<GoalEliminatedEvent>()
             .add_systems(
                 Update,
                 allow_only_one_crab_or_wall_per_goal.after(SpewSystemSet),
@@ -92,10 +87,10 @@ fn check_if_any_balls_have_scored_in_any_goals(
 }
 
 fn block_eliminated_goals_with_walls(
-    mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
+    mut competitor_eliminated_events: EventReader<CompetitorEliminatedEvent>,
     mut spawn_on_side_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
-    for GoalEliminatedEvent(side) in goal_eliminated_events.iter() {
+    for CompetitorEliminatedEvent(side) in competitor_eliminated_events.iter() {
         spawn_on_side_events.send(SpawnEvent::with_data(Object::Wall, *side));
         info!("Goal({:?}): Eliminated", side);
     }
