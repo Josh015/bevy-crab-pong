@@ -50,6 +50,21 @@ impl Plugin for CrabPlugin {
     }
 }
 
+fn calculate_ball_deflection_direction(
+    ball_to_crab_horizontal_distance: f32,
+    paddle_axis: Vec3,
+) -> Vec3 {
+    // Deflection angle is based on the ball's distance from the center of the
+    // crab. This way players can influence where the ball will go.
+    let rotation_away_from_center = Quat::from_rotation_y(
+        std::f32::consts::FRAC_PI_4
+            * (ball_to_crab_horizontal_distance / CRAB_HALF_WIDTH)
+                .clamp(-1.0, 1.0),
+    );
+
+    rotation_away_from_center * -paddle_axis
+}
+
 fn restrict_crab_movement_range(
     mut commands: Commands,
     mut query: Query<
@@ -88,7 +103,7 @@ fn crab_and_ball_collisions(
     >,
     crabs_query: Query<(&Side, &Transform), (With<Crab>, With<Collider>)>,
 ) {
-    for (entity, ball_transform, ball_heading) in &balls_query {
+    for (ball_entity, ball_transform, ball_heading) in &balls_query {
         for (side, crab_transform) in &crabs_query {
             // Check that the ball is touching the crab and facing the goal.
             let axis = side.axis();
@@ -105,17 +120,13 @@ fn crab_and_ball_collisions(
                 continue;
             }
 
-            // Rotate paddle axis away based on ball distance to the center of
-            // the paddle. A little less predictable than simply deflecting it.
-            let rotation_away_from_center = Quat::from_rotation_y(
-                std::f32::consts::FRAC_PI_4 * (ball_to_crab / CRAB_HALF_WIDTH),
-            );
+            let ball_deflection_direction =
+                calculate_ball_deflection_direction(ball_to_crab, axis);
 
             commands
-                .entity(entity)
-                .insert(Heading(rotation_away_from_center * -axis));
-
-            info!("Ball({:?}): Collided Crab({:?})", entity, side);
+                .entity(ball_entity)
+                .insert(Heading(ball_deflection_direction));
+            info!("Ball({:?}): Collided Crab({:?})", ball_entity, side);
             break;
         }
     }
@@ -168,15 +179,13 @@ fn display_predicted_ball_deflection_direction_gizmos(
                 continue;
             }
 
-            let rotation_away_from_center = Quat::from_rotation_y(
-                std::f32::consts::FRAC_PI_4 * (ball_to_crab / CRAB_HALF_WIDTH),
-            );
+            let ball_deflection_direction =
+                calculate_ball_deflection_direction(ball_to_crab, axis);
 
             gizmos.line(
                 crab_global_transform.translation(),
                 crab_global_transform.translation()
-                    + DEBUGGING_RAY_LENGTH
-                        * (rotation_away_from_center * -axis),
+                    + DEBUGGING_RAY_LENGTH * ball_deflection_direction,
                 Color::WHITE,
             );
         }
