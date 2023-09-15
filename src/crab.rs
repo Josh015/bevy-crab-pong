@@ -98,7 +98,7 @@ fn crab_and_ball_collisions(
 
             if ball_distance_to_goal > BALL_RADIUS + (0.5 * CRAB_DEPTH)
                 || ball_distance_to_crab > BALL_RADIUS + (0.5 * CRAB_WIDTH)
-                || ball_heading.0.dot(axis) <= -0.5 * CRAB_DEPTH
+                || ball_heading.0.dot(axis) <= 0.0
             {
                 continue;
             }
