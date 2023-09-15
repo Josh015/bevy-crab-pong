@@ -50,21 +50,6 @@ impl Plugin for CrabPlugin {
     }
 }
 
-fn calculate_ball_deflection_direction(
-    ball_to_crab_horizontal_distance: f32,
-    paddle_axis: Vec3,
-) -> Vec3 {
-    // Deflection angle is based on the ball's distance from the center of the
-    // crab. This way players can influence where the ball will go.
-    let rotation_away_from_center = Quat::from_rotation_y(
-        std::f32::consts::FRAC_PI_4
-            * (ball_to_crab_horizontal_distance / CRAB_HALF_WIDTH)
-                .clamp(-1.0, 1.0),
-    );
-
-    rotation_away_from_center * -paddle_axis
-}
-
 fn restrict_crab_movement_range(
     mut commands: Commands,
     mut query: Query<
@@ -190,4 +175,19 @@ fn display_predicted_ball_deflection_direction_gizmos(
             );
         }
     }
+}
+
+fn calculate_ball_deflection_direction(
+    ball_to_crab_horizontal_distance: f32,
+    paddle_axis: Vec3,
+) -> Vec3 {
+    // Deflection angle is based on the ball's distance from the center of the
+    // crab. This way players can influence where the ball will go.
+    let rotation_away_from_center = Quat::from_rotation_y(
+        std::f32::consts::FRAC_PI_4
+            * (ball_to_crab_horizontal_distance / CRAB_HALF_WIDTH)
+                .clamp(-1.0, 1.0),
+    );
+
+    rotation_away_from_center * -paddle_axis
 }

@@ -74,11 +74,6 @@ impl Plugin for MovementPlugin {
     }
 }
 
-fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
-    let s = speed.abs().sub(delta_speed).max(0.0);
-    speed.max(-s).min(s) // clamp() panics when min == max.
-}
-
 fn acceleration(
     time: Res<Time>,
     mut query: Query<
@@ -140,4 +135,9 @@ fn stopping_distance(
             current_speed = decelerate_speed(current_speed, delta_speed);
         }
     }
+}
+
+fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
+    let s = speed.abs().sub(delta_speed).max(0.0);
+    speed.max(-s).min(s) // clamp() panics when min == max.
 }
