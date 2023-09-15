@@ -5,7 +5,7 @@ use bevy::{
 };
 use bevy_asset_loader::prelude::*;
 use serde::Deserialize;
-use std::num::NonZeroU8;
+use std::num::{NonZeroU8, NonZeroUsize};
 
 use crate::side::Side;
 
@@ -34,7 +34,7 @@ pub struct ModeConfig {
 #[derive(Debug, Deserialize)]
 pub struct CompetitorConfig {
     pub color: String,
-    pub team: usize,
+    pub team: NonZeroUsize,
     pub player: Player,
     pub hit_points: NonZeroU8,
 }

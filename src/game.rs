@@ -1,3 +1,5 @@
+use std::num::NonZeroUsize;
+
 use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
@@ -9,9 +11,9 @@ use crate::{
 };
 
 /// A member of a competing team.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct TeamMember {
-    pub team: usize,
+    pub team: NonZeroUsize,
     pub hit_points: u8,
 }
 
@@ -49,7 +51,7 @@ impl Plugin for GamePlugin {
                 PostUpdate,
                 (
                     decrement_competitor_hp_when_their_goal_gets_scored,
-                    check_for_game_over_and_winner,
+                    check_for_game_over,
                 )
                     .chain()
                     .in_set(GameSet),
@@ -86,9 +88,7 @@ fn decrement_competitor_hp_when_their_goal_gets_scored(
 ) {
     // Decrement a competitor's HP and potentially eliminate their goal.
     for GoalScoredEvent(side) in goal_scored_events.iter() {
-        let Some(competitor) = competitors.0.get_mut(side) else {
-            continue;
-        };
+        let competitor = competitors.0.get_mut(side).unwrap();
 
         competitor.hit_points = competitor.hit_points.saturating_sub(1);
 
@@ -98,32 +98,37 @@ fn decrement_competitor_hp_when_their_goal_gets_scored(
     }
 }
 
-fn check_for_game_over_and_winner(
+fn check_for_game_over(
     mut commands: Commands,
     mut next_game_state: ResMut<NextState<GameState>>,
     mut competitor_eliminated_events: EventReader<CompetitorEliminatedEvent>,
     competitors: Res<Competitors>,
 ) {
-    // Check if only one team's competitors still have HP.
     for CompetitorEliminatedEvent(_) in competitor_eliminated_events.iter() {
-        let Some((_, survivor)) = competitors
+        let mut winning_team = None;
+        let survivor = competitors
             .0
             .iter()
-            .find(|(_, competitor)| competitor.hit_points > 0)
-        else {
-            continue;
-        };
+            .find(|(_, competitor)| competitor.hit_points > 0);
 
-        let is_winner = competitors.0.iter().all(|(_, competitor)| {
-            competitor.team == survivor.team || competitor.hit_points == 0
-        });
+        if let Some((_, survivor)) = survivor {
+            let is_winner = competitors.0.iter().all(|(_, competitor)| {
+                competitor.team == survivor.team || competitor.hit_points == 0
+            });
 
-        // Declare a winner and navigate back to the Start Menu.
-        if is_winner {
-            commands.insert_resource(WinningTeam(survivor.team));
+            if is_winner {
+                winning_team = Some(usize::from(survivor.team));
+            }
+        } else {
+            // Nobody survived. It's a draw!
+            winning_team = Some(0);
+        }
+
+        if let Some(winning_team) = winning_team {
+            commands.insert_resource(WinningTeam(winning_team));
             next_game_state.set(GameState::StartMenu);
             competitor_eliminated_events.clear();
-            info!("Game Over: Team {:?} won!", survivor.team);
+            info!("Game Over: Team {:?} won!", winning_team);
             break;
         }
     }
