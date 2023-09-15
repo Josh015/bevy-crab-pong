@@ -52,6 +52,7 @@ pub struct AccelerationBundle {
     pub stopping_distance: StoppingDistance,
 }
 
+/// For systems that deal with movement that affects [`Transform`].
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct MovementSet;
 

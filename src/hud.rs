@@ -7,7 +7,7 @@ use crate::{
     state::{GameState, LoadedSet},
 };
 
-/// Marks a [`Text`] entity to display the HP for the associated [`HitPoints`].
+/// Marks a [`Text`] entity to display the HP for an associated [`Side`].
 #[derive(Component, Debug)]
 pub struct HitPointsUi;
 

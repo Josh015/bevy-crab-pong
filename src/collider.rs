@@ -6,6 +6,7 @@ use crate::state::GameState;
 #[derive(Component, Debug)]
 pub struct Collider;
 
+/// For systems that handle collisions that modify a [`Ball`](crate::ball::Ball) [`Heading`](crate::movement::Heading).
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct ColliderSet;
 

@@ -17,7 +17,7 @@ pub const AI_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.70;
 #[derive(Component, Debug)]
 pub struct PlayerAi;
 
-/// The [`Ball`] entity targeted by an [`AiPlayer`] [`Crab`] entity.
+/// The [`Ball`] entity targeted by an [`PlayerAi`] [`Crab`] entity.
 #[derive(Clone, Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct Target(pub Entity);

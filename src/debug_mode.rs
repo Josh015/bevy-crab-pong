@@ -8,6 +8,7 @@ pub const DEBUGGING_RAY_LENGTH: f32 = 20.0;
 #[derive(Debug, Default, Resource)]
 pub struct IsDebuggingMode(pub bool);
 
+/// For systems that use gizmos for debugging.
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct DebugModeSet;
 
