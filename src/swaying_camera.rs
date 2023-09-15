@@ -21,9 +21,9 @@ impl Plugin for SwayingCameraPlugin {
 
 fn make_camera_slowly_sway_back_and_forth(
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &SwayingCamera), With<Camera3d>>,
+    mut query: Query<(&SwayingCamera, &mut Transform), With<Camera3d>>,
 ) {
-    let (mut transform, swaying_camera) = query.single_mut();
+    let (swaying_camera, mut transform) = query.single_mut();
     let x = (time.elapsed_seconds() * swaying_camera.speed).sin()
         * (0.5 * GOAL_WIDTH);
 

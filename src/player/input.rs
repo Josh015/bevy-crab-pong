@@ -17,15 +17,15 @@ impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            handle_input_for_player_controlled_crabs.in_set(PlayerSet),
+            move_crabs_based_on_user_input.in_set(PlayerSet),
         );
     }
 }
 
-fn handle_input_for_player_controlled_crabs(
+fn move_crabs_based_on_user_input(
     keyboard_input: Res<Input<KeyCode>>,
     mut commands: Commands,
-    crabs_query: Query<Entity, (With<Crab>, With<PlayerInput>, With<Movement>)>,
+    crabs_query: Query<Entity, (With<PlayerInput>, With<Crab>, With<Movement>)>,
 ) {
     // Makes a Crab entity move left/right in response to the
     // keyboard's corresponding arrows keys.

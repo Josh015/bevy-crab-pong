@@ -84,7 +84,7 @@ fn decrement_competitor_hp_when_their_goal_gets_scored(
     mut competitor_eliminated_events: EventWriter<CompetitorEliminatedEvent>,
     mut competitors: ResMut<Competitors>,
 ) {
-    // Decrement a competitor's HP and potentially eliminate its goal.
+    // Decrement a competitor's HP and potentially eliminate their goal.
     for GoalScoredEvent(side) in goal_scored_events.iter() {
         let Some(competitor) = competitors.0.get_mut(side) else {
             continue;

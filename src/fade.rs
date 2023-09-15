@@ -98,13 +98,13 @@ fn animate_fade_effect(
     time: Res<Time>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<(
+        &mut Fade,
         &mut Transform,
         &Handle<StandardMaterial>,
-        &mut Fade,
         &FadeAnimation,
     )>,
 ) {
-    for (mut transform, material, mut fade, animation) in &mut query {
+    for (mut fade, mut transform, material, animation) in &mut query {
         let weight = match *fade {
             Fade::In(ref mut progress) => {
                 progress.tick(time.delta());

@@ -73,8 +73,8 @@ fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
 
     for (side, style) in &hp_ui_configs {
         commands.spawn((
-            *side,
             HitPointsUi,
+            *side,
             TextBundle {
                 style: style.clone(),
                 text: Text::from_section(
