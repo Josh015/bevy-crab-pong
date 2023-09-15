@@ -4,7 +4,7 @@ use spew::prelude::*;
 use crate::{
     ball::{Ball, BALL_RADIUS},
     collider::{Collider, ColliderSet},
-    crab::Crab,
+    crab::{Crab, CRAB_DEPTH},
     fade::Fade,
     game::{CompetitorEliminatedEvent, GameSet},
     movement::Movement,
@@ -76,7 +76,7 @@ fn check_if_any_balls_have_scored_in_any_goals(
         for side in &crabs_query {
             let ball_distance = side.distance_to_ball(global_transform);
 
-            if ball_distance <= BALL_RADIUS {
+            if ball_distance <= BALL_RADIUS - (0.5 * CRAB_DEPTH) {
                 commands.entity(ball_entity).insert(Fade::out_default());
                 goal_scored_events.send(GoalScoredEvent(*side));
                 info!("Ball({:?}): Scored Goal({:?})", ball_entity, side);
