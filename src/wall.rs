@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use crate::{
     ball::{Ball, BALL_RADIUS},
     collider::{Collider, ColliderSet},
-    goal::GOAL_WIDTH,
     movement::{Heading, Movement},
     side::Side,
     util::reflect,
@@ -12,8 +11,6 @@ use crate::{
 pub const WALL_DIAMETER: f32 = 0.05;
 pub const WALL_HEIGHT: f32 = 0.1;
 pub const WALL_RADIUS: f32 = 0.5 * WALL_DIAMETER;
-pub const WALL_SCALE: Vec3 =
-    Vec3::new(GOAL_WIDTH, WALL_DIAMETER, WALL_DIAMETER);
 
 /// Makes an entity a wall that deflects all balls away from a goal.
 #[derive(Component, Debug)]

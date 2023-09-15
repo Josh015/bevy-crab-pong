@@ -5,16 +5,16 @@ use crate::{
     assets::{CachedAssets, GameAssets, GameConfig, Player},
     beach::Beach,
     collider::Collider,
-    crab::{Crab, CRAB_SCALE, CRAB_START_POSITION},
+    crab::{Crab, CRAB_DEPTH, CRAB_START_POSITION, CRAB_WIDTH},
     fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
     game::GameMode,
-    goal::Goal,
+    goal::{Goal, GOAL_WIDTH},
     movement::{
         Acceleration, AccelerationBundle, Heading, MaxSpeed, VelocityBundle,
     },
     player::{ai::PlayerAi, input::PlayerInput},
     side::Side,
-    wall::{Wall, WALL_HEIGHT, WALL_SCALE},
+    wall::{Wall, WALL_DIAMETER, WALL_HEIGHT},
 };
 
 /// Objects that can be spawned via Spew.
@@ -55,7 +55,11 @@ fn spawn_wall_on_side(
             side,
             FadeBundle {
                 fade_animation: FadeAnimation::Scale {
-                    max_scale: WALL_SCALE,
+                    max_scale: Vec3::new(
+                        GOAL_WIDTH,
+                        WALL_DIAMETER,
+                        WALL_DIAMETER,
+                    ),
                     axis_mask: Vec3::new(0.0, 1.0, 1.0),
                 },
                 fade: Fade::In(Timer::from_seconds(
@@ -114,7 +118,7 @@ fn spawn_crab_on_side(
             side,
             FadeBundle {
                 fade_animation: FadeAnimation::Scale {
-                    max_scale: CRAB_SCALE,
+                    max_scale: Vec3::new(CRAB_WIDTH, CRAB_DEPTH, CRAB_DEPTH),
                     axis_mask: Vec3::ONE,
                 },
                 ..default()

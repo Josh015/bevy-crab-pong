@@ -19,11 +19,6 @@ use crate::{
 };
 
 pub const BEACH_CENTER_POINT: Vec3 = Vec3::ZERO;
-pub const BEACH_BALL_SPAWNER_POSITION: Vec3 = Vec3::new(
-    BEACH_CENTER_POINT.x,
-    BEACH_CENTER_POINT.y + BALL_HEIGHT,
-    BEACH_CENTER_POINT.z,
-);
 
 /// Global data related to the play area.
 #[derive(Debug, Default, Resource)]
@@ -242,7 +237,11 @@ fn spawn_balls_sequentially_as_needed(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(BALL_DIAMETER),
                         Quat::IDENTITY,
-                        BEACH_BALL_SPAWNER_POSITION,
+                        Vec3::new(
+                            BEACH_CENTER_POINT.x,
+                            BEACH_CENTER_POINT.y + BALL_HEIGHT,
+                            BEACH_CENTER_POINT.z,
+                        ),
                     ),
                 ),
                 ..default()
