@@ -129,10 +129,9 @@ fn spawn_crab_on_side(
                     heading: Heading(Vec3::X),
                     ..default()
                 },
-                max_speed: MaxSpeed(game_config.crab_max_speed),
+                max_speed: MaxSpeed(crab_config.max_speed),
                 acceleration: Acceleration(
-                    game_config.crab_max_speed
-                        / game_config.crab_seconds_to_max_speed,
+                    crab_config.max_speed / crab_config.seconds_to_max_speed,
                 ),
                 ..default()
             },

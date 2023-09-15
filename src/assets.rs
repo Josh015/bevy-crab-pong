@@ -17,8 +17,6 @@ pub struct GameConfig {
     pub new_game_message: String,
     pub swaying_camera_speed: f32,
     pub ocean_scroll_speed: f32,
-    pub crab_max_speed: f32,
-    pub crab_seconds_to_max_speed: f32,
     pub ball_speed: f32,
     pub team_win_messages: Vec<String>,
     pub modes: Vec<ModeConfig>,
@@ -37,6 +35,8 @@ pub struct CompetitorConfig {
     pub team: NonZeroUsize,
     pub player: Player,
     pub hit_points: NonZeroU8,
+    pub max_speed: f32,
+    pub seconds_to_max_speed: f32,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
