@@ -3,13 +3,12 @@ pub mod collider;
 pub mod debug_mode;
 pub mod fade;
 pub mod game;
-pub mod hud;
 pub mod level;
-pub mod menu;
 pub mod movement;
 pub mod object;
 pub mod player;
 pub mod state;
+pub mod ui;
 
 use bevy::prelude::*;
 
@@ -23,13 +22,12 @@ impl Plugin for GamePlugin {
             debug_mode::DebugModePlugin,
             fade::FadePlugin,
             game::GamePlugin,
-            hud::HudPlugin,
             level::LevelPlugin,
-            menu::MenuPlugin,
             movement::MovementPlugin,
             object::ObjectPlugin,
             player::PlayerPlugin,
             state::StatePlugin,
+            ui::UiPlugin,
         ));
     }
 }
