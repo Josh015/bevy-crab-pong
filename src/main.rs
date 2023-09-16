@@ -1,5 +1,12 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
+pub mod common;
+pub mod game;
+pub mod level;
+pub mod object;
+pub mod player;
+pub mod ui;
+
 use bevy::{
     asset::ChangeWatcher,
     prelude::*,
@@ -29,7 +36,14 @@ fn main() {
         )
         .insert_resource(Msaa::default())
         .insert_resource(ClearColor(Color::rgba(0.7, 0.9, 1.0, 1.0)))
-        .add_plugins(bevy_crab_pong::BevyCrabPongPlugin)
         .add_systems(Update, bevy::window::close_on_esc)
+        .add_plugins((
+            common::CommonPlugin,
+            game::GamePlugin,
+            level::LevelPlugin,
+            object::ObjectPlugin,
+            player::PlayerPlugin,
+            ui::UiPlugin,
+        ))
         .run();
 }
