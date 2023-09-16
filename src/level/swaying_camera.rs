@@ -11,7 +11,7 @@ use crate::{
 pub struct SwayingCamera {
     pub speed: f32,
 }
-pub struct SwayingCameraPlugin;
+pub(super) struct SwayingCameraPlugin;
 
 impl Plugin for SwayingCameraPlugin {
     fn build(&self, app: &mut App) {

@@ -35,7 +35,7 @@ pub struct WinningTeam(pub usize);
 #[derive(Clone, Component, Debug, Event)]
 pub struct CompetitorEliminatedEvent(pub Side);
 
-pub struct CompetitorsPlugin;
+pub(super) struct CompetitorsPlugin;
 
 impl Plugin for CompetitorsPlugin {
     fn build(&self, app: &mut App) {

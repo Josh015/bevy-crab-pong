@@ -13,7 +13,7 @@ use crate::{
 #[derive(Component, Debug)]
 pub struct HitPointsUi;
 
-pub struct HudPlugin;
+pub(super) struct HudPlugin;
 
 impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {

@@ -25,7 +25,7 @@ pub struct PlayerAi;
 #[component(storage = "SparseSet")]
 pub struct Target(pub Entity);
 
-pub struct AiPlugin;
+pub(super) struct AiPlugin;
 
 impl Plugin for AiPlugin {
     fn build(&self, app: &mut App) {

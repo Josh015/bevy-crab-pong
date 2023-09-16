@@ -22,7 +22,7 @@ pub struct Collider;
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct ColliderSet;
 
-pub struct ColliderPlugin;
+pub(super) struct ColliderPlugin;
 
 impl Plugin for ColliderPlugin {
     fn build(&self, app: &mut App) {

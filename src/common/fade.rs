@@ -67,7 +67,7 @@ pub struct FadeBundle {
     pub fade: Fade,
 }
 
-pub struct FadePlugin;
+pub(super) struct FadePlugin;
 
 impl Plugin for FadePlugin {
     fn build(&self, app: &mut App) {

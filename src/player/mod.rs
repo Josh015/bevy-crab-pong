@@ -9,7 +9,7 @@ pub mod input;
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct PlayerSet;
 
-pub struct PlayerPlugin;
+pub(super) struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {

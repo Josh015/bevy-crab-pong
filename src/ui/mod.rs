@@ -4,7 +4,7 @@ pub mod menu;
 
 use bevy::prelude::*;
 
-pub struct UiPlugin;
+pub(super) struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {

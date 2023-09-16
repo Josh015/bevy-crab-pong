@@ -15,7 +15,7 @@ pub enum Object {
     Wall,
 }
 
-pub struct ObjectPlugin;
+pub(super) struct ObjectPlugin;
 
 impl Plugin for ObjectPlugin {
     fn build(&self, app: &mut App) {

@@ -11,7 +11,7 @@ use super::PlayerSet;
 #[derive(Component, Debug)]
 pub struct PlayerInput;
 
-pub struct InputPlugin;
+pub(super) struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {

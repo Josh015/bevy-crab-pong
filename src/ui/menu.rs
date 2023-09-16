@@ -13,7 +13,7 @@ pub struct MessageUiEvent {
     pub game_state: GameState,
 }
 
-pub struct MenuPlugin;
+pub(super) struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {

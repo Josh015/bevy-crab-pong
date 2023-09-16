@@ -28,7 +28,7 @@ pub struct DebugMode {
     pub has_crab_collider_ball_deflection_direction: bool,
 }
 
-pub struct DebugModePlugin;
+pub(super) struct DebugModePlugin;
 
 impl Plugin for DebugModePlugin {
     fn build(&self, app: &mut App) {

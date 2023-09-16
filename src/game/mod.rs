@@ -10,7 +10,7 @@ use crate::common::collider::ColliderSet;
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct GameSet;
 
-pub struct GamePlugin;
+pub(super) struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {

@@ -56,7 +56,7 @@ pub struct AccelerationBundle {
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct MovementSet;
 
-pub struct MovementPlugin;
+pub(super) struct MovementPlugin;
 
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {

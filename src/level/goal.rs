@@ -28,7 +28,7 @@ pub struct Goal;
 #[derive(Clone, Component, Debug, Event)]
 pub struct GoalScoredEvent(pub Side);
 
-pub struct GoalPlugin;
+pub(super) struct GoalPlugin;
 
 impl Plugin for GoalPlugin {
     fn build(&self, app: &mut App) {

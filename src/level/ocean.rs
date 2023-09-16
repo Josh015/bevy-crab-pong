@@ -9,7 +9,7 @@ pub struct Ocean {
     pub speed: f32,
 }
 
-pub struct OceanPlugin;
+pub(super) struct OceanPlugin;
 
 impl Plugin for OceanPlugin {
     fn build(&self, app: &mut App) {

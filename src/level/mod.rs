@@ -7,7 +7,7 @@ pub mod swaying_camera;
 
 use bevy::prelude::*;
 
-pub struct LevelPlugin;
+pub(super) struct LevelPlugin;
 
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {

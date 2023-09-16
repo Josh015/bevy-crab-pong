@@ -4,7 +4,7 @@ pub mod movement;
 
 use bevy::prelude::*;
 
-pub struct CommonPlugin;
+pub(super) struct CommonPlugin;
 
 impl Plugin for CommonPlugin {
     fn build(&self, app: &mut App) {
