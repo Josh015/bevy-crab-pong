@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{common::movement::MovementSet, state::GameState};
+use crate::{common::movement::MovementSet, game::state::GameState};
 
 pub mod ai;
 pub mod input;

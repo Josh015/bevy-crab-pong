@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::state::LoadedSet;
+use crate::game::state::LoadedSet;
 
 /// Marks an entity as an ocean with an animated texture effect.
 #[derive(Clone, Component, Debug, Default)]

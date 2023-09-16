@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     common::movement::{Heading, Movement},
+    game::state::GameState,
     level::{
         barrier::{Barrier, BARRIER_RADIUS},
         side::Side,
@@ -11,7 +12,6 @@ use crate::{
         crab::{Crab, CRAB_DEPTH, CRAB_WIDTH},
         wall::{Wall, WALL_RADIUS},
     },
-    state::GameState,
 };
 
 /// Marks a collidable entity.

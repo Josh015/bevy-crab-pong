@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{
+use crate::game::{
     assets::{GameAssets, GameConfig},
-    game::{GameMode, WinningTeam},
+    competitors::{GameMode, WinningTeam},
     state::{ForStates, GameState, LoadedSet},
 };
 

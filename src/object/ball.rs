@@ -3,13 +3,15 @@ use rand::prelude::*;
 use spew::prelude::*;
 
 use crate::{
-    assets::{CachedAssets, GameAssets, GameConfig},
     common::{
         collider::Collider,
         fade::FadeBundle,
         movement::{Heading, Speed, VelocityBundle},
     },
-    state::{ForStates, GameState},
+    game::{
+        assets::{CachedAssets, GameAssets, GameConfig},
+        state::{ForStates, GameState},
+    },
 };
 
 use super::Object;

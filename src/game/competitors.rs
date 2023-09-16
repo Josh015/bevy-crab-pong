@@ -3,11 +3,14 @@ use std::num::NonZeroUsize;
 use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
-    assets::{GameAssets, GameConfig},
-    common::collider::ColliderSet,
+    game::{
+        assets::{GameAssets, GameConfig},
+        state::GameState,
+    },
     level::{goal::GoalScoredEvent, side::Side},
-    state::GameState,
 };
+
+use super::GameSet;
 
 /// A member of a competing team.
 #[derive(Debug)]
@@ -32,18 +35,13 @@ pub struct WinningTeam(pub usize);
 #[derive(Clone, Component, Debug, Event)]
 pub struct CompetitorEliminatedEvent(pub Side);
 
-/// Set containing game rules systems.
-#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
-pub struct GameSet;
+pub struct CompetitorsPlugin;
 
-pub struct GamePlugin;
-
-impl Plugin for GamePlugin {
+impl Plugin for CompetitorsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<GameMode>()
             .init_resource::<Competitors>()
             .add_event::<CompetitorEliminatedEvent>()
-            .configure_set(PostUpdate, GameSet.after(ColliderSet))
             .add_systems(OnExit(GameState::Loading), reset_competitors)
             .add_systems(OnExit(GameState::StartMenu), reset_competitors)
             .add_systems(

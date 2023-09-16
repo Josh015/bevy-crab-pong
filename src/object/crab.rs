@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use spew::prelude::*;
 
 use crate::{
-    assets::{CachedAssets, GameAssets, GameConfig, Player},
     common::{
         collider::Collider,
         fade::{FadeAnimation, FadeBundle},
@@ -11,7 +10,10 @@ use crate::{
             Movement, MovementSet, Speed, StoppingDistance, VelocityBundle,
         },
     },
-    game::GameMode,
+    game::{
+        assets::{CachedAssets, GameAssets, GameConfig, Player},
+        competitors::GameMode,
+    },
     level::{
         barrier::BARRIER_RADIUS,
         goal::{Goal, GOAL_WIDTH},

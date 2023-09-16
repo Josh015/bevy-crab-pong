@@ -7,7 +7,7 @@ use crate::{
         fade::Fade,
         movement::Movement,
     },
-    game::{CompetitorEliminatedEvent, GameSet},
+    game::{competitors::CompetitorEliminatedEvent, GameSet},
     level::side::Side,
     object::{
         ball::{Ball, BALL_RADIUS},

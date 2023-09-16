@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::ops::{Add, Sub};
 
-use crate::state::{GameState, LoadedSet};
+use crate::game::state::{GameState, LoadedSet};
 
 /// Marks an entity as able to move.
 #[derive(Component)]

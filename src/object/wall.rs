@@ -2,11 +2,11 @@ use bevy::prelude::*;
 use spew::prelude::*;
 
 use crate::{
-    assets::CachedAssets,
     common::{
         collider::Collider,
         fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
     },
+    game::assets::CachedAssets,
     level::{
         beach::Beach,
         goal::{Goal, GOAL_WIDTH},

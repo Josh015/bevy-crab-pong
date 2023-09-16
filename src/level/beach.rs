@@ -2,9 +2,12 @@ use bevy::prelude::*;
 use spew::prelude::{SpawnEvent, SpewSystemSet};
 
 use crate::{
-    assets::{GameAssets, GameConfig},
     common::{collider::Collider, movement::Movement},
-    game::GameMode,
+    game::{
+        assets::{GameAssets, GameConfig},
+        competitors::GameMode,
+        state::GameState,
+    },
     level::{
         barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT},
         goal::{Goal, GOAL_WIDTH},
@@ -14,7 +17,6 @@ use crate::{
     },
     object::ball::{Ball, BALL_HEIGHT},
     object::Object,
-    state::GameState,
 };
 
 pub const BEACH_CENTER_POINT: Vec3 = Vec3::ZERO;

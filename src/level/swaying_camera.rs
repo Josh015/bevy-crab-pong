@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
+    game::state::LoadedSet,
     level::{beach::BEACH_CENTER_POINT, goal::GOAL_WIDTH},
-    state::LoadedSet,
 };
 
 /// Marks a [`Camera3d`] entity to sway back and forth in a slow reciprocating

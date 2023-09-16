@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     common::{collider::Collider, movement::Movement},
-    state::GameState,
+    game::state::GameState,
 };
 
 pub const FADE_DURATION_IN_SECONDS: f32 = 1.0;
