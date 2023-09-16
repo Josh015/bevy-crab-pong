@@ -3,12 +3,12 @@ use spew::prelude::{SpawnEvent, SpewSystemSet};
 
 use crate::{
     assets::{GameAssets, GameConfig},
-    ball::{Ball, BALL_HEIGHT},
     barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT},
     collider::Collider,
     game::GameMode,
     goal::{Goal, GOAL_WIDTH},
     movement::Movement,
+    object::ball::{Ball, BALL_HEIGHT},
     object::Object,
     ocean::Ocean,
     side::{Side, SIDES},

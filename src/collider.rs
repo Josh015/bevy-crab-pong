@@ -1,13 +1,15 @@
 use bevy::prelude::*;
 
 use crate::{
-    ball::{Ball, BALL_RADIUS},
     barrier::{Barrier, BARRIER_RADIUS},
-    crab::{Crab, CRAB_DEPTH, CRAB_WIDTH},
     movement::{Heading, Movement},
+    object::{
+        ball::{Ball, BALL_RADIUS},
+        crab::{Crab, CRAB_DEPTH, CRAB_WIDTH},
+        wall::{Wall, WALL_RADIUS},
+    },
     side::Side,
     state::GameState,
-    wall::{Wall, WALL_RADIUS},
 };
 
 /// Marks a collidable entity.

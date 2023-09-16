@@ -1,10 +1,12 @@
 use bevy::prelude::*;
 
 use crate::{
-    ball::Ball,
     collider::Collider,
-    crab::{Crab, CRAB_START_POSITION, CRAB_WIDTH},
     movement::{Force, Movement, StoppingDistance},
+    object::{
+        ball::Ball,
+        crab::{Crab, CRAB_START_POSITION, CRAB_WIDTH},
+    },
     side::Side,
 };
 

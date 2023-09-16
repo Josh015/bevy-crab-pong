@@ -1,10 +1,12 @@
 use bevy::prelude::*;
 
 use crate::{
-    ball::Ball,
     collider::{calculate_ball_to_paddle_deflection, Collider, ColliderSet},
-    crab::{Crab, CRAB_WIDTH},
     movement::{Heading, Movement, StoppingDistance},
+    object::{
+        ball::Ball,
+        crab::{Crab, CRAB_WIDTH},
+    },
     player::ai::{PlayerAi, Target, AI_CENTER_HIT_AREA_PERCENTAGE},
     side::Side,
     state::LoadedSet,

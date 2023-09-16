@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    crab::Crab,
     movement::{Force, Movement},
+    object::crab::Crab,
 };
 
 use super::PlayerSet;

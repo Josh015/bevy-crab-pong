@@ -2,15 +2,17 @@ use bevy::prelude::*;
 use spew::prelude::*;
 
 use crate::{
-    ball::{Ball, BALL_RADIUS},
     collider::{Collider, ColliderSet},
-    crab::{Crab, CRAB_DEPTH},
     fade::Fade,
     game::{CompetitorEliminatedEvent, GameSet},
     movement::Movement,
-    object::Object,
+    object::{
+        ball::{Ball, BALL_RADIUS},
+        crab::{Crab, CRAB_DEPTH},
+        wall::Wall,
+        Object,
+    },
     side::Side,
-    wall::Wall,
 };
 
 pub const GOAL_WIDTH: f32 = 1.0;
