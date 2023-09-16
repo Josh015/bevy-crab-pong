@@ -4,7 +4,7 @@ use bevy_common_assets::ron::RonAssetPlugin;
 
 use crate::{
     assets::{GameAssets, GameConfig},
-    fade::{Fade, FadeAnimation},
+    common::fade::{Fade, FadeAnimation},
 };
 
 /// Tags an entity to only exist in the listed game states.

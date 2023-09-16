@@ -4,7 +4,7 @@ use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
     assets::{GameAssets, GameConfig},
-    collider::ColliderSet,
+    common::collider::ColliderSet,
     level::{goal::GoalScoredEvent, side::Side},
     state::GameState,
 };

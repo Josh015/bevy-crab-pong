@@ -1,9 +1,13 @@
 use bevy::prelude::*;
 
 use crate::{
-    collider::{calculate_ball_to_paddle_deflection, Collider, ColliderSet},
+    common::{
+        collider::{
+            calculate_ball_to_paddle_deflection, Collider, ColliderSet,
+        },
+        movement::{Heading, Movement, StoppingDistance},
+    },
     level::side::Side,
-    movement::{Heading, Movement, StoppingDistance},
     object::{
         ball::Ball,
         crab::{Crab, CRAB_WIDTH},

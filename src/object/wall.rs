@@ -3,8 +3,10 @@ use spew::prelude::*;
 
 use crate::{
     assets::CachedAssets,
-    collider::Collider,
-    fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
+    common::{
+        collider::Collider,
+        fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
+    },
     level::{
         beach::Beach,
         goal::{Goal, GOAL_WIDTH},

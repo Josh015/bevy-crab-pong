@@ -4,9 +4,11 @@ use spew::prelude::*;
 
 use crate::{
     assets::{CachedAssets, GameAssets, GameConfig},
-    collider::Collider,
-    fade::FadeBundle,
-    movement::{Heading, Speed, VelocityBundle},
+    common::{
+        collider::Collider,
+        fade::FadeBundle,
+        movement::{Heading, Speed, VelocityBundle},
+    },
     state::{ForStates, GameState},
 };
 

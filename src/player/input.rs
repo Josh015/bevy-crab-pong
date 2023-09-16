@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    movement::{Force, Movement},
+    common::movement::{Force, Movement},
     object::crab::Crab,
 };
 

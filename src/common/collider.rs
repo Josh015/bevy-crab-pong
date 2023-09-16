@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 
 use crate::{
+    common::movement::{Heading, Movement},
     level::{
         barrier::{Barrier, BARRIER_RADIUS},
         side::Side,
     },
-    movement::{Heading, Movement},
     object::{
         ball::{Ball, BALL_RADIUS},
         crab::{Crab, CRAB_DEPTH, CRAB_WIDTH},

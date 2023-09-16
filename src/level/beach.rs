@@ -3,7 +3,7 @@ use spew::prelude::{SpawnEvent, SpewSystemSet};
 
 use crate::{
     assets::{GameAssets, GameConfig},
-    collider::Collider,
+    common::{collider::Collider, movement::Movement},
     game::GameMode,
     level::{
         barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT},
@@ -12,7 +12,6 @@ use crate::{
         side::{Side, SIDES},
         swaying_camera::SwayingCamera,
     },
-    movement::Movement,
     object::ball::{Ball, BALL_HEIGHT},
     object::Object,
     state::GameState,

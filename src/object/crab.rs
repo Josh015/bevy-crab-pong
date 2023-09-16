@@ -3,17 +3,19 @@ use spew::prelude::*;
 
 use crate::{
     assets::{CachedAssets, GameAssets, GameConfig, Player},
-    collider::Collider,
-    fade::{FadeAnimation, FadeBundle},
+    common::{
+        collider::Collider,
+        fade::{FadeAnimation, FadeBundle},
+        movement::{
+            Acceleration, AccelerationBundle, Force, Heading, MaxSpeed,
+            Movement, MovementSet, Speed, StoppingDistance, VelocityBundle,
+        },
+    },
     game::GameMode,
     level::{
         barrier::BARRIER_RADIUS,
         goal::{Goal, GOAL_WIDTH},
         side::Side,
-    },
-    movement::{
-        Acceleration, AccelerationBundle, Force, Heading, MaxSpeed, Movement,
-        MovementSet, Speed, StoppingDistance, VelocityBundle,
     },
     player::{ai::PlayerAi, input::PlayerInput},
 };

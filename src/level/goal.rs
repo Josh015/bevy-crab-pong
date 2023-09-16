@@ -2,11 +2,13 @@ use bevy::prelude::*;
 use spew::prelude::*;
 
 use crate::{
-    collider::{Collider, ColliderSet},
-    fade::Fade,
+    common::{
+        collider::{Collider, ColliderSet},
+        fade::Fade,
+        movement::Movement,
+    },
     game::{CompetitorEliminatedEvent, GameSet},
     level::side::Side,
-    movement::Movement,
     object::{
         ball::{Ball, BALL_RADIUS},
         crab::{Crab, CRAB_DEPTH},
