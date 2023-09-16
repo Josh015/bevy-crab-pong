@@ -1,20 +1,18 @@
 use bevy::prelude::*;
-use rand::{rngs::SmallRng, Rng, SeedableRng};
 use spew::prelude::{SpawnEvent, SpewSystemSet};
 
 use crate::{
-    assets::{CachedAssets, GameAssets, GameConfig},
-    ball::{Ball, BALL_DIAMETER, BALL_HEIGHT},
+    assets::{GameAssets, GameConfig},
+    ball::{Ball, BALL_HEIGHT},
     barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT},
     collider::Collider,
-    fade::FadeBundle,
     game::GameMode,
     goal::{Goal, GOAL_WIDTH},
-    movement::{Heading, Movement, Speed, VelocityBundle},
+    movement::Movement,
     object::Object,
     ocean::Ocean,
     side::{Side, SIDES},
-    state::{ForStates, GameState},
+    state::GameState,
     swaying_camera::SwayingCamera,
 };
 
@@ -195,14 +193,10 @@ fn give_each_goal_a_new_crab(
 }
 
 fn spawn_balls_sequentially_as_needed(
-    mut commands: Commands,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    cached_assets: Res<CachedAssets>,
-    game_assets: Res<GameAssets>,
-    game_configs: Res<Assets<GameConfig>>,
     beach: Res<Beach>,
     balls_query: Query<Entity, With<Ball>>,
     non_moving_balls_query: Query<Entity, (With<Ball>, Without<Movement>)>,
+    mut spawn_with_position_events: EventWriter<SpawnEvent<Object, Vec3>>,
 ) {
     // Make balls spawn, fade in, and then launch one at a time.
     if balls_query.iter().len() >= beach.ball_count as usize
@@ -211,43 +205,12 @@ fn spawn_balls_sequentially_as_needed(
         return;
     }
 
-    // Spawn a ball that will launch it in a random direction.
-    let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let mut rng = SmallRng::from_entropy();
-    let angle = rng.gen_range(0.0..std::f32::consts::TAU);
-    let (angle_sin, angle_cos) = angle.sin_cos();
-    let ball = commands
-        .spawn((
-            Ball,
-            Collider,
-            FadeBundle::default(),
-            ForStates(vec![GameState::Playing, GameState::Paused]),
-            VelocityBundle {
-                heading: Heading(Vec3::new(angle_cos, 0.0, angle_sin)),
-                speed: Speed(game_config.ball_speed),
-            },
-            PbrBundle {
-                mesh: cached_assets.ball_mesh.clone(),
-                material: materials.add(StandardMaterial {
-                    alpha_mode: AlphaMode::Blend,
-                    base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),
-                    ..default()
-                }),
-                transform: Transform::from_matrix(
-                    Mat4::from_scale_rotation_translation(
-                        Vec3::splat(BALL_DIAMETER),
-                        Quat::IDENTITY,
-                        Vec3::new(
-                            BEACH_CENTER_POINT.x,
-                            BEACH_CENTER_POINT.y + BALL_HEIGHT,
-                            BEACH_CENTER_POINT.z,
-                        ),
-                    ),
-                ),
-                ..default()
-            },
-        ))
-        .id();
-
-    info!("Ball({:?}): Spawned", ball);
+    spawn_with_position_events.send(SpawnEvent::with_data(
+        Object::Ball,
+        Vec3::new(
+            BEACH_CENTER_POINT.x,
+            BEACH_CENTER_POINT.y + BALL_HEIGHT,
+            BEACH_CENTER_POINT.z,
+        ),
+    ));
 }
