@@ -1,9 +1,9 @@
+pub mod ai;
+pub mod input;
+
 use bevy::prelude::*;
 
 use crate::{common::movement::MovementSet, game::state::GameState};
-
-pub mod ai;
-pub mod input;
 
 /// Systems that must control [`Crab`](crate::crab::Crab) entities.
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
