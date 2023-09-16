@@ -5,7 +5,7 @@ pub mod wall;
 use bevy::prelude::*;
 use spew::prelude::*;
 
-use crate::side::Side;
+use crate::level::side::Side;
 
 /// Objects that can be spawned via Spew.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

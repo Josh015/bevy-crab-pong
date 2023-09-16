@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     assets::GameAssets,
     game::Competitors,
-    side::Side,
+    level::side::Side,
     state::{GameState, LoadedSet},
 };
 

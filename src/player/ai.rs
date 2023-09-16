@@ -2,12 +2,12 @@ use bevy::prelude::*;
 
 use crate::{
     collider::Collider,
+    level::side::Side,
     movement::{Force, Movement, StoppingDistance},
     object::{
         ball::Ball,
         crab::{Crab, CRAB_START_POSITION, CRAB_WIDTH},
     },
-    side::Side,
 };
 
 use super::PlayerSet;

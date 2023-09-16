@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{beach::BEACH_CENTER_POINT, goal::GOAL_WIDTH, state::LoadedSet};
+use crate::{
+    level::{beach::BEACH_CENTER_POINT, goal::GOAL_WIDTH},
+    state::LoadedSet,
+};
 
 /// Marks a [`Camera3d`] entity to sway back and forth in a slow reciprocating
 /// motion while looking at the center of the beach.

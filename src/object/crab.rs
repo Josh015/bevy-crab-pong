@@ -3,17 +3,19 @@ use spew::prelude::*;
 
 use crate::{
     assets::{CachedAssets, GameAssets, GameConfig, Player},
-    barrier::BARRIER_RADIUS,
     collider::Collider,
     fade::{FadeAnimation, FadeBundle},
     game::GameMode,
-    goal::{Goal, GOAL_WIDTH},
+    level::{
+        barrier::BARRIER_RADIUS,
+        goal::{Goal, GOAL_WIDTH},
+        side::Side,
+    },
     movement::{
         Acceleration, AccelerationBundle, Force, Heading, MaxSpeed, Movement,
         MovementSet, Speed, StoppingDistance, VelocityBundle,
     },
     player::{ai::PlayerAi, input::PlayerInput},
-    side::Side,
 };
 
 use super::Object;

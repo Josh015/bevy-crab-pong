@@ -3,17 +3,19 @@ use spew::prelude::{SpawnEvent, SpewSystemSet};
 
 use crate::{
     assets::{GameAssets, GameConfig},
-    barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT},
     collider::Collider,
     game::GameMode,
-    goal::{Goal, GOAL_WIDTH},
+    level::{
+        barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT},
+        goal::{Goal, GOAL_WIDTH},
+        ocean::Ocean,
+        side::{Side, SIDES},
+        swaying_camera::SwayingCamera,
+    },
     movement::Movement,
     object::ball::{Ball, BALL_HEIGHT},
     object::Object,
-    ocean::Ocean,
-    side::{Side, SIDES},
     state::GameState,
-    swaying_camera::SwayingCamera,
 };
 
 pub const BEACH_CENTER_POINT: Vec3 = Vec3::ZERO;
@@ -24,7 +26,7 @@ pub struct Beach {
     ball_count: u8,
 }
 
-pub struct BeachPlugin;
+pub(super) struct BeachPlugin;
 
 impl Plugin for BeachPlugin {
     fn build(&self, app: &mut App) {

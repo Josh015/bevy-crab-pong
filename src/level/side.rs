@@ -1,7 +1,7 @@
 use bevy::prelude::{Component, GlobalTransform, Vec3};
 use serde::Deserialize;
 
-use crate::goal::GOAL_WIDTH;
+use crate::level::goal::GOAL_WIDTH;
 
 pub const SIDES: [Side; 4] = [Side::Bottom, Side::Right, Side::Top, Side::Left];
 

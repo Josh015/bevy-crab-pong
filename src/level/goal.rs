@@ -5,6 +5,7 @@ use crate::{
     collider::{Collider, ColliderSet},
     fade::Fade,
     game::{CompetitorEliminatedEvent, GameSet},
+    level::side::Side,
     movement::Movement,
     object::{
         ball::{Ball, BALL_RADIUS},
@@ -12,7 +13,6 @@ use crate::{
         wall::Wall,
         Object,
     },
-    side::Side,
 };
 
 pub const GOAL_WIDTH: f32 = 1.0;

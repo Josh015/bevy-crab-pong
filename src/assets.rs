@@ -7,7 +7,7 @@ use bevy_asset_loader::prelude::*;
 use serde::Deserialize;
 use std::num::{NonZeroU8, NonZeroUsize};
 
-use crate::side::Side;
+use crate::level::side::Side;
 
 /// Game settings read from a config file.
 #[derive(Debug, Deserialize, Resource, TypeUuid, TypePath)]

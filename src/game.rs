@@ -5,8 +5,7 @@ use bevy::{prelude::*, utils::HashMap};
 use crate::{
     assets::{GameAssets, GameConfig},
     collider::ColliderSet,
-    goal::GoalScoredEvent,
-    side::Side,
+    level::{goal::GoalScoredEvent, side::Side},
     state::GameState,
 };
 

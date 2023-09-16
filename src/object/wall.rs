@@ -3,11 +3,13 @@ use spew::prelude::*;
 
 use crate::{
     assets::CachedAssets,
-    beach::Beach,
     collider::Collider,
     fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
-    goal::{Goal, GOAL_WIDTH},
-    side::Side,
+    level::{
+        beach::Beach,
+        goal::{Goal, GOAL_WIDTH},
+        side::Side,
+    },
 };
 
 use super::Object;
