@@ -29,3 +29,5 @@ impl Plugin for DebugModePlugin {
 fn show_debugging_gizmos(is_debugging_mode: Res<IsDebuggingMode>) -> bool {
     is_debugging_mode.0
 }
+
+// TODO: Add debug visualizations for bounding shapes?

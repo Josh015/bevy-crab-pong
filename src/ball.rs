@@ -1,10 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    collider::{Collider, ColliderSet},
     debug_mode::{DebugModeSet, DEBUGGING_RAY_LENGTH},
     movement::{Heading, Movement},
-    util::reflect,
 };
 
 pub const BALL_DIAMETER: f32 = 0.08;
@@ -21,54 +19,8 @@ impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             PostUpdate,
-            (
-                ball_and_ball_collisions.in_set(ColliderSet),
-                display_movement_direction_gizmos.in_set(DebugModeSet),
-            ),
+            display_movement_direction_gizmos.in_set(DebugModeSet),
         );
-    }
-}
-
-fn ball_and_ball_collisions(
-    mut commands: Commands,
-    balls_query: Query<
-        (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, With<Movement>, With<Collider>),
-    >,
-) {
-    for [(entity1, transform1, heading1), (entity2, transform2, heading2)] in
-        balls_query.iter_combinations()
-    {
-        // Check that both balls are close enough to touch.
-        let delta = transform2.translation() - transform1.translation();
-
-        if delta.length() > BALL_RADIUS + BALL_RADIUS {
-            continue;
-        }
-
-        // Deflect both balls away from each other.
-        let axis1 = delta.normalize();
-        let axis2 = -axis1;
-        let is_b1_facing_b2 = heading1.0.dot(axis1) > 0.0;
-        let is_b2_facing_b1 = heading2.0.dot(axis2) > 0.0;
-
-        if is_b1_facing_b2 {
-            commands
-                .entity(entity1)
-                .insert(Heading(reflect(heading1.0, axis1)));
-        } else if is_b2_facing_b1 {
-            commands.entity(entity1).insert(Heading(axis2));
-        }
-
-        if is_b2_facing_b1 {
-            commands
-                .entity(entity2)
-                .insert(Heading(reflect(heading2.0, axis2)));
-        } else if is_b1_facing_b2 {
-            commands.entity(entity2).insert(Heading(axis1));
-        }
-
-        info!("Ball({:?}): Collided Ball({:?})", entity1, entity2);
     }
 }
 

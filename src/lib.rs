@@ -19,7 +19,6 @@ pub mod player;
 pub mod side;
 pub mod state;
 pub mod swaying_camera;
-pub mod util;
 pub mod wall;
 
 pub struct GamePlugin;
@@ -29,7 +28,6 @@ impl Plugin for GamePlugin {
         app.add_plugins((
             assets::AssetsPlugin,
             ball::BallPlugin,
-            barrier::BarrierPlugin,
             beach::BeachPlugin,
             collider::ColliderPlugin,
             crab::CrabPlugin,
@@ -42,12 +40,8 @@ impl Plugin for GamePlugin {
             movement::MovementPlugin,
             object::ObjectPlugin,
             ocean::OceanPlugin,
-        ))
-        .add_plugins((
             player::PlayerPlugin,
-            state::StatePlugin,
-            swaying_camera::SwayingCameraPlugin,
-            wall::WallPlugin,
-        ));
+        ))
+        .add_plugins((state::StatePlugin, swaying_camera::SwayingCameraPlugin));
     }
 }
