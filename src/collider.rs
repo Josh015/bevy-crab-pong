@@ -204,4 +204,8 @@ fn wall_and_ball_collisions(
             break;
         }
     }
+
+    // TODO: Need a fix for the rare occasion when a ball just bounces infinitely
+    // between two walls in a straight line? Maybe make all bounces slightly adjust
+    // ball angle rather than pure reflection?
 }

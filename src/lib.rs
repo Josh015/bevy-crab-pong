@@ -27,7 +27,6 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             assets::AssetsPlugin,
-            ball::BallPlugin,
             beach::BeachPlugin,
             collider::ColliderPlugin,
             crab::CrabPlugin,
@@ -41,7 +40,8 @@ impl Plugin for GamePlugin {
             object::ObjectPlugin,
             ocean::OceanPlugin,
             player::PlayerPlugin,
+            state::StatePlugin,
         ))
-        .add_plugins((state::StatePlugin, swaying_camera::SwayingCameraPlugin));
+        .add_plugins(swaying_camera::SwayingCameraPlugin);
     }
 }

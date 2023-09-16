@@ -1,15 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
-    ball::Ball,
     barrier::BARRIER_RADIUS,
-    collider::{calculate_ball_to_paddle_deflection, Collider},
-    debug_mode::{DebugModeSet, DEBUGGING_RAY_LENGTH},
     goal::GOAL_WIDTH,
-    movement::{
-        Force, Heading, Movement, MovementSet, Speed, StoppingDistance,
-    },
-    side::Side,
+    movement::{Force, Movement, MovementSet, Speed, StoppingDistance},
 };
 
 pub const CRAB_WIDTH: f32 = 0.2;
@@ -29,14 +23,6 @@ impl Plugin for CrabPlugin {
         app.add_systems(
             Update,
             restrict_crab_movement_range.after(MovementSet),
-        )
-        .add_systems(
-            PostUpdate,
-            (
-                display_predicted_stop_position_gizmos,
-                display_predicted_ball_deflection_direction_gizmos,
-            )
-                .in_set(DebugModeSet),
         );
     }
 }
@@ -71,66 +57,6 @@ fn restrict_crab_movement_range(
             stopping_distance.0 = stopped_position.signum()
                 * CRAB_POSITION_X_MAX
                 - transform.translation.x;
-        }
-    }
-}
-
-fn display_predicted_stop_position_gizmos(
-    crabs_query: Query<
-        (&GlobalTransform, &Heading, &StoppingDistance),
-        (With<Crab>, With<Movement>),
-    >,
-    mut gizmos: Gizmos,
-) {
-    for (global_transform, heading, stopping_distance) in &crabs_query {
-        let mut stop_position_transform = global_transform.compute_transform();
-        let global_heading = stop_position_transform.rotation * heading.0;
-
-        stop_position_transform.translation +=
-            global_heading * stopping_distance.0;
-        gizmos.line(
-            global_transform.translation(),
-            stop_position_transform.translation,
-            Color::BLUE,
-        );
-        gizmos.cuboid(stop_position_transform, Color::GREEN);
-    }
-}
-
-fn display_predicted_ball_deflection_direction_gizmos(
-    balls_query: Query<
-        (&GlobalTransform, &Heading),
-        (With<Ball>, With<Movement>, With<Collider>),
-    >,
-    crabs_query: Query<
-        (&Side, &Transform, &GlobalTransform),
-        (With<Crab>, With<Collider>),
-    >,
-    mut gizmos: Gizmos,
-) {
-    for (ball_transform, ball_heading) in &balls_query {
-        for (side, transform, crab_global_transform) in &crabs_query {
-            // Check that the ball is near the crab and facing the goal.
-            let axis = side.axis();
-            let ball_goal_position = side.get_ball_position(ball_transform);
-            let ball_to_crab = transform.translation.x - ball_goal_position;
-            let ball_to_crab_distance = ball_transform
-                .translation()
-                .distance(crab_global_transform.translation());
-
-            if ball_to_crab_distance > 0.25 || ball_heading.0.dot(axis) <= 0.0 {
-                continue;
-            }
-
-            let ball_deflection_direction =
-                calculate_ball_to_paddle_deflection(ball_to_crab, axis);
-
-            gizmos.line(
-                crab_global_transform.translation(),
-                crab_global_transform.translation()
-                    + DEBUGGING_RAY_LENGTH * ball_deflection_direction,
-                Color::WHITE,
-            );
         }
     }
 }

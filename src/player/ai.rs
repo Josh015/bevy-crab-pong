@@ -4,7 +4,6 @@ use crate::{
     ball::Ball,
     collider::Collider,
     crab::{Crab, CRAB_START_POSITION, CRAB_WIDTH},
-    debug_mode::DebugModeSet,
     movement::{Force, Movement, StoppingDistance},
     side::Side,
 };
@@ -34,14 +33,6 @@ impl Plugin for AiPlugin {
             )
                 .chain()
                 .in_set(PlayerSet),
-        )
-        .add_systems(
-            PostUpdate,
-            ((
-                display_crab_to_ball_targeting_gizmos,
-                display_crab_ideal_hit_area_gizmos,
-            )
-                .in_set(DebugModeSet),),
         );
     }
 }
@@ -123,42 +114,5 @@ fn move_ai_crabs_toward_their_targeted_balls(
                 },
             );
         }
-    }
-}
-
-fn display_crab_to_ball_targeting_gizmos(
-    crabs_query: Query<
-        (&GlobalTransform, &Target),
-        (With<PlayerAi>, With<Crab>, With<Movement>),
-    >,
-    balls_query: Query<
-        &GlobalTransform,
-        (With<Ball>, With<Movement>, With<Collider>),
-    >,
-    mut gizmos: Gizmos,
-) {
-    for (crab_transform, target) in &crabs_query {
-        if let Ok(ball_transform) = balls_query.get(target.0) {
-            gizmos.line(
-                crab_transform.translation(),
-                ball_transform.translation(),
-                Color::PURPLE,
-            );
-        }
-    }
-}
-
-fn display_crab_ideal_hit_area_gizmos(
-    crabs_query: Query<
-        &GlobalTransform,
-        (With<PlayerAi>, With<Crab>, With<Movement>),
-    >,
-    mut gizmos: Gizmos,
-) {
-    for global_transform in &crabs_query {
-        let mut hit_area_transform = global_transform.compute_transform();
-
-        hit_area_transform.scale.x = AI_CENTER_HIT_AREA_PERCENTAGE * CRAB_WIDTH;
-        gizmos.cuboid(hit_area_transform, Color::YELLOW);
     }
 }
