@@ -28,7 +28,7 @@ pub const CRAB_POSITION_X_MAX: f32 =
 #[derive(Component, Debug)]
 pub struct Crab;
 
-pub struct CrabPlugin;
+pub(super) struct CrabPlugin;
 
 impl Plugin for CrabPlugin {
     fn build(&self, app: &mut App) {

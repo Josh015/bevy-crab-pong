@@ -20,7 +20,7 @@ pub const BALL_RADIUS: f32 = 0.5 * BALL_DIAMETER;
 #[derive(Component, Debug)]
 pub struct Ball;
 
-pub struct BallPlugin;
+pub(super) struct BallPlugin;
 
 impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {

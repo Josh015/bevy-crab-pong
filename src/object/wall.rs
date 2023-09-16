@@ -7,9 +7,10 @@ use crate::{
     collider::Collider,
     fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
     goal::{Goal, GOAL_WIDTH},
-    object::Object,
     side::Side,
 };
+
+use super::Object;
 
 pub const WALL_DIAMETER: f32 = 0.05;
 pub const WALL_HEIGHT: f32 = 0.1;
@@ -19,7 +20,7 @@ pub const WALL_RADIUS: f32 = 0.5 * WALL_DIAMETER;
 #[derive(Component, Debug)]
 pub struct Wall;
 
-pub struct WallPlugin;
+pub(super) struct WallPlugin;
 
 impl Plugin for WallPlugin {
     fn build(&self, app: &mut App) {
