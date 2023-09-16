@@ -1,8 +1,7 @@
-use bevy::{app::AppExit, prelude::*};
+use bevy::prelude::*;
 
 use crate::{
     assets::{GameAssets, GameConfig},
-    debug_mode::IsDebuggingMode,
     game::{GameMode, WinningTeam},
     state::{ForStates, GameState, LoadedSet},
 };
@@ -127,18 +126,8 @@ fn handle_menu_inputs(
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
     mut game_mode: ResMut<GameMode>,
-    mut is_debugging_mode: ResMut<IsDebuggingMode>,
     mut next_game_state: ResMut<NextState<GameState>>,
-    mut app_exit_events: EventWriter<AppExit>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Escape) {
-        app_exit_events.send(AppExit);
-        return;
-    } else if keyboard_input.just_pressed(KeyCode::G) {
-        is_debugging_mode.0 = !is_debugging_mode.0;
-        return;
-    }
-
     match game_state.get() {
         GameState::StartMenu => {
             let game_config =

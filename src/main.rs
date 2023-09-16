@@ -30,5 +30,6 @@ fn main() {
         .insert_resource(Msaa::default())
         .insert_resource(ClearColor(Color::rgba(0.7, 0.9, 1.0, 1.0)))
         .add_plugins(bevy_crab_pong::GamePlugin)
+        .add_systems(Update, bevy::window::close_on_esc)
         .run();
 }
