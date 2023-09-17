@@ -3,7 +3,7 @@ use spew::prelude::*;
 
 use crate::{
     common::{
-        collider::{ColliderCircle, ColliderSet, ColliderUnique},
+        collider::{Collider, ColliderSet},
         fade::{Fade, FadeAnimation, FadeBundle},
         movement::{
             Acceleration, AccelerationBundle, Force, Heading, MaxSpeed,
@@ -85,7 +85,7 @@ fn spawn_crab_on_side(
     commands.entity(goal_entity).with_children(|builder| {
         let mut crab = builder.spawn((
             Crab,
-            ColliderUnique,
+            Collider,
             side,
             FadeBundle {
                 fade_animation: FadeAnimation::Scale {
@@ -151,7 +151,7 @@ fn remove_crab_movement_and_collider_before_fading_out(
             commands
                 .entity(entity)
                 .remove::<Movement>()
-                .remove::<ColliderUnique>();
+                .remove::<Collider>();
         }
     }
 }
@@ -194,9 +194,9 @@ fn crab_and_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, With<ColliderCircle>, With<Movement>),
+        (With<Ball>, With<Collider>, With<Movement>),
     >,
-    crabs_query: Query<(&Side, &Transform), (With<Crab>, With<ColliderUnique>)>,
+    crabs_query: Query<(&Side, &Transform), (With<Crab>, With<Collider>)>,
 ) {
     for (ball_entity, ball_transform, ball_heading) in &balls_query {
         for (side, crab_transform) in &crabs_query {

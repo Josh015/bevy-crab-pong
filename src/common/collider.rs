@@ -4,13 +4,13 @@ use crate::{game::state::GameState, util::reflect};
 
 use super::movement::{Heading, Movement};
 
-/// Indicates that the collision logic is unique to a given entity type.
+/// Marks an entity as collidable.
 #[derive(Component, Debug)]
-pub struct ColliderUnique;
+pub struct Collider;
 
-/// Adds a collider with a circular bounding shape.
+/// Adds a circular collider shape.
 #[derive(Component, Debug)]
-pub struct ColliderCircle {
+pub struct ColliderShapeCircle {
     pub radius: f32,
 }
 
@@ -35,13 +35,16 @@ impl Plugin for ColliderPlugin {
 
 fn circle_to_circle_collisions(
     mut commands: Commands,
-    balls_query: Query<(
-        Entity,
-        &ColliderCircle,
-        &GlobalTransform,
-        Option<&Heading>,
-        Has<Movement>,
-    )>,
+    balls_query: Query<
+        (
+            Entity,
+            &ColliderShapeCircle,
+            &GlobalTransform,
+            Option<&Heading>,
+            Has<Movement>,
+        ),
+        With<Collider>,
+    >,
 ) {
     for [(entity1, circle1, transform1, heading1, has_movement1), (entity2, circle2, transform2, heading2, has_movement2)] in
         balls_query.iter_combinations()

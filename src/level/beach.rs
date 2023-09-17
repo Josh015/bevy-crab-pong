@@ -2,7 +2,10 @@ use bevy::prelude::*;
 use spew::prelude::{SpawnEvent, SpewSystemSet};
 
 use crate::{
-    common::{collider::ColliderCircle, movement::Movement},
+    common::{
+        collider::{Collider, ColliderShapeCircle},
+        movement::Movement,
+    },
     game::{
         assets::{GameAssets, GameConfig},
         competitors::GameMode,
@@ -148,7 +151,8 @@ fn spawn_level(
                 // Barrier
                 builder.spawn((
                     Barrier,
-                    ColliderCircle {
+                    Collider,
+                    ColliderShapeCircle {
                         radius: BARRIER_RADIUS,
                     },
                     PbrBundle {

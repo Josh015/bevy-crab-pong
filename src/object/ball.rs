@@ -4,7 +4,7 @@ use spew::prelude::*;
 
 use crate::{
     common::{
-        collider::ColliderCircle,
+        collider::{Collider, ColliderShapeCircle},
         fade::{Fade, FadeBundle},
         movement::{Heading, Movement, Speed, VelocityBundle},
     },
@@ -56,6 +56,9 @@ fn spawn_ball_with_position(
     let ball = commands
         .spawn((
             Ball,
+            ColliderShapeCircle {
+                radius: BALL_RADIUS,
+            },
             FadeBundle::default(),
             ForStates(vec![GameState::Playing, GameState::Paused]),
             VelocityBundle {
@@ -91,12 +94,7 @@ fn add_ball_movement_and_collider_after_fading_in(
 ) {
     for entity in removed.iter() {
         if query.contains(entity) {
-            commands
-                .entity(entity)
-                .insert(Movement)
-                .insert(ColliderCircle {
-                    radius: BALL_RADIUS,
-                });
+            commands.entity(entity).insert(Movement).insert(Collider);
         }
     }
 }
@@ -107,7 +105,7 @@ fn remove_ball_collider_before_fading_out(
 ) {
     for (entity, fade) in &query {
         if matches!(fade, Fade::Out(_)) {
-            commands.entity(entity).remove::<ColliderCircle>();
+            commands.entity(entity).remove::<Collider>();
         }
     }
 }
