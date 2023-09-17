@@ -29,7 +29,7 @@ impl Side {
         }
     }
 
-    /// Get the (+/-)(X/Z) axis the side occupies.
+    /// Get the normalized (+/-)(X/Z) axis the side occupies.
     pub fn axis(&self) -> Vec3 {
         match *self {
             Self::Bottom => Vec3::Z,
