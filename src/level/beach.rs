@@ -18,7 +18,6 @@ use crate::{
 };
 
 use super::{
-    barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT, BARRIER_RADIUS},
     goal::{Goal, GOAL_WIDTH},
     ocean::Ocean,
     side::{Side, SIDES},
@@ -26,6 +25,9 @@ use super::{
 };
 
 pub const BEACH_CENTER_POINT: Vec3 = Vec3::ZERO;
+pub const BARRIER_DIAMETER: f32 = 0.12;
+pub const BARRIER_RADIUS: f32 = 0.5 * BARRIER_DIAMETER;
+pub const BARRIER_HEIGHT: f32 = 0.2;
 
 /// Global data related to the play area.
 #[derive(Debug, Default, Resource)]
@@ -150,7 +152,6 @@ fn spawn_level(
             .with_children(|builder| {
                 // Barrier
                 builder.spawn((
-                    Barrier,
                     Collider,
                     ColliderShapeCircle {
                         radius: BARRIER_RADIUS,

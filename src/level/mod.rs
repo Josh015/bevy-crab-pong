@@ -1,4 +1,3 @@
-pub mod barrier;
 pub mod beach;
 pub mod goal;
 pub mod ocean;

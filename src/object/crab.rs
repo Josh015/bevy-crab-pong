@@ -16,7 +16,7 @@ use crate::{
         state::GameState,
     },
     level::{
-        barrier::BARRIER_RADIUS,
+        beach::BARRIER_RADIUS,
         goal::{Goal, GOAL_WIDTH},
         side::Side,
     },
