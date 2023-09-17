@@ -47,8 +47,8 @@ impl Plugin for CrabPlugin {
                 (
                     restrict_crab_movement_range.after(MovementSet),
                     (
-                        add_crab_movement_after_its_finished_fading_in,
-                        remove_crab_movement_and_collision_when_fading_out,
+                        add_crab_movement_after_fading_in,
+                        remove_crab_movement_and_collision_before_fading_out,
                     )
                         .run_if(not(in_state(GameState::Paused))),
                 ),
@@ -130,7 +130,7 @@ fn spawn_crab_on_side(
     info!("Crab({:?}): Spawned", side);
 }
 
-fn add_crab_movement_after_its_finished_fading_in(
+fn add_crab_movement_after_fading_in(
     mut commands: Commands,
     mut removed: RemovedComponents<Fade>,
     query: Query<Entity, With<Crab>>,
@@ -142,7 +142,7 @@ fn add_crab_movement_after_its_finished_fading_in(
     }
 }
 
-fn remove_crab_movement_and_collision_when_fading_out(
+fn remove_crab_movement_and_collision_before_fading_out(
     mut commands: Commands,
     query: Query<(Entity, &Fade), (With<Crab>, Added<Fade>)>,
 ) {
