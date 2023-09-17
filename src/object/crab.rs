@@ -3,7 +3,7 @@ use spew::prelude::*;
 
 use crate::{
     common::{
-        collider::Collider,
+        collider::{Collider, ColliderSet},
         fade::{FadeAnimation, FadeBundle},
         movement::{
             Acceleration, AccelerationBundle, Force, Heading, MaxSpeed,
@@ -19,10 +19,12 @@ use crate::{
         goal::{Goal, GOAL_WIDTH},
         side::Side,
     },
+    object::ball::BALL_RADIUS,
     player::{ai::PlayerAi, input::PlayerInput},
+    util::calculate_deflection,
 };
 
-use super::Object;
+use super::{ball::Ball, Object};
 
 pub const CRAB_WIDTH: f32 = 0.2;
 pub const CRAB_DEPTH: f32 = 0.1;
@@ -42,6 +44,10 @@ impl Plugin for CrabPlugin {
             .add_systems(
                 Update,
                 restrict_crab_movement_range.after(MovementSet),
+            )
+            .add_systems(
+                PostUpdate,
+                crab_and_ball_collisions.in_set(ColliderSet),
             );
     }
 }
@@ -146,6 +152,42 @@ fn restrict_crab_movement_range(
             stopping_distance.0 = stopped_position.signum()
                 * CRAB_POSITION_X_MAX
                 - transform.translation.x;
+        }
+    }
+}
+
+fn crab_and_ball_collisions(
+    mut commands: Commands,
+    balls_query: Query<
+        (Entity, &GlobalTransform, &Heading),
+        (With<Ball>, With<Collider>, With<Movement>),
+    >,
+    crabs_query: Query<(&Side, &Transform), (With<Crab>, With<Collider>)>,
+) {
+    for (ball_entity, ball_transform, ball_heading) in &balls_query {
+        for (side, crab_transform) in &crabs_query {
+            // Check that the ball is touching the crab and facing the goal.
+            let axis = side.axis();
+            let ball_to_goal_distance = side.distance_to_ball(ball_transform);
+            let ball_goal_position = side.get_ball_position(ball_transform);
+            let delta = crab_transform.translation.x - ball_goal_position;
+            let ball_to_crab_distance = delta.abs();
+
+            if ball_to_goal_distance > BALL_RADIUS + (0.5 * CRAB_DEPTH)
+                || ball_to_crab_distance > BALL_RADIUS + (0.5 * CRAB_WIDTH)
+                || ball_heading.0.dot(axis) <= 0.0
+            {
+                continue;
+            }
+
+            let ball_deflection_direction =
+                calculate_deflection(delta, CRAB_WIDTH, axis);
+
+            commands
+                .entity(ball_entity)
+                .insert(Heading(ball_deflection_direction));
+            info!("Ball({:?}): Collided Crab({:?})", ball_entity, side);
+            break;
         }
     }
 }

@@ -3,8 +3,9 @@ use spew::prelude::*;
 
 use crate::{
     common::{
-        collider::Collider,
+        collider::{Collider, ColliderSet},
         fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
+        movement::{Heading, Movement},
     },
     game::assets::CachedAssets,
     level::{
@@ -12,9 +13,11 @@ use crate::{
         goal::{Goal, GOAL_WIDTH},
         side::Side,
     },
+    object::ball::BALL_RADIUS,
+    util::reflect,
 };
 
-use super::Object;
+use super::{ball::Ball, Object};
 
 pub const WALL_DIAMETER: f32 = 0.05;
 pub const WALL_HEIGHT: f32 = 0.1;
@@ -28,7 +31,11 @@ pub(super) struct WallPlugin;
 
 impl Plugin for WallPlugin {
     fn build(&self, app: &mut App) {
-        app.add_spawner((Object::Wall, spawn_wall_on_side));
+        app.add_spawner((Object::Wall, spawn_wall_on_side))
+            .add_systems(
+                PostUpdate,
+                wall_and_ball_collisions.in_set(ColliderSet),
+            );
     }
 }
 
@@ -83,4 +90,39 @@ fn spawn_wall_on_side(
     });
 
     info!("Wall({:?}): Spawned", side);
+}
+
+fn wall_and_ball_collisions(
+    mut commands: Commands,
+    balls_query: Query<
+        (Entity, &GlobalTransform, &Heading),
+        (With<Ball>, With<Collider>, With<Movement>),
+    >,
+    walls_query: Query<&Side, (With<Wall>, With<Collider>)>,
+) {
+    for (entity, ball_transform, ball_heading) in &balls_query {
+        for side in &walls_query {
+            let ball_to_wall_distance = side.distance_to_ball(ball_transform);
+            let axis = side.axis();
+
+            // Check that the ball is touching and facing the wall.
+            if ball_to_wall_distance > BALL_RADIUS + WALL_RADIUS
+                || ball_heading.0.dot(axis) <= 0.0
+            {
+                continue;
+            }
+
+            // Deflect the ball away from the wall.
+            commands
+                .entity(entity)
+                .insert(Heading(reflect(ball_heading.0, axis).normalize()));
+
+            info!("Ball({:?}): Collided Wall({:?})", entity, side);
+            break;
+        }
+    }
+
+    // TODO: Need a fix for the rare occasion when a ball just bounces infinitely
+    // between two walls in a straight line? Maybe make all bounces slightly adjust
+    // ball angle rather than pure reflection?
 }
