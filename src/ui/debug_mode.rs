@@ -12,7 +12,7 @@ use crate::{
         crab::{Crab, CRAB_WIDTH},
     },
     player::ai::{PlayerAi, Target, AI_CENTER_HIT_AREA_PERCENTAGE},
-    util::calculate_deflection,
+    util::hemisphere_deflection,
 };
 
 pub const DEBUGGING_RAY_LENGTH: f32 = 20.0;
@@ -201,7 +201,7 @@ fn crab_collider_ball_deflection_direction_gizmos(
             }
 
             let ball_deflection_direction =
-                calculate_deflection(delta, CRAB_WIDTH, axis);
+                hemisphere_deflection(delta, CRAB_WIDTH, axis);
 
             gizmos.line(
                 crab_global_transform.translation(),

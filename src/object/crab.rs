@@ -22,7 +22,7 @@ use crate::{
     },
     object::ball::BALL_RADIUS,
     player::{ai::PlayerAi, input::PlayerInput},
-    util::calculate_deflection,
+    util::hemisphere_deflection,
 };
 
 use super::{ball::Ball, Object};
@@ -215,7 +215,7 @@ fn crab_and_ball_collisions(
             }
 
             let ball_deflection_direction =
-                calculate_deflection(delta, CRAB_WIDTH, axis);
+                hemisphere_deflection(delta, CRAB_WIDTH, axis);
 
             commands
                 .entity(ball_entity)
