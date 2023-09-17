@@ -54,8 +54,8 @@ pub fn calculate_ball_to_paddle_deflection(delta: f32, axis: Vec3) -> Vec3 {
     deflection_direction
 }
 
-fn reflect(d: Vec3, n: Vec3) -> Vec3 {
-    (d - (2.0 * (d.dot(n) * n))).normalize()
+fn reflect(i: Vec3, n: Vec3) -> Vec3 {
+    i - (2.0 * (i.dot(n) * n))
 }
 
 fn ball_and_ball_collisions(
@@ -84,7 +84,7 @@ fn ball_and_ball_collisions(
         if is_b1_facing_b2 {
             commands
                 .entity(entity1)
-                .insert(Heading(reflect(heading1.0, axis1)));
+                .insert(Heading(reflect(heading1.0, axis1).normalize()));
         } else if is_b2_facing_b1 {
             commands.entity(entity1).insert(Heading(axis2));
         }
@@ -92,7 +92,7 @@ fn ball_and_ball_collisions(
         if is_b2_facing_b1 {
             commands
                 .entity(entity2)
-                .insert(Heading(reflect(heading2.0, axis2)));
+                .insert(Heading(reflect(heading2.0, axis2).normalize()));
         } else if is_b1_facing_b2 {
             commands.entity(entity2).insert(Heading(axis1));
         }
@@ -132,7 +132,7 @@ fn barrier_and_ball_collisions(
             // Deflect the ball away from the barrier.
             commands
                 .entity(ball_entity)
-                .insert(Heading(reflect(ball_heading.0, axis)));
+                .insert(Heading(reflect(ball_heading.0, axis).normalize()));
 
             info!(
                 "Ball({:?}): Collided Barrier({:?})",
@@ -202,7 +202,7 @@ fn wall_and_ball_collisions(
             // Deflect the ball away from the wall.
             commands
                 .entity(entity)
-                .insert(Heading(reflect(ball_heading.0, axis)));
+                .insert(Heading(reflect(ball_heading.0, axis).normalize()));
 
             info!("Ball({:?}): Collided Wall({:?})", entity, side);
             break;
