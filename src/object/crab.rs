@@ -48,7 +48,7 @@ impl Plugin for CrabPlugin {
                     restrict_crab_movement_range.after(MovementSet),
                     (
                         add_crab_movement_after_fading_in,
-                        remove_crab_movement_and_collision_before_fading_out,
+                        remove_crab_movement_and_collider_before_fading_out,
                     )
                         .run_if(not(in_state(GameState::Paused))),
                 ),
@@ -142,7 +142,7 @@ fn add_crab_movement_after_fading_in(
     }
 }
 
-fn remove_crab_movement_and_collision_before_fading_out(
+fn remove_crab_movement_and_collider_before_fading_out(
     mut commands: Commands,
     query: Query<(Entity, &Fade), (With<Crab>, Added<Fade>)>,
 ) {

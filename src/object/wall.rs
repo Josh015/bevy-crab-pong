@@ -34,7 +34,7 @@ impl Plugin for WallPlugin {
         app.add_spawner((Object::Wall, spawn_wall_on_side))
             .add_systems(
                 Update,
-                remove_wall_collision_before_fading_out
+                remove_wall_collider_before_fading_out
                     .run_if(not(in_state(GameState::Paused))),
             )
             .add_systems(
@@ -97,7 +97,7 @@ fn spawn_wall_on_side(
     info!("Wall({:?}): Spawned", side);
 }
 
-fn remove_wall_collision_before_fading_out(
+fn remove_wall_collider_before_fading_out(
     mut commands: Commands,
     query: Query<(Entity, &Fade), (With<Wall>, Added<Fade>)>,
 ) {

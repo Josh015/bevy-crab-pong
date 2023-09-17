@@ -33,8 +33,8 @@ impl Plugin for BallPlugin {
             .add_systems(
                 Update,
                 (
-                    add_ball_movement_and_collision_after_fading_in,
-                    remove_ball_collision_before_fading_out,
+                    add_ball_movement_and_collider_after_fading_in,
+                    remove_ball_collider_before_fading_out,
                 )
                     .run_if(not(in_state(GameState::Paused))),
             )
@@ -89,7 +89,7 @@ fn spawn_ball_with_position(
     info!("Ball({:?}): Spawned", ball);
 }
 
-fn add_ball_movement_and_collision_after_fading_in(
+fn add_ball_movement_and_collider_after_fading_in(
     mut commands: Commands,
     mut removed: RemovedComponents<Fade>,
     query: Query<Entity, With<Ball>>,
@@ -101,7 +101,7 @@ fn add_ball_movement_and_collision_after_fading_in(
     }
 }
 
-fn remove_ball_collision_before_fading_out(
+fn remove_ball_collider_before_fading_out(
     mut commands: Commands,
     query: Query<(Entity, &Fade), (With<Ball>, Added<Fade>)>,
 ) {
