@@ -6,6 +6,7 @@ pub mod level;
 pub mod object;
 pub mod player;
 pub mod ui;
+pub mod util;
 
 use bevy::{
     asset::ChangeWatcher,

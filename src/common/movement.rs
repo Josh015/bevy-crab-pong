@@ -1,7 +1,10 @@
 use bevy::prelude::*;
-use std::ops::{Add, Sub};
+use std::ops::Add;
 
-use crate::game::state::{GameState, LoadedSet};
+use crate::{
+    game::state::{GameState, LoadedSet},
+    util::decelerate_speed,
+};
 
 /// Marks an entity as able to move.
 #[derive(Component)]
@@ -73,11 +76,6 @@ impl Plugin for MovementPlugin {
                 .in_set(MovementSet),
         );
     }
-}
-
-fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
-    let s = speed.abs().sub(delta_speed).max(0.0);
-    speed.max(-s).min(s) // clamp() panics when min == max.
 }
 
 fn acceleration(

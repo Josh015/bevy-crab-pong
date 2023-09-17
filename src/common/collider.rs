@@ -12,6 +12,7 @@ use crate::{
         crab::{Crab, CRAB_DEPTH, CRAB_WIDTH},
         wall::{Wall, WALL_RADIUS},
     },
+    util::{calculate_deflection, reflect},
 };
 
 /// Marks a collidable entity.
@@ -41,21 +42,6 @@ impl Plugin for ColliderPlugin {
                 .in_set(ColliderSet),
         );
     }
-}
-
-/// Get a deflection direction based on a ball's delta from a crab's center.
-pub fn calculate_ball_to_paddle_deflection(delta: f32, axis: Vec3) -> Vec3 {
-    let rotation_away_from_center = Quat::from_rotation_y(
-        std::f32::consts::FRAC_PI_4
-            * (delta / (0.5 * CRAB_WIDTH)).clamp(-1.0, 1.0),
-    );
-    let deflection_direction = rotation_away_from_center * -axis;
-
-    deflection_direction
-}
-
-fn reflect(i: Vec3, n: Vec3) -> Vec3 {
-    i - (2.0 * (i.dot(n) * n))
 }
 
 fn ball_and_ball_collisions(
@@ -168,7 +154,7 @@ fn crab_and_ball_collisions(
             }
 
             let ball_deflection_direction =
-                calculate_ball_to_paddle_deflection(delta, axis);
+                calculate_deflection(delta, CRAB_WIDTH, axis);
 
             commands
                 .entity(ball_entity)

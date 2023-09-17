@@ -2,9 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     common::{
-        collider::{
-            calculate_ball_to_paddle_deflection, Collider, ColliderSet,
-        },
+        collider::{Collider, ColliderSet},
         movement::{Heading, Movement, StoppingDistance},
     },
     game::state::LoadedSet,
@@ -14,6 +12,7 @@ use crate::{
         crab::{Crab, CRAB_WIDTH},
     },
     player::ai::{PlayerAi, Target, AI_CENTER_HIT_AREA_PERCENTAGE},
+    util::calculate_deflection,
 };
 
 pub const DEBUGGING_RAY_LENGTH: f32 = 20.0;
@@ -192,17 +191,17 @@ fn crab_collider_ball_deflection_direction_gizmos(
             // Check that the ball is near the crab and facing the goal.
             let axis = side.axis();
             let ball_goal_position = side.get_ball_position(ball_transform);
-            let ball_to_crab = transform.translation.x - ball_goal_position;
-            let ball_to_crab_distance = ball_transform
+            let delta = transform.translation.x - ball_goal_position;
+            let crab_to_ball_distance = ball_transform
                 .translation()
                 .distance(crab_global_transform.translation());
 
-            if ball_to_crab_distance > 0.25 || ball_heading.0.dot(axis) <= 0.0 {
+            if crab_to_ball_distance > 0.25 || ball_heading.0.dot(axis) <= 0.0 {
                 continue;
             }
 
             let ball_deflection_direction =
-                calculate_ball_to_paddle_deflection(ball_to_crab, axis);
+                calculate_deflection(delta, CRAB_WIDTH, axis);
 
             gizmos.line(
                 crab_global_transform.translation(),
