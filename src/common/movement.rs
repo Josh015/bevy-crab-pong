@@ -75,14 +75,19 @@ impl Plugin for MovementPlugin {
     }
 }
 
+fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
+    let s = speed.abs().sub(delta_speed).max(0.0);
+    speed.max(-s).min(s) // clamp() panics when min == max.
+}
+
 fn acceleration(
     time: Res<Time>,
     mut query: Query<
-        (&mut Speed, &Acceleration, &Force, &MaxSpeed),
+        (&Acceleration, &mut Speed, &Force, &MaxSpeed),
         With<Movement>,
     >,
 ) {
-    for (mut speed, acceleration, force, max_speed) in &mut query {
+    for (acceleration, mut speed, force, max_speed) in &mut query {
         let delta_speed = acceleration.0 * time.delta_seconds();
 
         speed.0 = speed
@@ -99,11 +104,11 @@ fn acceleration(
 fn deceleration(
     time: Res<Time>,
     mut query: Query<
-        (&mut Speed, &Acceleration),
+        (&Acceleration, &mut Speed),
         (With<Movement>, Without<Force>),
     >,
 ) {
-    for (mut speed, acceleration) in &mut query {
+    for (acceleration, mut speed) in &mut query {
         let delta_speed = acceleration.0 * time.delta_seconds();
         speed.0 = decelerate_speed(speed.0, delta_speed);
     }
@@ -111,9 +116,9 @@ fn deceleration(
 
 fn velocity(
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &Heading, &Speed), With<Movement>>,
+    mut query: Query<(&Speed, &Heading, &mut Transform), With<Movement>>,
 ) {
-    for (mut transform, heading, speed) in &mut query {
+    for (speed, heading, mut transform) in &mut query {
         transform.translation += heading.0 * (speed.0 * time.delta_seconds());
     }
 }
@@ -136,9 +141,4 @@ fn stopping_distance(
             current_speed = decelerate_speed(current_speed, delta_speed);
         }
     }
-}
-
-fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
-    let s = speed.abs().sub(delta_speed).max(0.0);
-    speed.max(-s).min(s) // clamp() panics when min == max.
 }
