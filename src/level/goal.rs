@@ -56,10 +56,7 @@ fn allow_only_one_crab_or_wall_per_goal(
     for (new_entity, new_parent) in &new_query {
         for (old_entity, old_parent) in &old_query {
             if old_parent == new_parent && old_entity != new_entity {
-                commands
-                    .entity(old_entity)
-                    .remove::<Movement>()
-                    .insert(Fade::out_default());
+                commands.entity(old_entity).insert(Fade::out_default());
                 break;
             }
         }

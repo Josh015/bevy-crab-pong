@@ -1,9 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    common::{collider::Collider, movement::Movement},
-    game::state::GameState,
-};
+use crate::game::state::GameState;
 
 pub const FADE_DURATION_IN_SECONDS: f32 = 1.0;
 
@@ -16,13 +13,6 @@ pub enum Fade {
 }
 
 impl Fade {
-    pub fn in_default() -> Self {
-        Self::In(Timer::from_seconds(
-            FADE_DURATION_IN_SECONDS,
-            TimerMode::Once,
-        ))
-    }
-
     pub fn out_default() -> Self {
         Self::Out(Timer::from_seconds(
             FADE_DURATION_IN_SECONDS,
@@ -33,7 +23,10 @@ impl Fade {
 
 impl Default for Fade {
     fn default() -> Self {
-        Self::in_default()
+        Self::In(Timer::from_seconds(
+            FADE_DURATION_IN_SECONDS,
+            TimerMode::Once,
+        ))
     }
 }
 
@@ -72,10 +65,6 @@ pub(super) struct FadePlugin;
 impl Plugin for FadePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
-            pre_fade_out.run_if(not(in_state(GameState::Paused))),
-        )
-        .add_systems(
             PostUpdate,
             animate_fade_effect.run_if(not(in_state(GameState::Paused))),
         )
@@ -83,17 +72,6 @@ impl Plugin for FadePlugin {
             Last,
             finish_fading.run_if(not(in_state(GameState::Paused))),
         );
-    }
-}
-
-fn pre_fade_out(
-    mut commands: Commands,
-    query: Query<(Entity, &Fade), Added<Fade>>,
-) {
-    for (entity, fade) in &query {
-        if matches!(fade, Fade::Out(_)) {
-            commands.entity(entity).remove::<Collider>();
-        }
     }
 }
 
@@ -146,7 +124,7 @@ fn finish_fading(mut commands: Commands, query: Query<(Entity, &Fade)>) {
         match fade {
             Fade::In(progress) => {
                 if progress.finished() {
-                    commands.entity(entity).remove::<Fade>().insert(Movement);
+                    commands.entity(entity).remove::<Fade>();
                     info!("Entity({:?}): Started Moving", entity);
                 }
             },

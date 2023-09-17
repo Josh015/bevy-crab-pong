@@ -7,7 +7,7 @@ use crate::{
         fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
         movement::{Heading, Movement},
     },
-    game::assets::CachedAssets,
+    game::{assets::CachedAssets, state::GameState},
     level::{
         beach::Beach,
         goal::{Goal, GOAL_WIDTH},
@@ -32,6 +32,11 @@ pub(super) struct WallPlugin;
 impl Plugin for WallPlugin {
     fn build(&self, app: &mut App) {
         app.add_spawner((Object::Wall, spawn_wall_on_side))
+            .add_systems(
+                Update,
+                remove_wall_collision_when_fading_out
+                    .run_if(not(in_state(GameState::Paused))),
+            )
             .add_systems(
                 PostUpdate,
                 wall_and_ball_collisions.in_set(ColliderSet),
@@ -90,6 +95,17 @@ fn spawn_wall_on_side(
     });
 
     info!("Wall({:?}): Spawned", side);
+}
+
+fn remove_wall_collision_when_fading_out(
+    mut commands: Commands,
+    query: Query<(Entity, &Fade), (With<Wall>, Added<Fade>)>,
+) {
+    for (entity, fade) in &query {
+        if matches!(fade, Fade::Out(_)) {
+            commands.entity(entity).remove::<Collider>();
+        }
+    }
 }
 
 fn wall_and_ball_collisions(

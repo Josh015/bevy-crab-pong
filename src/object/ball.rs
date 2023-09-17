@@ -5,7 +5,7 @@ use spew::prelude::*;
 use crate::{
     common::{
         collider::{Collider, ColliderSet},
-        fade::FadeBundle,
+        fade::{Fade, FadeBundle},
         movement::{Heading, Movement, Speed, VelocityBundle},
     },
     game::{
@@ -31,6 +31,14 @@ impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
         app.add_spawner((Object::Ball, spawn_ball_with_position))
             .add_systems(
+                Update,
+                (
+                    add_ball_movement_and_collision_after_its_finished_fading_in,
+                    remove_ball_collision_when_fading_out,
+                )
+                    .run_if(not(in_state(GameState::Paused))),
+            )
+            .add_systems(
                 PostUpdate,
                 ball_and_ball_collisions.in_set(ColliderSet),
             );
@@ -53,7 +61,6 @@ fn spawn_ball_with_position(
     let ball = commands
         .spawn((
             Ball,
-            Collider,
             FadeBundle::default(),
             ForStates(vec![GameState::Playing, GameState::Paused]),
             VelocityBundle {
@@ -80,6 +87,29 @@ fn spawn_ball_with_position(
         .id();
 
     info!("Ball({:?}): Spawned", ball);
+}
+
+fn add_ball_movement_and_collision_after_its_finished_fading_in(
+    mut commands: Commands,
+    mut removed: RemovedComponents<Fade>,
+    query: Query<Entity, With<Ball>>,
+) {
+    for entity in removed.iter() {
+        if query.contains(entity) {
+            commands.entity(entity).insert(Movement).insert(Collider);
+        }
+    }
+}
+
+fn remove_ball_collision_when_fading_out(
+    mut commands: Commands,
+    query: Query<(Entity, &Fade), (With<Ball>, Added<Fade>)>,
+) {
+    for (entity, fade) in &query {
+        if matches!(fade, Fade::Out(_)) {
+            commands.entity(entity).remove::<Collider>();
+        }
+    }
 }
 
 fn ball_and_ball_collisions(

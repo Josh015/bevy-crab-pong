@@ -4,7 +4,7 @@ use spew::prelude::*;
 use crate::{
     common::{
         collider::{Collider, ColliderSet},
-        fade::{FadeAnimation, FadeBundle},
+        fade::{Fade, FadeAnimation, FadeBundle},
         movement::{
             Acceleration, AccelerationBundle, Force, Heading, MaxSpeed,
             Movement, MovementSet, Speed, StoppingDistance, VelocityBundle,
@@ -13,6 +13,7 @@ use crate::{
     game::{
         assets::{CachedAssets, GameAssets, GameConfig, Player},
         competitors::GameMode,
+        state::GameState,
     },
     level::{
         barrier::BARRIER_RADIUS,
@@ -43,7 +44,14 @@ impl Plugin for CrabPlugin {
         app.add_spawner((Object::Crab, spawn_crab_on_side))
             .add_systems(
                 Update,
-                restrict_crab_movement_range.after(MovementSet),
+                (
+                    restrict_crab_movement_range.after(MovementSet),
+                    (
+                        add_crab_movement_after_its_finished_fading_in,
+                        remove_crab_movement_and_collision_when_fading_out,
+                    )
+                        .run_if(not(in_state(GameState::Paused))),
+                ),
             )
             .add_systems(
                 PostUpdate,
@@ -120,6 +128,32 @@ fn spawn_crab_on_side(
     });
 
     info!("Crab({:?}): Spawned", side);
+}
+
+fn add_crab_movement_after_its_finished_fading_in(
+    mut commands: Commands,
+    mut removed: RemovedComponents<Fade>,
+    query: Query<Entity, With<Crab>>,
+) {
+    for entity in removed.iter() {
+        if query.contains(entity) {
+            commands.entity(entity).insert(Movement);
+        }
+    }
+}
+
+fn remove_crab_movement_and_collision_when_fading_out(
+    mut commands: Commands,
+    query: Query<(Entity, &Fade), (With<Crab>, Added<Fade>)>,
+) {
+    for (entity, fade) in &query {
+        if matches!(fade, Fade::Out(_)) {
+            commands
+                .entity(entity)
+                .remove::<Movement>()
+                .remove::<Collider>();
+        }
+    }
 }
 
 fn restrict_crab_movement_range(
