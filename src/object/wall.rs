@@ -3,7 +3,7 @@ use spew::prelude::*;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderSet},
+        collider::{ColliderCircle, ColliderSet, ColliderUnique},
         fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
         movement::{Heading, Movement},
     },
@@ -59,7 +59,7 @@ fn spawn_wall_on_side(
     commands.entity(goal_entity).with_children(|builder| {
         builder.spawn((
             Wall,
-            Collider,
+            ColliderUnique,
             side,
             FadeBundle {
                 fade_animation: FadeAnimation::Scale {
@@ -103,7 +103,7 @@ fn remove_wall_collider_before_fading_out(
 ) {
     for (entity, fade) in &query {
         if matches!(fade, Fade::Out(_)) {
-            commands.entity(entity).remove::<Collider>();
+            commands.entity(entity).remove::<ColliderUnique>();
         }
     }
 }
@@ -112,9 +112,9 @@ fn wall_and_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, With<Collider>, With<Movement>),
+        (With<Ball>, With<ColliderCircle>, With<Movement>),
     >,
-    walls_query: Query<&Side, (With<Wall>, With<Collider>)>,
+    walls_query: Query<&Side, (With<Wall>, With<ColliderUnique>)>,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
         for side in &walls_query {

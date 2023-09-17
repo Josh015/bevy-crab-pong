@@ -4,7 +4,7 @@ use spew::prelude::*;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderSet},
+        collider::ColliderCircle,
         fade::{Fade, FadeBundle},
         movement::{Heading, Movement, Speed, VelocityBundle},
     },
@@ -12,7 +12,6 @@ use crate::{
         assets::{CachedAssets, GameAssets, GameConfig},
         state::{ForStates, GameState},
     },
-    util::reflect,
 };
 
 use super::Object;
@@ -37,10 +36,6 @@ impl Plugin for BallPlugin {
                     remove_ball_collider_before_fading_out,
                 )
                     .run_if(not(in_state(GameState::Paused))),
-            )
-            .add_systems(
-                PostUpdate,
-                ball_and_ball_collisions.in_set(ColliderSet),
             );
     }
 }
@@ -96,7 +91,12 @@ fn add_ball_movement_and_collider_after_fading_in(
 ) {
     for entity in removed.iter() {
         if query.contains(entity) {
-            commands.entity(entity).insert(Movement).insert(Collider);
+            commands
+                .entity(entity)
+                .insert(Movement)
+                .insert(ColliderCircle {
+                    radius: BALL_RADIUS,
+                });
         }
     }
 }
@@ -107,51 +107,8 @@ fn remove_ball_collider_before_fading_out(
 ) {
     for (entity, fade) in &query {
         if matches!(fade, Fade::Out(_)) {
-            commands.entity(entity).remove::<Collider>();
+            commands.entity(entity).remove::<ColliderCircle>();
         }
-    }
-}
-
-fn ball_and_ball_collisions(
-    mut commands: Commands,
-    balls_query: Query<
-        (Entity, &GlobalTransform, &Heading),
-        (With<Ball>, With<Movement>, With<Collider>),
-    >,
-) {
-    for [(entity1, transform1, heading1), (entity2, transform2, heading2)] in
-        balls_query.iter_combinations()
-    {
-        // Check that both balls are close enough to touch.
-        let delta = transform2.translation() - transform1.translation();
-
-        if delta.length() > BALL_RADIUS + BALL_RADIUS {
-            continue;
-        }
-
-        // Deflect both balls away from each other.
-        let axis1 = delta.normalize();
-        let axis2 = -axis1;
-        let is_b1_facing_b2 = heading1.0.dot(axis1) > 0.0;
-        let is_b2_facing_b1 = heading2.0.dot(axis2) > 0.0;
-
-        if is_b1_facing_b2 {
-            commands
-                .entity(entity1)
-                .insert(Heading(reflect(heading1.0, axis1).normalize()));
-        } else if is_b2_facing_b1 {
-            commands.entity(entity1).insert(Heading(axis2));
-        }
-
-        if is_b2_facing_b1 {
-            commands
-                .entity(entity2)
-                .insert(Heading(reflect(heading2.0, axis2).normalize()));
-        } else if is_b1_facing_b2 {
-            commands.entity(entity2).insert(Heading(axis1));
-        }
-
-        info!("Ball({:?}): Collided Ball({:?})", entity1, entity2);
     }
 }
 

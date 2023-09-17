@@ -3,7 +3,7 @@ use spew::prelude::*;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderSet},
+        collider::{ColliderCircle, ColliderSet, ColliderUnique},
         fade::Fade,
         movement::Movement,
     },
@@ -68,9 +68,12 @@ fn check_if_any_balls_have_scored_in_any_goals(
     mut goal_scored_events: EventWriter<GoalScoredEvent>,
     balls_query: Query<
         (Entity, &GlobalTransform),
-        (With<Ball>, With<Movement>, With<Collider>),
+        (With<Ball>, With<Movement>, With<ColliderCircle>),
     >,
-    crabs_query: Query<&Side, (With<Crab>, With<Movement>, With<Collider>)>,
+    crabs_query: Query<
+        &Side,
+        (With<Crab>, With<Movement>, With<ColliderUnique>),
+    >,
 ) {
     // If a ball passes a goal's alive crab then despawn it and raise an event.
     for (ball_entity, global_transform) in &balls_query {

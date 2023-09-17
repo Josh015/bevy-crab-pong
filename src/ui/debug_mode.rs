@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderSet},
+        collider::{ColliderCircle, ColliderSet, ColliderUnique},
         movement::{Heading, Movement, StoppingDistance},
     },
     game::state::LoadedSet,
@@ -145,7 +145,7 @@ fn crab_ai_ball_targeting_gizmos(
     >,
     balls_query: Query<
         &GlobalTransform,
-        (With<Ball>, With<Movement>, With<Collider>),
+        (With<Ball>, With<Movement>, With<ColliderCircle>),
     >,
     mut gizmos: Gizmos,
 ) {
@@ -178,11 +178,11 @@ fn crab_ai_ideal_ball_hit_area_gizmos(
 fn crab_collider_ball_deflection_direction_gizmos(
     balls_query: Query<
         (&GlobalTransform, &Heading),
-        (With<Ball>, With<Movement>, With<Collider>),
+        (With<Ball>, With<Movement>, With<ColliderCircle>),
     >,
     crabs_query: Query<
         (&Side, &Transform, &GlobalTransform),
-        (With<Crab>, With<Collider>),
+        (With<Crab>, With<ColliderUnique>),
     >,
     mut gizmos: Gizmos,
 ) {

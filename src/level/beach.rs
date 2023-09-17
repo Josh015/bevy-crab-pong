@@ -2,21 +2,24 @@ use bevy::prelude::*;
 use spew::prelude::{SpawnEvent, SpewSystemSet};
 
 use crate::{
-    common::{collider::Collider, movement::Movement},
+    common::{collider::ColliderCircle, movement::Movement},
     game::{
         assets::{GameAssets, GameConfig},
         competitors::GameMode,
         state::GameState,
     },
-    level::{
-        barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT},
-        goal::{Goal, GOAL_WIDTH},
-        ocean::Ocean,
-        side::{Side, SIDES},
-        swaying_camera::SwayingCamera,
+    object::{
+        ball::{Ball, BALL_HEIGHT},
+        Object,
     },
-    object::ball::{Ball, BALL_HEIGHT},
-    object::Object,
+};
+
+use super::{
+    barrier::{Barrier, BARRIER_DIAMETER, BARRIER_HEIGHT, BARRIER_RADIUS},
+    goal::{Goal, GOAL_WIDTH},
+    ocean::Ocean,
+    side::{Side, SIDES},
+    swaying_camera::SwayingCamera,
 };
 
 pub const BEACH_CENTER_POINT: Vec3 = Vec3::ZERO;
@@ -145,7 +148,9 @@ fn spawn_level(
                 // Barrier
                 builder.spawn((
                     Barrier,
-                    Collider,
+                    ColliderCircle {
+                        radius: BARRIER_RADIUS,
+                    },
                     PbrBundle {
                         mesh: unit_cube.clone(),
                         material: barrier_material.clone(),

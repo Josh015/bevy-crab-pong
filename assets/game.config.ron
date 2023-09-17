@@ -62,10 +62,10 @@ G to enable debugging.
       name: "Stress Test",
       ball_count: 50,
       competitors: {
-        Bottom: (color: "FFFF00", team: 3, player: AI, hit_points: 50, seconds_to_max_speed: 0.01, max_speed: 10),
-        Right: (color: "FFFF00", team: 3, player: AI, hit_points: 50, seconds_to_max_speed: 0.01, max_speed: 10),
-        Top: (color: "00FFFF", team: 4, player: AI, hit_points: 50, seconds_to_max_speed: 0.01, max_speed: 10),
-        Left: (color: "00FFFF", team: 4, player: AI, hit_points: 50, seconds_to_max_speed: 0.01, max_speed: 10),
+        Bottom: (color: "FFFF00", team: 3, player: AI, hit_points: 50, seconds_to_max_speed: 0.01, max_speed: 20),
+        Right: (color: "FFFF00", team: 3, player: AI, hit_points: 50, seconds_to_max_speed: 0.01, max_speed: 20),
+        Top: (color: "00FFFF", team: 4, player: AI, hit_points: 50, seconds_to_max_speed: 0.01, max_speed: 20),
+        Left: (color: "00FFFF", team: 4, player: AI, hit_points: 50, seconds_to_max_speed: 0.01, max_speed: 20),
       },
     ),
 
