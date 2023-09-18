@@ -45,12 +45,12 @@ impl Plugin for CrabPlugin {
             .add_systems(
                 Update,
                 (
-                    restrict_crab_movement_range.after(MovementSet),
                     (
                         add_crab_movement_after_fading_in,
                         remove_crab_movement_and_collider_before_fading_out,
                     )
                         .run_if(not(in_state(GameState::Paused))),
+                    restrict_crab_movement_range.after(MovementSet),
                 ),
             )
             .add_systems(
@@ -72,11 +72,6 @@ fn spawn_crab_on_side(
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
     let crab_config = &game_config.modes[game_mode.0].competitors[&side];
-    let material_handle = materials.add(StandardMaterial {
-        base_color_texture: Some(game_assets.image_crab.clone()),
-        base_color: Color::hex(&crab_config.color).unwrap(),
-        ..default()
-    });
     let (goal_entity, _) = goals_query
         .iter()
         .find(|(_, goal_side)| **goal_side == side)
@@ -107,7 +102,11 @@ fn spawn_crab_on_side(
             },
             PbrBundle {
                 mesh: cached_assets.crab_mesh.clone(),
-                material: material_handle,
+                material: materials.add(StandardMaterial {
+                    base_color_texture: Some(game_assets.image_crab.clone()),
+                    base_color: Color::hex(&crab_config.color).unwrap(),
+                    ..default()
+                }),
                 transform: Transform::from_matrix(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(f32::EPSILON),
@@ -115,7 +114,6 @@ fn spawn_crab_on_side(
                         CRAB_START_POSITION,
                     ),
                 ),
-
                 ..default()
             },
         ));

@@ -134,8 +134,8 @@ fn spawn_level(
         // Goals
         commands
             .spawn((
-                *side,
                 Goal,
+                *side,
                 PbrBundle {
                     transform: Transform::from_rotation(Quat::from_axis_angle(
                         Vec3::Y,
