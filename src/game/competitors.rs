@@ -2,15 +2,13 @@ use std::num::NonZeroUsize;
 
 use bevy::{prelude::*, utils::HashMap};
 
-use crate::{
-    game::{
-        assets::{GameAssets, GameConfig},
-        state::GameState,
-    },
-    level::{goal::GoalScoredEvent, side::Side},
-};
+use crate::level::side::{Side, SideScoredEvent};
 
-use super::GameSet;
+use super::{
+    assets::{GameAssets, GameConfig},
+    state::GameState,
+    GameSet,
+};
 
 /// A member of a competing team.
 #[derive(Debug)]
@@ -47,7 +45,7 @@ impl Plugin for CompetitorsPlugin {
             .add_systems(
                 PostUpdate,
                 (
-                    decrement_competitor_hp_when_their_goal_gets_scored,
+                    decrement_competitor_hp_when_their_side_gets_scored,
                     check_for_game_over,
                 )
                     .chain()
@@ -78,13 +76,13 @@ fn reset_competitors(
     }
 }
 
-fn decrement_competitor_hp_when_their_goal_gets_scored(
-    mut goal_scored_events: EventReader<GoalScoredEvent>,
+fn decrement_competitor_hp_when_their_side_gets_scored(
+    mut side_scored_events: EventReader<SideScoredEvent>,
     mut competitor_eliminated_events: EventWriter<CompetitorEliminatedEvent>,
     mut competitors: ResMut<Competitors>,
 ) {
-    // Decrement a competitor's HP and potentially eliminate their goal.
-    for GoalScoredEvent(side) in goal_scored_events.iter() {
+    // Decrement a competitor's HP and potentially eliminate their side.
+    for SideScoredEvent(side) in side_scored_events.iter() {
         let competitor = competitors.0.get_mut(side).unwrap();
 
         competitor.hit_points = competitor.hit_points.saturating_sub(1);

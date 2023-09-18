@@ -17,21 +17,22 @@ use crate::{
     },
     level::{
         beach::BARRIER_RADIUS,
-        goal::{Goal, GOAL_WIDTH},
-        side::Side,
+        side::{Side, SideSpawnPoint, SIDE_WIDTH},
     },
-    object::ball::BALL_RADIUS,
     player::{ai::PlayerAi, input::PlayerInput},
     util::hemisphere_deflection,
 };
 
-use super::{ball::Ball, Object};
+use super::{
+    ball::{Ball, BALL_RADIUS},
+    Object,
+};
 
 pub const CRAB_WIDTH: f32 = 0.2;
 pub const CRAB_DEPTH: f32 = 0.1;
 pub const CRAB_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
 pub const CRAB_POSITION_X_MAX: f32 =
-    (0.5 * GOAL_WIDTH) - BARRIER_RADIUS - (0.5 * CRAB_WIDTH);
+    (0.5 * SIDE_WIDTH) - BARRIER_RADIUS - (0.5 * CRAB_WIDTH);
 
 /// Makes a crab entity that can deflect balls and move sideways inside a goal.
 #[derive(Component, Debug)]
@@ -68,62 +69,69 @@ fn spawn_crab_on_side(
     game_configs: Res<Assets<GameConfig>>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    goals_query: Query<(Entity, &Side), With<Goal>>,
+    spawn_points_query: Query<(Entity, &Side), With<SideSpawnPoint>>,
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
     let crab_config = &game_config.modes[game_mode.0].competitors[&side];
-    let (goal_entity, _) = goals_query
+    let (spawn_point_entity, _) = spawn_points_query
         .iter()
-        .find(|(_, goal_side)| **goal_side == side)
+        .find(|(_, side_side)| **side_side == side)
         .unwrap();
 
-    commands.entity(goal_entity).with_children(|builder| {
-        let mut crab = builder.spawn((
-            Crab,
-            Collider,
-            side,
-            FadeBundle {
-                fade_animation: FadeAnimation::Scale {
-                    max_scale: Vec3::new(CRAB_WIDTH, CRAB_DEPTH, CRAB_DEPTH),
-                    axis_mask: Vec3::ONE,
-                },
-                ..default()
-            },
-            AccelerationBundle {
-                velocity: VelocityBundle {
-                    heading: Heading(Vec3::X),
+    commands
+        .entity(spawn_point_entity)
+        .with_children(|builder| {
+            let mut crab = builder.spawn((
+                Crab,
+                Collider,
+                side,
+                FadeBundle {
+                    fade_animation: FadeAnimation::Scale {
+                        max_scale: Vec3::new(
+                            CRAB_WIDTH, CRAB_DEPTH, CRAB_DEPTH,
+                        ),
+                        axis_mask: Vec3::ONE,
+                    },
                     ..default()
                 },
-                max_speed: MaxSpeed(crab_config.max_speed),
-                acceleration: Acceleration(
-                    crab_config.max_speed / crab_config.seconds_to_max_speed,
-                ),
-                ..default()
-            },
-            PbrBundle {
-                mesh: cached_assets.crab_mesh.clone(),
-                material: materials.add(StandardMaterial {
-                    base_color_texture: Some(game_assets.image_crab.clone()),
-                    base_color: Color::hex(&crab_config.color).unwrap(),
-                    ..default()
-                }),
-                transform: Transform::from_matrix(
-                    Mat4::from_scale_rotation_translation(
-                        Vec3::splat(f32::EPSILON),
-                        Quat::IDENTITY,
-                        CRAB_START_POSITION,
+                AccelerationBundle {
+                    velocity: VelocityBundle {
+                        heading: Heading(Vec3::X),
+                        ..default()
+                    },
+                    max_speed: MaxSpeed(crab_config.max_speed),
+                    acceleration: Acceleration(
+                        crab_config.max_speed
+                            / crab_config.seconds_to_max_speed,
                     ),
-                ),
-                ..default()
-            },
-        ));
+                    ..default()
+                },
+                PbrBundle {
+                    mesh: cached_assets.crab_mesh.clone(),
+                    material: materials.add(StandardMaterial {
+                        base_color_texture: Some(
+                            game_assets.image_crab.clone(),
+                        ),
+                        base_color: Color::hex(&crab_config.color).unwrap(),
+                        ..default()
+                    }),
+                    transform: Transform::from_matrix(
+                        Mat4::from_scale_rotation_translation(
+                            Vec3::splat(f32::EPSILON),
+                            Quat::IDENTITY,
+                            CRAB_START_POSITION,
+                        ),
+                    ),
+                    ..default()
+                },
+            ));
 
-        if crab_config.player == Player::AI {
-            crab.insert(PlayerAi);
-        } else {
-            crab.insert(PlayerInput);
-        }
-    });
+            if crab_config.player == Player::AI {
+                crab.insert(PlayerAi);
+            } else {
+                crab.insert(PlayerInput);
+            }
+        });
 
     info!("Crab({:?}): Spawned", side);
 }
@@ -200,12 +208,12 @@ fn crab_and_ball_collisions(
         for (side, crab_transform) in &crabs_query {
             // Check that the ball is touching the crab and facing the goal.
             let axis = side.axis();
-            let ball_to_goal_distance = side.distance_to_ball(ball_transform);
-            let ball_goal_position = side.get_ball_position(ball_transform);
-            let delta = crab_transform.translation.x - ball_goal_position;
+            let ball_to_side_distance = side.distance_to_ball(ball_transform);
+            let ball_side_position = side.get_ball_position(ball_transform);
+            let delta = crab_transform.translation.x - ball_side_position;
             let ball_to_crab_distance = delta.abs();
 
-            if ball_to_goal_distance > BALL_RADIUS + (0.5 * CRAB_DEPTH)
+            if ball_to_side_distance > BALL_RADIUS + (0.5 * CRAB_DEPTH)
                 || ball_to_crab_distance > BALL_RADIUS + (0.5 * CRAB_WIDTH)
                 || ball_heading.0.dot(axis) <= 0.0
             {

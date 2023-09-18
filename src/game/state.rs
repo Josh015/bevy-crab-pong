@@ -2,10 +2,9 @@ use bevy::{ecs::query::Has, prelude::*};
 use bevy_asset_loader::prelude::*;
 use bevy_common_assets::ron::RonAssetPlugin;
 
-use crate::{
-    common::fade::{Fade, FadeAnimation},
-    game::assets::{GameAssets, GameConfig},
-};
+use crate::common::fade::{Fade, FadeAnimation};
+
+use super::assets::{GameAssets, GameConfig};
 
 /// Tags an entity to only exist in the listed game states.
 #[derive(Clone, Component, Debug)]

@@ -32,7 +32,7 @@ impl Plugin for AiPlugin {
         app.add_systems(
             Update,
             (
-                make_ai_crabs_target_the_balls_closest_to_their_goals,
+                make_ai_crabs_target_the_balls_closest_to_their_sides,
                 move_ai_crabs_toward_their_targeted_balls,
             )
                 .chain()
@@ -41,7 +41,7 @@ impl Plugin for AiPlugin {
     }
 }
 
-fn make_ai_crabs_target_the_balls_closest_to_their_goals(
+fn make_ai_crabs_target_the_balls_closest_to_their_sides(
     mut commands: Commands,
     crabs_query: Query<
         (Entity, &Side),
@@ -57,10 +57,10 @@ fn make_ai_crabs_target_the_balls_closest_to_their_goals(
         let mut closest_ball = None;
 
         for (ball_entity, ball_transform) in &balls_query {
-            let ball_distance_to_goal = side.distance_to_ball(ball_transform);
+            let ball_distance_to_side = side.distance_to_ball(ball_transform);
 
-            if ball_distance_to_goal < closest_ball_distance {
-                closest_ball_distance = ball_distance_to_goal;
+            if ball_distance_to_side < closest_ball_distance {
+                closest_ball_distance = ball_distance_to_side;
                 closest_ball = Some(ball_entity);
             }
         }
@@ -91,19 +91,19 @@ fn move_ai_crabs_toward_their_targeted_balls(
     >,
 ) {
     for (entity, side, transform, stopping_distance, target) in &crabs_query {
-        // Use the ball's goal position or default to the center of the goal.
-        let mut target_goal_position = CRAB_START_POSITION.x;
+        // Use the ball's side position or default to the center of the side.
+        let mut target_side_position = CRAB_START_POSITION.x;
 
         if let Some(target) = target {
             if let Ok(ball_transform) = balls_query.get(target.0) {
-                target_goal_position = side.get_ball_position(ball_transform)
+                target_side_position = side.get_ball_position(ball_transform)
             }
         }
 
         // Make the crab move to try to keep its ideal hit area under the ball.
         let crab_stop_position = transform.translation.x + stopping_distance.0;
         let distance_from_crab_center =
-            (crab_stop_position - target_goal_position).abs();
+            (crab_stop_position - target_side_position).abs();
 
         if distance_from_crab_center
             < 0.5 * CRAB_WIDTH * AI_CENTER_HIT_AREA_PERCENTAGE
@@ -111,7 +111,7 @@ fn move_ai_crabs_toward_their_targeted_balls(
             commands.entity(entity).remove::<Force>();
         } else {
             commands.entity(entity).insert(
-                if target_goal_position < transform.translation.x {
+                if target_side_position < transform.translation.x {
                     Force::Negative // Left
                 } else {
                     Force::Positive // Right

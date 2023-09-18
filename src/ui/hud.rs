@@ -20,7 +20,7 @@ impl Plugin for HudPlugin {
         app.add_systems(OnExit(GameState::Loading), spawn_hud_ui)
             .add_systems(
                 Update,
-                update_goal_hit_points_ui.chain().in_set(LoadedSet),
+                update_hit_points_ui.chain().in_set(LoadedSet),
             );
     }
 }
@@ -93,7 +93,7 @@ fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
     }
 }
 
-fn update_goal_hit_points_ui(
+fn update_hit_points_ui(
     competitors: Res<Competitors>,
     mut hp_ui_query: Query<(&mut Text, &Side), With<HitPointsUi>>,
 ) {

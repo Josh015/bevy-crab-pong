@@ -1,9 +1,32 @@
-use bevy::prelude::{Component, GlobalTransform, Vec3};
+use bevy::prelude::*;
 use serde::Deserialize;
+use spew::prelude::*;
 
-use crate::level::goal::GOAL_WIDTH;
+use crate::{
+    common::{
+        collider::{Collider, ColliderSet},
+        fade::Fade,
+        movement::Movement,
+    },
+    game::{competitors::CompetitorEliminatedEvent, GameSet},
+    object::{
+        ball::{Ball, BALL_RADIUS},
+        crab::{Crab, CRAB_DEPTH},
+        pole::Pole,
+        Object,
+    },
+};
 
 pub const SIDES: [Side; 4] = [Side::Bottom, Side::Right, Side::Top, Side::Left];
+pub const SIDE_WIDTH: f32 = 1.0;
+
+/// Signals that a side has been scored in by a ball.
+#[derive(Clone, Component, Debug, Event)]
+pub struct SideScoredEvent(pub Side);
+
+/// Marks an entity that can be used as a parent to spawn [`Side`] entities.
+#[derive(Component, Debug)]
+pub struct SideSpawnPoint;
 
 /// Assigns an entity to a given side of the beach.
 #[derive(Clone, Component, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
@@ -15,17 +38,17 @@ pub enum Side {
 }
 
 impl Side {
-    /// Perpendicular distance from a given goal to a ball's center.
+    /// Perpendicular distance from a given side to a ball's center.
     ///
     /// Positive distances for inside the beach, negative for out of bounds.
     pub fn distance_to_ball(&self, ball_transform: &GlobalTransform) -> f32 {
         let ball_translation = ball_transform.translation();
 
         match *self {
-            Self::Bottom => (0.5 * GOAL_WIDTH) - ball_translation.z,
-            Self::Right => (0.5 * GOAL_WIDTH) - ball_translation.x,
-            Self::Top => (0.5 * GOAL_WIDTH) + ball_translation.z,
-            Self::Left => (0.5 * GOAL_WIDTH) + ball_translation.x,
+            Self::Bottom => (0.5 * SIDE_WIDTH) - ball_translation.z,
+            Self::Right => (0.5 * SIDE_WIDTH) - ball_translation.x,
+            Self::Top => (0.5 * SIDE_WIDTH) + ball_translation.z,
+            Self::Left => (0.5 * SIDE_WIDTH) + ball_translation.x,
         }
     }
 
@@ -47,5 +70,73 @@ impl Side {
             Self::Top => -ball_transform.translation().x,
             Self::Left => ball_transform.translation().z,
         }
+    }
+}
+
+pub(super) struct SidePlugin;
+
+impl Plugin for SidePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_event::<SideScoredEvent>()
+            .add_systems(
+                Update,
+                allow_only_one_crab_or_pole_per_side.after(SpewSystemSet),
+            )
+            .add_systems(
+                PostUpdate,
+                (
+                    check_if_any_balls_have_scored_in_any_sides
+                        .after(ColliderSet),
+                    block_eliminated_sides_with_poles.after(GameSet),
+                ),
+            );
+    }
+}
+
+fn allow_only_one_crab_or_pole_per_side(
+    mut commands: Commands,
+    new_query: Query<(Entity, &Parent), Or<(Added<Crab>, Added<Pole>)>>,
+    old_query: Query<(Entity, &Parent), Or<(With<Crab>, With<Pole>)>>,
+) {
+    for (new_entity, new_parent) in &new_query {
+        for (old_entity, old_parent) in &old_query {
+            if old_parent == new_parent && old_entity != new_entity {
+                commands.entity(old_entity).insert(Fade::out_default());
+                break;
+            }
+        }
+    }
+}
+
+fn check_if_any_balls_have_scored_in_any_sides(
+    mut commands: Commands,
+    mut side_scored_events: EventWriter<SideScoredEvent>,
+    balls_query: Query<
+        (Entity, &GlobalTransform),
+        (With<Ball>, With<Movement>, With<Collider>),
+    >,
+    crabs_query: Query<&Side, (With<Crab>, With<Movement>, With<Collider>)>,
+) {
+    // If a ball passes a side's alive crab then despawn it and raise an event.
+    for (ball_entity, global_transform) in &balls_query {
+        for side in &crabs_query {
+            let ball_distance = side.distance_to_ball(global_transform);
+
+            if ball_distance <= BALL_RADIUS - (0.5 * CRAB_DEPTH) {
+                commands.entity(ball_entity).insert(Fade::out_default());
+                side_scored_events.send(SideScoredEvent(*side));
+                info!("Ball({:?}): Scored Side({:?})", ball_entity, side);
+            }
+        }
+    }
+}
+
+fn block_eliminated_sides_with_poles(
+    mut competitor_eliminated_events: EventReader<CompetitorEliminatedEvent>,
+    mut spawn_on_side_events: EventWriter<SpawnEvent<Object, Side>>,
+) {
+    for CompetitorEliminatedEvent(side) in competitor_eliminated_events.iter() {
+        spawn_on_side_events.send(SpawnEvent::with_data(Object::Pole, *side));
+        info!("Side({:?}): Eliminated", side);
     }
 }

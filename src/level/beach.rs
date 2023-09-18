@@ -18,9 +18,8 @@ use crate::{
 };
 
 use super::{
-    goal::{Goal, GOAL_WIDTH},
     ocean::Ocean,
-    side::{Side, SIDES},
+    side::{Side, SideSpawnPoint, SIDES, SIDE_WIDTH},
     swaying_camera::SwayingCamera,
 };
 
@@ -42,7 +41,7 @@ impl Plugin for BeachPlugin {
         app.add_systems(OnExit(GameState::Loading), spawn_level)
             .add_systems(
                 OnExit(GameState::StartMenu),
-                (initialize_beach_data, give_each_goal_a_new_crab),
+                (initialize_beach_data, give_each_side_a_new_crab),
             )
             .add_systems(
                 Update,
@@ -118,7 +117,7 @@ fn spawn_level(
         material: materials.add(Color::hex("C4BD99").unwrap().into()),
         transform: Transform::from_matrix(
             Mat4::from_scale_rotation_translation(
-                Vec3::splat(GOAL_WIDTH),
+                Vec3::splat(SIDE_WIDTH),
                 Quat::IDENTITY,
                 BEACH_CENTER_POINT,
             ),
@@ -131,10 +130,10 @@ fn spawn_level(
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
 
     for (i, side) in SIDES.iter().enumerate() {
-        // Goals
+        // Spawn Point
         commands
             .spawn((
-                Goal,
+                SideSpawnPoint,
                 *side,
                 PbrBundle {
                     transform: Transform::from_rotation(Quat::from_axis_angle(
@@ -144,7 +143,7 @@ fn spawn_level(
                     .mul_transform(Transform::from_xyz(
                         0.0,
                         0.0,
-                        0.5 * GOAL_WIDTH,
+                        0.5 * SIDE_WIDTH,
                     )),
                     ..default()
                 },
@@ -168,7 +167,7 @@ fn spawn_level(
                                 ),
                                 Quat::IDENTITY,
                                 Vec3::new(
-                                    0.5 * GOAL_WIDTH,
+                                    0.5 * SIDE_WIDTH,
                                     0.5 * BARRIER_HEIGHT,
                                     0.0,
                                 ),
@@ -197,7 +196,7 @@ fn initialize_beach_data(
     });
 }
 
-fn give_each_goal_a_new_crab(
+fn give_each_side_a_new_crab(
     mut spawn_on_side_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
     for side in SIDES {

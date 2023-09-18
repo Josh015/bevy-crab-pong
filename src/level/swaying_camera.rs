@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{
-    game::state::LoadedSet,
-    level::{beach::BEACH_CENTER_POINT, goal::GOAL_WIDTH},
-};
+use crate::game::state::LoadedSet;
+
+use super::{beach::BEACH_CENTER_POINT, side::SIDE_WIDTH};
 
 /// Marks a [`Camera3d`] entity to sway back and forth in a slow reciprocating
 /// motion while looking at the center of the beach.
@@ -28,7 +27,7 @@ fn make_camera_slowly_sway_back_and_forth(
 ) {
     let (swaying_camera, mut transform) = query.single_mut();
     let x = (time.elapsed_seconds() * swaying_camera.speed).sin()
-        * (0.5 * GOAL_WIDTH);
+        * (0.5 * SIDE_WIDTH);
 
     *transform = Transform::from_xyz(x * 0.5, 2.0, 1.5)
         .looking_at(BEACH_CENTER_POINT, Vec3::Y);
