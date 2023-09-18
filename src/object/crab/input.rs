@@ -4,10 +4,9 @@ use leafwing_input_manager::prelude::*;
 use crate::{
     common::movement::{Force, Movement},
     level::side::Side,
-    object::crab::Crab,
 };
 
-use super::CrabSet;
+use super::{Crab, CrabSet};
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, TypePath)]
 pub enum CrabAction {

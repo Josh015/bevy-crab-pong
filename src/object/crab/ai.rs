@@ -6,13 +6,10 @@ use crate::{
         movement::{Force, Movement, StoppingDistance},
     },
     level::side::Side,
-    object::{
-        ball::Ball,
-        crab::{Crab, CRAB_START_POSITION, CRAB_WIDTH},
-    },
+    object::ball::Ball,
 };
 
-use super::CrabSet;
+use super::{Crab, CrabSet, CRAB_START_POSITION, CRAB_WIDTH};
 
 pub const AI_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.70;
 
@@ -20,7 +17,7 @@ pub const AI_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.70;
 #[derive(Component, Debug)]
 pub struct CrabAi;
 
-/// The [`Ball`] entity targeted by an [`PlayerAi`] [`Crab`] entity.
+/// The [`Ball`] entity targeted by an [`CrabAi`] [`Crab`] entity.
 #[derive(Clone, Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct Target(pub Entity);

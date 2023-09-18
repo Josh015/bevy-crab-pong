@@ -22,14 +22,14 @@ use crate::{
         beach::BARRIER_RADIUS,
         side::{Side, SideSpawnPoint, SIDE_WIDTH},
     },
-    object::{
-        ball::BALL_RADIUS,
-        crab::{ai::CrabAi, input::CrabInputBundle},
-    },
     util::hemisphere_deflection,
 };
 
-use super::{ball::Ball, Object};
+use super::{
+    ball::{Ball, BALL_RADIUS},
+    crab::{ai::CrabAi, input::CrabInputBundle},
+    Object,
+};
 
 pub const CRAB_WIDTH: f32 = 0.2;
 pub const CRAB_DEPTH: f32 = 0.1;
