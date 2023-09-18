@@ -95,12 +95,12 @@ impl Plugin for SidePlugin {
 
 fn allow_only_one_crab_or_pole_per_side(
     mut commands: Commands,
-    new_query: Query<(Entity, &Parent), Or<(Added<Crab>, Added<Pole>)>>,
-    old_query: Query<(Entity, &Parent), Or<(With<Crab>, With<Pole>)>>,
+    new_query: Query<(Entity, &Side), Or<(Added<Crab>, Added<Pole>)>>,
+    old_query: Query<(Entity, &Side), Or<(With<Crab>, With<Pole>)>>,
 ) {
-    for (new_entity, new_parent) in &new_query {
-        for (old_entity, old_parent) in &old_query {
-            if old_parent == new_parent && old_entity != new_entity {
+    for (new_entity, new_side) in &new_query {
+        for (old_entity, old_side) in &old_query {
+            if old_side == new_side && old_entity != new_entity {
                 commands.entity(old_entity).insert(Fade::out_default());
                 break;
             }
