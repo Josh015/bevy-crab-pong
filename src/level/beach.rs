@@ -179,8 +179,8 @@ fn spawn_level(
                 ));
             });
 
-        // Walls
-        spawn_on_side_events.send(SpawnEvent::with_data(Object::Wall, *side));
+        // Poles
+        spawn_on_side_events.send(SpawnEvent::with_data(Object::Pole, *side));
     }
 }
 

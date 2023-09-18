@@ -69,6 +69,6 @@ G to enable debugging.
       },
     ),
 
-    // TODO: Offer a "Pong" mode with 1x player, 1x AI, and 2x walls, 1x ball.
+    // TODO: Offer a "Pong" mode with 1x player, 1x AI, and 2x poles, 1x ball.
   ],
 )

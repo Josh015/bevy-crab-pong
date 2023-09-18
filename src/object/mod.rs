@@ -1,6 +1,6 @@
 pub mod ball;
 pub mod crab;
-pub mod wall;
+pub mod pole;
 
 use bevy::prelude::*;
 use spew::prelude::*;
@@ -12,7 +12,7 @@ use crate::level::side::Side;
 pub enum Object {
     Ball,
     Crab,
-    Wall,
+    Pole,
 }
 
 pub(super) struct ObjectPlugin;
@@ -26,7 +26,7 @@ impl Plugin for ObjectPlugin {
         .add_plugins((
             ball::BallPlugin,
             crab::CrabPlugin,
-            wall::WallPlugin,
+            pole::PolePlugin,
         ));
     }
 }

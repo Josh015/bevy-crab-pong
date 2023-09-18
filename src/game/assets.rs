@@ -62,13 +62,13 @@ pub struct GameAssets {
 pub struct CachedAssets {
     pub ball_mesh: Handle<Mesh>,
     pub crab_mesh: Handle<Mesh>,
-    pub wall_mesh: Handle<Mesh>,
-    pub wall_material: Handle<StandardMaterial>,
+    pub pole_mesh: Handle<Mesh>,
+    pub pole_material: Handle<StandardMaterial>,
 }
 
 impl FromWorld for CachedAssets {
     fn from_world(world: &mut World) -> Self {
-        let (ball_mesh, crab_mesh, wall_mesh) = {
+        let (ball_mesh, crab_mesh, pole_mesh) = {
             let mut meshes = world.get_resource_mut::<Assets<Mesh>>().unwrap();
 
             (
@@ -82,7 +82,7 @@ impl FromWorld for CachedAssets {
                 meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             )
         };
-        let wall_material = {
+        let pole_material = {
             let mut materials = world
                 .get_resource_mut::<Assets<StandardMaterial>>()
                 .unwrap();
@@ -93,8 +93,8 @@ impl FromWorld for CachedAssets {
         Self {
             ball_mesh,
             crab_mesh,
-            wall_mesh,
-            wall_material,
+            pole_mesh,
+            pole_material,
         }
     }
 }

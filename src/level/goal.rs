@@ -12,14 +12,14 @@ use crate::{
     object::{
         ball::{Ball, BALL_RADIUS},
         crab::{Crab, CRAB_DEPTH},
-        wall::Wall,
+        pole::Pole,
         Object,
     },
 };
 
 pub const GOAL_WIDTH: f32 = 1.0;
 
-/// Marks a goal entity so that crabs and walls can use it as a parent, and
+/// Marks a goal entity so that crabs and poles can use it as a parent, and
 /// so balls can score against it.
 #[derive(Component, Debug)]
 pub struct Goal;
@@ -35,23 +35,23 @@ impl Plugin for GoalPlugin {
         app.add_event::<GoalScoredEvent>()
             .add_systems(
                 Update,
-                allow_only_one_crab_or_wall_per_goal.after(SpewSystemSet),
+                allow_only_one_crab_or_pole_per_goal.after(SpewSystemSet),
             )
             .add_systems(
                 PostUpdate,
                 (
                     check_if_any_balls_have_scored_in_any_goals
                         .after(ColliderSet),
-                    block_eliminated_goals_with_walls.after(GameSet),
+                    block_eliminated_goals_with_poles.after(GameSet),
                 ),
             );
     }
 }
 
-fn allow_only_one_crab_or_wall_per_goal(
+fn allow_only_one_crab_or_pole_per_goal(
     mut commands: Commands,
-    new_query: Query<(Entity, &Parent), Or<(Added<Crab>, Added<Wall>)>>,
-    old_query: Query<(Entity, &Parent), Or<(With<Crab>, With<Wall>)>>,
+    new_query: Query<(Entity, &Parent), Or<(Added<Crab>, Added<Pole>)>>,
+    old_query: Query<(Entity, &Parent), Or<(With<Crab>, With<Pole>)>>,
 ) {
     for (new_entity, new_parent) in &new_query {
         for (old_entity, old_parent) in &old_query {
@@ -86,12 +86,12 @@ fn check_if_any_balls_have_scored_in_any_goals(
     }
 }
 
-fn block_eliminated_goals_with_walls(
+fn block_eliminated_goals_with_poles(
     mut competitor_eliminated_events: EventReader<CompetitorEliminatedEvent>,
     mut spawn_on_side_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
     for CompetitorEliminatedEvent(side) in competitor_eliminated_events.iter() {
-        spawn_on_side_events.send(SpawnEvent::with_data(Object::Wall, *side));
+        spawn_on_side_events.send(SpawnEvent::with_data(Object::Pole, *side));
         info!("Goal({:?}): Eliminated", side);
     }
 }

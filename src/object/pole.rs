@@ -19,32 +19,32 @@ use crate::{
 
 use super::{ball::Ball, Object};
 
-pub const WALL_DIAMETER: f32 = 0.05;
-pub const WALL_HEIGHT: f32 = 0.1;
-pub const WALL_RADIUS: f32 = 0.5 * WALL_DIAMETER;
+pub const POLE_DIAMETER: f32 = 0.05;
+pub const POLE_HEIGHT: f32 = 0.1;
+pub const POLE_RADIUS: f32 = 0.5 * POLE_DIAMETER;
 
-/// Makes an entity a wall that deflects all balls away from a goal.
+/// Makes an entity a pole that deflects all balls away from a goal.
 #[derive(Component, Debug)]
-pub struct Wall;
+pub struct Pole;
 
-pub(super) struct WallPlugin;
+pub(super) struct PolePlugin;
 
-impl Plugin for WallPlugin {
+impl Plugin for PolePlugin {
     fn build(&self, app: &mut App) {
-        app.add_spawner((Object::Wall, spawn_wall_on_side))
+        app.add_spawner((Object::Pole, spawn_pole_on_side))
             .add_systems(
                 Update,
-                remove_wall_collider_before_fading_out
+                remove_pole_collider_before_fading_out
                     .run_if(not(in_state(GameState::Paused))),
             )
             .add_systems(
                 PostUpdate,
-                wall_and_ball_collisions.in_set(ColliderSet),
+                pole_and_ball_collisions.in_set(ColliderSet),
             );
     }
 }
 
-fn spawn_wall_on_side(
+fn spawn_pole_on_side(
     In(side): In<Side>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
@@ -58,15 +58,15 @@ fn spawn_wall_on_side(
 
     commands.entity(goal_entity).with_children(|builder| {
         builder.spawn((
-            Wall,
+            Pole,
             Collider,
             side,
             FadeBundle {
                 fade_animation: FadeAnimation::Scale {
                     max_scale: Vec3::new(
                         GOAL_WIDTH,
-                        WALL_DIAMETER,
-                        WALL_DIAMETER,
+                        POLE_DIAMETER,
+                        POLE_DIAMETER,
                     ),
                     axis_mask: Vec3::new(0.0, 1.0, 1.0),
                 },
@@ -80,13 +80,13 @@ fn spawn_wall_on_side(
                 )),
             },
             PbrBundle {
-                mesh: cached_assets.wall_mesh.clone(),
-                material: cached_assets.wall_material.clone(),
+                mesh: cached_assets.pole_mesh.clone(),
+                material: cached_assets.pole_material.clone(),
                 transform: Transform::from_matrix(
                     Mat4::from_scale_rotation_translation(
                         Vec3::splat(f32::EPSILON),
                         Quat::IDENTITY,
-                        Vec3::new(0.0, WALL_HEIGHT, 0.0),
+                        Vec3::new(0.0, POLE_HEIGHT, 0.0),
                     ),
                 ),
                 ..default()
@@ -94,12 +94,12 @@ fn spawn_wall_on_side(
         ));
     });
 
-    info!("Wall({:?}): Spawned", side);
+    info!("Pole({:?}): Spawned", side);
 }
 
-fn remove_wall_collider_before_fading_out(
+fn remove_pole_collider_before_fading_out(
     mut commands: Commands,
-    query: Query<(Entity, &Fade), (With<Wall>, Added<Fade>)>,
+    query: Query<(Entity, &Fade), (With<Pole>, Added<Fade>)>,
 ) {
     for (entity, fade) in &query {
         if matches!(fade, Fade::Out(_)) {
@@ -108,37 +108,37 @@ fn remove_wall_collider_before_fading_out(
     }
 }
 
-fn wall_and_ball_collisions(
+fn pole_and_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading),
         (With<Ball>, With<Collider>, With<Movement>),
     >,
-    walls_query: Query<&Side, (With<Wall>, With<Collider>)>,
+    poles_query: Query<&Side, (With<Pole>, With<Collider>)>,
 ) {
     for (entity, ball_transform, ball_heading) in &balls_query {
-        for side in &walls_query {
-            let ball_to_wall_distance = side.distance_to_ball(ball_transform);
+        for side in &poles_query {
+            let ball_to_pole_distance = side.distance_to_ball(ball_transform);
             let axis = side.axis();
 
-            // Check that the ball is touching and facing the wall.
-            if ball_to_wall_distance > BALL_RADIUS + WALL_RADIUS
+            // Check that the ball is touching and facing the pole.
+            if ball_to_pole_distance > BALL_RADIUS + POLE_RADIUS
                 || ball_heading.0.dot(axis) <= 0.0
             {
                 continue;
             }
 
-            // Deflect the ball away from the wall.
+            // Deflect the ball away from the pole.
             commands
                 .entity(entity)
                 .insert(Heading(reflect(ball_heading.0, axis).normalize()));
 
-            info!("Ball({:?}): Collided Wall({:?})", entity, side);
+            info!("Ball({:?}): Collided Pole({:?})", entity, side);
             break;
         }
     }
 
     // TODO: Need a fix for the rare occasion when a ball just bounces infinitely
-    // between two walls in a straight line? Maybe make all bounces slightly adjust
+    // between two poles in a straight line? Maybe make all bounces slightly adjust
     // ball angle rather than pure reflection?
 }
