@@ -19,7 +19,7 @@ WASD / ARROWS to move the crab.
   ],
   modes: [
     (
-      name: "Classic",
+      name: "Classic (Player)",
       ball_count: 2,
       competitors: {
         Bottom: (color: "FF0000", team: 1, player: Input, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
@@ -29,7 +29,7 @@ WASD / ARROWS to move the crab.
       },
     ),
     (
-      name: "AutoPlay",
+      name: "Classic (AI)",
       ball_count: 3,
       competitors: {
         Bottom: (color: "FF0000", team: 1, player: AI, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
@@ -39,7 +39,17 @@ WASD / ARROWS to move the crab.
       },
     ),
     (
-      name: "Red vs Blue",
+      name: "Red vs Blue (Player)",
+      ball_count: 2,
+      competitors: {
+        Bottom: (color: "FF0000", team: 3, player: Input, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
+        Right: (color: "FF0000", team: 3, player: Input, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
+        Top: (color: "0000FF", team: 5, player: AI, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
+        Left: (color: "0000FF", team: 5, player: AI, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
+      },
+    ),
+    (
+      name: "Red vs Blue (AI)",
       ball_count: 3,
       competitors: {
         Bottom: (color: "FF0000", team: 3, player: AI, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),

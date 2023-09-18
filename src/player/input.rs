@@ -3,6 +3,7 @@ use leafwing_input_manager::prelude::*;
 
 use crate::{
     common::movement::{Force, Movement},
+    level::side::Side,
     object::crab::Crab,
 };
 
@@ -10,6 +11,8 @@ use super::PlayerSet;
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, TypePath)]
 pub enum PlayerAction {
+    MoveCrabUp,
+    MoveCrabDown,
     MoveCrabLeft,
     MoveCrabRight,
 }
@@ -44,16 +47,24 @@ fn configure_crab_inputs(
 
     for entity in &crabs_query {
         let mut input_map = InputMap::new([
+            (W, MoveCrabUp),
+            (Up, MoveCrabUp),
+            (S, MoveCrabDown),
+            (Down, MoveCrabDown),
             (A, MoveCrabLeft),
             (Left, MoveCrabLeft),
             (D, MoveCrabRight),
             (Right, MoveCrabRight),
         ]);
         input_map.insert_multiple([
+            (DPadUp, MoveCrabUp),
+            (DPadDown, MoveCrabDown),
             (DPadLeft, MoveCrabLeft),
             (DPadRight, MoveCrabRight),
         ]);
         input_map.insert_multiple([
+            (SingleAxis::positive_only(RightStickY, 0.4), MoveCrabUp),
+            (SingleAxis::negative_only(RightStickY, -0.4), MoveCrabDown),
             (SingleAxis::negative_only(LeftStickX, -0.4), MoveCrabLeft),
             (SingleAxis::positive_only(LeftStickX, 0.4), MoveCrabRight),
         ]);
@@ -70,21 +81,51 @@ fn configure_crab_inputs(
 fn move_crabs_based_on_user_input(
     mut commands: Commands,
     crabs_query: Query<
-        (Entity, &ActionState<PlayerAction>),
+        (Entity, &ActionState<PlayerAction>, &Side),
         (With<PlayerInput>, With<Crab>, With<Movement>),
     >,
 ) {
     use PlayerAction::*;
+    use Side::*;
 
-    for (entity, action_state) in &crabs_query {
-        if action_state.pressed(MoveCrabLeft) {
-            commands.entity(entity).insert(Force::Negative);
-        } else if action_state.pressed(MoveCrabRight) {
-            commands.entity(entity).insert(Force::Positive);
-        } else {
-            commands.entity(entity).remove::<Force>();
-        };
+    for (entity, action_state, side) in &crabs_query {
+        match *side {
+            Bottom => {
+                if action_state.pressed(MoveCrabLeft) {
+                    commands.entity(entity).insert(Force::Negative);
+                } else if action_state.pressed(MoveCrabRight) {
+                    commands.entity(entity).insert(Force::Positive);
+                } else {
+                    commands.entity(entity).remove::<Force>();
+                }
+            },
+            Right => {
+                if action_state.pressed(MoveCrabUp) {
+                    commands.entity(entity).insert(Force::Positive);
+                } else if action_state.pressed(MoveCrabDown) {
+                    commands.entity(entity).insert(Force::Negative);
+                } else {
+                    commands.entity(entity).remove::<Force>();
+                }
+            },
+            Top => {
+                if action_state.pressed(MoveCrabLeft) {
+                    commands.entity(entity).insert(Force::Positive);
+                } else if action_state.pressed(MoveCrabRight) {
+                    commands.entity(entity).insert(Force::Negative);
+                } else {
+                    commands.entity(entity).remove::<Force>();
+                }
+            },
+            Left => {
+                if action_state.pressed(MoveCrabUp) {
+                    commands.entity(entity).insert(Force::Negative);
+                } else if action_state.pressed(MoveCrabDown) {
+                    commands.entity(entity).insert(Force::Positive);
+                } else {
+                    commands.entity(entity).remove::<Force>();
+                }
+            },
+        }
     }
-
-    // TODO: Need to make inputs account for side!
 }
