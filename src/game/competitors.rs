@@ -2,7 +2,7 @@ use std::num::NonZeroUsize;
 
 use bevy::{prelude::*, utils::HashMap};
 
-use crate::level::side::{Side, SideScoredEvent};
+use crate::level::side::{Side, SideEliminatedEvent, SideScoredEvent};
 
 use super::{
     assets::{GameAssets, GameConfig},
@@ -29,17 +29,12 @@ pub struct Competitors(pub HashMap<Side, TeamMember>);
 #[derive(Debug, Default, Resource)]
 pub struct WinningTeam(pub usize);
 
-/// Signals that a competitor has been eliminated from the game.
-#[derive(Clone, Component, Debug, Event)]
-pub struct CompetitorEliminatedEvent(pub Side);
-
 pub(super) struct CompetitorsPlugin;
 
 impl Plugin for CompetitorsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<GameMode>()
             .init_resource::<Competitors>()
-            .add_event::<CompetitorEliminatedEvent>()
             .add_systems(OnExit(GameState::Loading), reset_competitors)
             .add_systems(OnExit(GameState::StartMenu), reset_competitors)
             .add_systems(
@@ -78,7 +73,7 @@ fn reset_competitors(
 
 fn decrement_competitor_hp_when_their_side_gets_scored(
     mut side_scored_events: EventReader<SideScoredEvent>,
-    mut competitor_eliminated_events: EventWriter<CompetitorEliminatedEvent>,
+    mut side_eliminated_events: EventWriter<SideEliminatedEvent>,
     mut competitors: ResMut<Competitors>,
 ) {
     // Decrement a competitor's HP and potentially eliminate their side.
@@ -88,7 +83,7 @@ fn decrement_competitor_hp_when_their_side_gets_scored(
         competitor.hit_points = competitor.hit_points.saturating_sub(1);
 
         if competitor.hit_points == 0 {
-            competitor_eliminated_events.send(CompetitorEliminatedEvent(*side));
+            side_eliminated_events.send(SideEliminatedEvent(*side));
         }
     }
 }
@@ -96,10 +91,10 @@ fn decrement_competitor_hp_when_their_side_gets_scored(
 fn check_for_game_over(
     mut commands: Commands,
     mut next_game_state: ResMut<NextState<GameState>>,
-    mut competitor_eliminated_events: EventReader<CompetitorEliminatedEvent>,
+    mut side_eliminated_events: EventReader<SideEliminatedEvent>,
     competitors: Res<Competitors>,
 ) {
-    for CompetitorEliminatedEvent(_) in competitor_eliminated_events.iter() {
+    for SideEliminatedEvent(_) in side_eliminated_events.iter() {
         let mut winning_team = None;
         let survivor = competitors
             .0
@@ -122,7 +117,6 @@ fn check_for_game_over(
         if let Some(winning_team) = winning_team {
             commands.insert_resource(WinningTeam(winning_team));
             next_game_state.set(GameState::StartMenu);
-            competitor_eliminated_events.clear();
             info!("Game Over: Team {:?} won!", winning_team);
             break;
         }

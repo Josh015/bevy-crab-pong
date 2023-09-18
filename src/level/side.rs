@@ -8,7 +8,7 @@ use crate::{
         fade::Fade,
         movement::Movement,
     },
-    game::{competitors::CompetitorEliminatedEvent, GameSet},
+    game::GameSet,
     object::{
         ball::{Ball, BALL_RADIUS},
         crab::{Crab, CRAB_DEPTH},
@@ -23,6 +23,10 @@ pub const SIDE_WIDTH: f32 = 1.0;
 /// Signals that a side has been scored in by a ball.
 #[derive(Clone, Component, Debug, Event)]
 pub struct SideScoredEvent(pub Side);
+
+/// Signals that a side has been eliminated from the game.
+#[derive(Clone, Component, Debug, Event)]
+pub struct SideEliminatedEvent(pub Side);
 
 /// Marks an entity that can be used as a parent to spawn [`Side`] entities.
 #[derive(Component, Debug)]
@@ -78,6 +82,7 @@ pub(super) struct SidePlugin;
 impl Plugin for SidePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<SideScoredEvent>()
+            .add_event::<SideEliminatedEvent>()
             .add_systems(
                 Update,
                 allow_only_one_crab_or_pole_per_side.after(SpewSystemSet),
@@ -132,10 +137,10 @@ fn check_if_any_balls_have_scored_in_any_sides(
 }
 
 fn block_eliminated_sides_with_poles(
-    mut competitor_eliminated_events: EventReader<CompetitorEliminatedEvent>,
+    mut side_eliminated_events: EventReader<SideEliminatedEvent>,
     mut spawn_on_side_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
-    for CompetitorEliminatedEvent(side) in competitor_eliminated_events.iter() {
+    for SideEliminatedEvent(side) in side_eliminated_events.iter() {
         spawn_on_side_events.send(SpawnEvent::with_data(Object::Pole, *side));
         info!("Side({:?}): Eliminated", side);
     }
