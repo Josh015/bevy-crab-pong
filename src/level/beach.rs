@@ -88,25 +88,39 @@ fn spawn_level(
     });
 
     // Ocean
-    commands.spawn((
-        Ocean {
-            speed: game_config.ocean_scroll_speed,
-            ..default()
-        },
-        PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane {
-                size: 100.0,
-                subdivisions: 1,
-            })),
-            material: materials.add(StandardMaterial {
-                base_color: Color::hex("257AFFCC").unwrap(),
-                alpha_mode: AlphaMode::Blend,
+    commands
+        .spawn((
+            Ocean {
+                speed: game_config.ocean_scroll_speed,
                 ..default()
-            }),
-            transform: Transform::from_xyz(0.0, -0.01, 0.0),
-            ..default()
-        },
-    ));
+            },
+            PbrBundle::default(),
+        ))
+        .with_children(|builder| {
+            // HACK: Simulate a tiled textured scrolling ocean.
+            for x in -3..=3 {
+                for z in -3..=3 {
+                    builder.spawn((PbrBundle {
+                        mesh: meshes.add(Mesh::from(shape::Plane {
+                            size: 1.0,
+                            subdivisions: 1,
+                        })),
+                        material: materials.add(StandardMaterial {
+                            base_color: Color::rgba(1.0, 1.0, 1.0, 0.9),
+                            base_color_texture: Some(
+                                game_assets.image_water.clone(),
+                            ),
+                            alpha_mode: AlphaMode::Blend,
+                            ..default()
+                        }),
+                        transform: Transform::from_xyz(
+                            x as f32, -0.01, z as f32,
+                        ),
+                        ..default()
+                    },));
+                }
+            }
+        });
 
     // Beach
     commands.spawn(PbrBundle {

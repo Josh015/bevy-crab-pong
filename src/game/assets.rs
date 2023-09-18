@@ -55,6 +55,9 @@ pub struct GameAssets {
 
     #[asset(key = "images.crab")]
     pub image_crab: Handle<Image>,
+
+    #[asset(key = "images.water")]
+    pub image_water: Handle<Image>,
 }
 
 /// Assets that need to remain loaded at all times.

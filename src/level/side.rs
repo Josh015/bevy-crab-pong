@@ -11,7 +11,7 @@ use crate::{
     game::GameSet,
     object::{
         ball::{Ball, BALL_RADIUS},
-        crab::{Crab, CRAB_DEPTH},
+        crab::Crab,
         pole::Pole,
         Object,
     },

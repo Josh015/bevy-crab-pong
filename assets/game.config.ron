@@ -7,7 +7,7 @@ WASD / ARROWS to move the crab.
 1-6 to enable debugging gizmos.
   ",
   swaying_camera_speed: 0.2,
-  ocean_scroll_speed: 0.01,
+  ocean_scroll_speed: 0.05,
   ball_speed: 0.5,
   team_win_messages: [
     "It's a draw!",
