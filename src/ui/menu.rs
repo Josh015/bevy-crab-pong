@@ -1,4 +1,5 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, reflect::TypePath};
+pub use leafwing_input_manager::prelude::*;
 
 use crate::game::{
     assets::{GameAssets, GameConfig},
@@ -13,18 +14,30 @@ pub struct MessageUiEvent {
     pub game_state: GameState,
 }
 
+// List of user actions associated to menu/ui interaction
+#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, TypePath)]
+pub enum MenuAction {
+    Accept,
+    PauseUnpause,
+    ReturnToStartMenu,
+    NextGameMode,
+    PrevGameMode,
+}
+
 pub(super) struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<MessageUiEvent>()
+        app.add_plugins((InputManagerPlugin::<MenuAction>::default(),))
+            .add_event::<MessageUiEvent>()
             .add_systems(OnEnter(GameState::StartMenu), spawn_start_menu_ui)
             .add_systems(OnEnter(GameState::Paused), spawn_pause_ui)
             .add_systems(
                 Update,
                 (handle_spawn_ui_message_event, handle_menu_inputs)
                     .in_set(LoadedSet),
-            );
+            )
+            .add_systems(Startup, configure_menu_action_inputs);
     }
 }
 
@@ -121,28 +134,31 @@ fn handle_spawn_ui_message_event(
 }
 
 fn handle_menu_inputs(
-    keyboard_input: Res<Input<KeyCode>>,
     game_state: Res<State<GameState>>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
     mut game_mode: ResMut<GameMode>,
     mut next_game_state: ResMut<NextState<GameState>>,
+    menu_action_state: Res<ActionState<MenuAction>>,
 ) {
+    use GameState::*;
+    use MenuAction::*;
+
     match game_state.get() {
-        GameState::StartMenu => {
+        StartMenu => {
             let game_config =
                 game_configs.get(&game_assets.game_config).unwrap();
 
-            if keyboard_input.just_pressed(KeyCode::Return) {
-                next_game_state.set(GameState::Playing);
+            if menu_action_state.just_pressed(Accept) {
+                next_game_state.set(Playing);
                 info!("New Game");
-            } else if keyboard_input.just_pressed(KeyCode::Left)
+            } else if menu_action_state.just_pressed(PrevGameMode)
                 && game_mode.0 > 0
             {
                 game_mode.0 -= 1;
                 let mode_name = &game_config.modes[game_mode.0].name;
                 info!("Game Mode: {mode_name}");
-            } else if keyboard_input.just_pressed(KeyCode::Right)
+            } else if menu_action_state.just_pressed(NextGameMode)
                 && game_mode.0 < game_config.modes.len() - 1
             {
                 game_mode.0 += 1;
@@ -150,20 +166,44 @@ fn handle_menu_inputs(
                 info!("Game Mode: {mode_name}");
             }
         },
-        GameState::Playing if keyboard_input.just_pressed(KeyCode::Space) => {
-            next_game_state.set(GameState::Paused);
+        Playing if menu_action_state.just_pressed(PauseUnpause) => {
+            next_game_state.set(Paused);
             info!("Paused");
         },
-        GameState::Paused if keyboard_input.just_pressed(KeyCode::Space) => {
-            next_game_state.set(GameState::Playing);
+        Paused if menu_action_state.just_pressed(PauseUnpause) => {
+            next_game_state.set(Playing);
             info!("Unpaused");
         },
-        GameState::Playing | GameState::Paused
-            if keyboard_input.just_pressed(KeyCode::Back) =>
+        Playing | Paused
+            if menu_action_state.just_pressed(ReturnToStartMenu) =>
         {
-            next_game_state.set(GameState::StartMenu);
+            next_game_state.set(StartMenu);
             info!("Start Menu");
         },
         _ => {},
     }
+}
+
+fn configure_menu_action_inputs(mut commands: Commands) {
+    use GamepadButtonType::*;
+    use KeyCode::*;
+    use MenuAction::*;
+
+    let mut input_map = InputMap::<MenuAction>::new([
+        (Return, Accept),
+        (Space, PauseUnpause),
+        (Back, ReturnToStartMenu),
+        (Left, PrevGameMode),
+        (Right, NextGameMode),
+    ]);
+    input_map.insert_multiple([
+        (Start, PauseUnpause),
+        (Select, ReturnToStartMenu),
+        (South, Accept),
+        (DPadLeft, PrevGameMode),
+        (DPadRight, NextGameMode),
+    ]);
+
+    commands.insert_resource(input_map);
+    commands.insert_resource(ActionState::<MenuAction>::default());
 }
