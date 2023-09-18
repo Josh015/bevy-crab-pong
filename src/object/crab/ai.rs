@@ -12,13 +12,13 @@ use crate::{
     },
 };
 
-use super::PlayerSet;
+use super::CrabSet;
 
 pub const AI_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.70;
 
 /// Marks a [`Crab`] entity as being controlled by AI.
 #[derive(Component, Debug)]
-pub struct PlayerAi;
+pub struct CrabAi;
 
 /// The [`Ball`] entity targeted by an [`PlayerAi`] [`Crab`] entity.
 #[derive(Clone, Component, Debug)]
@@ -36,7 +36,7 @@ impl Plugin for AiPlugin {
                 move_ai_crabs_toward_their_targeted_balls,
             )
                 .chain()
-                .in_set(PlayerSet),
+                .in_set(CrabSet),
         );
     }
 }
@@ -45,7 +45,7 @@ fn make_ai_crabs_target_the_balls_closest_to_their_sides(
     mut commands: Commands,
     crabs_query: Query<
         (Entity, &Side),
-        (With<PlayerAi>, With<Crab>, With<Movement>),
+        (With<CrabAi>, With<Crab>, With<Movement>),
     >,
     balls_query: Query<
         (Entity, &GlobalTransform),
@@ -83,7 +83,7 @@ fn move_ai_crabs_toward_their_targeted_balls(
             &StoppingDistance,
             Option<&Target>,
         ),
-        (With<PlayerAi>, With<Crab>, With<Movement>),
+        (With<CrabAi>, With<Crab>, With<Movement>),
     >,
     balls_query: Query<
         &GlobalTransform,

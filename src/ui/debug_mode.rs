@@ -9,9 +9,11 @@ use crate::{
     level::side::Side,
     object::{
         ball::Ball,
-        crab::{Crab, CRAB_WIDTH},
+        crab::{
+            ai::{CrabAi, Target, AI_CENTER_HIT_AREA_PERCENTAGE},
+            Crab, CRAB_WIDTH,
+        },
     },
-    player::ai::{PlayerAi, Target, AI_CENTER_HIT_AREA_PERCENTAGE},
     util::hemisphere_deflection,
 };
 
@@ -141,7 +143,7 @@ fn crab_stop_position_gizmos(
 fn crab_ai_ball_targeting_gizmos(
     crabs_query: Query<
         (&GlobalTransform, &Target),
-        (With<PlayerAi>, With<Crab>, With<Movement>),
+        (With<CrabAi>, With<Crab>, With<Movement>),
     >,
     balls_query: Query<
         &GlobalTransform,
@@ -163,7 +165,7 @@ fn crab_ai_ball_targeting_gizmos(
 fn crab_ai_ideal_ball_hit_area_gizmos(
     crabs_query: Query<
         &GlobalTransform,
-        (With<PlayerAi>, With<Crab>, With<Movement>),
+        (With<CrabAi>, With<Crab>, With<Movement>),
     >,
     mut gizmos: Gizmos,
 ) {

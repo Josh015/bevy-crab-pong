@@ -1,3 +1,6 @@
+pub mod ai;
+pub mod input;
+
 use bevy::prelude::*;
 use spew::prelude::*;
 
@@ -19,20 +22,24 @@ use crate::{
         beach::BARRIER_RADIUS,
         side::{Side, SideSpawnPoint, SIDE_WIDTH},
     },
-    player::{ai::PlayerAi, input::PlayerInputBundle},
+    object::{
+        ball::BALL_RADIUS,
+        crab::{ai::CrabAi, input::CrabInputBundle},
+    },
     util::hemisphere_deflection,
 };
 
-use super::{
-    ball::{Ball, BALL_RADIUS},
-    Object,
-};
+use super::{ball::Ball, Object};
 
 pub const CRAB_WIDTH: f32 = 0.2;
 pub const CRAB_DEPTH: f32 = 0.1;
 pub const CRAB_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
 pub const CRAB_POSITION_X_MAX: f32 =
     (0.5 * SIDE_WIDTH) - BARRIER_RADIUS - (0.5 * CRAB_WIDTH);
+
+/// Systems that must control [`Crab`] entities.
+#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
+pub struct CrabSet;
 
 /// Makes a crab entity that can deflect balls and move sideways inside a goal.
 #[derive(Component, Debug)]
@@ -57,7 +64,14 @@ impl Plugin for CrabPlugin {
             .add_systems(
                 PostUpdate,
                 crab_and_ball_collisions.in_set(ColliderSet),
-            );
+            )
+            .configure_set(
+                Update,
+                CrabSet
+                    .before(MovementSet)
+                    .run_if(in_state(GameState::Playing)),
+            )
+            .add_plugins((ai::AiPlugin, input::InputPlugin));
     }
 }
 
@@ -127,9 +141,9 @@ fn spawn_crab_on_side(
             ));
 
             if crab_config.player == Player::AI {
-                crab.insert(PlayerAi);
+                crab.insert(CrabAi);
             } else {
-                crab.insert(PlayerInputBundle::default());
+                crab.insert(CrabInputBundle::default());
             }
         });
 

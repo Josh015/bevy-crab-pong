@@ -4,7 +4,6 @@ pub mod common;
 pub mod game;
 pub mod level;
 pub mod object;
-pub mod player;
 pub mod ui;
 pub mod util;
 
@@ -43,7 +42,6 @@ fn main() {
             game::GamePlugin,
             level::LevelPlugin,
             object::ObjectPlugin,
-            player::PlayerPlugin,
             ui::UiPlugin,
         ))
         .run();

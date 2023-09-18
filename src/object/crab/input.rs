@@ -7,54 +7,54 @@ use crate::{
     object::crab::Crab,
 };
 
-use super::PlayerSet;
+use super::CrabSet;
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, TypePath)]
-pub enum PlayerAction {
-    MoveCrabUp,
-    MoveCrabDown,
-    MoveCrabLeft,
-    MoveCrabRight,
+pub enum CrabAction {
+    MoveUp,
+    MoveDown,
+    MoveLeft,
+    MoveRight,
 }
 
 /// Marks a [`Crab`] entity as being controlled by user input devices.
 #[derive(Bundle)]
-pub struct PlayerInputBundle {
-    pub input_manager_bundle: InputManagerBundle<PlayerAction>,
+pub struct CrabInputBundle {
+    pub input_manager_bundle: InputManagerBundle<CrabAction>,
 }
 
-impl Default for PlayerInputBundle {
+impl Default for CrabInputBundle {
     fn default() -> Self {
+        use CrabAction::*;
         use GamepadAxisType::*;
         use GamepadButtonType::*;
         use KeyCode::*;
-        use PlayerAction::*;
 
         let mut input_map = InputMap::new([
-            (W, MoveCrabUp),
-            (Up, MoveCrabUp),
-            (S, MoveCrabDown),
-            (Down, MoveCrabDown),
-            (A, MoveCrabLeft),
-            (Left, MoveCrabLeft),
-            (D, MoveCrabRight),
-            (Right, MoveCrabRight),
+            (W, MoveUp),
+            (Up, MoveUp),
+            (S, MoveDown),
+            (Down, MoveDown),
+            (A, MoveLeft),
+            (Left, MoveLeft),
+            (D, MoveRight),
+            (Right, MoveRight),
         ]);
         input_map.insert_multiple([
-            (DPadUp, MoveCrabUp),
-            (DPadDown, MoveCrabDown),
-            (DPadLeft, MoveCrabLeft),
-            (DPadRight, MoveCrabRight),
+            (DPadUp, MoveUp),
+            (DPadDown, MoveDown),
+            (DPadLeft, MoveLeft),
+            (DPadRight, MoveRight),
         ]);
         input_map.insert_multiple([
-            (SingleAxis::positive_only(RightStickY, 0.4), MoveCrabUp),
-            (SingleAxis::negative_only(RightStickY, -0.4), MoveCrabDown),
-            (SingleAxis::negative_only(LeftStickX, -0.4), MoveCrabLeft),
-            (SingleAxis::positive_only(LeftStickX, 0.4), MoveCrabRight),
+            (SingleAxis::positive_only(RightStickY, 0.4), MoveUp),
+            (SingleAxis::negative_only(RightStickY, -0.4), MoveDown),
+            (SingleAxis::negative_only(LeftStickX, -0.4), MoveLeft),
+            (SingleAxis::positive_only(LeftStickX, 0.4), MoveRight),
         ]);
 
         Self {
-            input_manager_bundle: InputManagerBundle::<PlayerAction> {
+            input_manager_bundle: InputManagerBundle::<CrabAction> {
                 action_state: ActionState::default(),
                 input_map,
             },
@@ -66,10 +66,10 @@ pub(super) struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(InputManagerPlugin::<PlayerAction>::default())
+        app.add_plugins(InputManagerPlugin::<CrabAction>::default())
             .add_systems(
                 Update,
-                move_crabs_based_on_user_input.in_set(PlayerSet),
+                move_crabs_based_on_user_input.in_set(CrabSet),
             );
     }
 }
@@ -77,46 +77,46 @@ impl Plugin for InputPlugin {
 fn move_crabs_based_on_user_input(
     mut commands: Commands,
     crabs_query: Query<
-        (Entity, &ActionState<PlayerAction>, &Side),
+        (Entity, &ActionState<CrabAction>, &Side),
         (With<Crab>, With<Movement>),
     >,
 ) {
-    use PlayerAction::*;
+    use CrabAction::*;
     use Side::*;
 
     for (entity, action_state, side) in &crabs_query {
         match *side {
             Bottom => {
-                if action_state.pressed(MoveCrabLeft) {
+                if action_state.pressed(MoveLeft) {
                     commands.entity(entity).insert(Force::Negative);
-                } else if action_state.pressed(MoveCrabRight) {
+                } else if action_state.pressed(MoveRight) {
                     commands.entity(entity).insert(Force::Positive);
                 } else {
                     commands.entity(entity).remove::<Force>();
                 }
             },
             Right => {
-                if action_state.pressed(MoveCrabUp) {
+                if action_state.pressed(MoveUp) {
                     commands.entity(entity).insert(Force::Positive);
-                } else if action_state.pressed(MoveCrabDown) {
+                } else if action_state.pressed(MoveDown) {
                     commands.entity(entity).insert(Force::Negative);
                 } else {
                     commands.entity(entity).remove::<Force>();
                 }
             },
             Top => {
-                if action_state.pressed(MoveCrabLeft) {
+                if action_state.pressed(MoveLeft) {
                     commands.entity(entity).insert(Force::Positive);
-                } else if action_state.pressed(MoveCrabRight) {
+                } else if action_state.pressed(MoveRight) {
                     commands.entity(entity).insert(Force::Negative);
                 } else {
                     commands.entity(entity).remove::<Force>();
                 }
             },
             Left => {
-                if action_state.pressed(MoveCrabUp) {
+                if action_state.pressed(MoveUp) {
                     commands.entity(entity).insert(Force::Negative);
-                } else if action_state.pressed(MoveCrabDown) {
+                } else if action_state.pressed(MoveDown) {
                     commands.entity(entity).insert(Force::Positive);
                 } else {
                     commands.entity(entity).remove::<Force>();
