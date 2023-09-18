@@ -4,7 +4,7 @@
 ENTER for a new game.
 ESC to quit.
 WASD / ARROWS to move the crab.
-G to enable debugging.
+1-6 to enable debugging gizmos.
   ",
   swaying_camera_speed: 0.2,
   ocean_scroll_speed: 0.01,
