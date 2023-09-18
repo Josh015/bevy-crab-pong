@@ -17,35 +17,19 @@ pub enum PlayerAction {
     MoveCrabRight,
 }
 
-/// Marks a [`Crab`] entity as being controlled by the input devices.
-#[derive(Component, Debug)]
-pub struct PlayerInput;
-
-pub(super) struct InputPlugin;
-
-impl Plugin for InputPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_plugins(InputManagerPlugin::<PlayerAction>::default())
-            .add_systems(
-                Update,
-                (
-                    configure_crab_inputs,
-                    move_crabs_based_on_user_input.in_set(PlayerSet),
-                ),
-            );
-    }
+/// Marks a [`Crab`] entity as being controlled by user input devices.
+#[derive(Bundle)]
+pub struct PlayerInputBundle {
+    pub input_manager_bundle: InputManagerBundle<PlayerAction>,
 }
 
-fn configure_crab_inputs(
-    mut commands: Commands,
-    crabs_query: Query<Entity, Added<PlayerInput>>,
-) {
-    use GamepadAxisType::*;
-    use GamepadButtonType::*;
-    use KeyCode::*;
-    use PlayerAction::*;
+impl Default for PlayerInputBundle {
+    fn default() -> Self {
+        use GamepadAxisType::*;
+        use GamepadButtonType::*;
+        use KeyCode::*;
+        use PlayerAction::*;
 
-    for entity in &crabs_query {
         let mut input_map = InputMap::new([
             (W, MoveCrabUp),
             (Up, MoveCrabUp),
@@ -69,12 +53,24 @@ fn configure_crab_inputs(
             (SingleAxis::positive_only(LeftStickX, 0.4), MoveCrabRight),
         ]);
 
-        commands
-            .entity(entity)
-            .insert(InputManagerBundle::<PlayerAction> {
+        Self {
+            input_manager_bundle: InputManagerBundle::<PlayerAction> {
                 action_state: ActionState::default(),
                 input_map,
-            });
+            },
+        }
+    }
+}
+
+pub(super) struct InputPlugin;
+
+impl Plugin for InputPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(InputManagerPlugin::<PlayerAction>::default())
+            .add_systems(
+                Update,
+                move_crabs_based_on_user_input.in_set(PlayerSet),
+            );
     }
 }
 
@@ -82,7 +78,7 @@ fn move_crabs_based_on_user_input(
     mut commands: Commands,
     crabs_query: Query<
         (Entity, &ActionState<PlayerAction>, &Side),
-        (With<PlayerInput>, With<Crab>, With<Movement>),
+        (With<Crab>, With<Movement>),
     >,
 ) {
     use PlayerAction::*;

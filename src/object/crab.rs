@@ -19,7 +19,7 @@ use crate::{
         beach::BARRIER_RADIUS,
         side::{Side, SideSpawnPoint, SIDE_WIDTH},
     },
-    player::{ai::PlayerAi, input::PlayerInput},
+    player::{ai::PlayerAi, input::PlayerInputBundle},
     util::hemisphere_deflection,
 };
 
@@ -129,7 +129,7 @@ fn spawn_crab_on_side(
             if crab_config.player == Player::AI {
                 crab.insert(PlayerAi);
             } else {
-                crab.insert(PlayerInput);
+                crab.insert(PlayerInputBundle::default());
             }
         });
 
