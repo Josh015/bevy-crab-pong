@@ -129,7 +129,7 @@ fn check_if_any_balls_have_scored_in_any_sides(
         for side in &crabs_query {
             let ball_distance = side.distance_to_ball(global_transform);
 
-            if ball_distance <= BALL_RADIUS - (0.5 * CRAB_DEPTH) {
+            if ball_distance <= BALL_RADIUS {
                 commands.entity(ball_entity).insert(Fade::out_default());
                 side_scored_events.send(SideScoredEvent(*side));
                 info!("Ball({:?}): Scored Side({:?})", ball_entity, side);

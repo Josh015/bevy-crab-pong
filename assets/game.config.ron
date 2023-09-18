@@ -70,7 +70,7 @@ WASD / ARROWS to move the crab.
     ),
     (
       name: "Stress Test",
-      ball_count: 50,
+      ball_count: 60,
       competitors: {
         Bottom: (color: "FFFF00", team: 3, player: AI, hit_points: 50, seconds_to_max_speed: 0.01, max_speed: 20),
         Right: (color: "FFFF00", team: 3, player: AI, hit_points: 50, seconds_to_max_speed: 0.01, max_speed: 20),
