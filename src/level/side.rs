@@ -17,7 +17,6 @@ use crate::{
     },
 };
 
-pub const SIDES: [Side; 4] = [Side::Bottom, Side::Right, Side::Top, Side::Left];
 pub const SIDE_WIDTH: f32 = 1.0;
 
 /// Signals that a side has been scored in by a ball.
@@ -42,6 +41,9 @@ pub enum Side {
 }
 
 impl Side {
+    pub const VARIANTS: [Self; 4] =
+        [Self::Bottom, Self::Right, Self::Top, Self::Left];
+
     /// Perpendicular distance from a given side to a ball's center.
     ///
     /// Positive distances for inside the beach, negative for out of bounds.

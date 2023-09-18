@@ -19,7 +19,7 @@ use crate::{
 
 use super::{
     ocean::Ocean,
-    side::{Side, SideSpawnPoint, SIDES, SIDE_WIDTH},
+    side::{Side, SideSpawnPoint, SIDE_WIDTH},
     swaying_camera::SwayingCamera,
 };
 
@@ -129,7 +129,7 @@ fn spawn_level(
     let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
 
-    for (i, side) in SIDES.iter().enumerate() {
+    for (i, side) in Side::VARIANTS.iter().enumerate() {
         // Spawn Point
         commands
             .spawn((
@@ -138,7 +138,8 @@ fn spawn_level(
                 PbrBundle {
                     transform: Transform::from_rotation(Quat::from_axis_angle(
                         Vec3::Y,
-                        std::f32::consts::TAU * (i as f32 / SIDES.len() as f32),
+                        std::f32::consts::TAU
+                            * (i as f32 / Side::VARIANTS.len() as f32),
                     ))
                     .mul_transform(Transform::from_xyz(
                         0.0,
@@ -199,7 +200,7 @@ fn initialize_beach_data(
 fn give_each_side_a_new_crab(
     mut spawn_on_side_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
-    for side in SIDES {
+    for side in Side::VARIANTS {
         spawn_on_side_events.send(SpawnEvent::with_data(Object::Crab, side));
     }
 }
