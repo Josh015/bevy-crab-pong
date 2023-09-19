@@ -128,7 +128,7 @@ fn spawn_level(
             size: 1.0,
             subdivisions: 1,
         })),
-        material: materials.add(Color::hex("C4BD99").unwrap().into()),
+        material: materials.add(game_assets.image_sand.clone().into()),
         transform: Transform::from_matrix(
             Mat4::from_scale_rotation_translation(
                 Vec3::splat(SIDE_WIDTH),

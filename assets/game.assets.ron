@@ -8,6 +8,9 @@
     "images.crab": File (
         path: "images/crab.png",
     ),
+    "images.sand": File (
+        path: "images/sand.png",
+    ),
     "images.water": File (
         path: "images/water.png",
     ),

@@ -56,6 +56,9 @@ pub struct GameAssets {
     #[asset(key = "images.crab")]
     pub image_crab: Handle<Image>,
 
+    #[asset(key = "images.sand")]
+    pub image_sand: Handle<Image>,
+
     #[asset(key = "images.water")]
     pub image_water: Handle<Image>,
 }
