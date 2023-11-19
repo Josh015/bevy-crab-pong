@@ -29,8 +29,8 @@ impl Plugin for AiPlugin {
         app.add_systems(
             Update,
             (
-                make_ai_crabs_target_the_balls_closest_to_their_sides,
-                move_ai_crabs_toward_their_targeted_balls,
+                make_ai_crabs_target_the_ball_closest_to_their_side,
+                move_ai_crabs_toward_their_targeted_ball,
             )
                 .chain()
                 .in_set(CrabSet),
@@ -38,7 +38,7 @@ impl Plugin for AiPlugin {
     }
 }
 
-fn make_ai_crabs_target_the_balls_closest_to_their_sides(
+fn make_ai_crabs_target_the_ball_closest_to_their_side(
     mut commands: Commands,
     crabs_query: Query<
         (Entity, &Side),
@@ -70,7 +70,7 @@ fn make_ai_crabs_target_the_balls_closest_to_their_sides(
     }
 }
 
-fn move_ai_crabs_toward_their_targeted_balls(
+fn move_ai_crabs_toward_their_targeted_ball(
     mut commands: Commands,
     crabs_query: Query<
         (
