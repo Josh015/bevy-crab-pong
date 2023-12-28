@@ -21,7 +21,7 @@ pub enum GameState {
 }
 
 impl GameState {
-    pub const ANY_GAME_STATE: &[GameState; 2] =
+    pub const ANY_GAME_STATE: &'static [GameState; 2] =
         &[GameState::Playing, GameState::Paused];
 
     pub fn is_any_game_state(&self) -> bool {
