@@ -97,7 +97,7 @@ fn spawn_pole_on_side(
             ));
         });
 
-    info!("Pole({:?}): Spawned", side);
+    info!("Pole({side:?}): Spawned");
 }
 
 fn remove_pole_collider_before_fading_out(
@@ -136,7 +136,7 @@ fn pole_and_ball_collisions(
                 .entity(entity)
                 .insert(Heading(reflect(ball_heading.0, axis).normalize()));
 
-            info!("Ball({:?}): Collided Pole({:?})", entity, side);
+            info!("Ball({entity:?}): Collided Pole({side:?})");
             break;
         }
     }

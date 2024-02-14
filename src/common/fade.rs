@@ -129,13 +129,13 @@ fn finish_fading(mut commands: Commands, query: Query<(Entity, &Fade)>) {
             Fade::In(progress) => {
                 if progress.finished() {
                     commands.entity(entity).remove::<Fade>();
-                    info!("Entity({:?}): Started Moving", entity);
+                    info!("Entity({entity:?}): Started Moving");
                 }
             },
             Fade::Out(progress) => {
                 if progress.finished() {
                     commands.entity(entity).despawn_recursive();
-                    info!("Entity({:?}): Despawned", entity);
+                    info!("Entity({entity:?}): Despawned");
                 }
             },
         }

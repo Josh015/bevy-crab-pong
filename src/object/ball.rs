@@ -84,7 +84,7 @@ fn spawn_ball_with_position(
         ))
         .id();
 
-    info!("Ball({:?}): Spawned", ball);
+    info!("Ball({ball:?}): Spawned");
 }
 
 fn add_ball_movement_and_collider_after_fading_in(

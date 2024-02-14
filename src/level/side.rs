@@ -132,7 +132,7 @@ fn check_if_any_balls_have_scored_in_any_sides(
             if ball_distance <= BALL_RADIUS {
                 commands.entity(ball_entity).insert(Fade::out_default());
                 side_scored_events.send(SideScoredEvent(*side));
-                info!("Ball({:?}): Scored Side({:?})", ball_entity, side);
+                info!("Ball({ball_entity:?}): Scored Side({side:?})");
             }
         }
     }
@@ -144,6 +144,6 @@ fn block_eliminated_sides_with_poles(
 ) {
     for SideEliminatedEvent(side) in side_eliminated_events.read() {
         spawn_on_side_events.send(SpawnEvent::with_data(Object::Pole, *side));
-        info!("Side({:?}): Eliminated", side);
+        info!("Side({side:?}): Eliminated");
     }
 }

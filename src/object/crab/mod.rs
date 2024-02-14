@@ -147,7 +147,7 @@ fn spawn_crab_on_side(
             }
         });
 
-    info!("Crab({:?}): Spawned", side);
+    info!("Crab({side:?}): Spawned");
 }
 
 fn add_crab_movement_after_fading_in(
@@ -240,7 +240,7 @@ fn crab_and_ball_collisions(
             commands
                 .entity(ball_entity)
                 .insert(Heading(ball_deflection_direction));
-            info!("Ball({:?}): Collided Crab({:?})", ball_entity, side);
+            info!("Ball({ball_entity:?}): Collided Crab({side:?})");
             break;
         }
     }

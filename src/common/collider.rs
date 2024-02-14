@@ -84,6 +84,6 @@ fn circle_to_circle_collisions(
             }
         }
 
-        info!("Circle({:?}): Collided Circle({:?})", entity1, entity2);
+        info!("Circle({entity1:?}): Collided Circle({entity2:?})");
     }
 }

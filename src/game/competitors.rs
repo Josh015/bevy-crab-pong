@@ -117,7 +117,7 @@ fn check_for_game_over(
         if let Some(winning_team) = winning_team {
             commands.insert_resource(WinningTeam(winning_team));
             next_game_state.set(GameState::StartMenu);
-            info!("Game Over: Team {:?} won!", winning_team);
+            info!("Game Over: Team {winning_team:?} won!");
             break;
         }
     }
