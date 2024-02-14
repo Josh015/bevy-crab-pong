@@ -14,7 +14,7 @@ pub(super) struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.configure_set(PostUpdate, GameSet.after(ColliderSet))
+        app.configure_sets(PostUpdate, GameSet.after(ColliderSet))
             .add_plugins((
                 assets::AssetsPlugin,
                 competitors::CompetitorsPlugin,

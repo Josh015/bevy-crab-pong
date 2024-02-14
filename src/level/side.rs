@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use serde::Deserialize;
 use spew::prelude::*;
+use strum::EnumIter;
 
 use crate::{
     common::{
@@ -32,7 +33,9 @@ pub struct SideEliminatedEvent(pub Side);
 pub struct SideSpawnPoint;
 
 /// Assigns an entity to a given side of the beach.
-#[derive(Clone, Component, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
+#[derive(
+    Clone, Component, Copy, Debug, Deserialize, EnumIter, Eq, Hash, PartialEq,
+)]
 pub enum Side {
     Bottom = 0,
     Right = 1,
@@ -41,9 +44,6 @@ pub enum Side {
 }
 
 impl Side {
-    pub const VARIANTS: [Self; 4] =
-        [Self::Bottom, Self::Right, Self::Top, Self::Left];
-
     /// Perpendicular distance from a given side to a ball's center.
     ///
     /// Positive distances for inside the beach, negative for out of bounds.
@@ -142,7 +142,7 @@ fn block_eliminated_sides_with_poles(
     mut side_eliminated_events: EventReader<SideEliminatedEvent>,
     mut spawn_on_side_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
-    for SideEliminatedEvent(side) in side_eliminated_events.iter() {
+    for SideEliminatedEvent(side) in side_eliminated_events.read() {
         spawn_on_side_events.send(SpawnEvent::with_data(Object::Pole, *side));
         info!("Side({:?}): Eliminated", side);
     }

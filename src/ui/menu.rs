@@ -1,4 +1,4 @@
-use bevy::{prelude::*, reflect::TypePath};
+use bevy::prelude::*;
 pub use leafwing_input_manager::prelude::*;
 
 use crate::game::{
@@ -15,7 +15,7 @@ pub struct MessageUiEvent {
 }
 
 // List of user actions associated to menu/ui interaction
-#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, TypePath)]
+#[derive(Actionlike, Clone, Copy, Debug, Eq, Hash, PartialEq, Reflect)]
 pub enum MenuAction {
     Accept,
     PauseUnpause,
@@ -82,7 +82,7 @@ fn handle_spawn_ui_message_event(
     for MessageUiEvent {
         message,
         game_state,
-    } in message_ui_events.iter()
+    } in message_ui_events.read()
     {
         commands
             .spawn((

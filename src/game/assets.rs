@@ -10,7 +10,7 @@ use std::num::{NonZeroU8, NonZeroUsize};
 use crate::level::side::Side;
 
 /// Game settings read from a config file.
-#[derive(Debug, Deserialize, Resource, TypeUuid, TypePath)]
+#[derive(Asset, Debug, Deserialize, Resource, TypeUuid, TypePath)]
 #[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c46"]
 pub struct GameConfig {
     pub pause_message: String,

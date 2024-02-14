@@ -1,4 +1,4 @@
-use bevy::{prelude::*, reflect::TypePath};
+use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 
 use crate::{
@@ -8,7 +8,7 @@ use crate::{
 
 use super::{Crab, CrabSet};
 
-#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, TypePath)]
+#[derive(Actionlike, Clone, Copy, Debug, Eq, Hash, PartialEq, Reflect)]
 pub enum CrabAction {
     MoveUp,
     MoveDown,

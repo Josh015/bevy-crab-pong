@@ -63,7 +63,7 @@ pub(super) struct MovementPlugin;
 
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
-        app.configure_set(
+        app.configure_sets(
             Update,
             MovementSet
                 .in_set(LoadedSet)

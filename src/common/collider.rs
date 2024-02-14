@@ -22,7 +22,7 @@ pub(super) struct ColliderPlugin;
 
 impl Plugin for ColliderPlugin {
     fn build(&self, app: &mut App) {
-        app.configure_set(
+        app.configure_sets(
             PostUpdate,
             ColliderSet.run_if(in_state(GameState::Playing)),
         )

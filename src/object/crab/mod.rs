@@ -65,7 +65,7 @@ impl Plugin for CrabPlugin {
                 PostUpdate,
                 crab_and_ball_collisions.in_set(ColliderSet),
             )
-            .configure_set(
+            .configure_sets(
                 Update,
                 CrabSet
                     .before(MovementSet)
@@ -155,7 +155,7 @@ fn add_crab_movement_after_fading_in(
     mut removed: RemovedComponents<Fade>,
     query: Query<Entity, With<Crab>>,
 ) {
-    for entity in removed.iter() {
+    for entity in removed.read() {
         if query.contains(entity) {
             commands.entity(entity).insert(Movement);
         }

@@ -92,7 +92,7 @@ fn add_ball_movement_and_collider_after_fading_in(
     mut removed: RemovedComponents<Fade>,
     query: Query<Entity, With<Ball>>,
 ) {
-    for entity in removed.iter() {
+    for entity in removed.read() {
         if query.contains(entity) {
             commands.entity(entity).insert(Movement).insert(Collider);
         }

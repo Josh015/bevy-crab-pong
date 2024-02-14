@@ -77,7 +77,7 @@ fn decrement_competitor_hp_when_their_side_gets_scored(
     mut competitors: ResMut<Competitors>,
 ) {
     // Decrement a competitor's HP and potentially eliminate their side.
-    for SideScoredEvent(side) in side_scored_events.iter() {
+    for SideScoredEvent(side) in side_scored_events.read() {
         let competitor = competitors.0.get_mut(side).unwrap();
 
         competitor.hit_points = competitor.hit_points.saturating_sub(1);
@@ -94,7 +94,7 @@ fn check_for_game_over(
     mut side_eliminated_events: EventReader<SideEliminatedEvent>,
     competitors: Res<Competitors>,
 ) {
-    for SideEliminatedEvent(_) in side_eliminated_events.iter() {
+    for SideEliminatedEvent(_) in side_eliminated_events.read() {
         let mut winning_team = None;
         let survivor = competitors
             .0

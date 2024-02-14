@@ -8,11 +8,9 @@ pub mod ui;
 pub mod util;
 
 use bevy::{
-    asset::ChangeWatcher,
     prelude::*,
     window::{PresentMode, WindowResolution},
 };
-use std::time::Duration;
 
 fn main() {
     App::new()
@@ -28,9 +26,6 @@ fn main() {
                     ..default()
                 })
                 .set(AssetPlugin {
-                    watch_for_changes: ChangeWatcher::with_delay(
-                        Duration::from_secs(1),
-                    ),
                     ..Default::default()
                 }),
         )

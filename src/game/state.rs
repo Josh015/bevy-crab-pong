@@ -1,6 +1,7 @@
 use bevy::{ecs::query::Has, prelude::*};
 use bevy_asset_loader::prelude::*;
 use bevy_common_assets::ron::RonAssetPlugin;
+use strum::{EnumIter, IntoEnumIterator};
 
 use crate::common::fade::{Fade, FadeAnimation};
 
@@ -11,7 +12,9 @@ use super::assets::{GameAssets, GameConfig};
 pub struct ForStates<S: States>(pub Vec<S>);
 
 // All the app's possible states.
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, States)]
+#[derive(
+    Clone, Copy, Debug, Default, Eq, EnumIter, Hash, PartialEq, States,
+)]
 pub enum GameState {
     #[default]
     Loading,
@@ -42,17 +45,18 @@ impl Plugin for StatePlugin {
             LoadingState::new(GameState::Loading)
                 .continue_to_state(GameState::StartMenu),
         )
-        .add_dynamic_collection_to_loading_state::<_, StandardDynamicAssetCollection>(
-            GameState::Loading,
-            "game.assets.ron",
+        .configure_loading_state(
+            LoadingStateConfig::new(GameState::Loading)
+            .register_dynamic_asset_collection::<StandardDynamicAssetCollection>()
+            .with_dynamic_assets_file::<StandardDynamicAssetCollection>("game.assets.ron")
+            .load_collection::<GameAssets>(),
         )
-        .add_collection_to_loading_state::<_, GameAssets>(GameState::Loading)
-        .configure_set(
+        .configure_sets(
             Update,
             LoadedSet.run_if(not(in_state(GameState::Loading))),
         );
 
-        for state in GameState::variants() {
+        for state in GameState::iter() {
             app.add_systems(
                 OnEnter(state),
                 despawn_invalid_entities_for_state::<GameState>,

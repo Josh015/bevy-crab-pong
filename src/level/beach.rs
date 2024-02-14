@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use spew::prelude::{SpawnEvent, SpewSystemSet};
+use strum::IntoEnumIterator;
 
 use crate::{
     common::{
@@ -143,17 +144,17 @@ fn spawn_level(
     let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
 
-    for (i, side) in Side::VARIANTS.iter().enumerate() {
+    for (i, side) in Side::iter().enumerate() {
         // Spawn Point
         commands
             .spawn((
                 SideSpawnPoint,
-                *side,
+                side,
                 PbrBundle {
                     transform: Transform::from_rotation(Quat::from_axis_angle(
                         Vec3::Y,
                         std::f32::consts::TAU
-                            * (i as f32 / Side::VARIANTS.len() as f32),
+                            * (i as f32 / Side::iter().len() as f32),
                     ))
                     .mul_transform(Transform::from_xyz(
                         0.0,
@@ -194,7 +195,7 @@ fn spawn_level(
             });
 
         // Poles
-        spawn_on_side_events.send(SpawnEvent::with_data(Object::Pole, *side));
+        spawn_on_side_events.send(SpawnEvent::with_data(Object::Pole, side));
     }
 }
 
@@ -214,7 +215,7 @@ fn initialize_beach_data(
 fn give_each_side_a_new_crab(
     mut spawn_on_side_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
-    for side in Side::VARIANTS {
+    for side in Side::iter() {
         spawn_on_side_events.send(SpawnEvent::with_data(Object::Crab, side));
     }
 }
