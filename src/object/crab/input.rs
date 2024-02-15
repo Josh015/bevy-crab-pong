@@ -84,43 +84,19 @@ fn move_crabs_based_on_user_input(
     use Side::*;
 
     for (entity, action_state, side) in &crabs_query {
-        match *side {
-            Bottom => {
-                if action_state.pressed(MoveLeft) {
-                    commands.entity(entity).insert(Force::Negative);
-                } else if action_state.pressed(MoveRight) {
-                    commands.entity(entity).insert(Force::Positive);
-                } else {
-                    commands.entity(entity).remove::<Force>();
-                }
-            },
-            Right => {
-                if action_state.pressed(MoveUp) {
-                    commands.entity(entity).insert(Force::Positive);
-                } else if action_state.pressed(MoveDown) {
-                    commands.entity(entity).insert(Force::Negative);
-                } else {
-                    commands.entity(entity).remove::<Force>();
-                }
-            },
-            Top => {
-                if action_state.pressed(MoveLeft) {
-                    commands.entity(entity).insert(Force::Positive);
-                } else if action_state.pressed(MoveRight) {
-                    commands.entity(entity).insert(Force::Negative);
-                } else {
-                    commands.entity(entity).remove::<Force>();
-                }
-            },
-            Left => {
-                if action_state.pressed(MoveUp) {
-                    commands.entity(entity).insert(Force::Negative);
-                } else if action_state.pressed(MoveDown) {
-                    commands.entity(entity).insert(Force::Positive);
-                } else {
-                    commands.entity(entity).remove::<Force>();
-                }
-            },
+        let (left_action, left_force, right_action, right_force) = match *side {
+            Bottom => (MoveLeft, Force::Negative, MoveRight, Force::Positive),
+            Right => (MoveUp, Force::Positive, MoveDown, Force::Negative),
+            Top => (MoveLeft, Force::Positive, MoveRight, Force::Negative),
+            Left => (MoveUp, Force::Negative, MoveDown, Force::Positive),
+        };
+
+        if action_state.pressed(left_action) {
+            commands.entity(entity).insert(left_force);
+        } else if action_state.pressed(right_action) {
+            commands.entity(entity).insert(right_force);
+        } else {
+            commands.entity(entity).remove::<Force>();
         }
     }
 }
