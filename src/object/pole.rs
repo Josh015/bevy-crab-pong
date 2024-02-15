@@ -4,13 +4,11 @@ use spew::prelude::*;
 use crate::{
     common::{
         collider::{Collider, ColliderSet},
-        fade::{
-            remove_entity_components_before_fading_out, Fade, FadeAnimation,
-            FadeBundle, FADE_DURATION_IN_SECONDS,
-        },
+        delayed::DelayedRemove,
+        fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
         movement::{Heading, Movement},
     },
-    game::{assets::CachedAssets, state::GameState},
+    game::assets::CachedAssets,
     level::{
         beach::Beach,
         side::{Side, SideSpawnPoint, SIDE_WIDTH},
@@ -37,11 +35,6 @@ impl Plugin for PolePlugin {
     fn build(&self, app: &mut App) {
         app.add_spawner((Object::Pole, spawn_pole_on_side))
             .add_systems(
-                Update,
-                remove_entity_components_before_fading_out::<Pole, Collider>
-                    .run_if(not(in_state(GameState::Paused))),
-            )
-            .add_systems(
                 PostUpdate,
                 pole_and_ball_collisions.in_set(ColliderSet),
             );
@@ -65,8 +58,9 @@ fn spawn_pole_on_side(
         .with_children(|builder| {
             builder.spawn((
                 Pole,
-                Collider,
                 side,
+                Collider,
+                DelayedRemove::<Collider>::default(),
                 FadeBundle {
                     fade_animation: FadeAnimation::Scale {
                         max_scale: Vec3::new(

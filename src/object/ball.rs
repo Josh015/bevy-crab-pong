@@ -5,10 +5,8 @@ use spew::prelude::*;
 use crate::{
     common::{
         collider::{Collider, ColliderShapeCircle},
-        fade::{
-            add_entity_components_after_fading_in,
-            remove_entity_components_before_fading_out, FadeBundle,
-        },
+        delayed::{DelayedInsert, DelayedRemove},
+        fade::FadeBundle,
         movement::{Heading, Movement, Speed, VelocityBundle},
     },
     game::{
@@ -31,18 +29,7 @@ pub(super) struct BallPlugin;
 
 impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
-        app.add_spawner((Object::Ball, spawn_ball_with_position))
-            .add_systems(
-            Update,
-            (
-                add_entity_components_after_fading_in::<
-                    Ball,
-                    (Movement, Collider),
-                >,
-                remove_entity_components_before_fading_out::<Ball, Collider>,
-            )
-                .run_if(not(in_state(GameState::Paused))),
-        );
+        app.add_spawner((Object::Ball, spawn_ball_with_position));
     }
 }
 
@@ -65,6 +52,9 @@ fn spawn_ball_with_position(
             ColliderShapeCircle {
                 radius: BALL_RADIUS,
             },
+            DelayedInsert::<Movement>::default(),
+            DelayedInsert::<Collider>::default(),
+            DelayedRemove::<Collider>::default(),
             FadeBundle::default(),
             ForStates(vec![GameState::Playing, GameState::Paused]),
             VelocityBundle {

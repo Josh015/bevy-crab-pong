@@ -7,11 +7,8 @@ use spew::prelude::*;
 use crate::{
     common::{
         collider::{Collider, ColliderSet},
-        fade::{
-            add_entity_components_after_fading_in,
-            remove_entity_components_before_fading_out, FadeAnimation,
-            FadeBundle,
-        },
+        delayed::{DelayedInsert, DelayedRemove},
+        fade::{FadeAnimation, FadeBundle},
         movement::{
             Acceleration, AccelerationBundle, Force, Heading, MaxSpeed,
             Movement, MovementSet, Speed, StoppingDistance, VelocityBundle,
@@ -56,18 +53,8 @@ impl Plugin for CrabPlugin {
         app.add_spawner((Object::Crab, spawn_crab_on_side))
             .add_systems(
                 Update,
-                (
-                    (
-                        add_entity_components_after_fading_in::<Crab, Movement>,
-                        remove_entity_components_before_fading_out::<
-                            Crab,
-                            (Movement, Collider),
-                        >,
-                    )
-                        .run_if(not(in_state(GameState::Paused))),
-                    restrict_crab_movement_to_space_within_its_own_goal
-                        .after(MovementSet),
-                ),
+                restrict_crab_movement_to_space_within_its_own_goal
+                    .after(MovementSet),
             )
             .add_systems(
                 PostUpdate,
@@ -105,8 +92,11 @@ fn spawn_crab_on_side(
         .with_children(|builder| {
             let mut crab = builder.spawn((
                 Crab,
-                Collider,
                 side,
+                Collider,
+                DelayedInsert::<Movement>::default(),
+                DelayedRemove::<Movement>::default(),
+                DelayedRemove::<Collider>::default(),
                 FadeBundle {
                     fade_animation: FadeAnimation::Scale {
                         max_scale: Vec3::new(
