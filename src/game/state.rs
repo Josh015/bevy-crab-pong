@@ -40,21 +40,23 @@ pub(super) struct StatePlugin;
 
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<GameState>().add_plugins(RonAssetPlugin::<GameConfig>::new(&["config.ron"]))
-        .add_loading_state(
-            LoadingState::new(GameState::Loading)
-                .continue_to_state(GameState::StartMenu),
-        )
-        .configure_loading_state(
-            LoadingStateConfig::new(GameState::Loading)
-            .register_dynamic_asset_collection::<StandardDynamicAssetCollection>()
-            .with_dynamic_assets_file::<StandardDynamicAssetCollection>("game.assets.ron")
-            .load_collection::<GameAssets>(),
-        )
-        .configure_sets(
-            Update,
-            LoadedSet.run_if(not(in_state(GameState::Loading))),
-        );
+        app.add_state::<GameState>()
+            .add_plugins(RonAssetPlugin::<GameConfig>::new(&["config.ron"]))
+            .add_loading_state(
+                LoadingState::new(GameState::Loading)
+                    .continue_to_state(GameState::StartMenu),
+            )
+            .configure_loading_state(
+                LoadingStateConfig::new(GameState::Loading)
+                    .with_dynamic_assets_file::<StandardDynamicAssetCollection>(
+                        "game.assets.ron",
+                    )
+                    .load_collection::<GameAssets>(),
+            )
+            .configure_sets(
+                Update,
+                LoadedSet.run_if(not(in_state(GameState::Loading))),
+            );
 
         for state in GameState::iter() {
             app.add_systems(
