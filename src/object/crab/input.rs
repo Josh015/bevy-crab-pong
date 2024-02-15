@@ -76,25 +76,26 @@ impl Plugin for InputPlugin {
 fn move_crabs_based_on_user_input(
     mut commands: Commands,
     crabs_query: Query<
-        (Entity, &ActionState<CrabAction>, &Side),
+        (Entity, &Side, &ActionState<CrabAction>),
         (With<Crab>, With<Movement>),
     >,
 ) {
     use CrabAction::*;
+    use Force::*;
     use Side::*;
 
-    for (entity, action_state, side) in &crabs_query {
-        let (left_action, left_force, right_action, right_force) = match *side {
-            Bottom => (MoveLeft, Force::Negative, MoveRight, Force::Positive),
-            Right => (MoveUp, Force::Positive, MoveDown, Force::Negative),
-            Top => (MoveLeft, Force::Positive, MoveRight, Force::Negative),
-            Left => (MoveUp, Force::Negative, MoveDown, Force::Positive),
+    for (entity, side, action_state) in &crabs_query {
+        let (left, right) = match *side {
+            Bottom => ((MoveLeft, Negative), (MoveRight, Positive)),
+            Right => ((MoveUp, Positive), (MoveDown, Negative)),
+            Top => ((MoveLeft, Positive), (MoveRight, Negative)),
+            Left => ((MoveUp, Negative), (MoveDown, Positive)),
         };
 
-        if action_state.pressed(left_action) {
-            commands.entity(entity).insert(left_force);
-        } else if action_state.pressed(right_action) {
-            commands.entity(entity).insert(right_force);
+        if action_state.pressed(left.0) {
+            commands.entity(entity).insert(left.1);
+        } else if action_state.pressed(right.0) {
+            commands.entity(entity).insert(right.1);
         } else {
             commands.entity(entity).remove::<Force>();
         }
