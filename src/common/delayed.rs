@@ -7,15 +7,11 @@ use super::{collider::Collider, fade::Fade, movement::Movement};
 
 /// Inserts a component after the entity finishes a fading-in effect.
 #[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
-pub struct DelayedInsert<B: Bundle + Default> {
-    phantom_data: PhantomData<B>,
-}
+pub struct DelayedInsert<B: Bundle + Default>(PhantomData<B>);
 
 // Removes a component before the entity starts a fading-out effect.
 #[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
-pub struct DelayedRemove<B: Bundle + Default> {
-    phantom_data: PhantomData<B>,
-}
+pub struct DelayedRemove<B: Bundle + Default>(PhantomData<B>);
 
 pub(super) struct DelayedPlugin;
 
