@@ -81,21 +81,20 @@ fn move_crabs_based_on_user_input(
     >,
 ) {
     use CrabAction::*;
-    use Force::*;
     use Side::*;
 
     for (entity, side, action_state) in &crabs_query {
-        let (left, right) = match *side {
-            Bottom => ((MoveLeft, Negative), (MoveRight, Positive)),
-            Right => ((MoveUp, Positive), (MoveDown, Negative)),
-            Top => ((MoveLeft, Positive), (MoveRight, Negative)),
-            Left => ((MoveUp, Negative), (MoveDown, Positive)),
+        let (move_crab_left, move_crab_right) = match *side {
+            Bottom => (MoveLeft, MoveRight),
+            Right => (MoveDown, MoveUp),
+            Top => (MoveRight, MoveLeft),
+            Left => (MoveUp, MoveDown),
         };
 
-        if action_state.pressed(left.0) {
-            commands.entity(entity).insert(left.1);
-        } else if action_state.pressed(right.0) {
-            commands.entity(entity).insert(right.1);
+        if action_state.pressed(move_crab_left) {
+            commands.entity(entity).insert(Force::Negative);
+        } else if action_state.pressed(move_crab_right) {
+            commands.entity(entity).insert(Force::Positive);
         } else {
             commands.entity(entity).remove::<Force>();
         }
