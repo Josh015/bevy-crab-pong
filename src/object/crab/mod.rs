@@ -54,11 +54,12 @@ impl Plugin for CrabPlugin {
                 Update,
                 (
                     (
-                        add_crab_movement_after_fading_in,
+                        add_crab_movement_after_it_has_finished_fading_in,
                         remove_crab_movement_and_collider_before_fading_out,
                     )
                         .run_if(not(in_state(GameState::Paused))),
-                    restrict_crab_movement_range.after(MovementSet),
+                    restrict_crab_movement_to_space_within_its_own_goal
+                        .after(MovementSet),
                 ),
             )
             .add_systems(
@@ -150,7 +151,7 @@ fn spawn_crab_on_side(
     info!("Crab({side:?}): Spawned");
 }
 
-fn add_crab_movement_after_fading_in(
+fn add_crab_movement_after_it_has_finished_fading_in(
     mut commands: Commands,
     mut removed: RemovedComponents<Fade>,
     query: Query<Entity, With<Crab>>,
@@ -176,7 +177,7 @@ fn remove_crab_movement_and_collider_before_fading_out(
     }
 }
 
-fn restrict_crab_movement_range(
+fn restrict_crab_movement_to_space_within_its_own_goal(
     mut commands: Commands,
     mut query: Query<
         (Entity, &mut Transform, &mut Speed, &mut StoppingDistance),
@@ -185,7 +186,7 @@ fn restrict_crab_movement_range(
 ) {
     for (entity, mut transform, mut speed, mut stopping_distance) in &mut query
     {
-        // Limit crab to bounds of the goal.
+        // Limit crab movement to the bounds of its own goal.
         if !(-CRAB_POSITION_X_MAX..=CRAB_POSITION_X_MAX)
             .contains(&transform.translation.x)
         {
@@ -197,7 +198,7 @@ fn restrict_crab_movement_range(
             commands.entity(entity).remove::<Force>();
         }
 
-        // Limit stopping distance to the bounds of the goal.
+        // Also limit stopping distance to the bounds of the goal.
         let stopped_position = transform.translation.x + stopping_distance.0;
 
         if !(-CRAB_POSITION_X_MAX..=CRAB_POSITION_X_MAX)
