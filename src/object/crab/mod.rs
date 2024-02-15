@@ -84,7 +84,7 @@ fn spawn_crab_on_side(
     let crab_config = &game_config.modes[game_mode.0].competitors[&side];
     let (spawn_point_entity, _) = spawn_points_query
         .iter()
-        .find(|(_, side_side)| **side_side == side)
+        .find(|(_, spawn_point_side)| **spawn_point_side == side)
         .unwrap();
 
     commands
