@@ -12,10 +12,7 @@ use crate::{
         competitors::GameMode,
         state::GameState,
     },
-    object::{
-        ball::{Ball, BALL_HEIGHT},
-        Object,
-    },
+    object::{ball::Ball, Object},
 };
 
 use super::{
@@ -24,6 +21,7 @@ use super::{
     swaying_camera::SwayingCamera,
 };
 
+pub const BALL_HEIGHT_FROM_GROUND: f32 = 0.05;
 pub const BEACH_CENTER_POINT: Vec3 = Vec3::ZERO;
 pub const BARRIER_DIAMETER: f32 = 0.12;
 pub const BARRIER_RADIUS: f32 = 0.5 * BARRIER_DIAMETER;
@@ -237,7 +235,7 @@ fn spawn_balls_sequentially_as_needed(
         Object::Ball,
         Vec3::new(
             BEACH_CENTER_POINT.x,
-            BEACH_CENTER_POINT.y + BALL_HEIGHT,
+            BEACH_CENTER_POINT.y + BALL_HEIGHT_FROM_GROUND,
             BEACH_CENTER_POINT.z,
         ),
     ));

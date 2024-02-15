@@ -17,9 +17,7 @@ use crate::{
 
 use super::Object;
 
-pub const BALL_DIAMETER: f32 = 0.08;
-pub const BALL_HEIGHT: f32 = 0.05;
-pub const BALL_RADIUS: f32 = 0.5 * BALL_DIAMETER;
+pub const BALL_RADIUS: f32 = 0.04;
 
 /// Marks a ball entity that can collide and score.
 #[derive(Component, Debug)]
@@ -70,7 +68,7 @@ fn spawn_ball_with_position(
                 }),
                 transform: Transform::from_matrix(
                     Mat4::from_scale_rotation_translation(
-                        Vec3::splat(BALL_DIAMETER),
+                        Vec3::splat(BALL_RADIUS * 2.0),
                         Quat::IDENTITY,
                         position,
                     ),
