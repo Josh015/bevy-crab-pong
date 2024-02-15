@@ -6,7 +6,7 @@ use spew::prelude::*;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderSet},
+        collider::{Collider, ColliderSet, ColliderShapeCircle},
         delayed::{DelayedInsert, DelayedRemove},
         fade::{FadeAnimation, FadeBundle},
         movement::{
@@ -27,7 +27,7 @@ use crate::{
 };
 
 use super::{
-    ball::{Ball, BALL_RADIUS},
+    ball::Ball,
     crab::{ai::CrabAi, input::CrabInputBundle},
     Object,
 };
@@ -185,12 +185,14 @@ fn restrict_crab_movement_to_space_within_its_own_goal(
 fn crab_and_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
-        (Entity, &GlobalTransform, &Heading),
+        (Entity, &GlobalTransform, &Heading, &ColliderShapeCircle),
         (With<Ball>, With<Collider>, With<Movement>),
     >,
     crabs_query: Query<(&Side, &Transform), (With<Crab>, With<Collider>)>,
 ) {
-    for (ball_entity, ball_transform, ball_heading) in &balls_query {
+    for (ball_entity, ball_transform, ball_heading, ball_collider) in
+        &balls_query
+    {
         for (side, crab_transform) in &crabs_query {
             // Check that the ball is touching the crab and facing the goal.
             let axis = side.axis();
@@ -199,8 +201,9 @@ fn crab_and_ball_collisions(
             let delta = crab_transform.translation.x - ball_side_position;
             let ball_to_crab_distance = delta.abs();
 
-            if ball_to_side_distance > BALL_RADIUS + (0.5 * CRAB_DEPTH)
-                || ball_to_crab_distance > BALL_RADIUS + (0.5 * CRAB_WIDTH)
+            if ball_to_side_distance > ball_collider.radius + (0.5 * CRAB_DEPTH)
+                || ball_to_crab_distance
+                    > ball_collider.radius + (0.5 * CRAB_WIDTH)
                 || ball_heading.0.dot(axis) <= 0.0
             {
                 continue;

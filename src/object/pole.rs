@@ -3,7 +3,7 @@ use spew::prelude::*;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderSet},
+        collider::{Collider, ColliderSet, ColliderShapeCircle},
         delayed::DelayedRemove,
         fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
         movement::{Heading, Movement},
@@ -16,10 +16,7 @@ use crate::{
     util::reflect,
 };
 
-use super::{
-    ball::{Ball, BALL_RADIUS},
-    Object,
-};
+use super::{ball::Ball, Object};
 
 pub const POLE_DIAMETER: f32 = 0.05;
 pub const POLE_HEIGHT: f32 = 0.1;
@@ -100,18 +97,18 @@ fn spawn_pole_on_side(
 fn pole_and_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
-        (Entity, &GlobalTransform, &Heading),
+        (Entity, &GlobalTransform, &Heading, &ColliderShapeCircle),
         (With<Ball>, With<Collider>, With<Movement>),
     >,
     poles_query: Query<&Side, (With<Pole>, With<Collider>)>,
 ) {
-    for (entity, ball_transform, ball_heading) in &balls_query {
+    for (entity, ball_transform, ball_heading, ball_collider) in &balls_query {
         for side in &poles_query {
             let ball_to_pole_distance = side.distance_to_ball(ball_transform);
             let axis = side.axis();
 
             // Check that the ball is touching and facing the pole.
-            if ball_to_pole_distance > BALL_RADIUS + POLE_RADIUS
+            if ball_to_pole_distance > ball_collider.radius + POLE_RADIUS
                 || ball_heading.0.dot(axis) <= 0.0
             {
                 continue;

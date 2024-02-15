@@ -21,6 +21,7 @@ WASD / ARROWS to move the crab.
     (
       name: "Classic (Player)",
       ball_count: 2,
+      ball_size: 0.08,
       competitors: {
         Bottom: (color: "FF0000", team: 1, player: Input, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
         Right: (color: "0000FF", team: 2, player: AI, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
@@ -31,6 +32,7 @@ WASD / ARROWS to move the crab.
     (
       name: "Classic (AI)",
       ball_count: 3,
+      ball_size: 0.08,
       competitors: {
         Bottom: (color: "FF0000", team: 1, player: AI, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
         Right: (color: "0000FF", team: 2, player: AI, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
@@ -41,6 +43,7 @@ WASD / ARROWS to move the crab.
     (
       name: "Red vs Blue (Player)",
       ball_count: 2,
+      ball_size: 0.08,
       competitors: {
         Bottom: (color: "FF0000", team: 3, player: Input, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
         Right: (color: "FF0000", team: 3, player: Input, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
@@ -51,6 +54,7 @@ WASD / ARROWS to move the crab.
     (
       name: "Red vs Blue (AI)",
       ball_count: 3,
+      ball_size: 0.08,
       competitors: {
         Bottom: (color: "FF0000", team: 3, player: AI, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
         Right: (color: "FF0000", team: 3, player: AI, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
@@ -61,6 +65,7 @@ WASD / ARROWS to move the crab.
     (
       name: "This game is RIGGED!",
       ball_count: 5,
+      ball_size: 0.08,
       competitors: {
         Bottom: (color: "000000", team: 1, player: AI, hit_points: 50, seconds_to_max_speed: 0.01, max_speed: 2),
         Right: (color: "0000FF", team: 5, player: AI, hit_points: 1, seconds_to_max_speed: 0.6, max_speed: 2),
@@ -71,6 +76,7 @@ WASD / ARROWS to move the crab.
     (
       name: "Stress Test",
       ball_count: 60,
+      ball_size: 0.04,
       competitors: {
         Bottom: (color: "FFFF00", team: 3, player: AI, hit_points: 50, seconds_to_max_speed: 0.01, max_speed: 20),
         Right: (color: "FFFF00", team: 3, player: AI, hit_points: 50, seconds_to_max_speed: 0.01, max_speed: 20),

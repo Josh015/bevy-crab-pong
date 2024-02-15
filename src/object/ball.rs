@@ -11,13 +11,12 @@ use crate::{
     },
     game::{
         assets::{CachedAssets, GameAssets, GameConfig},
+        competitors::GameMode,
         state::{ForStates, GameState},
     },
 };
 
 use super::Object;
-
-pub const BALL_RADIUS: f32 = 0.04;
 
 /// Marks a ball entity that can collide and score.
 #[derive(Component, Debug)]
@@ -38,9 +37,11 @@ fn spawn_ball_with_position(
     cached_assets: Res<CachedAssets>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
+    game_mode: Res<GameMode>,
 ) {
     // Spawn a ball that will launch it in a random direction.
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
+    let ball_size = game_config.modes[game_mode.0].ball_size;
     let mut rng = SmallRng::from_entropy();
     let angle = rng.gen_range(0.0..std::f32::consts::TAU);
     let (angle_sin, angle_cos) = angle.sin_cos();
@@ -48,7 +49,7 @@ fn spawn_ball_with_position(
         .spawn((
             Ball,
             ColliderShapeCircle {
-                radius: BALL_RADIUS,
+                radius: ball_size * 0.5,
             },
             DelayedInsert::<Movement>::default(),
             DelayedInsert::<Collider>::default(),
@@ -68,7 +69,7 @@ fn spawn_ball_with_position(
                 }),
                 transform: Transform::from_matrix(
                     Mat4::from_scale_rotation_translation(
-                        Vec3::splat(BALL_RADIUS * 2.0),
+                        Vec3::splat(ball_size),
                         Quat::IDENTITY,
                         position,
                     ),

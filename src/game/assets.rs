@@ -26,6 +26,7 @@ pub struct GameConfig {
 pub struct ModeConfig {
     pub name: String,
     pub ball_count: NonZeroU8,
+    pub ball_size: f32,
     pub competitors: HashMap<Side, CompetitorConfig>,
 }
 

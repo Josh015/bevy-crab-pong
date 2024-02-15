@@ -5,17 +5,12 @@ use strum::EnumIter;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderSet},
+        collider::{Collider, ColliderSet, ColliderShapeCircle},
         fade::Fade,
         movement::Movement,
     },
     game::GameSet,
-    object::{
-        ball::{Ball, BALL_RADIUS},
-        crab::Crab,
-        pole::Pole,
-        Object,
-    },
+    object::{ball::Ball, crab::Crab, pole::Pole, Object},
 };
 
 pub const SIDE_WIDTH: f32 = 1.0;
@@ -119,17 +114,17 @@ fn check_if_any_balls_have_scored_in_any_sides(
     mut commands: Commands,
     mut side_scored_events: EventWriter<SideScoredEvent>,
     balls_query: Query<
-        (Entity, &GlobalTransform),
+        (Entity, &GlobalTransform, &ColliderShapeCircle),
         (With<Ball>, With<Movement>, With<Collider>),
     >,
     crabs_query: Query<&Side, (With<Crab>, With<Movement>, With<Collider>)>,
 ) {
     // If a ball passes a side's alive crab then despawn it and raise an event.
-    for (ball_entity, global_transform) in &balls_query {
+    for (ball_entity, global_transform, ball_collider) in &balls_query {
         for side in &crabs_query {
             let ball_distance = side.distance_to_ball(global_transform);
 
-            if ball_distance <= BALL_RADIUS {
+            if ball_distance <= ball_collider.radius {
                 commands.entity(ball_entity).insert(Fade::out_default());
                 side_scored_events.send(SideScoredEvent(*side));
                 info!("Ball({ball_entity:?}): Scored Side({side:?})");
