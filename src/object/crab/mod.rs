@@ -7,7 +7,11 @@ use spew::prelude::*;
 use crate::{
     common::{
         collider::{Collider, ColliderSet},
-        fade::{Fade, FadeAnimation, FadeBundle},
+        fade::{
+            add_entity_components_after_fading_in,
+            remove_entity_components_before_fading_out, FadeAnimation,
+            FadeBundle,
+        },
         movement::{
             Acceleration, AccelerationBundle, Force, Heading, MaxSpeed,
             Movement, MovementSet, Speed, StoppingDistance, VelocityBundle,
@@ -54,8 +58,11 @@ impl Plugin for CrabPlugin {
                 Update,
                 (
                     (
-                        add_crab_movement_after_it_has_finished_fading_in,
-                        remove_crab_movement_and_collider_before_fading_out,
+                        add_entity_components_after_fading_in::<Crab, Movement>,
+                        remove_entity_components_before_fading_out::<
+                            Crab,
+                            (Movement, Collider),
+                        >,
                     )
                         .run_if(not(in_state(GameState::Paused))),
                     restrict_crab_movement_to_space_within_its_own_goal
@@ -149,32 +156,6 @@ fn spawn_crab_on_side(
         });
 
     info!("Crab({side:?}): Spawned");
-}
-
-fn add_crab_movement_after_it_has_finished_fading_in(
-    mut commands: Commands,
-    mut removed: RemovedComponents<Fade>,
-    query: Query<Entity, With<Crab>>,
-) {
-    for entity in removed.read() {
-        if query.contains(entity) {
-            commands.entity(entity).insert(Movement);
-        }
-    }
-}
-
-fn remove_crab_movement_and_collider_before_fading_out(
-    mut commands: Commands,
-    query: Query<(Entity, &Fade), (With<Crab>, Added<Fade>)>,
-) {
-    for (entity, fade) in &query {
-        if matches!(fade, Fade::Out(_)) {
-            commands
-                .entity(entity)
-                .remove::<Movement>()
-                .remove::<Collider>();
-        }
-    }
 }
 
 fn restrict_crab_movement_to_space_within_its_own_goal(

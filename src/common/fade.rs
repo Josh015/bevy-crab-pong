@@ -79,6 +79,32 @@ impl Plugin for FadePlugin {
     }
 }
 
+pub fn add_entity_components_after_fading_in<
+    C: Component,
+    B: Bundle + Default,
+>(
+    mut commands: Commands,
+    mut removed: RemovedComponents<Fade>,
+    query: Query<Entity, With<C>>,
+) {
+    for entity in removed.read() {
+        if query.contains(entity) {
+            commands.entity(entity).insert(B::default());
+        }
+    }
+}
+
+pub fn remove_entity_components_before_fading_out<C: Component, B: Bundle>(
+    mut commands: Commands,
+    query: Query<(Entity, &Fade), (With<C>, Added<Fade>)>,
+) {
+    for (entity, fade) in &query {
+        if matches!(fade, Fade::Out(_)) {
+            commands.entity(entity).remove::<B>();
+        }
+    }
+}
+
 fn animate_fade_effect(
     time: Res<Time>,
     mut materials: ResMut<Assets<StandardMaterial>>,

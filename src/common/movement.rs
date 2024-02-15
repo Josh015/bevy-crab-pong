@@ -7,7 +7,7 @@ use crate::{
 };
 
 /// Marks an entity as able to move.
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Movement;
 
 /// Whether the entity has positive or negative force acting on it.

@@ -4,7 +4,10 @@ use spew::prelude::*;
 use crate::{
     common::{
         collider::{Collider, ColliderSet},
-        fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
+        fade::{
+            remove_entity_components_before_fading_out, Fade, FadeAnimation,
+            FadeBundle, FADE_DURATION_IN_SECONDS,
+        },
         movement::{Heading, Movement},
     },
     game::{assets::CachedAssets, state::GameState},
@@ -35,7 +38,7 @@ impl Plugin for PolePlugin {
         app.add_spawner((Object::Pole, spawn_pole_on_side))
             .add_systems(
                 Update,
-                remove_pole_collider_before_fading_out
+                remove_entity_components_before_fading_out::<Pole, Collider>
                     .run_if(not(in_state(GameState::Paused))),
             )
             .add_systems(
@@ -98,17 +101,6 @@ fn spawn_pole_on_side(
         });
 
     info!("Pole({side:?}): Spawned");
-}
-
-fn remove_pole_collider_before_fading_out(
-    mut commands: Commands,
-    query: Query<(Entity, &Fade), (With<Pole>, Added<Fade>)>,
-) {
-    for (entity, fade) in &query {
-        if matches!(fade, Fade::Out(_)) {
-            commands.entity(entity).remove::<Collider>();
-        }
-    }
 }
 
 fn pole_and_ball_collisions(

@@ -5,7 +5,10 @@ use spew::prelude::*;
 use crate::{
     common::{
         collider::{Collider, ColliderShapeCircle},
-        fade::{Fade, FadeBundle},
+        fade::{
+            add_entity_components_after_fading_in,
+            remove_entity_components_before_fading_out, FadeBundle,
+        },
         movement::{Heading, Movement, Speed, VelocityBundle},
     },
     game::{
@@ -30,13 +33,16 @@ impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
         app.add_spawner((Object::Ball, spawn_ball_with_position))
             .add_systems(
-                Update,
-                (
-                    add_ball_movement_and_collider_after_fading_in,
-                    remove_ball_collider_before_fading_out,
-                )
-                    .run_if(not(in_state(GameState::Paused))),
-            );
+            Update,
+            (
+                add_entity_components_after_fading_in::<
+                    Ball,
+                    (Movement, Collider),
+                >,
+                remove_entity_components_before_fading_out::<Ball, Collider>,
+            )
+                .run_if(not(in_state(GameState::Paused))),
+        );
     }
 }
 
@@ -85,29 +91,6 @@ fn spawn_ball_with_position(
         .id();
 
     info!("Ball({ball:?}): Spawned");
-}
-
-fn add_ball_movement_and_collider_after_fading_in(
-    mut commands: Commands,
-    mut removed: RemovedComponents<Fade>,
-    query: Query<Entity, With<Ball>>,
-) {
-    for entity in removed.read() {
-        if query.contains(entity) {
-            commands.entity(entity).insert(Movement).insert(Collider);
-        }
-    }
-}
-
-fn remove_ball_collider_before_fading_out(
-    mut commands: Commands,
-    query: Query<(Entity, &Fade), (With<Ball>, Added<Fade>)>,
-) {
-    for (entity, fade) in &query {
-        if matches!(fade, Fade::Out(_)) {
-            commands.entity(entity).remove::<Collider>();
-        }
-    }
 }
 
 // TODO: Debug option to directly control single ball's exact position with

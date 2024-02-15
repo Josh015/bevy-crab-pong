@@ -5,7 +5,7 @@ use crate::{game::state::GameState, util::reflect};
 use super::movement::{Heading, Movement};
 
 /// Marks an entity as collidable.
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Default)]
 pub struct Collider;
 
 /// Adds a circular collider shape.
