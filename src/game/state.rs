@@ -19,15 +19,6 @@ pub enum GameState {
     Paused,
 }
 
-impl GameState {
-    pub const ANY_GAME_STATE: &'static [GameState; 2] =
-        &[GameState::Playing, GameState::Paused];
-
-    pub fn is_any_game_state(&self) -> bool {
-        GameState::ANY_GAME_STATE.contains(self)
-    }
-}
-
 /// Runs after everything has finished loading.
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct LoadedSet;
