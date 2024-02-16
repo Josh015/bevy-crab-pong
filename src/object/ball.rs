@@ -41,7 +41,7 @@ fn spawn_ball_with_position(
 ) {
     // Spawn a ball that will launch it in a random direction.
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let ball_size = game_config.modes[game_mode.0].ball_size;
+    let game_mode = &game_config.modes[game_mode.0];
     let mut rng = SmallRng::from_entropy();
     let angle = rng.gen_range(0.0..std::f32::consts::TAU);
     let (angle_sin, angle_cos) = angle.sin_cos();
@@ -49,7 +49,7 @@ fn spawn_ball_with_position(
         .spawn((
             Ball,
             ColliderShapeCircle {
-                radius: ball_size * 0.5,
+                radius: game_mode.ball_size * 0.5,
             },
             DelayedInsert::<Movement>::default(),
             DelayedInsert::<Collider>::default(),
@@ -58,7 +58,7 @@ fn spawn_ball_with_position(
             ForStates(vec![GameState::Playing, GameState::Paused]),
             VelocityBundle {
                 heading: Heading(Vec3::new(angle_cos, 0.0, angle_sin)),
-                speed: Speed(game_config.ball_speed),
+                speed: Speed(game_mode.ball_speed),
             },
             PbrBundle {
                 mesh: cached_assets.ball_mesh.clone(),
@@ -69,7 +69,7 @@ fn spawn_ball_with_position(
                 }),
                 transform: Transform::from_matrix(
                     Mat4::from_scale_rotation_translation(
-                        Vec3::splat(ball_size),
+                        Vec3::splat(game_mode.ball_size),
                         Quat::IDENTITY,
                         position,
                     ),

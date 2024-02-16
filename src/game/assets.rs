@@ -17,7 +17,6 @@ pub struct GameConfig {
     pub new_game_message: String,
     pub swaying_camera_speed: f32,
     pub ocean_scroll_speed: f32,
-    pub ball_speed: f32,
     pub team_win_messages: Vec<String>,
     pub modes: Vec<ModeConfig>,
 }
@@ -27,6 +26,7 @@ pub struct ModeConfig {
     pub name: String,
     pub ball_count: NonZeroU8,
     pub ball_size: f32,
+    pub ball_speed: f32,
     pub competitors: HashMap<Side, CompetitorConfig>,
 }
 
