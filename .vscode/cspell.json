@@ -27,6 +27,7 @@
     "powf",
     "powi",
     "randomizer",
+    "repr",
     "respawnable",
     "respawning",
     "rngs",
