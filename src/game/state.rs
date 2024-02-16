@@ -3,10 +3,6 @@ use strum::{EnumIter, IntoEnumIterator};
 
 use crate::common::fade::{Fade, FadeAnimation};
 
-/// Tags an entity to only exist in the listed game states.
-#[derive(Clone, Component, Debug)]
-pub struct ForStates<S: States>(pub Vec<S>);
-
 // All the app's possible states.
 #[derive(
     Clone, Copy, Debug, Default, Eq, EnumIter, Hash, PartialEq, States,
@@ -19,18 +15,33 @@ pub enum GameState {
     Paused,
 }
 
-/// Runs after everything has finished loading.
+/// Tags an entity to only exist in the listed game states.
+#[derive(Clone, Component, Debug)]
+pub struct ForStates<S: States>(pub Vec<S>);
+
+/// Systems that run after everything has finished loading.
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct LoadedSet;
+
+/// Systems that stop when the game is paused.
+#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
+pub struct PausableSet;
 
 pub(super) struct StatePlugin;
 
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<GameState>().configure_sets(
-            Update,
-            LoadedSet.run_if(not(in_state(GameState::Loading))),
-        );
+        app.add_state::<GameState>()
+            .configure_sets(
+                Update,
+                LoadedSet.run_if(not(in_state(GameState::Loading))),
+            )
+            .configure_sets(
+                Update,
+                PausableSet
+                    .in_set(LoadedSet)
+                    .run_if(not(in_state(GameState::Paused))),
+            );
 
         for state in GameState::iter() {
             app.add_systems(

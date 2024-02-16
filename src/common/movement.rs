@@ -1,10 +1,7 @@
 use bevy::prelude::*;
 use std::ops::Add;
 
-use crate::{
-    game::state::{GameState, LoadedSet},
-    util::decelerate_speed,
-};
+use crate::{game::state::PausableSet, util::decelerate_speed};
 
 /// Marks an entity as able to move.
 #[derive(Component, Default)]
@@ -55,25 +52,15 @@ pub struct AccelerationBundle {
     pub stopping_distance: StoppingDistance,
 }
 
-/// For systems that deal with movement that affects [`Transform`].
-#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
-pub struct MovementSet;
-
 pub(super) struct MovementPlugin;
 
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
-        app.configure_sets(
-            Update,
-            MovementSet
-                .in_set(LoadedSet)
-                .run_if(not(in_state(GameState::Paused))),
-        )
-        .add_systems(
+        app.add_systems(
             Update,
             (acceleration, deceleration, velocity, stopping_distance)
                 .chain()
-                .in_set(MovementSet),
+                .in_set(PausableSet),
         );
     }
 }

@@ -11,14 +11,14 @@ use crate::{
         fade::{FadeAnimation, FadeBundle},
         movement::{
             Acceleration, AccelerationBundle, Force, Heading, MaxSpeed,
-            Movement, MovementSet, Speed, StoppingDistance, VelocityBundle,
+            Movement, Speed, StoppingDistance, VelocityBundle,
         },
     },
     game::{
         assets::{
             CachedAssets, GameAssets, GameMode, Player, SelectedGameMode,
         },
-        state::GameState,
+        state::{GameState, PausableSet},
     },
     level::{
         beach::BARRIER_RADIUS,
@@ -55,7 +55,7 @@ impl Plugin for CrabPlugin {
             .add_systems(
                 Update,
                 restrict_crab_movement_to_space_within_its_own_goal
-                    .after(MovementSet),
+                    .after(PausableSet),
             )
             .add_systems(
                 PostUpdate,
@@ -64,7 +64,7 @@ impl Plugin for CrabPlugin {
             .configure_sets(
                 Update,
                 CrabSet
-                    .before(MovementSet)
+                    .before(PausableSet)
                     .run_if(in_state(GameState::Playing)),
             )
             .add_plugins((ai::AiPlugin, input::InputPlugin));

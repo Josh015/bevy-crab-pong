@@ -1,11 +1,9 @@
 use bevy::prelude::*;
 use std::marker::PhantomData;
 
-use super::{
-    collider::Collider,
-    fade::Fade,
-    movement::{Movement, MovementSet},
-};
+use crate::game::state::PausableSet;
+
+use super::{collider::Collider, fade::Fade, movement::Movement};
 
 /// Inserts a component after the entity finishes a fading-in effect.
 #[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
@@ -29,7 +27,7 @@ impl Plugin for DelayedPlugin {
                 insert_component_after_fading_in::<Collider>,
                 remove_component_before_fading_out::<Collider>,
             )
-                .in_set(MovementSet),
+                .in_set(PausableSet),
         );
     }
 }

@@ -23,6 +23,7 @@
     "lerp",
     "mkdirp",
     "msaa",
+    "pausable",
     "pixmap",
     "powf",
     "powi",
