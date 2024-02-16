@@ -2,9 +2,9 @@ use bevy::prelude::*;
 pub use leafwing_input_manager::prelude::*;
 
 use crate::game::{
-    assets::{GameAssets, GameConfig, GameMode},
+    assets::{GameAssets, GameConfig, GameMode, SelectedGameMode},
     competitors::WinningTeam,
-    state::{ForStates, GameState, LoadedSet, SelectedGameMode},
+    state::{ForStates, GameState, LoadedSet},
 };
 
 /// An event fired when spawning a message UI.

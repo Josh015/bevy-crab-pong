@@ -4,10 +4,13 @@ use bevy::{
     utils::HashMap,
 };
 use bevy_asset_loader::prelude::*;
+use bevy_common_assets::ron::RonAssetPlugin;
 use serde::Deserialize;
 use std::num::{NonZeroU8, NonZeroUsize};
 
 use crate::level::side::Side;
+
+use super::state::GameState;
 
 /// Game settings read from a config file.
 #[derive(Asset, Debug, Deserialize, Resource, TypeUuid, TypePath)]
@@ -109,10 +112,37 @@ impl FromWorld for CachedAssets {
     }
 }
 
+/// The currently selected game mode.
+#[derive(Debug, Resource)]
+pub struct SelectedGameMode(pub Handle<GameMode>);
+
+impl FromWorld for SelectedGameMode {
+    fn from_world(world: &mut World) -> Self {
+        Self(
+            world.get_resource_mut::<GameAssets>().unwrap().game_modes[0]
+                .clone(),
+        )
+    }
+}
+
 pub(super) struct AssetsPlugin;
 
 impl Plugin for AssetsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<CachedAssets>();
+        app.add_plugins(RonAssetPlugin::<GameConfig>::new(&["config.ron"]))
+            .add_plugins(RonAssetPlugin::<GameMode>::new(&["mode.ron"]))
+            .add_loading_state(
+                LoadingState::new(GameState::Loading)
+                    .continue_to_state(GameState::StartMenu),
+            )
+            .configure_loading_state(
+                LoadingStateConfig::new(GameState::Loading)
+                    .with_dynamic_assets_file::<StandardDynamicAssetCollection>(
+                        "game.assets.ron",
+                    )
+                    .load_collection::<GameAssets>()
+                    .init_resource::<CachedAssets>()
+                    .init_resource::<SelectedGameMode>(),
+            );
     }
 }

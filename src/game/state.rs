@@ -1,11 +1,7 @@
 use bevy::{ecs::query::Has, prelude::*};
-use bevy_asset_loader::prelude::*;
-use bevy_common_assets::ron::RonAssetPlugin;
 use strum::{EnumIter, IntoEnumIterator};
 
 use crate::common::fade::{Fade, FadeAnimation};
-
-use super::assets::{GameAssets, GameConfig, GameMode};
 
 /// Tags an entity to only exist in the listed game states.
 #[derive(Clone, Component, Debug)]
@@ -32,19 +28,6 @@ impl GameState {
     }
 }
 
-/// The currently selected game mode.
-#[derive(Debug, Resource)]
-pub struct SelectedGameMode(pub Handle<GameMode>);
-
-impl FromWorld for SelectedGameMode {
-    fn from_world(world: &mut World) -> Self {
-        Self(
-            world.get_resource_mut::<GameAssets>().unwrap().game_modes[0]
-                .clone(),
-        )
-    }
-}
-
 /// Runs after everything has finished loading.
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct LoadedSet;
@@ -53,25 +36,10 @@ pub(super) struct StatePlugin;
 
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<GameState>()
-            .add_plugins(RonAssetPlugin::<GameConfig>::new(&["config.ron"]))
-            .add_plugins(RonAssetPlugin::<GameMode>::new(&["mode.ron"]))
-            .add_loading_state(
-                LoadingState::new(GameState::Loading)
-                    .continue_to_state(GameState::StartMenu),
-            )
-            .configure_loading_state(
-                LoadingStateConfig::new(GameState::Loading)
-                    .with_dynamic_assets_file::<StandardDynamicAssetCollection>(
-                        "game.assets.ron",
-                    )
-                    .load_collection::<GameAssets>()
-                    .init_resource::<SelectedGameMode>(),
-            )
-            .configure_sets(
-                Update,
-                LoadedSet.run_if(not(in_state(GameState::Loading))),
-            );
+        app.add_state::<GameState>().configure_sets(
+            Update,
+            LoadedSet.run_if(not(in_state(GameState::Loading))),
+        );
 
         for state in GameState::iter() {
             app.add_systems(

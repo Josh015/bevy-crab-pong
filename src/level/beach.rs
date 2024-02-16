@@ -8,8 +8,8 @@ use crate::{
         movement::Movement,
     },
     game::{
-        assets::{GameAssets, GameConfig, GameMode},
-        state::{GameState, SelectedGameMode},
+        assets::{GameAssets, GameConfig, GameMode, SelectedGameMode},
+        state::GameState,
     },
     object::{ball::Ball, Object},
 };

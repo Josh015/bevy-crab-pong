@@ -15,8 +15,10 @@ use crate::{
         },
     },
     game::{
-        assets::{CachedAssets, GameAssets, GameMode, Player},
-        state::{GameState, SelectedGameMode},
+        assets::{
+            CachedAssets, GameAssets, GameMode, Player, SelectedGameMode,
+        },
+        state::GameState,
     },
     level::{
         beach::BARRIER_RADIUS,
