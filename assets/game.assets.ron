@@ -2,6 +2,9 @@
     "game.config": File (
         path: "game.config.ron",
     ),
+    "game.modes": Folder (
+        path: "modes",
+    ),
     "fonts.menu": File (
         path: "fonts/FiraSans-Bold.ttf",
     ),

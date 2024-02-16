@@ -18,11 +18,11 @@ pub struct GameConfig {
     pub swaying_camera_speed: f32,
     pub ocean_scroll_speed: f32,
     pub team_win_messages: Vec<String>,
-    pub modes: Vec<ModeConfig>,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct ModeConfig {
+#[derive(Asset, Debug, Deserialize, Resource, TypeUuid, TypePath)]
+#[uuid = "c6f093d2-c9b4-4334-a7d1-1a71876335cf"]
+pub struct GameMode {
     pub name: String,
     pub ball_count: NonZeroU8,
     pub ball_size: f32,
@@ -50,6 +50,9 @@ pub enum Player {
 pub struct GameAssets {
     #[asset(key = "game.config")]
     pub game_config: Handle<GameConfig>,
+
+    #[asset(key = "game.modes", collection(typed))]
+    pub game_modes: Vec<Handle<GameMode>>,
 
     #[asset(key = "fonts.menu")]
     pub font_menu: Handle<Font>,

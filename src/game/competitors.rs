@@ -5,8 +5,8 @@ use bevy::{prelude::*, utils::HashMap};
 use crate::level::side::{Side, SideEliminatedEvent, SideScoredEvent};
 
 use super::{
-    assets::{GameAssets, GameConfig},
-    state::GameState,
+    assets::GameMode,
+    state::{CurrentGameMode, GameState},
     GameSet,
 };
 
@@ -16,10 +16,6 @@ pub struct TeamMember {
     pub team: NonZeroUsize,
     pub hit_points: u8,
 }
-
-/// The currently selected game mode.
-#[derive(Debug, Default, Resource)]
-pub struct GameMode(pub usize);
 
 /// All the competitors in the current round.
 #[derive(Debug, Default, Resource)]
@@ -33,8 +29,7 @@ pub(super) struct CompetitorsPlugin;
 
 impl Plugin for CompetitorsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<GameMode>()
-            .init_resource::<Competitors>()
+        app.init_resource::<Competitors>()
             .add_systems(OnExit(GameState::Loading), reset_competitors)
             .add_systems(OnExit(GameState::StartMenu), reset_competitors)
             .add_systems(
@@ -50,13 +45,11 @@ impl Plugin for CompetitorsPlugin {
 }
 
 fn reset_competitors(
-    game_mode: Res<GameMode>,
-    game_assets: Res<GameAssets>,
-    game_configs: Res<Assets<GameConfig>>,
+    game_mode: Res<CurrentGameMode>,
+    game_modes: Res<Assets<GameMode>>,
     mut competitors: ResMut<Competitors>,
 ) {
-    let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let mode = &game_config.modes[game_mode.0];
+    let mode = game_modes.get(&game_mode.0).unwrap();
 
     competitors.0.clear();
 

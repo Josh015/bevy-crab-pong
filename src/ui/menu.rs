@@ -2,9 +2,9 @@ use bevy::prelude::*;
 pub use leafwing_input_manager::prelude::*;
 
 use crate::game::{
-    assets::{GameAssets, GameConfig},
-    competitors::{GameMode, WinningTeam},
-    state::{ForStates, GameState, LoadedSet},
+    assets::{GameAssets, GameConfig, GameMode},
+    competitors::WinningTeam,
+    state::{CurrentGameMode, ForStates, GameState, LoadedSet},
 };
 
 /// An event fired when spawning a message UI.
@@ -136,33 +136,33 @@ fn handle_spawn_ui_message_event(
 fn handle_menu_inputs(
     game_state: Res<State<GameState>>,
     game_assets: Res<GameAssets>,
-    game_configs: Res<Assets<GameConfig>>,
-    mut game_mode: ResMut<GameMode>,
+    game_modes: Res<Assets<GameMode>>,
+    mut game_mode: ResMut<CurrentGameMode>,
     mut next_game_state: ResMut<NextState<GameState>>,
     menu_action_state: Res<ActionState<MenuAction>>,
+    mut game_mode_index: Local<usize>,
 ) {
     use GameState::*;
     use MenuAction::*;
 
     match game_state.get() {
         StartMenu => {
-            let game_config =
-                game_configs.get(&game_assets.game_config).unwrap();
-
             if menu_action_state.just_pressed(Accept) {
                 next_game_state.set(Playing);
                 info!("New Game");
             } else if menu_action_state.just_pressed(PrevGameMode)
-                && game_mode.0 > 0
+                && *game_mode_index > 0
             {
-                game_mode.0 -= 1;
-                let mode_name = &game_config.modes[game_mode.0].name;
+                *game_mode_index -= 1;
+                game_mode.0 = game_assets.game_modes[*game_mode_index].clone();
+                let mode_name = &game_modes.get(&game_mode.0).unwrap().name;
                 info!("Game Mode: {mode_name}");
             } else if menu_action_state.just_pressed(NextGameMode)
-                && game_mode.0 < game_config.modes.len() - 1
+                && *game_mode_index < game_assets.game_modes.len() - 1
             {
-                game_mode.0 += 1;
-                let mode_name = &game_config.modes[game_mode.0].name;
+                *game_mode_index += 1;
+                game_mode.0 = game_assets.game_modes[*game_mode_index].clone();
+                let mode_name = &game_modes.get(&game_mode.0).unwrap().name;
                 info!("Game Mode: {mode_name}");
             }
         },

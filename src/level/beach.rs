@@ -8,9 +8,8 @@ use crate::{
         movement::Movement,
     },
     game::{
-        assets::{GameAssets, GameConfig},
-        competitors::GameMode,
-        state::GameState,
+        assets::{GameAssets, GameConfig, GameMode},
+        state::{CurrentGameMode, GameState},
     },
     object::{ball::Ball, Object},
 };
@@ -199,14 +198,13 @@ fn spawn_level(
 
 fn initialize_beach_data(
     mut commands: Commands,
-    game_mode: Res<GameMode>,
-    game_assets: Res<GameAssets>,
-    game_configs: Res<Assets<GameConfig>>,
+    game_mode: Res<CurrentGameMode>,
+    game_modes: Res<Assets<GameMode>>,
 ) {
-    let game_config = game_configs.get(&game_assets.game_config).unwrap();
+    let game_mode = game_modes.get(&game_mode.0).unwrap();
 
     commands.insert_resource(Beach {
-        ball_count: u8::from(game_config.modes[game_mode.0].ball_count),
+        ball_count: u8::from(game_mode.ball_count),
     });
 }
 

@@ -10,9 +10,8 @@ use crate::{
         movement::{Heading, Movement, Speed, VelocityBundle},
     },
     game::{
-        assets::{CachedAssets, GameAssets, GameConfig},
-        competitors::GameMode,
-        state::{ForStates, GameState},
+        assets::{CachedAssets, GameMode},
+        state::{CurrentGameMode, ForStates, GameState},
     },
 };
 
@@ -35,13 +34,11 @@ fn spawn_ball_with_position(
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     cached_assets: Res<CachedAssets>,
-    game_assets: Res<GameAssets>,
-    game_configs: Res<Assets<GameConfig>>,
-    game_mode: Res<GameMode>,
+    game_modes: Res<Assets<GameMode>>,
+    game_mode: Res<CurrentGameMode>,
 ) {
     // Spawn a ball that will launch it in a random direction.
-    let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let game_mode = &game_config.modes[game_mode.0];
+    let game_mode = game_modes.get(&game_mode.0).unwrap();
     let mut rng = SmallRng::from_entropy();
     let angle = rng.gen_range(0.0..std::f32::consts::TAU);
     let (angle_sin, angle_cos) = angle.sin_cos();

@@ -1,0 +1,12 @@
+(
+  name: "Red vs Blue (AI)",
+  ball_count: 3,
+  ball_size: 0.08,
+  ball_speed: 0.5,
+  competitors: {
+    Bottom: (color: "FF0000", team: 3, player: AI, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
+    Right: (color: "FF0000", team: 3, player: AI, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
+    Top: (color: "0000FF", team: 5, player: AI, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
+    Left: (color: "0000FF", team: 5, player: AI, hit_points: 5, seconds_to_max_speed: 0.6, max_speed: 2),
+  },
+)

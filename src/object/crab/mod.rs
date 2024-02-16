@@ -15,9 +15,8 @@ use crate::{
         },
     },
     game::{
-        assets::{CachedAssets, GameAssets, GameConfig, Player},
-        competitors::GameMode,
-        state::GameState,
+        assets::{CachedAssets, GameAssets, GameMode, Player},
+        state::{CurrentGameMode, GameState},
     },
     level::{
         beach::BARRIER_RADIUS,
@@ -73,15 +72,15 @@ impl Plugin for CrabPlugin {
 fn spawn_crab_on_side(
     In(side): In<Side>,
     cached_assets: Res<CachedAssets>,
-    game_mode: Res<GameMode>,
+    game_mode: Res<CurrentGameMode>,
     game_assets: Res<GameAssets>,
-    game_configs: Res<Assets<GameConfig>>,
+    game_modes: Res<Assets<GameMode>>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     spawn_points_query: Query<(Entity, &Side), With<SideSpawnPoint>>,
 ) {
-    let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let crab_config = &game_config.modes[game_mode.0].competitors[&side];
+    let game_mode = game_modes.get(&game_mode.0).unwrap();
+    let crab_config = &game_mode.competitors[&side];
     let (spawn_point_entity, _) = spawn_points_query
         .iter()
         .find(|(_, spawn_point_side)| **spawn_point_side == side)
