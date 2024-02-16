@@ -16,7 +16,7 @@ use crate::{
     },
     game::{
         assets::{CachedAssets, GameAssets, GameMode, Player},
-        state::{CurrentGameMode, GameState},
+        state::{GameState, SelectedGameMode},
     },
     level::{
         beach::BARRIER_RADIUS,
@@ -72,7 +72,7 @@ impl Plugin for CrabPlugin {
 fn spawn_crab_on_side(
     In(side): In<Side>,
     cached_assets: Res<CachedAssets>,
-    game_mode: Res<CurrentGameMode>,
+    game_mode: Res<SelectedGameMode>,
     game_assets: Res<GameAssets>,
     game_modes: Res<Assets<GameMode>>,
     mut commands: Commands,

@@ -4,7 +4,7 @@ pub use leafwing_input_manager::prelude::*;
 use crate::game::{
     assets::{GameAssets, GameConfig, GameMode},
     competitors::WinningTeam,
-    state::{CurrentGameMode, ForStates, GameState, LoadedSet},
+    state::{ForStates, GameState, LoadedSet, SelectedGameMode},
 };
 
 /// An event fired when spawning a message UI.
@@ -137,7 +137,7 @@ fn handle_menu_inputs(
     game_state: Res<State<GameState>>,
     game_assets: Res<GameAssets>,
     game_modes: Res<Assets<GameMode>>,
-    mut game_mode: ResMut<CurrentGameMode>,
+    mut game_mode: ResMut<SelectedGameMode>,
     mut next_game_state: ResMut<NextState<GameState>>,
     menu_action_state: Res<ActionState<MenuAction>>,
     mut game_mode_index: Local<usize>,

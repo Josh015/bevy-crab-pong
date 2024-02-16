@@ -9,7 +9,7 @@ use crate::{
     },
     game::{
         assets::{GameAssets, GameConfig, GameMode},
-        state::{CurrentGameMode, GameState},
+        state::{GameState, SelectedGameMode},
     },
     object::{ball::Ball, Object},
 };
@@ -198,7 +198,7 @@ fn spawn_level(
 
 fn initialize_beach_data(
     mut commands: Commands,
-    game_mode: Res<CurrentGameMode>,
+    game_mode: Res<SelectedGameMode>,
     game_modes: Res<Assets<GameMode>>,
 ) {
     let game_mode = game_modes.get(&game_mode.0).unwrap();

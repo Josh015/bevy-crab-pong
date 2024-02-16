@@ -6,7 +6,7 @@ use crate::level::side::{Side, SideEliminatedEvent, SideScoredEvent};
 
 use super::{
     assets::GameMode,
-    state::{CurrentGameMode, GameState},
+    state::{GameState, SelectedGameMode},
     GameSet,
 };
 
@@ -45,7 +45,7 @@ impl Plugin for CompetitorsPlugin {
 }
 
 fn reset_competitors(
-    game_mode: Res<CurrentGameMode>,
+    game_mode: Res<SelectedGameMode>,
     game_modes: Res<Assets<GameMode>>,
     mut competitors: ResMut<Competitors>,
 ) {

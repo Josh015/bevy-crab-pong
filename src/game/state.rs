@@ -34,9 +34,9 @@ impl GameState {
 
 /// The currently selected game mode.
 #[derive(Debug, Resource)]
-pub struct CurrentGameMode(pub Handle<GameMode>);
+pub struct SelectedGameMode(pub Handle<GameMode>);
 
-impl FromWorld for CurrentGameMode {
+impl FromWorld for SelectedGameMode {
     fn from_world(world: &mut World) -> Self {
         Self(
             world.get_resource_mut::<GameAssets>().unwrap().game_modes[0]
@@ -66,7 +66,7 @@ impl Plugin for StatePlugin {
                         "game.assets.ron",
                     )
                     .load_collection::<GameAssets>()
-                    .init_resource::<CurrentGameMode>(),
+                    .init_resource::<SelectedGameMode>(),
             )
             .configure_sets(
                 Update,

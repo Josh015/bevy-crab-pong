@@ -11,7 +11,7 @@ use crate::{
     },
     game::{
         assets::{CachedAssets, GameMode},
-        state::{CurrentGameMode, ForStates, GameState},
+        state::{ForStates, GameState, SelectedGameMode},
     },
 };
 
@@ -35,7 +35,7 @@ fn spawn_ball_with_position(
     mut materials: ResMut<Assets<StandardMaterial>>,
     cached_assets: Res<CachedAssets>,
     game_modes: Res<Assets<GameMode>>,
-    game_mode: Res<CurrentGameMode>,
+    game_mode: Res<SelectedGameMode>,
 ) {
     // Spawn a ball that will launch it in a random direction.
     let game_mode = game_modes.get(&game_mode.0).unwrap();
