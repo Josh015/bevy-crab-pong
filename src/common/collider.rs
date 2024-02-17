@@ -1,6 +1,6 @@
 use bevy::{ecs::query::Has, prelude::*};
 
-use crate::{game::state::GameState, util::reflect};
+use crate::{game::state::PostUpdateSet, util::reflect};
 
 use super::movement::{Heading, Movement};
 
@@ -14,21 +14,13 @@ pub struct ColliderShapeCircle {
     pub radius: f32,
 }
 
-/// For systems that handle collisions.
-#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
-pub struct ColliderSet;
-
 pub(super) struct ColliderPlugin;
 
 impl Plugin for ColliderPlugin {
     fn build(&self, app: &mut App) {
-        app.configure_sets(
+        app.add_systems(
             PostUpdate,
-            ColliderSet.run_if(in_state(GameState::Playing)),
-        )
-        .add_systems(
-            PostUpdate,
-            circle_to_circle_collisions.in_set(ColliderSet),
+            circle_to_circle_collisions.in_set(PostUpdateSet),
         );
     }
 }

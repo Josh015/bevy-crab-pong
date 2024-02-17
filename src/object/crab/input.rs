@@ -3,10 +3,11 @@ use leafwing_input_manager::prelude::*;
 
 use crate::{
     common::movement::{Force, Movement},
+    game::state::PlayableSet,
     level::side::Side,
 };
 
-use super::{Crab, CrabSet};
+use super::Crab;
 
 #[derive(Actionlike, Clone, Copy, Debug, Eq, Hash, PartialEq, Reflect)]
 pub enum CrabAction {
@@ -68,7 +69,7 @@ impl Plugin for InputPlugin {
         app.add_plugins(InputManagerPlugin::<CrabAction>::default())
             .add_systems(
                 Update,
-                move_crabs_based_on_user_input.in_set(CrabSet),
+                move_crabs_based_on_user_input.in_set(PlayableSet),
             );
     }
 }

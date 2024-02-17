@@ -5,11 +5,12 @@ use crate::{
         collider::Collider,
         movement::{Force, Movement, StoppingDistance},
     },
+    game::state::PlayableSet,
     level::side::Side,
     object::ball::Ball,
 };
 
-use super::{Crab, CrabSet, CRAB_START_POSITION, CRAB_WIDTH};
+use super::{Crab, CRAB_START_POSITION, CRAB_WIDTH};
 
 pub const AI_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.70;
 
@@ -33,7 +34,7 @@ impl Plugin for AiPlugin {
                 move_ai_crabs_toward_their_targeted_ball,
             )
                 .chain()
-                .in_set(CrabSet),
+                .in_set(PlayableSet),
         );
     }
 }

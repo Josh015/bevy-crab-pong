@@ -5,11 +5,11 @@ use strum::EnumIter;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderSet, ColliderShapeCircle},
+        collider::{Collider, ColliderShapeCircle},
         fade::Fade,
         movement::Movement,
     },
-    game::GameSet,
+    game::state::GameRulesSet,
     object::{ball::Ball, crab::Crab, pole::Pole, Object},
 };
 
@@ -87,10 +87,11 @@ impl Plugin for SidePlugin {
             .add_systems(
                 PostUpdate,
                 (
-                    check_if_any_balls_have_scored_in_any_sides
-                        .after(ColliderSet),
-                    block_eliminated_sides_with_poles.after(GameSet),
-                ),
+                    check_if_any_balls_have_scored_in_any_sides,
+                    block_eliminated_sides_with_poles,
+                )
+                    .chain()
+                    .after(GameRulesSet),
             );
     }
 }

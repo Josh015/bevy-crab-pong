@@ -6,7 +6,7 @@ use spew::prelude::*;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderSet, ColliderShapeCircle},
+        collider::{Collider, ColliderShapeCircle},
         delayed::{DelayedInsert, DelayedRemove},
         fade::{FadeAnimation, FadeBundle},
         movement::{
@@ -18,7 +18,7 @@ use crate::{
         assets::{
             CachedAssets, GameAssets, GameMode, Player, SelectedGameMode,
         },
-        state::{GameState, PausableSet},
+        state::{PausableSet, PostUpdateSet},
     },
     level::{
         beach::BARRIER_RADIUS,
@@ -39,10 +39,6 @@ pub const CRAB_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
 pub const CRAB_POSITION_X_MAX: f32 =
     (0.5 * SIDE_WIDTH) - BARRIER_RADIUS - (0.5 * CRAB_WIDTH);
 
-/// Systems that must control [`Crab`] entities.
-#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
-pub struct CrabSet;
-
 /// Makes a crab entity that can deflect balls and move sideways inside a goal.
 #[derive(Component, Debug)]
 pub struct Crab;
@@ -59,13 +55,7 @@ impl Plugin for CrabPlugin {
             )
             .add_systems(
                 PostUpdate,
-                crab_and_ball_collisions.in_set(ColliderSet),
-            )
-            .configure_sets(
-                Update,
-                CrabSet
-                    .before(PausableSet)
-                    .run_if(in_state(GameState::Playing)),
+                crab_and_ball_collisions.in_set(PostUpdateSet),
             )
             .add_plugins((ai::AiPlugin, input::InputPlugin));
     }

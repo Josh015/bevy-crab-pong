@@ -2,10 +2,10 @@ use bevy::prelude::*;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderSet},
+        collider::Collider,
         movement::{Heading, Movement, StoppingDistance},
     },
-    game::state::LoadedSet,
+    game::state::{LoadedSet, PostUpdateSet},
     level::side::Side,
     object::{
         ball::Ball,
@@ -68,7 +68,7 @@ impl Plugin for DebugModePlugin {
                         },
                     ),
                 )
-                    .after(ColliderSet),
+                    .after(PostUpdateSet),
             );
     }
 }

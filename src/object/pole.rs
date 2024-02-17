@@ -3,12 +3,12 @@ use spew::prelude::*;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderSet, ColliderShapeCircle},
+        collider::{Collider, ColliderShapeCircle},
         delayed::DelayedRemove,
         fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
         movement::{Heading, Movement},
     },
-    game::assets::CachedAssets,
+    game::{assets::CachedAssets, state::PostUpdateSet},
     level::{
         beach::Beach,
         side::{Side, SideSpawnPoint, SIDE_WIDTH},
@@ -33,7 +33,7 @@ impl Plugin for PolePlugin {
         app.add_spawner((Object::Pole, spawn_pole_on_side))
             .add_systems(
                 PostUpdate,
-                pole_and_ball_collisions.in_set(ColliderSet),
+                pole_and_ball_collisions.in_set(PostUpdateSet),
             );
     }
 }
