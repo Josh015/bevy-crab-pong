@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::state::GameState;
+use crate::game::state::PausableSet;
 
 pub const FADE_DURATION_IN_SECONDS: f32 = 1.0;
 
@@ -68,14 +68,11 @@ pub(super) struct FadePlugin;
 
 impl Plugin for FadePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            PostUpdate,
-            animate_fade_effect.run_if(not(in_state(GameState::Paused))),
-        )
-        .add_systems(
-            Last,
-            finish_fading.run_if(not(in_state(GameState::Paused))),
-        );
+        app.add_systems(PostUpdate, animate_fade_effect.in_set(PausableSet))
+            .add_systems(
+                Last,
+                clean_up_entities_and_components_after_they_finish_fading,
+            );
     }
 }
 
@@ -123,7 +120,10 @@ fn animate_fade_effect(
     }
 }
 
-fn finish_fading(mut commands: Commands, query: Query<(Entity, &Fade)>) {
+fn clean_up_entities_and_components_after_they_finish_fading(
+    mut commands: Commands,
+    query: Query<(Entity, &Fade)>,
+) {
     for (entity, fade) in &query {
         match fade {
             Fade::In(progress) => {
