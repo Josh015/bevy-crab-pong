@@ -17,7 +17,6 @@ pub fn hemisphere_deflection(delta: f32, width: f32, axis: Vec3) -> Vec3 {
     let rotation_away_from_center = Quat::from_rotation_y(
         std::f32::consts::FRAC_PI_4 * (delta / (0.5 * width)).clamp(-1.0, 1.0),
     );
-    let deflection_direction = rotation_away_from_center * -axis;
 
-    deflection_direction
+    rotation_away_from_center * -axis
 }

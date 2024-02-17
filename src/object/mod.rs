@@ -19,14 +19,10 @@ pub(super) struct ObjectPlugin;
 
 impl Plugin for ObjectPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((
-            SpewPlugin::<Object, Vec3>::default(),
-            SpewPlugin::<Object, Side>::default(),
-        ))
-        .add_plugins((
-            ball::BallPlugin,
-            crab::CrabPlugin,
-            pole::PolePlugin,
-        ));
+        app.add_plugins((ball::BallPlugin, crab::CrabPlugin, pole::PolePlugin))
+            .add_plugins((
+                SpewPlugin::<Object, Vec3>::default(),
+                SpewPlugin::<Object, Side>::default(),
+            ));
     }
 }

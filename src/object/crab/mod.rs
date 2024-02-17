@@ -47,7 +47,8 @@ pub(super) struct CrabPlugin;
 
 impl Plugin for CrabPlugin {
     fn build(&self, app: &mut App) {
-        app.add_spawner((Object::Crab, spawn_crab_on_side))
+        app.add_plugins((ai::AiPlugin, input::InputPlugin))
+            .add_spawner((Object::Crab, spawn_crab_on_side))
             .add_systems(
                 Update,
                 restrict_crab_movement_to_space_within_its_own_goal
@@ -56,8 +57,7 @@ impl Plugin for CrabPlugin {
             .add_systems(
                 PostUpdate,
                 crab_and_ball_collisions.in_set(PausableSet),
-            )
-            .add_plugins((ai::AiPlugin, input::InputPlugin));
+            );
     }
 }
 

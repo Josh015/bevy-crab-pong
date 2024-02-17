@@ -88,7 +88,6 @@ fn spawn_level(
         .spawn((
             Ocean {
                 speed: game_config.ocean_scroll_speed,
-                ..default()
             },
             PbrBundle::default(),
         ))
