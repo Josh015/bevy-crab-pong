@@ -30,15 +30,42 @@ impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((InputManagerPlugin::<MenuAction>::default(),))
             .add_event::<MessageUiEvent>()
+            .add_systems(
+                OnExit(GameState::Loading),
+                configure_menu_action_inputs,
+            )
             .add_systems(OnEnter(GameState::StartMenu), spawn_start_menu_ui)
             .add_systems(OnEnter(GameState::Paused), spawn_pause_ui)
             .add_systems(
                 Update,
                 (handle_spawn_ui_message_event, handle_menu_inputs)
                     .in_set(LoadedSet),
-            )
-            .add_systems(Startup, configure_menu_action_inputs);
+            );
     }
+}
+
+fn configure_menu_action_inputs(mut commands: Commands) {
+    use GamepadButtonType::*;
+    use KeyCode::*;
+    use MenuAction::*;
+
+    let mut input_map = InputMap::<MenuAction>::new([
+        (Return, Accept),
+        (Space, PauseUnpause),
+        (Back, ReturnToStartMenu),
+        (Left, PrevGameMode),
+        (Right, NextGameMode),
+    ]);
+    input_map.insert_multiple([
+        (Start, PauseUnpause),
+        (Select, ReturnToStartMenu),
+        (South, Accept),
+        (DPadLeft, PrevGameMode),
+        (DPadRight, NextGameMode),
+    ]);
+
+    commands.insert_resource(input_map);
+    commands.insert_resource(ActionState::<MenuAction>::default());
 }
 
 fn spawn_start_menu_ui(
@@ -182,28 +209,4 @@ fn handle_menu_inputs(
         },
         _ => {},
     }
-}
-
-fn configure_menu_action_inputs(mut commands: Commands) {
-    use GamepadButtonType::*;
-    use KeyCode::*;
-    use MenuAction::*;
-
-    let mut input_map = InputMap::<MenuAction>::new([
-        (Return, Accept),
-        (Space, PauseUnpause),
-        (Back, ReturnToStartMenu),
-        (Left, PrevGameMode),
-        (Right, NextGameMode),
-    ]);
-    input_map.insert_multiple([
-        (Start, PauseUnpause),
-        (Select, ReturnToStartMenu),
-        (South, Accept),
-        (DPadLeft, PrevGameMode),
-        (DPadRight, NextGameMode),
-    ]);
-
-    commands.insert_resource(input_map);
-    commands.insert_resource(ActionState::<MenuAction>::default());
 }
