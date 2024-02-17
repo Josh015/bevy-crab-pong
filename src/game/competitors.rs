@@ -6,7 +6,7 @@ use crate::level::side::{Side, SideEliminatedEvent, SideScoredEvent};
 
 use super::{
     assets::{GameMode, SelectedGameMode},
-    state::{GameRulesSet, GameState},
+    state::{GameState, PlayableSet},
 };
 
 /// A member of a competing team.
@@ -38,7 +38,7 @@ impl Plugin for CompetitorsPlugin {
                     check_for_game_over,
                 )
                     .chain()
-                    .in_set(GameRulesSet),
+                    .in_set(PlayableSet),
             );
     }
 }

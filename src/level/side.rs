@@ -9,7 +9,7 @@ use crate::{
         fade::Fade,
         movement::Movement,
     },
-    game::state::GameRulesSet,
+    game::state::PlayableSet,
     object::{ball::Ball, crab::Crab, pole::Pole, Object},
 };
 
@@ -91,7 +91,7 @@ impl Plugin for SidePlugin {
                     block_eliminated_sides_with_poles,
                 )
                     .chain()
-                    .after(GameRulesSet),
+                    .after(PlayableSet),
             );
     }
 }

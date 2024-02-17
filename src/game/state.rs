@@ -23,21 +23,13 @@ pub struct ForStates<S: States>(pub Vec<S>);
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct LoadedSet;
 
-/// Pausable systems driven by player input and AI that run prior to others.
-#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
-pub struct PlayableSet;
-
 /// Systems that update regularly and stop when the game is paused.
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct PausableSet;
 
-/// Systems that must run after transforms have been applied.
+/// Systems that only run during gameplay.
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
-pub struct PostUpdateSet;
-
-/// Systems that run gameplay rules after everything else has run.
-#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
-pub struct GameRulesSet;
+pub struct PlayableSet;
 
 pub(super) struct StatePlugin;
 
@@ -50,22 +42,34 @@ impl Plugin for StatePlugin {
             )
             .configure_sets(
                 Update,
-                PlayableSet
+                PausableSet
                     .in_set(LoadedSet)
-                    .before(PausableSet)
-                    .run_if(in_state(GameState::Playing)),
+                    .run_if(not(in_state(GameState::Paused))),
             )
             .configure_sets(
                 Update,
+                PlayableSet
+                    .in_set(LoadedSet)
+                    .after(PausableSet)
+                    .run_if(in_state(GameState::Playing)),
+            )
+            .configure_sets(
+                PostUpdate,
+                LoadedSet.run_if(not(in_state(GameState::Loading))),
+            )
+            .configure_sets(
+                PostUpdate,
                 PausableSet
                     .in_set(LoadedSet)
                     .run_if(not(in_state(GameState::Paused))),
             )
             .configure_sets(
                 PostUpdate,
-                PostUpdateSet.run_if(in_state(GameState::Playing)),
-            )
-            .configure_sets(PostUpdate, GameRulesSet.after(PostUpdateSet));
+                PlayableSet
+                    .in_set(LoadedSet)
+                    .after(PausableSet)
+                    .run_if(in_state(GameState::Playing)),
+            );
 
         for state in GameState::iter() {
             app.add_systems(

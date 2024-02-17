@@ -5,7 +5,7 @@ use crate::{
         collider::Collider,
         movement::{Heading, Movement, StoppingDistance},
     },
-    game::state::{LoadedSet, PostUpdateSet},
+    game::state::{LoadedSet, PausableSet},
     level::side::Side,
     object::{
         ball::Ball,
@@ -68,7 +68,7 @@ impl Plugin for DebugModePlugin {
                         },
                     ),
                 )
-                    .after(PostUpdateSet),
+                    .after(PausableSet),
             );
     }
 }

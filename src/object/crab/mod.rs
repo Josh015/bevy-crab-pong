@@ -18,7 +18,7 @@ use crate::{
         assets::{
             CachedAssets, GameAssets, GameMode, Player, SelectedGameMode,
         },
-        state::{PausableSet, PostUpdateSet},
+        state::PausableSet,
     },
     level::{
         beach::BARRIER_RADIUS,
@@ -55,7 +55,7 @@ impl Plugin for CrabPlugin {
             )
             .add_systems(
                 PostUpdate,
-                crab_and_ball_collisions.in_set(PostUpdateSet),
+                crab_and_ball_collisions.in_set(PausableSet),
             )
             .add_plugins((ai::AiPlugin, input::InputPlugin));
     }

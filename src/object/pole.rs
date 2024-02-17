@@ -8,7 +8,7 @@ use crate::{
         fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
         movement::{Heading, Movement},
     },
-    game::{assets::CachedAssets, state::PostUpdateSet},
+    game::{assets::CachedAssets, state::PausableSet},
     level::{
         beach::Beach,
         side::{Side, SideSpawnPoint, SIDE_WIDTH},
@@ -33,7 +33,7 @@ impl Plugin for PolePlugin {
         app.add_spawner((Object::Pole, spawn_pole_on_side))
             .add_systems(
                 PostUpdate,
-                pole_and_ball_collisions.in_set(PostUpdateSet),
+                pole_and_ball_collisions.in_set(PausableSet),
             );
     }
 }

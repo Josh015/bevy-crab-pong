@@ -1,6 +1,6 @@
 use bevy::{ecs::query::Has, prelude::*};
 
-use crate::{game::state::PostUpdateSet, util::reflect};
+use crate::{game::state::PausableSet, util::reflect};
 
 use super::movement::{Heading, Movement};
 
@@ -20,7 +20,7 @@ impl Plugin for ColliderPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             PostUpdate,
-            circle_to_circle_collisions.in_set(PostUpdateSet),
+            circle_to_circle_collisions.in_set(PausableSet),
         );
     }
 }
