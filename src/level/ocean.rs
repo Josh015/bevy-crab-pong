@@ -5,7 +5,6 @@ use crate::game::state::LoadedSet;
 /// Marks an entity as an ocean with an animated texture effect.
 #[derive(Clone, Component, Debug, Default)]
 pub struct Ocean {
-    pub scroll: f32,
     pub speed: f32,
 }
 
@@ -22,14 +21,14 @@ impl Plugin for OceanPlugin {
 
 fn animate_ocean_with_scrolling_texture_effect(
     time: Res<Time>,
-    mut query: Query<(&mut Ocean, &mut Transform)>,
+    mut scroll: Local<f32>,
+    mut query: Query<(&Ocean, &mut Transform)>,
 ) {
     // HACK: Translate the plane on the Z-axis, since we currently can't
     // animate the texture coordinates.
-    let (mut ocean, mut transform) = query.single_mut();
+    let (ocean, mut transform) = query.single_mut();
 
-    *transform = Transform::from_xyz(0.0, -0.01, -ocean.scroll);
-
-    ocean.scroll += ocean.speed * time.delta_seconds();
-    ocean.scroll %= 1.0;
+    *transform = Transform::from_xyz(0.0, -0.01, -*scroll);
+    *scroll += ocean.speed * time.delta_seconds();
+    *scroll %= 1.0;
 }
