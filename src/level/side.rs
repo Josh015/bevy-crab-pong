@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use serde::Deserialize;
-use spew::prelude::*;
+use spew::prelude::SpawnEvent;
 use strum::EnumIter;
 
 use crate::{
@@ -9,7 +9,7 @@ use crate::{
         fade::Fade,
         movement::Movement,
     },
-    game::state::PlayableSet,
+    game::state::{PausableSet, PlayableSet},
     object::{ball::Ball, crab::Crab, pole::Pole, Object},
 };
 
@@ -82,7 +82,7 @@ impl Plugin for SidePlugin {
             .add_event::<SideEliminatedEvent>()
             .add_systems(
                 Update,
-                allow_only_one_crab_or_pole_per_side.after(SpewSystemSet),
+                allow_only_one_crab_or_pole_per_side.in_set(PausableSet),
             )
             .add_systems(
                 PostUpdate,

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use spew::prelude::{SpawnEvent, SpewSystemSet};
+use spew::prelude::SpawnEvent;
 use strum::IntoEnumIterator;
 
 use crate::{
@@ -9,7 +9,7 @@ use crate::{
     },
     game::{
         assets::{GameAssets, GameConfig, GameMode, SelectedGameMode},
-        state::GameState,
+        state::{GameState, PlayableSet},
     },
     object::{ball::Ball, Object},
 };
@@ -43,9 +43,7 @@ impl Plugin for BeachPlugin {
             )
             .add_systems(
                 Update,
-                spawn_balls_sequentially_as_needed
-                    .before(SpewSystemSet)
-                    .run_if(in_state(GameState::Playing)),
+                spawn_balls_sequentially_as_needed.in_set(PlayableSet),
             );
     }
 }
