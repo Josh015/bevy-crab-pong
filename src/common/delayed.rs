@@ -5,13 +5,13 @@ use crate::game::state::PausableSet;
 
 use super::{collider::Collider, fade::Fade, movement::Movement};
 
-/// Inserts a component after the entity finishes a fading-in effect.
+/// Inserts a component after a fade-in finishes.
 #[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
 pub struct DelayedInsert<B: Bundle + Default>(PhantomData<B>);
 
-// Removes a component before the entity starts a fading-out effect.
+// Removes a component before a fade-out starts.
 #[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
-pub struct DelayedRemove<B: Bundle + Default>(PhantomData<B>);
+pub struct DelayedRemove<B: Bundle>(PhantomData<B>);
 
 pub(super) struct DelayedPlugin;
 
@@ -42,7 +42,7 @@ fn insert_component_after_fading_in<B: Bundle + Default>(
     }
 }
 
-fn remove_component_before_fading_out<B: Bundle + Default>(
+fn remove_component_before_fading_out<B: Bundle>(
     mut commands: Commands,
     query: Query<(Entity, &Fade), (With<DelayedRemove<B>>, Added<Fade>)>,
 ) {

@@ -71,7 +71,7 @@ impl Plugin for FadePlugin {
         app.add_systems(PostUpdate, animate_fade_effect.in_set(PausableSet))
             .add_systems(
                 Last,
-                clean_up_entities_and_components_after_they_finish_fading,
+                clean_up_components_or_entities_after_they_finish_fading,
             );
     }
 }
@@ -120,7 +120,7 @@ fn animate_fade_effect(
     }
 }
 
-fn clean_up_entities_and_components_after_they_finish_fading(
+fn clean_up_components_or_entities_after_they_finish_fading(
     mut commands: Commands,
     query: Query<(Entity, &Fade)>,
 ) {

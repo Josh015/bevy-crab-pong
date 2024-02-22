@@ -16,15 +16,15 @@ pub enum GameState {
     Paused,
 }
 
-/// Tags an entity to only exist in the listed game states.
+/// Tags an entity to only exist in its associated game states.
 #[derive(Clone, Component, Debug)]
 pub struct ForStates<S: States>(pub Vec<S>);
 
-/// Systems that are always running after everything has finished loading.
+/// Systems that are always running after everything is loaded.
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct LoadedSet;
 
-/// Systems that update regularly and stop when the game is paused.
+/// Systems that stop when the game is paused.
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
 pub struct PausableSet;
 
