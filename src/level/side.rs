@@ -87,7 +87,7 @@ impl Plugin for SidePlugin {
             .add_systems(
                 PostUpdate,
                 (
-                    check_if_any_balls_have_scored_in_any_sides,
+                    check_if_a_ball_has_scored_in_a_side,
                     block_eliminated_sides_with_poles,
                 )
                     .chain()
@@ -111,7 +111,7 @@ fn allow_only_one_crab_or_pole_per_side(
     }
 }
 
-fn check_if_any_balls_have_scored_in_any_sides(
+fn check_if_a_ball_has_scored_in_a_side(
     mut commands: Commands,
     mut side_scored_events: EventWriter<SideScoredEvent>,
     balls_query: Query<
