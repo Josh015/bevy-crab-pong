@@ -1,15 +1,8 @@
 use bevy::prelude::*;
-use std::ops::Sub;
 
 // Reflects an incidence vector around a normal vector.
 pub fn reflect(i: Vec3, n: Vec3) -> Vec3 {
     i - (2.0 * (i.dot(n) * n))
-}
-
-/// Decelerate speed by a delta speed.
-pub fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
-    let s = speed.abs().sub(delta_speed).max(0.0);
-    speed.max(-s).min(s) // clamp() panics when min == max.
 }
 
 /// Get a deflection direction for a position within a range.

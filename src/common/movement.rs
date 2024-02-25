@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use std::ops::Add;
+use std::ops::{Add, Sub};
 
-use crate::{game::state::PausableSet, util::decelerate_speed};
+use crate::game::state::PausableSet;
 
 /// Marks an entity as able to move.
 #[derive(Component, Default)]
@@ -126,4 +126,8 @@ fn stopping_distance(
             current_speed = decelerate_speed(current_speed, delta_speed);
         }
     }
+}
+
+fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
+    speed.abs().sub(delta_speed).max(0.0).copysign(speed)
 }
