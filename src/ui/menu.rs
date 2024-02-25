@@ -8,7 +8,7 @@ use crate::game::{
 };
 
 /// An event fired when spawning a message UI.
-#[derive(Event, Debug)]
+#[derive(Debug, Event)]
 pub struct MessageUiEvent {
     pub message: String,
     pub game_state: GameState,

@@ -13,7 +13,7 @@ use crate::level::side::Side;
 use super::state::GameState;
 
 /// Game settings read from a config file.
-#[derive(Asset, Debug, Deserialize, Resource, TypeUuid, TypePath)]
+#[derive(Asset, Debug, Deserialize, Resource, TypePath, TypeUuid)]
 #[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c46"]
 pub struct GameConfig {
     pub pause_message: String,
@@ -23,7 +23,7 @@ pub struct GameConfig {
     pub team_win_messages: Vec<String>,
 }
 
-#[derive(Asset, Debug, Deserialize, Resource, TypeUuid, TypePath)]
+#[derive(Asset, Debug, Deserialize, Resource, TypePath, TypeUuid)]
 #[uuid = "c6f093d2-c9b4-4334-a7d1-1a71876335cf"]
 pub struct GameMode {
     pub name: String,

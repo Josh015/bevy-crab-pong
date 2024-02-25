@@ -6,7 +6,7 @@ use crate::common::fade::{Fade, FadeAnimation};
 
 // All the app's possible states.
 #[derive(
-    Clone, Copy, Debug, Default, Eq, EnumIter, Hash, PartialEq, States,
+    Clone, Copy, Debug, Default, EnumIter, Eq, Hash, PartialEq, States,
 )]
 pub enum GameState {
     #[default]
@@ -21,15 +21,15 @@ pub enum GameState {
 pub struct ForStates<S: States>(pub Vec<S>);
 
 /// Systems that are always running after everything is loaded.
-#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, SystemSet)]
 pub struct LoadedSet;
 
 /// Systems that stop when the game is paused.
-#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, SystemSet)]
 pub struct PausableSet;
 
 /// Systems that only run during gameplay.
-#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, SystemSet)]
 pub struct PlayableSet;
 
 pub(super) struct StatePlugin;
