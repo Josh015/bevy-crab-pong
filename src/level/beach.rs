@@ -62,6 +62,7 @@ fn spawn_level(
     commands.spawn((
         SwayingCamera {
             speed: game_config.swaying_camera_speed,
+            target: BEACH_CENTER_POINT,
         },
         Camera3dBundle::default(),
     ));
