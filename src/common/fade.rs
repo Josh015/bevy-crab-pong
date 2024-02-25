@@ -88,13 +88,13 @@ fn animate_fade_effect(
 ) {
     for (mut fade, mut transform, material, animation) in &mut query {
         let weight = match *fade {
-            Fade::In(ref mut progress) => {
-                progress.tick(time.delta());
-                progress.percent()
+            Fade::In(ref mut timer) => {
+                timer.tick(time.delta());
+                timer.percent()
             },
-            Fade::Out(ref mut progress) => {
-                progress.tick(time.delta());
-                1.0 - progress.percent()
+            Fade::Out(ref mut timer) => {
+                timer.tick(time.delta());
+                1.0 - timer.percent()
             },
         };
 
@@ -126,14 +126,14 @@ fn clean_up_components_or_entities_after_they_finish_fading(
 ) {
     for (entity, fade) in &query {
         match fade {
-            Fade::In(progress) => {
-                if progress.finished() {
+            Fade::In(timer) => {
+                if timer.finished() {
                     commands.entity(entity).remove::<Fade>();
                     info!("Entity({entity:?}): Started Moving");
                 }
             },
-            Fade::Out(progress) => {
-                if progress.finished() {
+            Fade::Out(timer) => {
+                if timer.finished() {
                     commands.entity(entity).despawn_recursive();
                     info!("Entity({entity:?}): Despawned");
                 }
