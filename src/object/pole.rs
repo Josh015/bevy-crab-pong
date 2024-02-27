@@ -4,8 +4,7 @@ use spew::prelude::*;
 use crate::{
     common::{
         collider::{Collider, ColliderShapeCircle},
-        delayed::DelayedRemove,
-        fade::{Fade, FadeAnimation, FadeBundle, FADE_DURATION_IN_SECONDS},
+        fade::{Fade, FadeAnimation, FadeBundle, RemoveBeforeFadeOut},
         movement::{Heading, Movement},
     },
     game::{assets::CachedAssets, state::PausableSet},
@@ -57,7 +56,7 @@ fn spawn_pole_on_side(
                 Pole,
                 side,
                 Collider,
-                DelayedRemove::<Collider>::default(),
+                RemoveBeforeFadeOut::<Collider>::default(),
                 FadeBundle {
                     fade_animation: FadeAnimation::Scale {
                         max_scale: Vec3::new(
@@ -67,14 +66,11 @@ fn spawn_pole_on_side(
                         ),
                         axis_mask: Vec3::new(0.0, 1.0, 1.0),
                     },
-                    fade: Fade::In(Timer::from_seconds(
-                        if beach.is_none() {
-                            0.0
-                        } else {
-                            FADE_DURATION_IN_SECONDS
-                        },
-                        TimerMode::Once,
-                    )),
+                    fade: if beach.is_some() {
+                        Fade::in_default()
+                    } else {
+                        Fade::In(Timer::default()) // Instantaneous
+                    },
                 },
                 PbrBundle {
                     mesh: cached_assets.pole_mesh.clone(),

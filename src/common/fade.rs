@@ -1,6 +1,10 @@
+use std::marker::PhantomData;
+
 use bevy::prelude::*;
 
 use crate::game::state::PausableSet;
+
+use super::{collider::Collider, movement::Movement};
 
 pub const FADE_DURATION_IN_SECONDS: f32 = 1.0;
 
@@ -64,6 +68,14 @@ pub struct FadeBundle {
     pub fade: Fade,
 }
 
+/// Inserts a component after a fade-in finishes.
+#[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
+pub struct InsertAfterFadeIn<B: Bundle + Default>(PhantomData<B>);
+
+// Removes a component before a fade-out starts.
+#[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
+pub struct RemoveBeforeFadeOut<B: Bundle>(PhantomData<B>);
+
 pub(super) struct FadePlugin;
 
 impl Plugin for FadePlugin {
@@ -73,6 +85,16 @@ impl Plugin for FadePlugin {
                 Last,
                 clean_up_components_or_entities_after_they_finish_fading,
             );
+        app.add_systems(
+            Update,
+            (
+                insert_component_after_fading_in::<Movement>,
+                remove_component_before_fading_out::<Movement>,
+                insert_component_after_fading_in::<Collider>,
+                remove_component_before_fading_out::<Collider>,
+            )
+                .in_set(PausableSet),
+        );
     }
 }
 
@@ -138,6 +160,29 @@ fn clean_up_components_or_entities_after_they_finish_fading(
                     info!("Entity({entity:?}): Despawned");
                 }
             },
+        }
+    }
+}
+
+fn insert_component_after_fading_in<B: Bundle + Default>(
+    mut commands: Commands,
+    mut removed: RemovedComponents<Fade>,
+    query: Query<Entity, With<InsertAfterFadeIn<B>>>,
+) {
+    for entity in removed.read() {
+        if query.contains(entity) {
+            commands.entity(entity).insert(B::default());
+        }
+    }
+}
+
+fn remove_component_before_fading_out<B: Bundle>(
+    mut commands: Commands,
+    query: Query<(Entity, &Fade), (With<RemoveBeforeFadeOut<B>>, Added<Fade>)>,
+) {
+    for (entity, fade) in &query {
+        if matches!(fade, Fade::Out(_)) {
+            commands.entity(entity).remove::<B>();
         }
     }
 }

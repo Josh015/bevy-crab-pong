@@ -5,8 +5,7 @@ use spew::prelude::*;
 use crate::{
     common::{
         collider::{Collider, ColliderShapeCircle},
-        delayed::{DelayedInsert, DelayedRemove},
-        fade::FadeBundle,
+        fade::{FadeBundle, InsertAfterFadeIn, RemoveBeforeFadeOut},
         movement::{Heading, Movement, Speed, VelocityBundle},
     },
     game::{
@@ -48,9 +47,9 @@ fn spawn_ball_with_position(
             ColliderShapeCircle {
                 radius: game_mode.ball_size * 0.5,
             },
-            DelayedInsert::<Movement>::default(),
-            DelayedInsert::<Collider>::default(),
-            DelayedRemove::<Collider>::default(),
+            InsertAfterFadeIn::<Movement>::default(),
+            InsertAfterFadeIn::<Collider>::default(),
+            RemoveBeforeFadeOut::<Collider>::default(),
             FadeBundle::default(),
             ForStates(vec![GameState::Playing, GameState::Paused]),
             VelocityBundle {

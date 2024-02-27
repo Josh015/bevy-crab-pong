@@ -7,8 +7,9 @@ use spew::prelude::*;
 use crate::{
     common::{
         collider::{Collider, ColliderShapeCircle},
-        delayed::{DelayedInsert, DelayedRemove},
-        fade::{FadeAnimation, FadeBundle},
+        fade::{
+            FadeAnimation, FadeBundle, InsertAfterFadeIn, RemoveBeforeFadeOut,
+        },
         movement::{
             Acceleration, AccelerationBundle, Force, Heading, MaxSpeed,
             Movement, Speed, StoppingDistance, VelocityBundle,
@@ -85,9 +86,9 @@ fn spawn_crab_on_side(
                 Crab,
                 side,
                 Collider,
-                DelayedInsert::<Movement>::default(),
-                DelayedRemove::<Movement>::default(),
-                DelayedRemove::<Collider>::default(),
+                InsertAfterFadeIn::<Movement>::default(),
+                RemoveBeforeFadeOut::<Movement>::default(),
+                RemoveBeforeFadeOut::<Collider>::default(),
                 FadeBundle {
                     fade_animation: FadeAnimation::Scale {
                         max_scale: Vec3::new(
