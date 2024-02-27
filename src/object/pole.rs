@@ -3,7 +3,7 @@ use spew::prelude::*;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderShapeCircle},
+        collider::{CircleCollider, Collider},
         fade::{Fade, FadeAnimation, FadeBundle, RemoveBeforeFadeOut},
         movement::{Heading, Movement},
     },
@@ -93,7 +93,7 @@ fn spawn_pole_on_side(
 fn pole_and_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
-        (Entity, &GlobalTransform, &Heading, &ColliderShapeCircle),
+        (Entity, &GlobalTransform, &Heading, &CircleCollider),
         (With<Ball>, With<Collider>, With<Movement>),
     >,
     poles_query: Query<&Side, (With<Pole>, With<Collider>)>,

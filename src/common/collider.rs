@@ -10,7 +10,7 @@ pub struct Collider;
 
 /// Adds a circular collider shape.
 #[derive(Component, Debug)]
-pub struct ColliderShapeCircle {
+pub struct CircleCollider {
     pub radius: f32,
 }
 
@@ -30,7 +30,7 @@ fn circle_to_circle_collisions(
     balls_query: Query<
         (
             Entity,
-            &ColliderShapeCircle,
+            &CircleCollider,
             &GlobalTransform,
             Option<&Heading>,
             Has<Movement>,

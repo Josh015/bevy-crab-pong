@@ -6,7 +6,7 @@ use spew::prelude::*;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderShapeCircle},
+        collider::{CircleCollider, Collider},
         fade::{
             FadeAnimation, FadeBundle, InsertAfterFadeIn, RemoveBeforeFadeOut,
         },
@@ -177,7 +177,7 @@ fn restrict_crab_movement_to_space_within_its_own_goal(
 fn crab_and_ball_collisions(
     mut commands: Commands,
     balls_query: Query<
-        (Entity, &GlobalTransform, &Heading, &ColliderShapeCircle),
+        (Entity, &GlobalTransform, &Heading, &CircleCollider),
         (With<Ball>, With<Collider>, With<Movement>),
     >,
     crabs_query: Query<(&Side, &Transform), (With<Crab>, With<Collider>)>,

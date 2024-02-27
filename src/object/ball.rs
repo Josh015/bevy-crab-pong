@@ -4,7 +4,7 @@ use spew::prelude::*;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderShapeCircle},
+        collider::{CircleCollider, Collider},
         fade::{FadeBundle, InsertAfterFadeIn, RemoveBeforeFadeOut},
         movement::{Heading, Movement, Speed, VelocityBundle},
     },
@@ -44,7 +44,7 @@ fn spawn_ball_with_position(
     let ball = commands
         .spawn((
             Ball,
-            ColliderShapeCircle {
+            CircleCollider {
                 radius: game_mode.ball_size * 0.5,
             },
             InsertAfterFadeIn::<Movement>::default(),

@@ -5,7 +5,7 @@ use strum::EnumIter;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderShapeCircle},
+        collider::{CircleCollider, Collider},
         fade::Fade,
         movement::Movement,
     },
@@ -115,7 +115,7 @@ fn check_if_a_ball_has_scored_in_a_side(
     mut commands: Commands,
     mut side_scored_events: EventWriter<SideScoredEvent>,
     balls_query: Query<
-        (Entity, &GlobalTransform, &ColliderShapeCircle),
+        (Entity, &GlobalTransform, &CircleCollider),
         (With<Ball>, With<Movement>, With<Collider>),
     >,
     crabs_query: Query<&Side, (With<Crab>, With<Movement>, With<Collider>)>,

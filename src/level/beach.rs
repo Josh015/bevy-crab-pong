@@ -4,7 +4,7 @@ use strum::IntoEnumIterator;
 
 use crate::{
     common::{
-        collider::{Collider, ColliderShapeCircle},
+        collider::{CircleCollider, Collider},
         movement::Movement,
     },
     game::{
@@ -163,7 +163,7 @@ fn spawn_level(
                 // Barrier
                 builder.spawn((
                     Collider,
-                    ColliderShapeCircle {
+                    CircleCollider {
                         radius: BARRIER_RADIUS,
                     },
                     PbrBundle {
