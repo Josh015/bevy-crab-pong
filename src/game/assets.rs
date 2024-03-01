@@ -91,7 +91,14 @@ impl FromWorld for CachedAssets {
                     stacks: 30,
                 })),
                 // TODO: Replace with crab model.
-                meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+                meshes.add(Mesh::from(shape::Capsule {
+                    depth: 0.5,
+                    latitudes: 10,
+                    longitudes: 30,
+                    radius: 0.5,
+                    rings: 10,
+                    ..default()
+                })),
                 meshes.add(Mesh::from(shape::Cylinder {
                     height: 1.0,
                     radius: 0.5,
