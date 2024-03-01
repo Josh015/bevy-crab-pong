@@ -136,7 +136,12 @@ fn spawn_level(
     });
 
     // Goals
-    let unit_cube = meshes.add(Mesh::from(shape::Cube { size: 1.0 }));
+    let cylinder = meshes.add(Mesh::from(shape::Cylinder {
+        height: 1.0,
+        radius: 0.5,
+        resolution: 20,
+        segments: 10,
+    }));
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
 
     for (i, side) in Side::iter().enumerate() {
@@ -167,7 +172,7 @@ fn spawn_level(
                         radius: BARRIER_RADIUS,
                     },
                     PbrBundle {
-                        mesh: unit_cube.clone(),
+                        mesh: cylinder.clone(),
                         material: barrier_material.clone(),
                         transform: Transform::from_matrix(
                             Mat4::from_scale_rotation_translation(

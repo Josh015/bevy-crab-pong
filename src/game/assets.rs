@@ -92,7 +92,12 @@ impl FromWorld for CachedAssets {
                 })),
                 // TODO: Replace with crab model.
                 meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+                meshes.add(Mesh::from(shape::Cylinder {
+                    height: 1.0,
+                    radius: 0.5,
+                    resolution: 20,
+                    segments: 10,
+                })),
             )
         };
         let pole_material = {

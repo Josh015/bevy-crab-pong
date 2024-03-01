@@ -60,11 +60,11 @@ fn spawn_pole_on_side(
                 FadeBundle {
                     fade_animation: FadeAnimation::Scale {
                         max_scale: Vec3::new(
+                            POLE_DIAMETER,
                             SIDE_WIDTH,
                             POLE_DIAMETER,
-                            POLE_DIAMETER,
                         ),
-                        axis_mask: Vec3::new(0.0, 1.0, 1.0),
+                        axis_mask: Vec3::new(1.0, 0.0, 1.0),
                     },
                     fade: if beach.is_some() {
                         Fade::in_default()
@@ -78,7 +78,12 @@ fn spawn_pole_on_side(
                     transform: Transform::from_matrix(
                         Mat4::from_scale_rotation_translation(
                             Vec3::splat(f32::EPSILON),
-                            Quat::IDENTITY,
+                            Quat::from_euler(
+                                EulerRot::XYZ,
+                                0.0,
+                                0.0,
+                                std::f32::consts::FRAC_PI_2,
+                            ),
                             Vec3::new(0.0, POLE_HEIGHT, 0.0),
                         ),
                     ),
