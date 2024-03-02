@@ -5,8 +5,8 @@
   ball_speed: 0.5,
   competitors: {
     Bottom: (color: "000000", team: 1, player: AI, hit_points: 50, seconds_to_max_speed: 0.01, max_speed: 2),
-    Right: (color: "FFFF00", team: 5, player: AI, hit_points: 2, seconds_to_max_speed: 0.6, max_speed: 2),
-    Top: (color: "FF00FF", team: 4, player: AI, hit_points: 2, seconds_to_max_speed: 0.6, max_speed: 2),
-    Left: (color: "00FFFF", team: 3, player: AI, hit_points: 2, seconds_to_max_speed: 0.6, max_speed: 2),
+    Right: (color: "FFFF00", team: 2, player: AI, hit_points: 2, seconds_to_max_speed: 0.6, max_speed: 2),
+    Top: (color: "FF00FF", team: 2, player: AI, hit_points: 2, seconds_to_max_speed: 0.6, max_speed: 2),
+    Left: (color: "00FFFF", team: 2, player: AI, hit_points: 2, seconds_to_max_speed: 0.6, max_speed: 2),
   },
 )
