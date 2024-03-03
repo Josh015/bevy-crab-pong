@@ -9,11 +9,11 @@ WASD / ARROWS to move the crab.
   swaying_camera_speed: 0.2,
   ocean_scroll_speed: 0.05,
   team_win_messages: [
-    "It's a draw!",
+    "It's a draw!\n",
     "You win!\n",
     "You lose.\n",
-    "Reds win!",
-    "Greens win!",
-    "Blues win!",
+    "Reds win!\n",
+    "Greens win!\n",
+    "Blues win!\n",
   ]
 )
