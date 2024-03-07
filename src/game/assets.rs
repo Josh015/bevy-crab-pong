@@ -85,26 +85,35 @@ impl FromWorld for CachedAssets {
             let mut meshes = world.get_resource_mut::<Assets<Mesh>>().unwrap();
 
             (
-                meshes.add(Mesh::from(shape::UVSphere {
-                    radius: 0.5,
-                    sectors: 30,
-                    stacks: 30,
-                })),
+                meshes.add(
+                    shape::UVSphere {
+                        radius: 0.5,
+                        sectors: 30,
+                        stacks: 30,
+                    }
+                    .into(),
+                ),
                 // TODO: Replace with crab model.
-                meshes.add(Mesh::from(shape::Capsule {
-                    depth: 0.5,
-                    latitudes: 10,
-                    longitudes: 30,
-                    radius: 0.5,
-                    rings: 10,
-                    ..default()
-                })),
-                meshes.add(Mesh::from(shape::Cylinder {
-                    height: 1.0,
-                    radius: 0.5,
-                    resolution: 20,
-                    segments: 10,
-                })),
+                meshes.add(
+                    shape::Capsule {
+                        depth: 0.5,
+                        latitudes: 10,
+                        longitudes: 30,
+                        radius: 0.5,
+                        rings: 10,
+                        ..default()
+                    }
+                    .into(),
+                ),
+                meshes.add(
+                    shape::Cylinder {
+                        height: 1.0,
+                        radius: 0.5,
+                        resolution: 20,
+                        segments: 10,
+                    }
+                    .into(),
+                ),
             )
         };
         let pole_material = {

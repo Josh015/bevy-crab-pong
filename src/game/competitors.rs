@@ -57,7 +57,7 @@ fn reset_competitors(
             *side,
             TeamMember {
                 team: competitor.team,
-                hit_points: u8::from(competitor.hit_points),
+                hit_points: competitor.hit_points.into(),
             },
         );
     }
@@ -99,7 +99,7 @@ fn check_for_game_over(
             });
 
             if is_winner {
-                winning_team = Some(usize::from(survivor.team));
+                winning_team = Some(survivor.team.into());
             }
         } else {
             // Nobody survived. It's a draw!

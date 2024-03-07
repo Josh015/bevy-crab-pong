@@ -97,10 +97,13 @@ fn spawn_level(
             for x in -3..=3 {
                 for z in -3..=3 {
                     builder.spawn((PbrBundle {
-                        mesh: meshes.add(Mesh::from(shape::Plane {
-                            size: 1.0,
-                            subdivisions: 1,
-                        })),
+                        mesh: meshes.add(
+                            shape::Plane {
+                                size: 1.0,
+                                subdivisions: 1,
+                            }
+                            .into(),
+                        ),
                         material: materials.add(StandardMaterial {
                             base_color: Color::rgba(1.0, 1.0, 1.0, 0.9),
                             base_color_texture: Some(
@@ -120,10 +123,13 @@ fn spawn_level(
 
     // Beach
     commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane {
-            size: 1.0,
-            subdivisions: 1,
-        })),
+        mesh: meshes.add(
+            shape::Plane {
+                size: 1.0,
+                subdivisions: 1,
+            }
+            .into(),
+        ),
         material: materials.add(game_assets.image_sand.clone().into()),
         transform: Transform::from_matrix(
             Mat4::from_scale_rotation_translation(
@@ -136,12 +142,15 @@ fn spawn_level(
     });
 
     // Goals
-    let cylinder = meshes.add(Mesh::from(shape::Cylinder {
-        height: 1.0,
-        radius: 0.5,
-        resolution: 20,
-        segments: 10,
-    }));
+    let cylinder = meshes.add(
+        shape::Cylinder {
+            height: 1.0,
+            radius: 0.5,
+            resolution: 20,
+            segments: 10,
+        }
+        .into(),
+    );
     let barrier_material = materials.add(Color::hex("750000").unwrap().into());
 
     for (i, side) in Side::iter().enumerate() {
@@ -207,7 +216,7 @@ fn initialize_beach_data(
     let game_mode = game_modes.get(&game_mode.0).unwrap();
 
     commands.insert_resource(Beach {
-        ball_count: u8::from(game_mode.ball_count),
+        ball_count: game_mode.ball_count.into(),
     });
 }
 
