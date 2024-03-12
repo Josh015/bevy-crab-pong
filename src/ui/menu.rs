@@ -24,16 +24,37 @@ pub enum MenuAction {
     PrevGameMode,
 }
 
+impl MenuAction {
+    fn make_input_map() -> InputMap<Self> {
+        use MenuAction::*;
+
+        let mut input_map = InputMap::new([
+            (Accept, KeyCode::Enter),
+            (PauseUnpause, KeyCode::Space),
+            (ReturnToStartMenu, KeyCode::Backspace),
+            (PrevGameMode, KeyCode::ArrowLeft),
+            (NextGameMode, KeyCode::ArrowRight),
+        ]);
+        input_map.insert_multiple([
+            (Accept, GamepadButtonType::South),
+            (PauseUnpause, GamepadButtonType::Start),
+            (ReturnToStartMenu, GamepadButtonType::Select),
+            (PrevGameMode, GamepadButtonType::DPadLeft),
+            (NextGameMode, GamepadButtonType::DPadRight),
+        ]);
+
+        input_map
+    }
+}
+
 pub(super) struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(InputManagerPlugin::<MenuAction>::default())
+            .init_resource::<ActionState<MenuAction>>()
+            .insert_resource(MenuAction::make_input_map())
             .add_event::<MessageUiEvent>()
-            .add_systems(
-                OnExit(GameState::Loading),
-                configure_menu_action_inputs,
-            )
             .add_systems(OnEnter(GameState::StartMenu), spawn_start_menu_ui)
             .add_systems(OnEnter(GameState::Paused), spawn_pause_ui)
             .add_systems(
@@ -46,28 +67,6 @@ impl Plugin for MenuPlugin {
                 pause_game_when_window_loses_focus.in_set(PlayableSet),
             );
     }
-}
-
-fn configure_menu_action_inputs(mut commands: Commands) {
-    use MenuAction::*;
-
-    let mut input_map = InputMap::new([
-        (Accept, KeyCode::Enter),
-        (PauseUnpause, KeyCode::Space),
-        (ReturnToStartMenu, KeyCode::Backspace),
-        (PrevGameMode, KeyCode::ArrowLeft),
-        (NextGameMode, KeyCode::ArrowRight),
-    ]);
-    input_map.insert_multiple([
-        (Accept, GamepadButtonType::South),
-        (PauseUnpause, GamepadButtonType::Start),
-        (ReturnToStartMenu, GamepadButtonType::Select),
-        (PrevGameMode, GamepadButtonType::DPadLeft),
-        (NextGameMode, GamepadButtonType::DPadRight),
-    ]);
-
-    commands.insert_resource(input_map);
-    commands.insert_resource(ActionState::<MenuAction>::default());
 }
 
 fn spawn_start_menu_ui(
