@@ -1,10 +1,10 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::WindowFocused};
 pub use leafwing_input_manager::prelude::*;
 
 use crate::game::{
     assets::{GameAssets, GameConfig, GameMode, SelectedGameMode},
     competitors::WinningTeam,
-    state::{ForStates, GameState, LoadedSet},
+    state::{ForStates, GameState, LoadedSet, PlayableSet},
 };
 
 /// An event fired when spawning a message UI.
@@ -40,6 +40,10 @@ impl Plugin for MenuPlugin {
                 Update,
                 (handle_spawn_ui_message_event, handle_menu_inputs)
                     .in_set(LoadedSet),
+            )
+            .add_systems(
+                Update,
+                pause_game_when_window_loses_focus.in_set(PlayableSet),
             );
     }
 }
@@ -208,5 +212,17 @@ fn handle_menu_inputs(
             info!("Start Menu");
         },
         _ => {},
+    }
+}
+
+fn pause_game_when_window_loses_focus(
+    mut window_focused_events: EventReader<WindowFocused>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+) {
+    for event in window_focused_events.read() {
+        if !event.focused {
+            next_game_state.set(GameState::Paused);
+            info!("Paused");
+        }
     }
 }
