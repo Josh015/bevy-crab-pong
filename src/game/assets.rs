@@ -1,8 +1,5 @@
 use bevy::{
-    ecs::system::SystemParam,
-    prelude::*,
-    reflect::{TypePath, TypeUuid},
-    utils::HashMap,
+    ecs::system::SystemParam, prelude::*, reflect::TypePath, utils::HashMap,
 };
 use bevy_asset_loader::prelude::*;
 use bevy_common_assets::yaml::YamlAssetPlugin;
@@ -17,8 +14,7 @@ use crate::level::side::Side;
 use super::state::GameState;
 
 /// Game settings read from a config file.
-#[derive(Asset, Debug, Deserialize, Resource, TypePath, TypeUuid)]
-#[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c46"]
+#[derive(Asset, Debug, Deserialize, Resource, TypePath)]
 pub struct GameConfig {
     pub pause_message: String,
     pub new_game_message: String,
@@ -27,8 +23,7 @@ pub struct GameConfig {
     pub team_win_messages: Vec<String>,
 }
 
-#[derive(Asset, Debug, Deserialize, Resource, TypePath, TypeUuid)]
-#[uuid = "c6f093d2-c9b4-4334-a7d1-1a71876335cf"]
+#[derive(Asset, Debug, Deserialize, Resource, TypePath)]
 pub struct GameMode {
     pub name: String,
     pub ball_count: NonZeroU8,
@@ -89,35 +84,16 @@ impl FromWorld for CachedAssets {
             let mut meshes = world.get_resource_mut::<Assets<Mesh>>().unwrap();
 
             (
-                meshes.add(
-                    shape::UVSphere {
-                        radius: 0.5,
-                        sectors: 30,
-                        stacks: 30,
-                    }
-                    .into(),
-                ),
+                meshes.add(Sphere { radius: 0.5 }),
                 // TODO: Replace with crab model.
-                meshes.add(
-                    shape::Capsule {
-                        depth: 0.5,
-                        latitudes: 10,
-                        longitudes: 30,
-                        radius: 0.5,
-                        rings: 10,
-                        ..default()
-                    }
-                    .into(),
-                ),
-                meshes.add(
-                    shape::Cylinder {
-                        height: 1.0,
-                        radius: 0.5,
-                        resolution: 20,
-                        segments: 10,
-                    }
-                    .into(),
-                ),
+                meshes.add(Capsule3d {
+                    half_length: 0.25,
+                    radius: 0.5,
+                }),
+                meshes.add(Cylinder {
+                    half_height: 0.5,
+                    radius: 0.5,
+                }),
             )
         };
         let pole_material = {
@@ -125,7 +101,7 @@ impl FromWorld for CachedAssets {
                 .get_resource_mut::<Assets<StandardMaterial>>()
                 .unwrap();
 
-            materials.add(Color::hex("00A400").unwrap().into())
+            materials.add(Color::hex("00A400").unwrap())
         };
 
         Self {

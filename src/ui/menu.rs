@@ -49,23 +49,21 @@ impl Plugin for MenuPlugin {
 }
 
 fn configure_menu_action_inputs(mut commands: Commands) {
-    use GamepadButtonType::*;
-    use KeyCode::*;
     use MenuAction::*;
 
-    let mut input_map = InputMap::<MenuAction>::new([
-        (Return, Accept),
-        (Space, PauseUnpause),
-        (Back, ReturnToStartMenu),
-        (Left, PrevGameMode),
-        (Right, NextGameMode),
+    let mut input_map = InputMap::new([
+        (Accept, KeyCode::Enter),
+        (PauseUnpause, KeyCode::Space),
+        (ReturnToStartMenu, KeyCode::Backspace),
+        (PrevGameMode, KeyCode::ArrowLeft),
+        (NextGameMode, KeyCode::ArrowRight),
     ]);
     input_map.insert_multiple([
-        (Start, PauseUnpause),
-        (Select, ReturnToStartMenu),
-        (South, Accept),
-        (DPadLeft, PrevGameMode),
-        (DPadRight, NextGameMode),
+        (Accept, GamepadButtonType::South),
+        (PauseUnpause, GamepadButtonType::Start),
+        (ReturnToStartMenu, GamepadButtonType::Select),
+        (PrevGameMode, GamepadButtonType::DPadLeft),
+        (NextGameMode, GamepadButtonType::DPadRight),
     ]);
 
     commands.insert_resource(input_map);
@@ -175,27 +173,27 @@ fn handle_menu_inputs(
 
     match game_state.get() {
         StartMenu => {
-            if menu_action_state.just_pressed(Accept) {
+            if menu_action_state.just_pressed(&Accept) {
                 next_game_state.set(Playing);
                 info!("New Game");
-            } else if menu_action_state.just_pressed(PrevGameMode) {
+            } else if menu_action_state.just_pressed(&PrevGameMode) {
                 game_modes.previous();
                 info!("Game Mode: {}", &game_modes.current().name);
-            } else if menu_action_state.just_pressed(NextGameMode) {
+            } else if menu_action_state.just_pressed(&NextGameMode) {
                 game_modes.next();
                 info!("Game Mode: {}", &game_modes.current().name);
             }
         },
-        Playing if menu_action_state.just_pressed(PauseUnpause) => {
+        Playing if menu_action_state.just_pressed(&PauseUnpause) => {
             next_game_state.set(Paused);
             info!("Paused");
         },
-        Paused if menu_action_state.just_pressed(PauseUnpause) => {
+        Paused if menu_action_state.just_pressed(&PauseUnpause) => {
             next_game_state.set(Playing);
             info!("Unpaused");
         },
         Playing | Paused
-            if menu_action_state.just_pressed(ReturnToStartMenu) =>
+            if menu_action_state.just_pressed(&ReturnToStartMenu) =>
         {
             next_game_state.set(StartMenu);
             info!("Start Menu");

@@ -112,11 +112,11 @@ fn animate_fade_effect(
         let weight = match *fade {
             Fade::In(ref mut timer) => {
                 timer.tick(time.delta());
-                timer.percent()
+                timer.fraction()
             },
             Fade::Out(ref mut timer) => {
                 timer.tick(time.delta());
-                1.0 - timer.percent()
+                1.0 - timer.fraction()
             },
         };
 

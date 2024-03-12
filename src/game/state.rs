@@ -36,7 +36,7 @@ pub(super) struct StatePlugin;
 
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<GameState>()
+        app.init_state::<GameState>()
             .configure_sets(
                 Update,
                 LoadedSet.run_if(not(in_state(GameState::Loading))),

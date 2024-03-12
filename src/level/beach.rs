@@ -76,7 +76,7 @@ fn spawn_level(
     );
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
-            illuminance: 10000.0,
+            illuminance: 2500.0,
             // shadows_enabled: true,
             ..default()
         },
@@ -97,13 +97,8 @@ fn spawn_level(
             for x in -3..=3 {
                 for z in -3..=3 {
                     builder.spawn((PbrBundle {
-                        mesh: meshes.add(
-                            shape::Plane {
-                                size: 1.0,
-                                subdivisions: 1,
-                            }
-                            .into(),
-                        ),
+                        mesh: meshes
+                            .add(Plane3d::default().mesh().size(1.0, 1.0)),
                         material: materials.add(StandardMaterial {
                             base_color: Color::rgba(1.0, 1.0, 1.0, 0.9),
                             base_color_texture: Some(
@@ -123,14 +118,8 @@ fn spawn_level(
 
     // Beach
     commands.spawn(PbrBundle {
-        mesh: meshes.add(
-            shape::Plane {
-                size: 1.0,
-                subdivisions: 1,
-            }
-            .into(),
-        ),
-        material: materials.add(game_assets.image_sand.clone().into()),
+        mesh: meshes.add(Plane3d::default().mesh().size(1.0, 1.0)),
+        material: materials.add(game_assets.image_sand.clone()),
         transform: Transform::from_matrix(
             Mat4::from_scale_rotation_translation(
                 Vec3::splat(SIDE_WIDTH),
@@ -142,16 +131,11 @@ fn spawn_level(
     });
 
     // Goals
-    let cylinder = meshes.add(
-        shape::Cylinder {
-            height: 1.0,
-            radius: 0.5,
-            resolution: 20,
-            segments: 10,
-        }
-        .into(),
-    );
-    let barrier_material = materials.add(Color::hex("750000").unwrap().into());
+    let cylinder = meshes.add(Cylinder {
+        half_height: 0.5,
+        radius: 0.5,
+    });
+    let barrier_material = materials.add(Color::hex("750000").unwrap());
 
     for (i, side) in Side::iter().enumerate() {
         // Spawn Point

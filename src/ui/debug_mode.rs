@@ -74,10 +74,10 @@ impl Plugin for DebugModePlugin {
 }
 
 fn handle_debug_mode_keyboard_toggles(
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
     mut debug_mode: ResMut<DebugMode>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Key1) {
+    if keyboard_input.just_pressed(KeyCode::Digit1) {
         let toggle = !debug_mode.has_ball_movement;
 
         debug_mode.has_ball_movement = toggle;
@@ -85,18 +85,18 @@ fn handle_debug_mode_keyboard_toggles(
         debug_mode.has_crab_ai_ball_targeting = toggle;
         debug_mode.has_crab_ai_ideal_ball_hit_area = toggle;
         debug_mode.has_crab_collider_ball_deflection_direction = toggle;
-    } else if keyboard_input.just_pressed(KeyCode::Key2) {
+    } else if keyboard_input.just_pressed(KeyCode::Digit2) {
         debug_mode.has_ball_movement = !debug_mode.has_ball_movement;
-    } else if keyboard_input.just_pressed(KeyCode::Key3) {
+    } else if keyboard_input.just_pressed(KeyCode::Digit3) {
         debug_mode.has_crab_stop_positions =
             !debug_mode.has_crab_stop_positions;
-    } else if keyboard_input.just_pressed(KeyCode::Key4) {
+    } else if keyboard_input.just_pressed(KeyCode::Digit4) {
         debug_mode.has_crab_ai_ball_targeting =
             !debug_mode.has_crab_ai_ball_targeting;
-    } else if keyboard_input.just_pressed(KeyCode::Key5) {
+    } else if keyboard_input.just_pressed(KeyCode::Digit5) {
         debug_mode.has_crab_ai_ideal_ball_hit_area =
             !debug_mode.has_crab_ai_ideal_ball_hit_area;
-    } else if keyboard_input.just_pressed(KeyCode::Key6) {
+    } else if keyboard_input.just_pressed(KeyCode::Digit6) {
         debug_mode.has_crab_collider_ball_deflection_direction =
             !debug_mode.has_crab_collider_ball_deflection_direction;
     }

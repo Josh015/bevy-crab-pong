@@ -27,30 +27,28 @@ impl Default for CrabInputBundle {
     fn default() -> Self {
         use CrabAction::*;
         use GamepadAxisType::*;
-        use GamepadButtonType::*;
-        use KeyCode::*;
 
         let mut input_map = InputMap::new([
-            (W, MoveUp),
-            (Up, MoveUp),
-            (S, MoveDown),
-            (Down, MoveDown),
-            (A, MoveLeft),
-            (Left, MoveLeft),
-            (D, MoveRight),
-            (Right, MoveRight),
+            (MoveUp, KeyCode::KeyW),
+            (MoveUp, KeyCode::ArrowUp),
+            (MoveDown, KeyCode::KeyS),
+            (MoveDown, KeyCode::ArrowDown),
+            (MoveLeft, KeyCode::KeyA),
+            (MoveLeft, KeyCode::ArrowLeft),
+            (MoveRight, KeyCode::KeyD),
+            (MoveRight, KeyCode::ArrowRight),
         ]);
         input_map.insert_multiple([
-            (DPadUp, MoveUp),
-            (DPadDown, MoveDown),
-            (DPadLeft, MoveLeft),
-            (DPadRight, MoveRight),
+            (MoveUp, GamepadButtonType::DPadUp),
+            (MoveDown, GamepadButtonType::DPadDown),
+            (MoveLeft, GamepadButtonType::DPadLeft),
+            (MoveRight, GamepadButtonType::DPadRight),
         ]);
         input_map.insert_multiple([
-            (SingleAxis::positive_only(RightStickY, 0.4), MoveUp),
-            (SingleAxis::negative_only(RightStickY, -0.4), MoveDown),
-            (SingleAxis::negative_only(LeftStickX, -0.4), MoveLeft),
-            (SingleAxis::positive_only(LeftStickX, 0.4), MoveRight),
+            (MoveUp, SingleAxis::positive_only(RightStickY, 0.4)),
+            (MoveDown, SingleAxis::negative_only(RightStickY, -0.4)),
+            (MoveLeft, SingleAxis::negative_only(LeftStickX, -0.4)),
+            (MoveRight, SingleAxis::positive_only(LeftStickX, 0.4)),
         ]);
 
         Self {
@@ -92,9 +90,9 @@ fn move_crabs_based_on_user_input(
             Left => (MoveUp, MoveDown),
         };
 
-        if action_state.pressed(move_crab_left) {
+        if action_state.pressed(&move_crab_left) {
             commands.entity(entity).insert(Force::Negative);
-        } else if action_state.pressed(move_crab_right) {
+        } else if action_state.pressed(&move_crab_right) {
             commands.entity(entity).insert(Force::Positive);
         } else {
             commands.entity(entity).remove::<Force>();
