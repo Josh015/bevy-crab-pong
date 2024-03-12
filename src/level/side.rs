@@ -136,10 +136,10 @@ fn check_if_a_ball_has_scored_in_a_side(
 
 fn block_eliminated_sides_with_poles(
     mut side_eliminated_events: EventReader<SideEliminatedEvent>,
-    mut spawn_on_side_events: EventWriter<SpawnEvent<Object, Side>>,
+    mut spawn_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
     for SideEliminatedEvent(side) in side_eliminated_events.read() {
-        spawn_on_side_events.send(SpawnEvent::with_data(Object::Pole, *side));
+        spawn_events.send(SpawnEvent::with_data(Object::Pole, *side));
         info!("Side({side:?}): Eliminated");
     }
 }
