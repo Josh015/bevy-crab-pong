@@ -54,24 +54,32 @@ fn circle_to_circle_collisions(
 
         if let Some(heading1) = heading1 {
             if has_movement1 && heading1.0.dot(axis1) > 0.0 {
-                commands
-                    .entity(entity1)
-                    .insert(Heading(reflect(heading1.0, axis1).normalize()));
+                commands.entity(entity1).insert(Heading(
+                    Direction3d::new_unchecked(
+                        reflect(*heading1.0, axis1).normalize(),
+                    ),
+                ));
 
                 if has_movement2 {
-                    commands.entity(entity2).insert(Heading(axis1));
+                    commands
+                        .entity(entity2)
+                        .insert(Heading(Direction3d::new_unchecked(axis1)));
                 }
             }
         }
 
         if let Some(heading2) = heading2 {
             if has_movement2 && heading2.0.dot(axis2) > 0.0 {
-                commands
-                    .entity(entity2)
-                    .insert(Heading(reflect(heading2.0, axis2).normalize()));
+                commands.entity(entity2).insert(Heading(
+                    Direction3d::new_unchecked(
+                        reflect(*heading2.0, axis2).normalize(),
+                    ),
+                ));
 
                 if has_movement1 {
-                    commands.entity(entity1).insert(Heading(axis2));
+                    commands
+                        .entity(entity1)
+                        .insert(Heading(Direction3d::new_unchecked(axis2)));
                 }
             }
         }

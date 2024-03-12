@@ -116,9 +116,11 @@ fn pole_and_ball_collisions(
             }
 
             // Deflect the ball away from the pole.
-            commands
-                .entity(entity)
-                .insert(Heading(reflect(ball_heading.0, axis).normalize()));
+            commands.entity(entity).insert(Heading(
+                Direction3d::new_unchecked(
+                    reflect(*ball_heading.0, axis).normalize(),
+                ),
+            ));
 
             info!("Ball({entity:?}): Collided Pole({side:?})");
             break;

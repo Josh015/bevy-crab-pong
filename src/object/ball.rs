@@ -52,7 +52,9 @@ fn spawn_ball_with_position(
             FadeBundle::default(),
             ForStates(vec![GameState::Playing, GameState::Paused]),
             VelocityBundle {
-                heading: Heading(Vec3::new(angle_cos, 0.0, angle_sin)),
+                heading: Heading(Direction3d::new_unchecked(Vec3::new(
+                    angle_cos, 0.0, angle_sin,
+                ))),
                 speed: Speed(game_mode.ball_speed),
             },
             PbrBundle {

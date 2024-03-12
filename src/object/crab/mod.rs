@@ -96,7 +96,7 @@ fn spawn_crab_on_side(
                 },
                 AccelerationBundle {
                     velocity: VelocityBundle {
-                        heading: Heading(Vec3::X),
+                        heading: Heading(Direction3d::X),
                         ..default()
                     },
                     max_speed: MaxSpeed(crab_config.max_speed),
@@ -200,9 +200,11 @@ fn crab_and_ball_collisions(
             let ball_deflection_direction =
                 hemisphere_deflection(delta, CRAB_WIDTH, axis);
 
-            commands
-                .entity(ball_entity)
-                .insert(Heading(ball_deflection_direction));
+            commands.entity(ball_entity).insert(Heading(
+                Direction3d::new_unchecked(
+                    ball_deflection_direction.normalize(),
+                ),
+            ));
             info!("Ball({ball_entity:?}): Collided Crab({side:?})");
             break;
         }

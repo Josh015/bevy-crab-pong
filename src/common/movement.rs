@@ -15,9 +15,15 @@ pub enum Force {
     Negative,
 }
 
-/// The normalized direction vector along which the entity will move.
-#[derive(Clone, Component, Debug, Default)]
-pub struct Heading(pub Vec3);
+/// The direction in which the entity is moving.
+#[derive(Clone, Component, Debug)]
+pub struct Heading(pub Direction3d);
+
+impl Default for Heading {
+    fn default() -> Self {
+        Self(Direction3d::Y)
+    }
+}
 
 /// The current speed of this entity.
 #[derive(Clone, Component, Debug, Default)]
