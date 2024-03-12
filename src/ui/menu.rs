@@ -2,7 +2,7 @@ use bevy::{prelude::*, window::WindowFocused};
 pub use leafwing_input_manager::prelude::*;
 
 use crate::game::{
-    assets::{GameAssets, GameConfig, GameMode, SelectedGameMode},
+    assets::{GameAssets, GameConfig, GameModes},
     competitors::WinningTeam,
     state::{ForStates, GameState, LoadedSet, PlayableSet},
 };
@@ -166,12 +166,9 @@ fn handle_spawn_ui_message_event(
 
 fn handle_menu_inputs(
     game_state: Res<State<GameState>>,
-    game_assets: Res<GameAssets>,
-    game_modes: Res<Assets<GameMode>>,
-    mut game_mode: ResMut<SelectedGameMode>,
+    mut game_modes: GameModes,
     mut next_game_state: ResMut<NextState<GameState>>,
     menu_action_state: Res<ActionState<MenuAction>>,
-    mut game_mode_index: Local<usize>,
 ) {
     use GameState::*;
     use MenuAction::*;
@@ -181,20 +178,12 @@ fn handle_menu_inputs(
             if menu_action_state.just_pressed(Accept) {
                 next_game_state.set(Playing);
                 info!("New Game");
-            } else if menu_action_state.just_pressed(PrevGameMode)
-                && *game_mode_index > 0
-            {
-                *game_mode_index -= 1;
-                game_mode.0 = game_assets.game_modes[*game_mode_index].clone();
-                let mode_name = &game_modes.get(&game_mode.0).unwrap().name;
-                info!("Game Mode: {mode_name}");
-            } else if menu_action_state.just_pressed(NextGameMode)
-                && *game_mode_index < game_assets.game_modes.len() - 1
-            {
-                *game_mode_index += 1;
-                game_mode.0 = game_assets.game_modes[*game_mode_index].clone();
-                let mode_name = &game_modes.get(&game_mode.0).unwrap().name;
-                info!("Game Mode: {mode_name}");
+            } else if menu_action_state.just_pressed(PrevGameMode) {
+                game_modes.previous();
+                info!("Game Mode: {}", &game_modes.current().name);
+            } else if menu_action_state.just_pressed(NextGameMode) {
+                game_modes.next();
+                info!("Game Mode: {}", &game_modes.current().name);
             }
         },
         Playing if menu_action_state.just_pressed(PauseUnpause) => {

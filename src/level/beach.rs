@@ -8,7 +8,7 @@ use crate::{
         movement::Movement,
     },
     game::{
-        assets::{GameAssets, GameConfig, GameMode, SelectedGameMode},
+        assets::{GameAssets, GameConfig, GameModes},
         state::{GameState, PlayableSet},
     },
     object::{ball::Ball, Object},
@@ -208,15 +208,9 @@ fn spawn_level(
     }
 }
 
-fn initialize_beach_data(
-    mut commands: Commands,
-    game_mode: Res<SelectedGameMode>,
-    game_modes: Res<Assets<GameMode>>,
-) {
-    let game_mode = game_modes.get(&game_mode.0).unwrap();
-
+fn initialize_beach_data(mut commands: Commands, game_modes: GameModes) {
     commands.insert_resource(Beach {
-        ball_count: game_mode.ball_count.into(),
+        ball_count: game_modes.current().ball_count.into(),
     });
 }
 

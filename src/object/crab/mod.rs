@@ -16,9 +16,7 @@ use crate::{
         },
     },
     game::{
-        assets::{
-            CachedAssets, GameAssets, GameMode, Player, SelectedGameMode,
-        },
+        assets::{CachedAssets, GameAssets, GameModes, Player},
         state::PausableSet,
     },
     level::{
@@ -65,15 +63,13 @@ impl Plugin for CrabPlugin {
 fn spawn_crab_on_side(
     In(side): In<Side>,
     cached_assets: Res<CachedAssets>,
-    game_mode: Res<SelectedGameMode>,
     game_assets: Res<GameAssets>,
-    game_modes: Res<Assets<GameMode>>,
+    game_modes: GameModes,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     spawn_points_query: Query<(Entity, &Side), With<SideSpawnPoint>>,
 ) {
-    let game_mode = game_modes.get(&game_mode.0).unwrap();
-    let crab_config = &game_mode.competitors[&side];
+    let crab_config = &game_modes.current().competitors[&side];
     let (spawn_point_entity, _) = spawn_points_query
         .iter()
         .find(|(_, spawn_point_side)| **spawn_point_side == side)

@@ -5,7 +5,7 @@ use bevy::{prelude::*, utils::HashMap};
 use crate::level::side::{Side, SideEliminatedEvent, SideScoredEvent};
 
 use super::{
-    assets::{GameMode, SelectedGameMode},
+    assets::GameModes,
     state::{GameState, PlayableSet},
 };
 
@@ -44,15 +44,12 @@ impl Plugin for CompetitorsPlugin {
 }
 
 fn reset_competitors(
-    game_mode: Res<SelectedGameMode>,
-    game_modes: Res<Assets<GameMode>>,
+    game_modes: GameModes,
     mut competitors: ResMut<Competitors>,
 ) {
-    let mode = game_modes.get(&game_mode.0).unwrap();
-
     competitors.0.clear();
 
-    for (side, competitor) in &mode.competitors {
+    for (side, competitor) in &game_modes.current().competitors {
         competitors.0.insert(
             *side,
             TeamMember {

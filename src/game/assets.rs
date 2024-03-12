@@ -1,4 +1,5 @@
 use bevy::{
+    ecs::system::SystemParam,
     prelude::*,
     reflect::{TypePath, TypeUuid},
     utils::HashMap,
@@ -6,7 +7,10 @@ use bevy::{
 use bevy_asset_loader::prelude::*;
 use bevy_common_assets::yaml::YamlAssetPlugin;
 use serde::Deserialize;
-use std::num::{NonZeroU8, NonZeroUsize};
+use std::{
+    num::{NonZeroU8, NonZeroUsize},
+    ops::Add,
+};
 
 use crate::level::side::Side;
 
@@ -133,18 +137,39 @@ impl FromWorld for CachedAssets {
     }
 }
 
-/// The currently selected game mode.
-#[derive(Debug, Resource)]
-pub struct SelectedGameMode(pub Handle<GameMode>);
+/// Allows systems to query and set the current game mode.
+#[derive(SystemParam)]
+pub struct GameModes<'w> {
+    game_assets: Res<'w, GameAssets>,
+    game_modes: Res<'w, Assets<GameMode>>,
+    selected: ResMut<'w, SelectedGameMode>,
+}
 
-impl FromWorld for SelectedGameMode {
-    fn from_world(world: &mut World) -> Self {
-        Self(
-            world.get_resource_mut::<GameAssets>().unwrap().game_modes[0]
-                .clone(),
-        )
+impl<'w> GameModes<'w> {
+    /// Gets the current game mode.
+    pub fn current(&self) -> &GameMode {
+        self.game_modes
+            .get(&self.game_assets.game_modes[self.selected.0])
+            .unwrap()
+    }
+
+    /// Switch to the previous game mode.
+    pub fn previous(&mut self) {
+        self.selected.0 = self.selected.0.saturating_sub(1);
+    }
+
+    /// Switch to the next game mode.
+    pub fn next(&mut self) {
+        self.selected.0 = self
+            .selected
+            .0
+            .add(1)
+            .min(self.game_assets.game_modes.len() - 1);
     }
 }
+
+#[derive(Debug, Default, Resource)]
+struct SelectedGameMode(usize);
 
 pub(super) struct AssetsPlugin;
 
