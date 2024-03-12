@@ -1,0 +1,15 @@
+pause_message: "PAUSED"
+new_game_message: "
+  ENTER for a new game.\n
+  ESC to quit.\n
+  WASD / ARROWS to move the crab.\n
+  1-6 to enable debugging gizmos."
+swaying_camera_speed: 0.2
+ocean_scroll_speed: 0.05
+team_win_messages:
+  - "It's a draw!\n"
+  - "You win!\n"
+  - "You lose.\n"
+  - "Reds win!\n"
+  - "Greens win!\n"
+  - "Blues win!\n"

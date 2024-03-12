@@ -4,7 +4,7 @@ use bevy::{
     utils::HashMap,
 };
 use bevy_asset_loader::prelude::*;
-use bevy_common_assets::ron::RonAssetPlugin;
+use bevy_common_assets::yaml::YamlAssetPlugin;
 use serde::Deserialize;
 use std::num::{NonZeroU8, NonZeroUsize};
 
@@ -51,22 +51,22 @@ pub enum Player {
 
 #[derive(AssetCollection, Resource)]
 pub struct GameAssets {
-    #[asset(key = "game.config")]
+    #[asset(path = "game.config.yaml")]
     pub game_config: Handle<GameConfig>,
 
-    #[asset(key = "game.modes", collection(typed))]
+    #[asset(path = "modes", collection(typed))]
     pub game_modes: Vec<Handle<GameMode>>,
 
-    #[asset(key = "fonts.menu")]
+    #[asset(path = "fonts/FiraSans-Bold.ttf")]
     pub font_menu: Handle<Font>,
 
-    #[asset(key = "images.crab")]
+    #[asset(path = "images/crab.png")]
     pub image_crab: Handle<Image>,
 
-    #[asset(key = "images.sand")]
+    #[asset(path = "images/sand.png")]
     pub image_sand: Handle<Image>,
 
-    #[asset(key = "images.water")]
+    #[asset(path = "images/water.png")]
     pub image_water: Handle<Image>,
 }
 
@@ -150,17 +150,14 @@ pub(super) struct AssetsPlugin;
 
 impl Plugin for AssetsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(RonAssetPlugin::<GameConfig>::new(&["config.ron"]))
-            .add_plugins(RonAssetPlugin::<GameMode>::new(&["mode.ron"]))
+        app.add_plugins(YamlAssetPlugin::<GameConfig>::new(&["config.yaml"]))
+            .add_plugins(YamlAssetPlugin::<GameMode>::new(&["mode.yaml"]))
             .add_loading_state(
                 LoadingState::new(GameState::Loading)
                     .continue_to_state(GameState::StartMenu),
             )
             .configure_loading_state(
                 LoadingStateConfig::new(GameState::Loading)
-                    .with_dynamic_assets_file::<StandardDynamicAssetCollection>(
-                        "game.assets.ron",
-                    )
                     .load_collection::<GameAssets>()
                     .init_resource::<CachedAssets>()
                     .init_resource::<SelectedGameMode>(),

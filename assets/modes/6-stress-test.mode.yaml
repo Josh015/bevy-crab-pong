@@ -1,0 +1,36 @@
+name: Stress Test
+ball_count: 60
+ball_size: 0.04
+ball_speed: 0.5
+competitors:
+  Bottom:
+    color: FFFF00
+    team: 1
+    player: AI
+    hit_points: 50
+    seconds_to_max_speed: 0.01
+    max_speed: 20
+
+  Right:
+    color: FFFF00
+    team: 1
+    player: AI
+    hit_points: 50
+    seconds_to_max_speed: 0.01
+    max_speed: 20
+
+  Top:
+    color: 00FFFF
+    team: 2
+    player: AI
+    hit_points: 50
+    seconds_to_max_speed: 0.01
+    max_speed: 20
+
+  Left:
+    color: 00FFFF
+    team: 2
+    player: AI
+    hit_points: 50
+    seconds_to_max_speed: 0.01
+    max_speed: 20
