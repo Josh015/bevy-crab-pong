@@ -169,6 +169,7 @@ fn insert_component_after_fading_in<B: Bundle + Default>(
     mut removed: RemovedComponents<Fade>,
     query: Query<Entity, With<InsertAfterFadeIn<B>>>,
 ) {
+    // No need to exclude Fade::Out since the entity is already despawned.
     for entity in removed.read() {
         if query.contains(entity) {
             commands.entity(entity).insert(B::default());
