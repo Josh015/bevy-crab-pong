@@ -28,7 +28,7 @@ pub(super) struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((InputManagerPlugin::<MenuAction>::default(),))
+        app.add_plugins(InputManagerPlugin::<MenuAction>::default())
             .add_event::<MessageUiEvent>()
             .add_systems(
                 OnExit(GameState::Loading),
