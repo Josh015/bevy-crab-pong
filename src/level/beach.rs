@@ -76,7 +76,7 @@ fn spawn_level(
     );
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
-            illuminance: 2500.0,
+            illuminance: 2_500.0,
             // shadows_enabled: true,
             ..default()
         },
