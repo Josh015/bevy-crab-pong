@@ -5,7 +5,7 @@ use bevy::{prelude::*, utils::HashMap};
 use crate::level::side::{Side, SideEliminatedEvent, SideScoredEvent};
 
 use super::{
-    assets::GameModes,
+    modes::GameModes,
     state::{GameState, PlayableSet},
 };
 

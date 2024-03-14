@@ -1,5 +1,6 @@
 pub mod assets;
 pub mod competitors;
+pub mod modes;
 pub mod state;
 
 use bevy::prelude::*;
@@ -11,6 +12,7 @@ impl Plugin for GamePlugin {
         app.add_plugins((
             assets::AssetsPlugin,
             competitors::CompetitorsPlugin,
+            modes::ModesPlugin,
             state::StatePlugin,
         ));
     }

@@ -9,7 +9,8 @@ use crate::{
         movement::{Heading, Movement, Speed, VelocityBundle},
     },
     game::{
-        assets::{CachedAssets, GameModes},
+        assets::CachedAssets,
+        modes::GameModes,
         state::{ForStates, GameState},
     },
 };

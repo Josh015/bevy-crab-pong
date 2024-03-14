@@ -16,7 +16,8 @@ use crate::{
         },
     },
     game::{
-        assets::{CachedAssets, GameAssets, GameModes, Player},
+        assets::{CachedAssets, GameAssets, Player},
+        modes::GameModes,
         state::PausableSet,
     },
     level::{

@@ -2,8 +2,9 @@ use bevy::{prelude::*, window::WindowFocused};
 pub use leafwing_input_manager::prelude::*;
 
 use crate::game::{
-    assets::{GameAssets, GameConfig, GameModes},
+    assets::{GameAssets, GameConfig},
     competitors::WinningTeam,
+    modes::GameModes,
     state::{ForStates, GameState, LoadedSet, PlayableSet},
 };
 
