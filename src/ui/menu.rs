@@ -165,12 +165,11 @@ fn handle_spawn_ui_message_event(
 }
 
 fn handle_menu_inputs(
-    mut commands: Commands,
     game_state: Res<State<GameState>>,
     mut game_modes: GameModes,
     mut next_game_state: ResMut<NextState<GameState>>,
     menu_action_state: Res<ActionState<MenuAction>>,
-    focused_windows: Query<(Entity, &Window)>,
+    mut writer: EventWriter<AppExit>,
 ) {
     use GameState::*;
     use MenuAction::*;
@@ -203,13 +202,7 @@ fn handle_menu_inputs(
             info!("Start Menu");
         },
         _ if menu_action_state.just_pressed(&Exit) => {
-            for (window, focus) in focused_windows.iter() {
-                if !focus.focused {
-                    continue;
-                }
-
-                commands.entity(window).despawn();
-            }
+            writer.send(AppExit::Success);
         },
         _ => {},
     }
