@@ -16,11 +16,11 @@ use crate::{
 pub const SIDE_WIDTH: f32 = 1.0;
 
 /// Signals that a side has been scored in by a ball.
-#[derive(Clone, Component, Debug, Event)]
+#[derive(Clone, Debug, Event)]
 pub struct SideScoredEvent(pub Side);
 
 /// Signals that a side has been eliminated from the game.
-#[derive(Clone, Component, Debug, Event)]
+#[derive(Clone, Debug, Event)]
 pub struct SideEliminatedEvent(pub Side);
 
 /// Marks an entity that can be used as a parent to spawn [`Side`] entities.

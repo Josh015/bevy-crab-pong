@@ -8,11 +8,11 @@ rust-version = "1.64"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { version = "0.13.0", features = ["file_watcher"] }
-bevy_asset_loader = { version = "0.20.0", features = ["standard_dynamic_assets"] }
-bevy_common_assets = { version = "0.10.0", features = ["yaml"] }
-leafwing-input-manager = "0.13.3"
+bevy = { version = "0.14.2", features = ["file_watcher"] }
+bevy_asset_loader = { version = "0.21.0", features = ["standard_dynamic_assets"] }
+bevy_common_assets = { version = "0.11.0", features = ["yaml"] }
+leafwing-input-manager = "0.15.0"
 rand = { version = "0.8.5", features = ["small_rng"] }
-serde = { version = "1.0.197", features = ["serde_derive"] }
-spew = "0.5.1"
-strum = { version = "0.26.2", features = ["derive"] }
+serde = { version = "1.0.210", features = ["serde_derive"] }
+spew = "0.6.0"
+strum = { version = "0.26.3", features = ["derive"] }

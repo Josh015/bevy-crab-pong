@@ -101,7 +101,7 @@ fn spawn_level(
                         mesh: meshes
                             .add(Plane3d::default().mesh().size(1.0, 1.0)),
                         material: materials.add(StandardMaterial {
-                            base_color: Color::rgba(1.0, 1.0, 1.0, 0.9),
+                            base_color: Color::srgba(1.0, 1.0, 1.0, 0.9),
                             base_color_texture: Some(
                                 game_assets.image_water.clone(),
                             ),
@@ -136,7 +136,8 @@ fn spawn_level(
         half_height: 0.5,
         radius: 0.5,
     });
-    let barrier_material = materials.add(Color::hex("750000").unwrap());
+    let barrier_material =
+        materials.add(Color::Srgba(Srgba::hex("750000").unwrap()));
 
     for (i, side) in Side::iter().enumerate() {
         // Spawn Point

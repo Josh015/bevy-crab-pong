@@ -23,6 +23,7 @@ pub enum MenuAction {
     ReturnToStartMenu,
     NextGameMode,
     PrevGameMode,
+    Exit,
 }
 
 impl MenuAction {
@@ -35,6 +36,7 @@ impl MenuAction {
             (ReturnToStartMenu, KeyCode::Backspace),
             (PrevGameMode, KeyCode::ArrowLeft),
             (NextGameMode, KeyCode::ArrowRight),
+            (Exit, KeyCode::Escape),
         ]);
         input_map.insert_multiple([
             (Accept, GamepadButtonType::South),
@@ -152,7 +154,7 @@ fn handle_spawn_ui_message_event(
                                 TextStyle {
                                     font: game_assets.font_menu.clone(),
                                     font_size: 30.0,
-                                    color: Color::RED,
+                                    color: Srgba::RED.into(),
                                 },
                             ),
                             ..default()
@@ -163,10 +165,12 @@ fn handle_spawn_ui_message_event(
 }
 
 fn handle_menu_inputs(
+    mut commands: Commands,
     game_state: Res<State<GameState>>,
     mut game_modes: GameModes,
     mut next_game_state: ResMut<NextState<GameState>>,
     menu_action_state: Res<ActionState<MenuAction>>,
+    focused_windows: Query<(Entity, &Window)>,
 ) {
     use GameState::*;
     use MenuAction::*;
@@ -197,6 +201,15 @@ fn handle_menu_inputs(
         {
             next_game_state.set(StartMenu);
             info!("Start Menu");
+        },
+        _ if menu_action_state.just_pressed(&Exit) => {
+            for (window, focus) in focused_windows.iter() {
+                if !focus.focused {
+                    continue;
+                }
+
+                commands.entity(window).despawn();
+            }
         },
         _ => {},
     }

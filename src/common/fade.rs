@@ -131,7 +131,8 @@ fn animate_fade_effect(
             FadeAnimation::Opacity => {
                 let material = materials.get_mut(material).unwrap();
 
-                material.base_color.set_a(weight);
+                material.base_color = material.base_color.with_alpha(weight);
+
                 material.alpha_mode = if weight < 1.0 {
                     AlphaMode::Blend
                 } else {

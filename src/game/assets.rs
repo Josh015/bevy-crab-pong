@@ -96,7 +96,7 @@ impl FromWorld for CachedAssets {
                 .get_resource_mut::<Assets<StandardMaterial>>()
                 .unwrap();
 
-            materials.add(Color::hex("00A400").unwrap())
+            materials.add(Color::Srgba(Srgba::hex("00A400").unwrap()))
         };
 
         Self {

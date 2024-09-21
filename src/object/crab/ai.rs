@@ -51,7 +51,7 @@ fn make_ai_crabs_target_the_ball_closest_to_their_side(
     >,
 ) {
     for (crab_entity, side) in &crabs_query {
-        let mut closest_ball_distance = std::f32::MAX;
+        let mut closest_ball_distance = f32::MAX;
         let mut closest_ball = None;
 
         for (ball_entity, ball_transform) in &balls_query {

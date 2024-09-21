@@ -97,7 +97,7 @@ fn spawn_crab_on_side(
                 },
                 AccelerationBundle {
                     velocity: VelocityBundle {
-                        heading: Heading(Direction3d::X),
+                        heading: Heading(Dir3::X),
                         ..default()
                     },
                     max_speed: MaxSpeed(crab_config.max_speed),
@@ -113,7 +113,9 @@ fn spawn_crab_on_side(
                         base_color_texture: Some(
                             game_assets.image_crab.clone(),
                         ),
-                        base_color: Color::hex(&crab_config.color).unwrap(),
+                        base_color: Srgba::hex(&crab_config.color)
+                            .unwrap()
+                            .into(),
                         ..default()
                     }),
                     transform: Transform::from_matrix(
@@ -201,11 +203,11 @@ fn crab_and_ball_collisions(
             let ball_deflection_direction =
                 hemisphere_deflection(delta, CRAB_WIDTH, axis);
 
-            commands.entity(ball_entity).insert(Heading(
-                Direction3d::new_unchecked(
+            commands
+                .entity(ball_entity)
+                .insert(Heading(Dir3::new_unchecked(
                     ball_deflection_direction.normalize(),
-                ),
-            ));
+                )));
             info!("Ball({ball_entity:?}): Collided Crab({side:?})");
             break;
         }

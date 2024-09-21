@@ -84,7 +84,7 @@ fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
                     TextStyle {
                         font: game_assets.font_menu.clone(),
                         font_size: 50.0,
-                        color: Color::RED,
+                        color: Srgba::RED.into(),
                     },
                 ),
                 ..default()

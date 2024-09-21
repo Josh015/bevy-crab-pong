@@ -113,7 +113,7 @@ fn ball_movement_direction_gizmos(
         gizmos.line(
             global_transform.translation(),
             global_transform.translation() + heading.0 * DEBUGGING_RAY_LENGTH,
-            Color::RED,
+            Srgba::RED,
         )
     }
 }
@@ -134,9 +134,9 @@ fn crab_stop_position_gizmos(
         gizmos.line(
             global_transform.translation(),
             stop_position_transform.translation,
-            Color::BLUE,
+            Srgba::BLUE,
         );
-        gizmos.cuboid(stop_position_transform, Color::GREEN);
+        gizmos.cuboid(stop_position_transform, Srgba::GREEN);
     }
 }
 
@@ -156,7 +156,7 @@ fn crab_ai_ball_targeting_gizmos(
             gizmos.line(
                 crab_transform.translation(),
                 ball_transform.translation(),
-                Color::PURPLE,
+                Srgba::hex("FF00FF").unwrap(),
             );
         }
     }
@@ -173,7 +173,7 @@ fn crab_ai_ideal_ball_hit_area_gizmos(
         let mut hit_area_transform = global_transform.compute_transform();
 
         hit_area_transform.scale.x = AI_CENTER_HIT_AREA_PERCENTAGE * CRAB_WIDTH;
-        gizmos.cuboid(hit_area_transform, Color::YELLOW);
+        gizmos.cuboid(hit_area_transform, Srgba::hex("FFFF00").unwrap());
     }
 }
 
@@ -209,7 +209,7 @@ fn crab_collider_ball_deflection_direction_gizmos(
                 crab_global_transform.translation(),
                 crab_global_transform.translation()
                     + DEBUGGING_RAY_LENGTH * ball_deflection_direction,
-                Color::WHITE,
+                Srgba::WHITE,
             );
         }
     }

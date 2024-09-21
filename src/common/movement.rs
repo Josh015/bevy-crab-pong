@@ -17,11 +17,11 @@ pub enum Force {
 
 /// The direction in which the entity is moving.
 #[derive(Clone, Component, Debug)]
-pub struct Heading(pub Direction3d);
+pub struct Heading(pub Dir3);
 
 impl Default for Heading {
     fn default() -> Self {
-        Self(Direction3d::Y)
+        Self(Dir3::Y)
     }
 }
 

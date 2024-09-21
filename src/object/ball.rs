@@ -53,7 +53,7 @@ fn spawn_ball_with_position(
             FadeBundle::default(),
             ForStates(vec![GameState::Playing, GameState::Paused]),
             VelocityBundle {
-                heading: Heading(Direction3d::new_unchecked(Vec3::new(
+                heading: Heading(Dir3::new_unchecked(Vec3::new(
                     angle_cos, 0.0, angle_sin,
                 ))),
                 speed: Speed(game_mode.ball_speed),
@@ -62,7 +62,7 @@ fn spawn_ball_with_position(
                 mesh: cached_assets.ball_mesh.clone(),
                 material: materials.add(StandardMaterial {
                     alpha_mode: AlphaMode::Blend,
-                    base_color: Color::rgba(1.0, 1.0, 1.0, 0.0),
+                    base_color: Color::srgba(1.0, 1.0, 1.0, 0.0),
                     ..default()
                 }),
                 transform: Transform::from_matrix(

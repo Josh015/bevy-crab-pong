@@ -26,9 +26,8 @@ pub struct CrabInputBundle {
 impl Default for CrabInputBundle {
     fn default() -> Self {
         use CrabAction::*;
-        use GamepadAxisType::*;
 
-        let mut input_map = InputMap::new([
+        let input_map = InputMap::new([
             (MoveUp, KeyCode::KeyW),
             (MoveUp, KeyCode::ArrowUp),
             (MoveDown, KeyCode::KeyS),
@@ -38,18 +37,30 @@ impl Default for CrabInputBundle {
             (MoveRight, KeyCode::KeyD),
             (MoveRight, KeyCode::ArrowRight),
         ]);
-        input_map.insert_multiple([
-            (MoveUp, GamepadButtonType::DPadUp),
-            (MoveDown, GamepadButtonType::DPadDown),
-            (MoveLeft, GamepadButtonType::DPadLeft),
-            (MoveRight, GamepadButtonType::DPadRight),
-        ]);
-        input_map.insert_multiple([
-            (MoveUp, SingleAxis::positive_only(RightStickY, 0.4)),
-            (MoveDown, SingleAxis::negative_only(RightStickY, -0.4)),
-            (MoveLeft, SingleAxis::negative_only(LeftStickX, -0.4)),
-            (MoveRight, SingleAxis::positive_only(LeftStickX, 0.4)),
-        ]);
+
+        // TODO: Figure out why gamepad bindings keeps causes a panic!
+        // input_map.insert_multiple([
+        //     (MoveUp, GamepadButtonType::DPadUp),
+        //     (MoveDown, GamepadButtonType::DPadDown),
+        //     (MoveLeft, GamepadButtonType::DPadLeft),
+        //     (MoveRight, GamepadButtonType::DPadRight),
+        // ]);
+        // input_map.insert_axis(
+        //     MoveUp,
+        //     GamepadControlAxis::RIGHT_Y.with_deadzone_symmetric(0.4),
+        // );
+        // input_map.insert_axis(
+        //     MoveDown,
+        //     GamepadControlAxis::RIGHT_Y.with_deadzone_symmetric(-0.4),
+        // );
+        // input_map.insert_axis(
+        //     MoveLeft,
+        //     GamepadControlAxis::LEFT_X.with_deadzone_symmetric(-0.4),
+        // );
+        // input_map.insert_axis(
+        //     MoveRight,
+        //     GamepadControlAxis::LEFT_X.with_deadzone_symmetric(0.4),
+        // );
 
         Self {
             input_manager_bundle: InputManagerBundle::<CrabAction> {
