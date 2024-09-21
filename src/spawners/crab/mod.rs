@@ -2,7 +2,6 @@ pub mod ai;
 pub mod input;
 
 use bevy::prelude::*;
-use spew::prelude::*;
 
 use crate::{
     common::{
@@ -30,7 +29,6 @@ use crate::{
 use super::{
     ball::Ball,
     crab::{ai::CrabAi, input::CrabInputBundle},
-    Object,
 };
 
 pub const CRAB_WIDTH: f32 = 0.2;
@@ -39,16 +37,12 @@ pub const CRAB_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
 pub const CRAB_POSITION_X_MAX: f32 =
     (0.5 * SIDE_WIDTH) - BARRIER_RADIUS - (0.5 * CRAB_WIDTH);
 
-/// Makes a crab entity that can deflect balls and move sideways inside a goal.
-#[derive(Component, Debug)]
-pub struct Crab;
-
 pub(super) struct CrabPlugin;
 
 impl Plugin for CrabPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((ai::AiPlugin, input::InputPlugin))
-            .add_spawner((Object::Crab, spawn_crab_on_side))
+            .observe(spawn_crab_on_side)
             .add_systems(
                 Update,
                 restrict_crab_movement_to_space_within_its_own_goal
@@ -61,8 +55,15 @@ impl Plugin for CrabPlugin {
     }
 }
 
+#[derive(Event)]
+pub struct SpawnCrab(pub Side);
+
+/// Makes a crab entity that can deflect balls and move sideways inside a goal.
+#[derive(Component, Debug)]
+pub struct Crab;
+
 fn spawn_crab_on_side(
-    In(side): In<Side>,
+    trigger: Trigger<SpawnCrab>,
     cached_assets: Res<CachedAssets>,
     game_assets: Res<GameAssets>,
     game_modes: GameModes,
@@ -70,6 +71,7 @@ fn spawn_crab_on_side(
     mut materials: ResMut<Assets<StandardMaterial>>,
     spawn_points_query: Query<(Entity, &Side), With<SideSpawnPoint>>,
 ) {
+    let side = trigger.event().0;
     let crab_config = &game_modes.current().competitors[&side];
     let (spawn_point_entity, _) = spawn_points_query
         .iter()

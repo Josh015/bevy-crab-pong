@@ -7,7 +7,7 @@ use crate::{
     },
     game::state::LoadedSet,
     level::side::Side,
-    object::{
+    spawners::{
         ball::Ball,
         crab::{
             ai::{CrabAi, Target, AI_CENTER_HIT_AREA_PERCENTAGE},

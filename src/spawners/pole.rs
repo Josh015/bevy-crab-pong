@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use spew::prelude::*;
 
 use crate::{
     common::{
@@ -15,35 +14,38 @@ use crate::{
     util::reflect,
 };
 
-use super::{ball::Ball, Object};
+use super::ball::Ball;
 
 pub const POLE_DIAMETER: f32 = 0.05;
 pub const POLE_HEIGHT: f32 = 0.1;
 pub const POLE_RADIUS: f32 = 0.5 * POLE_DIAMETER;
 
-/// Makes an entity a pole that deflects all balls away from a side.
-#[derive(Component, Debug)]
-pub struct Pole;
-
 pub(super) struct PolePlugin;
 
 impl Plugin for PolePlugin {
     fn build(&self, app: &mut App) {
-        app.add_spawner((Object::Pole, spawn_pole_on_side))
-            .add_systems(
-                PostUpdate,
-                pole_and_ball_collisions.in_set(PausableSet),
-            );
+        app.observe(spawn_pole_on_side).add_systems(
+            PostUpdate,
+            pole_and_ball_collisions.in_set(PausableSet),
+        );
     }
 }
 
+#[derive(Event)]
+pub struct SpawnPole(pub Side);
+
+/// Makes an entity a pole that deflects all balls away from a side.
+#[derive(Component, Debug)]
+pub struct Pole;
+
 fn spawn_pole_on_side(
-    In(side): In<Side>,
+    trigger: Trigger<SpawnPole>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     beach: Option<Res<Beach>>,
     spawn_points_query: Query<(Entity, &Side), With<SideSpawnPoint>>,
 ) {
+    let side = trigger.event().0;
     let (spawn_point_entity, _) = spawn_points_query
         .iter()
         .find(|(_, spawn_point_side)| **spawn_point_side == side)
@@ -116,11 +118,9 @@ fn pole_and_ball_collisions(
             }
 
             // Deflect the ball away from the pole.
-            commands.entity(entity).insert(Heading(
-                Dir3::new_unchecked(
-                    reflect(*ball_heading.0, axis).normalize(),
-                ),
-            ));
+            commands.entity(entity).insert(Heading(Dir3::new_unchecked(
+                reflect(*ball_heading.0, axis).normalize(),
+            )));
 
             info!("Ball({entity:?}): Collided Pole({side:?})");
             break;

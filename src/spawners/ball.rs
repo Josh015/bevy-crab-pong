@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use rand::prelude::*;
-use spew::prelude::*;
 
 use crate::{
     common::{
@@ -15,28 +14,30 @@ use crate::{
     },
 };
 
-use super::Object;
+pub(super) struct BallPlugin;
+
+impl Plugin for BallPlugin {
+    fn build(&self, app: &mut App) {
+        app.observe(spawn_ball_with_position);
+    }
+}
+
+#[derive(Event)]
+pub struct SpawnBall(pub Vec3);
 
 /// Marks a ball entity that can collide and score.
 #[derive(Component, Debug)]
 pub struct Ball;
 
-pub(super) struct BallPlugin;
-
-impl Plugin for BallPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_spawner((Object::Ball, spawn_ball_with_position));
-    }
-}
-
 fn spawn_ball_with_position(
-    In(position): In<Vec3>,
+    trigger: Trigger<SpawnBall>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     cached_assets: Res<CachedAssets>,
     game_modes: GameModes,
 ) {
     // Spawn a ball that will launch it in a random direction.
+    let position = trigger.event().0;
     let game_mode = game_modes.current();
     let mut rng = SmallRng::from_entropy();
     let angle = rng.gen_range(0.0..std::f32::consts::TAU);

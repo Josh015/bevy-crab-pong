@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use serde::Deserialize;
-use spew::prelude::SpawnEvent;
 use strum::EnumIter;
 
 use crate::{
@@ -10,7 +9,11 @@ use crate::{
         movement::Movement,
     },
     game::state::{PausableSet, PlayableSet},
-    object::{ball::Ball, crab::Crab, pole::Pole, Object},
+    spawners::{
+        ball::Ball,
+        crab::Crab,
+        pole::{Pole, SpawnPole},
+    },
 };
 
 pub const SIDE_WIDTH: f32 = 1.0;
@@ -136,10 +139,10 @@ fn check_if_a_ball_has_scored_in_a_side(
 
 fn block_eliminated_sides_with_poles(
     mut side_eliminated_events: EventReader<SideEliminatedEvent>,
-    mut spawn_events: EventWriter<SpawnEvent<Object, Side>>,
+    mut commands: Commands,
 ) {
     for SideEliminatedEvent(side) in side_eliminated_events.read() {
-        spawn_events.send(SpawnEvent::with_data(Object::Pole, *side));
+        commands.trigger(SpawnPole(*side));
         info!("Side({side:?}): Eliminated");
     }
 }

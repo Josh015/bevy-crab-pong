@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use spew::prelude::SpewSystemSet;
 use strum::{EnumIter, IntoEnumIterator};
 
 use crate::common::fade::{Fade, FadeAnimation};
@@ -52,7 +51,6 @@ impl Plugin for StatePlugin {
                 PlayableSet
                     .in_set(LoadedSet)
                     .after(PausableSet)
-                    .before(SpewSystemSet)
                     .run_if(in_state(GameState::Playing)),
             )
             .configure_sets(

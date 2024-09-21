@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use spew::prelude::SpawnEvent;
 use strum::IntoEnumIterator;
 
 use crate::{
@@ -12,7 +11,11 @@ use crate::{
         modes::GameModes,
         state::{GameState, PlayableSet},
     },
-    object::{ball::Ball, Object},
+    spawners::{
+        ball::{Ball, SpawnBall},
+        crab::SpawnCrab,
+        pole::SpawnPole,
+    },
 };
 
 use super::{
@@ -55,7 +58,6 @@ fn spawn_level(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut spawn_events: EventWriter<SpawnEvent<Object, Side>>,
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
 
@@ -190,7 +192,7 @@ fn spawn_level(
             });
 
         // Poles
-        spawn_events.send(SpawnEvent::with_data(Object::Pole, side));
+        commands.trigger(SpawnPole(side));
     }
 }
 
@@ -200,11 +202,9 @@ fn initialize_beach_data(mut commands: Commands, game_modes: GameModes) {
     });
 }
 
-fn give_each_side_a_new_crab(
-    mut spawn_events: EventWriter<SpawnEvent<Object, Side>>,
-) {
+fn give_each_side_a_new_crab(mut commands: Commands) {
     for side in Side::iter() {
-        spawn_events.send(SpawnEvent::with_data(Object::Crab, side));
+        commands.trigger(SpawnCrab(side));
     }
 }
 
@@ -212,7 +212,7 @@ fn spawn_balls_sequentially_as_needed(
     beach: Res<Beach>,
     balls_query: Query<Entity, With<Ball>>,
     non_moving_balls_query: Query<Entity, (With<Ball>, Without<Movement>)>,
-    mut spawn_events: EventWriter<SpawnEvent<Object, Vec3>>,
+    mut commands: Commands,
 ) {
     // Make balls spawn, fade in, and then launch one at a time.
     if balls_query.iter().len() >= beach.ball_count as usize
@@ -221,12 +221,9 @@ fn spawn_balls_sequentially_as_needed(
         return;
     }
 
-    spawn_events.send(SpawnEvent::with_data(
-        Object::Ball,
-        Vec3::new(
-            BEACH_CENTER_POINT.x,
-            BEACH_CENTER_POINT.y + BALL_HEIGHT_FROM_GROUND,
-            BEACH_CENTER_POINT.z,
-        ),
-    ));
+    commands.trigger(SpawnBall(Vec3::new(
+        BEACH_CENTER_POINT.x,
+        BEACH_CENTER_POINT.y + BALL_HEIGHT_FROM_GROUND,
+        BEACH_CENTER_POINT.z,
+    )));
 }

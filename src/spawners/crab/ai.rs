@@ -7,7 +7,7 @@ use crate::{
     },
     game::state::PlayableSet,
     level::side::Side,
-    object::ball::Ball,
+    spawners::ball::Ball,
 };
 
 use super::{Crab, CRAB_START_POSITION, CRAB_WIDTH};
