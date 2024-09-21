@@ -169,7 +169,7 @@ fn handle_menu_inputs(
     mut game_modes: GameModes,
     mut next_game_state: ResMut<NextState<GameState>>,
     menu_action_state: Res<ActionState<MenuAction>>,
-    mut writer: EventWriter<AppExit>,
+    mut app_exit: EventWriter<AppExit>,
 ) {
     use GameState::*;
     use MenuAction::*;
@@ -202,7 +202,7 @@ fn handle_menu_inputs(
             info!("Start Menu");
         },
         _ if menu_action_state.just_pressed(&Exit) => {
-            writer.send(AppExit::Success);
+            app_exit.send_default();
         },
         _ => {},
     }
