@@ -12,6 +12,6 @@ bevy = { version = "0.14.2", features = ["file_watcher"] }
 bevy_asset_loader = { version = "0.21.0", features = ["standard_dynamic_assets"] }
 bevy_common_assets = { version = "0.11.0", features = ["yaml"] }
 leafwing-input-manager = "0.15.0"
-rand = { version = "0.8.5", features = ["small_rng"] }
+rand = { version = "0.9.0", features = ["small_rng"] }
 serde = { version = "1.0.210", features = ["serde_derive"] }
 strum = { version = "0.26.3", features = ["derive"] }

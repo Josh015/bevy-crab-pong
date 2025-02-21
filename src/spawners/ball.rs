@@ -39,8 +39,8 @@ fn spawn_ball_with_position(
     // Spawn a ball that will launch it in a random direction.
     let position = trigger.event().0;
     let game_mode = game_modes.current();
-    let mut rng = SmallRng::from_entropy();
-    let angle = rng.gen_range(0.0..std::f32::consts::TAU);
+    let mut rng = SmallRng::from_os_rng();
+    let angle = rng.random_range(0.0..std::f32::consts::TAU);
     let (angle_sin, angle_cos) = angle.sin_cos();
     let ball = commands
         .spawn((
