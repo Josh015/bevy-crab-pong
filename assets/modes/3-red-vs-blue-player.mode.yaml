@@ -6,7 +6,7 @@ competitors:
   Bottom:
     color: FF0000
     team: 3
-    player: Input
+    controller: Player
     hit_points: 5
     seconds_to_max_speed: 0.6
     max_speed: 2
@@ -14,7 +14,7 @@ competitors:
   Right:
     color: FF0000
     team: 3
-    player: Input
+    controller: Player
     hit_points: 5
     seconds_to_max_speed: 0.6
     max_speed: 2
@@ -22,7 +22,7 @@ competitors:
   Top:
     color: 0000FF
     team: 5
-    player: AI
+    controller: AI
     hit_points: 5
     seconds_to_max_speed: 0.6
     max_speed: 2
@@ -30,7 +30,7 @@ competitors:
   Left:
     color: 0000FF
     team: 5
-    player: AI
+    controller: AI
     hit_points: 5
     seconds_to_max_speed: 0.6
     max_speed: 2

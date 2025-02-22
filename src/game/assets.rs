@@ -31,15 +31,15 @@ pub struct GameMode {
 pub struct CompetitorConfig {
     pub color: String,
     pub team: NonZeroUsize,
-    pub player: Player,
+    pub controller: CrabController,
     pub hit_points: NonZeroU8,
     pub max_speed: f32,
     pub seconds_to_max_speed: f32,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
-pub enum Player {
-    Input,
+pub enum CrabController {
+    Player,
     AI,
 }
 

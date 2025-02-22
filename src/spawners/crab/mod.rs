@@ -15,7 +15,7 @@ use crate::{
         },
     },
     game::{
-        assets::{CachedAssets, GameAssets, Player},
+        assets::{CachedAssets, CrabController, GameAssets},
         modes::GameModes,
         state::PausableSet,
     },
@@ -122,7 +122,7 @@ fn spawn_crab_on_side(
                 )),
             ));
 
-            if crab_config.player == Player::AI {
+            if crab_config.controller == CrabController::AI {
                 crab.insert(CrabAi);
             } else {
                 crab.insert(CrabInputBundle::default());

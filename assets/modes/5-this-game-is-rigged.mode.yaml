@@ -6,7 +6,7 @@ competitors:
   Bottom:
     color: 000000
     team: 1
-    player: AI
+    controller: AI
     hit_points: 50
     seconds_to_max_speed: 0.01
     max_speed: 2
@@ -14,7 +14,7 @@ competitors:
   Right:
     color: FFFF00
     team: 2
-    player: AI
+    controller: AI
     hit_points: 2
     seconds_to_max_speed: 0.6
     max_speed: 2
@@ -22,7 +22,7 @@ competitors:
   Top:
     color: FF00FF
     team: 2
-    player: AI
+    controller: AI
     hit_points: 2
     seconds_to_max_speed: 0.6
     max_speed: 2
@@ -30,7 +30,7 @@ competitors:
   Left:
     color: 00FFFF
     team: 2
-    player: AI
+    controller: AI
     hit_points: 2
     seconds_to_max_speed: 0.6
     max_speed: 2

@@ -40,10 +40,10 @@ impl Default for CrabInputBundle {
 
         // TODO: Figure out why gamepad bindings keeps causes a panic!
         // input_map.insert_multiple([
-        //     (MoveUp, GamepadButtonType::DPadUp),
-        //     (MoveDown, GamepadButtonType::DPadDown),
-        //     (MoveLeft, GamepadButtonType::DPadLeft),
-        //     (MoveRight, GamepadButtonType::DPadRight),
+        //     (MoveUp, GamepadButton::DPadUp),
+        //     (MoveDown, GamepadButton::DPadDown),
+        //     (MoveLeft, GamepadButton::DPadLeft),
+        //     (MoveRight, GamepadButton::DPadRight),
         // ]);
         // input_map.insert_axis(
         //     MoveUp,
