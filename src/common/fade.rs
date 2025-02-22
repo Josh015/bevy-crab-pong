@@ -10,6 +10,7 @@ pub const FADE_DURATION_IN_SECONDS: f32 = 1.0;
 
 /// Makes an entity fade in/out and delay activation/despawning respectively.
 #[derive(Clone, Component, Debug, Eq, PartialEq)]
+#[require(FadeAnimation)]
 #[component(storage = "SparseSet")]
 pub enum Fade {
     In(Timer),
@@ -57,13 +58,6 @@ pub enum FadeAnimation {
         /// Use either 0/1 to remove/mark an axis for the scale effect.
         axis_mask: Vec3,
     },
-}
-
-/// Assigns an entity an animation and gets it to start fading.
-#[derive(Bundle, Clone, Debug, Default)]
-pub struct FadeBundle {
-    pub fade_animation: FadeAnimation,
-    pub fade: Fade,
 }
 
 /// Inserts a component after a fade-in finishes.

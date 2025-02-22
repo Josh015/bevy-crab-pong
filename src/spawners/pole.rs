@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     common::{
         collider::{CircleCollider, Collider},
-        fade::{Fade, FadeAnimation, FadeBundle, RemoveBeforeFadeOut},
+        fade::{Fade, FadeAnimation, RemoveBeforeFadeOut},
         movement::{Heading, Movement},
     },
     game::{assets::CachedAssets, state::PausableSet},
@@ -59,20 +59,18 @@ fn spawn_pole_on_side(
                 side,
                 Collider,
                 RemoveBeforeFadeOut::<Collider>::default(),
-                FadeBundle {
-                    fade_animation: FadeAnimation::Scale {
-                        max_scale: Vec3::new(
-                            POLE_DIAMETER,
-                            SIDE_WIDTH,
-                            POLE_DIAMETER,
-                        ),
-                        axis_mask: Vec3::new(1.0, 0.0, 1.0),
-                    },
-                    fade: if beach.is_some() {
-                        Fade::in_default()
-                    } else {
-                        Fade::In(Timer::default()) // Instantaneous
-                    },
+                if beach.is_some() {
+                    Fade::in_default()
+                } else {
+                    Fade::In(Timer::default()) // Instantaneous
+                },
+                FadeAnimation::Scale {
+                    max_scale: Vec3::new(
+                        POLE_DIAMETER,
+                        SIDE_WIDTH,
+                        POLE_DIAMETER,
+                    ),
+                    axis_mask: Vec3::new(1.0, 0.0, 1.0),
                 },
                 Mesh3d(cached_assets.pole_mesh.clone()),
                 MeshMaterial3d(cached_assets.pole_material.clone()),

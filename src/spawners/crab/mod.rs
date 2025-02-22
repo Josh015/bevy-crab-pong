@@ -6,9 +6,7 @@ use bevy::prelude::*;
 use crate::{
     common::{
         collider::{CircleCollider, Collider},
-        fade::{
-            FadeAnimation, FadeBundle, InsertAfterFadeIn, RemoveBeforeFadeOut,
-        },
+        fade::{Fade, FadeAnimation, InsertAfterFadeIn, RemoveBeforeFadeOut},
         movement::{
             Acceleration, Force, Heading, MaxSpeed, Movement, Speed,
             StoppingDistance,
@@ -88,14 +86,10 @@ fn spawn_crab_on_side(
                 InsertAfterFadeIn::<Movement>::default(),
                 RemoveBeforeFadeOut::<Movement>::default(),
                 RemoveBeforeFadeOut::<Collider>::default(),
-                FadeBundle {
-                    fade_animation: FadeAnimation::Scale {
-                        max_scale: Vec3::new(
-                            CRAB_WIDTH, CRAB_DEPTH, CRAB_DEPTH,
-                        ),
-                        axis_mask: Vec3::ONE,
-                    },
-                    ..default()
+                Fade::default(),
+                FadeAnimation::Scale {
+                    max_scale: Vec3::new(CRAB_WIDTH, CRAB_DEPTH, CRAB_DEPTH),
+                    axis_mask: Vec3::ONE,
                 },
                 Heading(Dir3::X),
                 MaxSpeed(crab_config.max_speed),

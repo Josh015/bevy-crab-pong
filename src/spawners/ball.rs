@@ -4,7 +4,7 @@ use rand::prelude::*;
 use crate::{
     common::{
         collider::{CircleCollider, Collider},
-        fade::{FadeBundle, InsertAfterFadeIn, RemoveBeforeFadeOut},
+        fade::{Fade, InsertAfterFadeIn, RemoveBeforeFadeOut},
         movement::{Heading, Movement, Speed},
     },
     game::{
@@ -51,7 +51,7 @@ fn spawn_ball_with_position(
             InsertAfterFadeIn::<Movement>::default(),
             InsertAfterFadeIn::<Collider>::default(),
             RemoveBeforeFadeOut::<Collider>::default(),
-            FadeBundle::default(),
+            Fade::default(),
             ForStates(vec![GameState::Playing, GameState::Paused]),
             Heading(Dir3::new_unchecked(Vec3::new(angle_cos, 0.0, angle_sin))),
             Speed(game_mode.ball_speed),
