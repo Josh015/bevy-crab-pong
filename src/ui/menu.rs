@@ -39,11 +39,11 @@ impl MenuAction {
             (Exit, KeyCode::Escape),
         ]);
         input_map.insert_multiple([
-            (Accept, GamepadButtonType::South),
-            (PauseUnpause, GamepadButtonType::Start),
-            (ReturnToStartMenu, GamepadButtonType::Select),
-            (PrevGameMode, GamepadButtonType::DPadLeft),
-            (NextGameMode, GamepadButtonType::DPadRight),
+            (Accept, GamepadButton::South),
+            (PauseUnpause, GamepadButton::Start),
+            (ReturnToStartMenu, GamepadButton::Select),
+            (PrevGameMode, GamepadButton::DPadLeft),
+            (NextGameMode, GamepadButton::DPadRight),
         ]);
 
         input_map
@@ -118,47 +118,37 @@ fn handle_spawn_ui_message_event(
         commands
             .spawn((
                 ForStates(vec![*game_state]),
-                NodeBundle {
-                    style: Style {
-                        width: Val::Percent(100.0),
-                        height: Val::Percent(100.0),
-                        justify_content: JustifyContent::SpaceBetween,
-                        ..default()
-                    },
-                    background_color: Color::NONE.into(),
+                Node {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    justify_content: JustifyContent::SpaceBetween,
                     ..default()
                 },
             ))
             .with_children(|builder| {
                 builder
-                    .spawn(NodeBundle {
-                        style: Style {
-                            width: Val::Percent(100.0),
-                            height: Val::Percent(100.0),
-                            position_type: PositionType::Absolute,
-                            align_items: AlignItems::Center,
-                            justify_content: JustifyContent::Center,
-                            ..default()
-                        },
-                        background_color: Color::NONE.into(),
+                    .spawn(Node {
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
+                        position_type: PositionType::Absolute,
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::Center,
                         ..default()
                     })
                     .with_children(|builder| {
-                        builder.spawn(TextBundle {
-                            style: Style {
+                        builder.spawn((
+                            Node {
                                 margin: UiRect::all(Val::Px(5.0)),
                                 ..default()
                             },
-                            text: Text::from_section(
-                                message.clone(),
-                                TextStyle {
-                                    font: game_assets.font_menu.clone(),
-                                    font_size: 30.0,
-                                    color: Srgba::RED.into(),
-                                },
-                            ),
-                            ..default()
-                        });
+                            Text(message.clone()),
+                            TextFont {
+                                font: game_assets.font_menu.clone(),
+                                font_size: 30.0,
+                                ..default()
+                            },
+                            TextColor(Srgba::RED.into()),
+                        ));
                     });
             });
     }

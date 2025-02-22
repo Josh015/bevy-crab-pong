@@ -29,7 +29,6 @@ fn main() {
                     ..Default::default()
                 }),
         )
-        .insert_resource(Msaa::default())
         .insert_resource(ClearColor(Color::srgba(0.7, 0.9, 1.0, 1.0)))
         .add_plugins((
             common::CommonPlugin,

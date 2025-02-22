@@ -7,6 +7,7 @@ use super::side::SIDE_WIDTH;
 /// Marks a [`Camera3d`] entity to sway back and forth in a slow reciprocating
 /// motion while looking at the center of the beach.
 #[derive(Component, Debug)]
+#[require(Camera3d, Transform)]
 pub struct SwayingCamera {
     pub speed: f32,
     pub target: Vec3,
@@ -27,8 +28,8 @@ fn make_camera_slowly_sway_back_and_forth(
     mut query: Query<(&SwayingCamera, &mut Transform), With<Camera3d>>,
 ) {
     let (swaying_camera, mut transform) = query.single_mut();
-    let x = (time.elapsed_seconds() * swaying_camera.speed).sin()
-        * (0.5 * SIDE_WIDTH);
+    let x =
+        (time.elapsed_secs() * swaying_camera.speed).sin() * (0.5 * SIDE_WIDTH);
 
     *transform = Transform::from_xyz(x * 0.5, 2.0, 1.5)
         .looking_at(swaying_camera.target, Vec3::Y);

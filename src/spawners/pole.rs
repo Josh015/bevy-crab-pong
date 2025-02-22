@@ -24,7 +24,7 @@ pub(super) struct PolePlugin;
 
 impl Plugin for PolePlugin {
     fn build(&self, app: &mut App) {
-        app.observe(spawn_pole_on_side).add_systems(
+        app.add_observer(spawn_pole_on_side).add_systems(
             PostUpdate,
             pole_and_ball_collisions.in_set(PausableSet),
         );
@@ -74,23 +74,18 @@ fn spawn_pole_on_side(
                         Fade::In(Timer::default()) // Instantaneous
                     },
                 },
-                PbrBundle {
-                    mesh: cached_assets.pole_mesh.clone(),
-                    material: cached_assets.pole_material.clone(),
-                    transform: Transform::from_matrix(
-                        Mat4::from_scale_rotation_translation(
-                            Vec3::splat(f32::EPSILON),
-                            Quat::from_euler(
-                                EulerRot::XYZ,
-                                0.0,
-                                0.0,
-                                std::f32::consts::FRAC_PI_2,
-                            ),
-                            Vec3::new(0.0, POLE_HEIGHT, 0.0),
-                        ),
+                Mesh3d(cached_assets.pole_mesh.clone()),
+                MeshMaterial3d(cached_assets.pole_material.clone()),
+                Transform::from_matrix(Mat4::from_scale_rotation_translation(
+                    Vec3::splat(f32::EPSILON),
+                    Quat::from_euler(
+                        EulerRot::XYZ,
+                        0.0,
+                        0.0,
+                        std::f32::consts::FRAC_PI_2,
                     ),
-                    ..default()
-                },
+                    Vec3::new(0.0, POLE_HEIGHT, 0.0),
+                )),
             ));
         });
 

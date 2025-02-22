@@ -102,7 +102,7 @@ fn animate_fade_effect(
     mut query: Query<(
         &mut Fade,
         &mut Transform,
-        &Handle<StandardMaterial>,
+        &MeshMaterial3d<StandardMaterial>,
         &FadeAnimation,
     )>,
 ) {

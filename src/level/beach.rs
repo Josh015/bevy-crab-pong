@@ -63,11 +63,12 @@ fn spawn_level(
 
     // Cameras
     commands.spawn((
+        Camera3d::default(),
+        Msaa::Sample8,
         SwayingCamera {
             speed: game_config.swaying_camera_speed,
             target: BEACH_CENTER_POINT,
         },
-        Camera3dBundle::default(),
     ));
 
     // Light
@@ -77,61 +78,53 @@ fn spawn_level(
         std::f32::consts::FRAC_PI_4,
         -std::f32::consts::FRAC_PI_4,
     );
-    commands.spawn(DirectionalLightBundle {
-        directional_light: DirectionalLight {
+    commands.spawn((
+        DirectionalLight {
             illuminance: 2_500.0,
             // shadows_enabled: true,
             ..default()
         },
-        transform: Transform::from_matrix(light_transform),
-        ..default()
-    });
+        Transform::from_matrix(light_transform),
+    ));
 
     // Ocean
     commands
-        .spawn((
-            Ocean {
-                speed: game_config.ocean_scroll_speed,
-            },
-            PbrBundle::default(),
-        ))
+        .spawn((Ocean {
+            speed: game_config.ocean_scroll_speed,
+        },))
         .with_children(|builder| {
             // HACK: Simulate a tiled textured scrolling ocean.
             for x in -3..=3 {
                 for z in -3..=3 {
-                    builder.spawn((PbrBundle {
-                        mesh: meshes
-                            .add(Plane3d::default().mesh().size(1.0, 1.0)),
-                        material: materials.add(StandardMaterial {
+                    builder.spawn((
+                        Mesh3d(
+                            meshes
+                                .add(Plane3d::default().mesh().size(1.0, 1.0)),
+                        ),
+                        MeshMaterial3d(materials.add(StandardMaterial {
                             base_color: Color::srgba(1.0, 1.0, 1.0, 0.9),
                             base_color_texture: Some(
                                 game_assets.image_water.clone(),
                             ),
                             alpha_mode: AlphaMode::Blend,
                             ..default()
-                        }),
-                        transform: Transform::from_xyz(
-                            x as f32, -0.01, z as f32,
-                        ),
-                        ..default()
-                    },));
+                        })),
+                        Transform::from_xyz(x as f32, -0.01, z as f32),
+                    ));
                 }
             }
         });
 
     // Beach
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Plane3d::default().mesh().size(1.0, 1.0)),
-        material: materials.add(game_assets.image_sand.clone()),
-        transform: Transform::from_matrix(
-            Mat4::from_scale_rotation_translation(
-                Vec3::splat(SIDE_WIDTH),
-                Quat::IDENTITY,
-                BEACH_CENTER_POINT,
-            ),
-        ),
-        ..default()
-    });
+    commands.spawn((
+        Mesh3d(meshes.add(Plane3d::default().mesh().size(1.0, 1.0))),
+        MeshMaterial3d(materials.add(game_assets.image_sand.clone())),
+        Transform::from_matrix(Mat4::from_scale_rotation_translation(
+            Vec3::splat(SIDE_WIDTH),
+            Quat::IDENTITY,
+            BEACH_CENTER_POINT,
+        )),
+    ));
 
     // Goals
     let cylinder = meshes.add(Cylinder {
@@ -147,19 +140,16 @@ fn spawn_level(
             .spawn((
                 SideSpawnPoint,
                 side,
-                PbrBundle {
-                    transform: Transform::from_rotation(Quat::from_axis_angle(
-                        Vec3::Y,
-                        std::f32::consts::TAU
-                            * (i as f32 / Side::iter().len() as f32),
-                    ))
-                    .mul_transform(Transform::from_xyz(
-                        0.0,
-                        0.0,
-                        0.5 * SIDE_WIDTH,
-                    )),
-                    ..default()
-                },
+                Transform::from_rotation(Quat::from_axis_angle(
+                    Vec3::Y,
+                    std::f32::consts::TAU
+                        * (i as f32 / Side::iter().len() as f32),
+                ))
+                .mul_transform(Transform::from_xyz(
+                    0.0,
+                    0.0,
+                    0.5 * SIDE_WIDTH,
+                )),
             ))
             .with_children(|builder| {
                 // Barrier
@@ -168,26 +158,23 @@ fn spawn_level(
                     CircleCollider {
                         radius: BARRIER_RADIUS,
                     },
-                    PbrBundle {
-                        mesh: cylinder.clone(),
-                        material: barrier_material.clone(),
-                        transform: Transform::from_matrix(
-                            Mat4::from_scale_rotation_translation(
-                                Vec3::new(
-                                    BARRIER_DIAMETER,
-                                    BARRIER_HEIGHT,
-                                    BARRIER_DIAMETER,
-                                ),
-                                Quat::IDENTITY,
-                                Vec3::new(
-                                    0.5 * SIDE_WIDTH,
-                                    0.5 * BARRIER_HEIGHT,
-                                    0.0,
-                                ),
+                    Mesh3d(cylinder.clone()),
+                    MeshMaterial3d(barrier_material.clone()),
+                    Transform::from_matrix(
+                        Mat4::from_scale_rotation_translation(
+                            Vec3::new(
+                                BARRIER_DIAMETER,
+                                BARRIER_HEIGHT,
+                                BARRIER_DIAMETER,
+                            ),
+                            Quat::IDENTITY,
+                            Vec3::new(
+                                0.5 * SIDE_WIDTH,
+                                0.5 * BARRIER_HEIGHT,
+                                0.0,
                             ),
                         ),
-                        ..default()
-                    },
+                    ),
                 ));
             });
 

@@ -29,7 +29,7 @@ fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
     let hp_ui_configs = [
         (
             Side::Bottom,
-            Style {
+            Node {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
                 justify_content: JustifyContent::Center,
@@ -40,7 +40,7 @@ fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
         ),
         (
             Side::Right,
-            Style {
+            Node {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
                 justify_content: JustifyContent::Center,
@@ -51,7 +51,7 @@ fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
         ),
         (
             Side::Top,
-            Style {
+            Node {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
                 justify_content: JustifyContent::Center,
@@ -62,7 +62,7 @@ fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
         ),
         (
             Side::Left,
-            Style {
+            Node {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
                 justify_content: JustifyContent::Center,
@@ -73,22 +73,18 @@ fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
         ),
     ];
 
-    for (side, style) in &hp_ui_configs {
+    for (side, node) in &hp_ui_configs {
         commands.spawn((
             HitPointsUi,
             *side,
-            TextBundle {
-                style: style.clone(),
-                text: Text::from_section(
-                    "0",
-                    TextStyle {
-                        font: game_assets.font_menu.clone(),
-                        font_size: 50.0,
-                        color: Srgba::RED.into(),
-                    },
-                ),
-                ..default()
+            node.clone(),
+            Text("0".to_string()),
+            TextFont {
+                font: game_assets.font_menu.clone(),
+                font_size: 50.0,
+                ..Default::default()
             },
+            TextColor(Srgba::RED.into()),
         ));
     }
 }
@@ -100,6 +96,6 @@ fn update_hit_points_ui(
     for (mut text, side) in &mut hp_ui_query {
         let competitor = &competitors.0[side];
 
-        text.sections[0].value = competitor.hit_points.to_string();
+        text.0 = competitor.hit_points.to_string();
     }
 }

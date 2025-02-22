@@ -17,7 +17,9 @@ use crate::{
 pub(super) struct BallPlugin;
 
 impl Plugin for BallPlugin {
-    fn build(&self, app: &mut App) { app.observe(spawn_ball_with_position); }
+    fn build(&self, app: &mut App) {
+        app.add_observer(spawn_ball_with_position);
+    }
 }
 
 #[derive(Event)]
@@ -57,22 +59,17 @@ fn spawn_ball_with_position(
                 ))),
                 speed: Speed(game_mode.ball_speed),
             },
-            PbrBundle {
-                mesh: cached_assets.ball_mesh.clone(),
-                material: materials.add(StandardMaterial {
-                    alpha_mode: AlphaMode::Blend,
-                    base_color: Color::srgba(1.0, 1.0, 1.0, 0.0),
-                    ..default()
-                }),
-                transform: Transform::from_matrix(
-                    Mat4::from_scale_rotation_translation(
-                        Vec3::splat(game_mode.ball_size),
-                        Quat::IDENTITY,
-                        position,
-                    ),
-                ),
+            Mesh3d(cached_assets.ball_mesh.clone()),
+            MeshMaterial3d(materials.add(StandardMaterial {
+                alpha_mode: AlphaMode::Blend,
+                base_color: Color::srgba(1.0, 1.0, 1.0, 0.0),
                 ..default()
-            },
+            })),
+            Transform::from_matrix(Mat4::from_scale_rotation_translation(
+                Vec3::splat(game_mode.ball_size),
+                Quat::IDENTITY,
+                position,
+            )),
         ))
         .id();
 

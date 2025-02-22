@@ -42,7 +42,7 @@ pub(super) struct CrabPlugin;
 impl Plugin for CrabPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((ai::AiPlugin, input::InputPlugin))
-            .observe(spawn_crab_on_side)
+            .add_observer(spawn_crab_on_side)
             .add_systems(
                 Update,
                 restrict_crab_movement_to_space_within_its_own_goal
@@ -109,26 +109,17 @@ fn spawn_crab_on_side(
                     ),
                     ..default()
                 },
-                PbrBundle {
-                    mesh: cached_assets.crab_mesh.clone(),
-                    material: materials.add(StandardMaterial {
-                        base_color_texture: Some(
-                            game_assets.image_crab.clone(),
-                        ),
-                        base_color: Srgba::hex(&crab_config.color)
-                            .unwrap()
-                            .into(),
-                        ..default()
-                    }),
-                    transform: Transform::from_matrix(
-                        Mat4::from_scale_rotation_translation(
-                            Vec3::splat(f32::EPSILON),
-                            Quat::IDENTITY,
-                            CRAB_START_POSITION,
-                        ),
-                    ),
+                Mesh3d(cached_assets.crab_mesh.clone()),
+                MeshMaterial3d(materials.add(StandardMaterial {
+                    base_color_texture: Some(game_assets.image_crab.clone()),
+                    base_color: Srgba::hex(&crab_config.color).unwrap().into(),
                     ..default()
-                },
+                })),
+                Transform::from_matrix(Mat4::from_scale_rotation_translation(
+                    Vec3::splat(f32::EPSILON),
+                    Quat::IDENTITY,
+                    CRAB_START_POSITION,
+                )),
             ));
 
             if crab_config.player == Player::AI {

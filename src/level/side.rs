@@ -28,6 +28,7 @@ pub struct SideEliminatedEvent(pub Side);
 
 /// Marks an entity that can be used as a parent to spawn [`Side`] entities.
 #[derive(Component, Debug)]
+#[require(Transform, Visibility)]
 pub struct SideSpawnPoint;
 
 /// Assigns an entity to a given side of the beach.

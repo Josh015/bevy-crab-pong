@@ -77,7 +77,7 @@ fn acceleration(
     >,
 ) {
     for (acceleration, mut speed, force, max_speed) in &mut query {
-        let delta_speed = acceleration.0 * time.delta_seconds();
+        let delta_speed = acceleration.0 * time.delta_secs();
 
         speed.0 = speed
             .0
@@ -98,7 +98,7 @@ fn deceleration(
     >,
 ) {
     for (acceleration, mut speed) in &mut query {
-        let delta_speed = acceleration.0 * time.delta_seconds();
+        let delta_speed = acceleration.0 * time.delta_secs();
         speed.0 = decelerate_speed(speed.0, delta_speed);
     }
 }
@@ -108,7 +108,7 @@ fn velocity(
     mut query: Query<(&Speed, &Heading, &mut Transform), With<Movement>>,
 ) {
     for (speed, heading, mut transform) in &mut query {
-        transform.translation += heading.0 * (speed.0 * time.delta_seconds());
+        transform.translation += heading.0 * (speed.0 * time.delta_secs());
     }
 }
 
