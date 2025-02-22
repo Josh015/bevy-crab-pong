@@ -1,5 +1,5 @@
 pub mod ai;
-pub mod input;
+pub mod player;
 
 use bevy::prelude::*;
 
@@ -28,7 +28,7 @@ use crate::{
 
 use super::{
     ball::Ball,
-    crab::{ai::CrabAi, input::CrabInputBundle},
+    crab::{ai::CrabAi, player::Player},
 };
 
 pub const CRAB_WIDTH: f32 = 0.2;
@@ -41,7 +41,7 @@ pub(super) struct CrabPlugin;
 
 impl Plugin for CrabPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((ai::AiPlugin, input::InputPlugin))
+        app.add_plugins((ai::AiPlugin, player::InputPlugin))
             .add_observer(spawn_crab_on_side)
             .add_systems(
                 Update,
@@ -59,7 +59,7 @@ impl Plugin for CrabPlugin {
 pub struct SpawnCrab(pub Side);
 
 /// Makes a crab entity that can deflect balls and move sideways inside a goal.
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Default)]
 pub struct Crab;
 
 fn spawn_crab_on_side(
@@ -125,7 +125,7 @@ fn spawn_crab_on_side(
             if crab_config.controller == CrabController::AI {
                 crab.insert(CrabAi);
             } else {
-                crab.insert(CrabInputBundle::default());
+                crab.insert(Player);
             }
         });
 
