@@ -28,7 +28,7 @@ use crate::{
 
 use super::{
     ball::Ball,
-    crab::{ai::CrabAi, player::Player},
+    crab::{ai::AI, player::Player},
 };
 
 pub const CRAB_WIDTH: f32 = 0.2;
@@ -123,7 +123,7 @@ fn spawn_crab_on_side(
             ));
 
             if crab_config.controller == CrabController::AI {
-                crab.insert(CrabAi);
+                crab.insert(AI);
             } else {
                 crab.insert(Player);
             }

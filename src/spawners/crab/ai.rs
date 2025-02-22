@@ -16,9 +16,10 @@ pub const AI_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.70;
 
 /// Marks a [`Crab`] entity as being controlled by AI.
 #[derive(Component, Debug)]
-pub struct CrabAi;
+#[require(Crab)]
+pub struct AI;
 
-/// The [`Ball`] entity targeted by an [`CrabAi`] [`Crab`] entity.
+/// The [`Ball`] entity targeted by an [`AI`] [`Crab`] entity.
 #[derive(Clone, Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct Target(pub Entity);
@@ -41,10 +42,7 @@ impl Plugin for AiPlugin {
 
 fn make_ai_crabs_target_the_ball_closest_to_their_side(
     mut commands: Commands,
-    crabs_query: Query<
-        (Entity, &Side),
-        (With<CrabAi>, With<Crab>, With<Movement>),
-    >,
+    crabs_query: Query<(Entity, &Side), (With<AI>, With<Crab>, With<Movement>)>,
     balls_query: Query<
         (Entity, &GlobalTransform),
         (With<Ball>, With<Movement>, With<Collider>),
@@ -81,7 +79,7 @@ fn move_ai_crabs_toward_their_targeted_ball(
             &StoppingDistance,
             Option<&Target>,
         ),
-        (With<CrabAi>, With<Crab>, With<Movement>),
+        (With<AI>, With<Crab>, With<Movement>),
     >,
     balls_query: Query<
         &GlobalTransform,
