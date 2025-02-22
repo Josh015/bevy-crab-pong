@@ -14,4 +14,4 @@ bevy_common_assets = { version = "0.11.0", features = ["yaml"] }
 leafwing-input-manager = "0.15.0"
 rand = { version = "0.9.0", features = ["small_rng"] }
 serde = { version = "1.0.218", features = ["serde_derive"] }
-strum = { version = "0.26.3", features = ["derive"] }
+strum = { version = "0.27.1", features = ["derive"] }
