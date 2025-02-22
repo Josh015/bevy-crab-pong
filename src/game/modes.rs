@@ -14,7 +14,7 @@ pub struct GameModes<'w> {
     selected: ResMut<'w, SelectedGameMode>,
 }
 
-impl<'w> GameModes<'w> {
+impl GameModes<'_> {
     /// Gets the current game mode.
     pub fn current(&self) -> &GameMode {
         self.game_modes

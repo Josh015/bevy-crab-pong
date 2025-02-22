@@ -25,7 +25,7 @@ pub struct Player;
 fn player_input_map() -> InputMap<CrabAction> {
     use CrabAction::*;
 
-    let input_map = InputMap::new([
+    let mut input_map = InputMap::new([
         (MoveUp, KeyCode::KeyW),
         (MoveUp, KeyCode::ArrowUp),
         (MoveDown, KeyCode::KeyS),
@@ -36,29 +36,29 @@ fn player_input_map() -> InputMap<CrabAction> {
         (MoveRight, KeyCode::ArrowRight),
     ]);
 
-    // TODO: Figure out why gamepad bindings keeps causes a panic!
-    // input_map.insert_multiple([
-    //     (MoveUp, GamepadButton::DPadUp),
-    //     (MoveDown, GamepadButton::DPadDown),
-    //     (MoveLeft, GamepadButton::DPadLeft),
-    //     (MoveRight, GamepadButton::DPadRight),
-    // ]);
-    // input_map.insert_axis(
-    //     MoveUp,
-    //     GamepadControlAxis::RIGHT_Y.with_deadzone_symmetric(0.4),
-    // );
-    // input_map.insert_axis(
-    //     MoveDown,
-    //     GamepadControlAxis::RIGHT_Y.with_deadzone_symmetric(-0.4),
-    // );
-    // input_map.insert_axis(
-    //     MoveLeft,
-    //     GamepadControlAxis::LEFT_X.with_deadzone_symmetric(-0.4),
-    // );
-    // input_map.insert_axis(
-    //     MoveRight,
-    //     GamepadControlAxis::LEFT_X.with_deadzone_symmetric(0.4),
-    // );
+    // TODO: Figure out why gamepad bindings keeps causing a panic!
+    input_map.insert_multiple([
+        (MoveUp, GamepadButton::DPadUp),
+        (MoveDown, GamepadButton::DPadDown),
+        (MoveLeft, GamepadButton::DPadLeft),
+        (MoveRight, GamepadButton::DPadRight),
+    ]);
+    input_map.insert_axis(
+        MoveUp,
+        GamepadControlAxis::RIGHT_Y.with_deadzone_symmetric(0.4),
+    );
+    input_map.insert_axis(
+        MoveDown,
+        GamepadControlAxis::RIGHT_Y.with_deadzone_symmetric(-0.4),
+    );
+    input_map.insert_axis(
+        MoveLeft,
+        GamepadControlAxis::LEFT_X.with_deadzone_symmetric(-0.4),
+    );
+    input_map.insert_axis(
+        MoveRight,
+        GamepadControlAxis::LEFT_X.with_deadzone_symmetric(0.4),
+    );
 
     input_map
 }
