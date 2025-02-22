@@ -17,6 +17,7 @@ pub enum Force {
 
 /// The direction in which the entity is moving.
 #[derive(Clone, Component, Debug)]
+#[require(Speed)]
 pub struct Heading(pub Dir3);
 
 impl Default for Heading {
@@ -33,28 +34,13 @@ pub struct MaxSpeed(pub f32);
 
 /// The `max_speed / seconds_to_reach_max_speed`.
 #[derive(Clone, Component, Debug, Default)]
+#[require(Heading, MaxSpeed, StoppingDistance)]
 pub struct Acceleration(pub f32);
 
 /// Distance from an entity's current position to where it will come to a full
 /// stop if it begins decelerating immediately.
 #[derive(Clone, Component, Debug, Default)]
 pub struct StoppingDistance(pub f32);
-
-/// Marks an entity as moving with a fixed speed and direction.
-#[derive(Bundle, Clone, Debug, Default)]
-pub struct VelocityBundle {
-    pub heading: Heading,
-    pub speed: Speed,
-}
-
-/// Marks an entity that accelerates and decelerates when [`Force`] is applied.
-#[derive(Bundle, Clone, Debug, Default)]
-pub struct AccelerationBundle {
-    pub velocity: VelocityBundle,
-    pub max_speed: MaxSpeed,
-    pub acceleration: Acceleration,
-    pub stopping_distance: StoppingDistance,
-}
 
 pub(super) struct MovementPlugin;
 

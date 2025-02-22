@@ -10,8 +10,8 @@ use crate::{
             FadeAnimation, FadeBundle, InsertAfterFadeIn, RemoveBeforeFadeOut,
         },
         movement::{
-            Acceleration, AccelerationBundle, Force, Heading, MaxSpeed,
-            Movement, Speed, StoppingDistance, VelocityBundle,
+            Acceleration, Force, Heading, MaxSpeed, Movement, Speed,
+            StoppingDistance,
         },
     },
     game::{
@@ -97,18 +97,11 @@ fn spawn_crab_on_side(
                     },
                     ..default()
                 },
-                AccelerationBundle {
-                    velocity: VelocityBundle {
-                        heading: Heading(Dir3::X),
-                        ..default()
-                    },
-                    max_speed: MaxSpeed(crab_config.max_speed),
-                    acceleration: Acceleration(
-                        crab_config.max_speed
-                            / crab_config.seconds_to_max_speed,
-                    ),
-                    ..default()
-                },
+                Heading(Dir3::X),
+                MaxSpeed(crab_config.max_speed),
+                Acceleration(
+                    crab_config.max_speed / crab_config.seconds_to_max_speed,
+                ),
                 Mesh3d(cached_assets.crab_mesh.clone()),
                 MeshMaterial3d(materials.add(StandardMaterial {
                     base_color_texture: Some(game_assets.image_crab.clone()),

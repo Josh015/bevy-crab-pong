@@ -5,7 +5,7 @@ use crate::{
     common::{
         collider::{CircleCollider, Collider},
         fade::{FadeBundle, InsertAfterFadeIn, RemoveBeforeFadeOut},
-        movement::{Heading, Movement, Speed, VelocityBundle},
+        movement::{Heading, Movement, Speed},
     },
     game::{
         assets::CachedAssets,
@@ -53,12 +53,8 @@ fn spawn_ball_with_position(
             RemoveBeforeFadeOut::<Collider>::default(),
             FadeBundle::default(),
             ForStates(vec![GameState::Playing, GameState::Paused]),
-            VelocityBundle {
-                heading: Heading(Dir3::new_unchecked(Vec3::new(
-                    angle_cos, 0.0, angle_sin,
-                ))),
-                speed: Speed(game_mode.ball_speed),
-            },
+            Heading(Dir3::new_unchecked(Vec3::new(angle_cos, 0.0, angle_sin))),
+            Speed(game_mode.ball_speed),
             Mesh3d(cached_assets.ball_mesh.clone()),
             MeshMaterial3d(materials.add(StandardMaterial {
                 alpha_mode: AlphaMode::Blend,
