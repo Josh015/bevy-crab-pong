@@ -20,7 +20,7 @@ use crate::{
 
 use super::{
     ocean::Ocean,
-    side::{Side, SideSpawnPoint, SIDE_WIDTH},
+    side::{SIDE_WIDTH, Side, SideSpawnPoint},
     swaying_camera::SwayingCamera,
 };
 

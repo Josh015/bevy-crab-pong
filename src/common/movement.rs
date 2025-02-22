@@ -20,9 +20,7 @@ pub enum Force {
 pub struct Heading(pub Dir3);
 
 impl Default for Heading {
-    fn default() -> Self {
-        Self(Dir3::Y)
-    }
+    fn default() -> Self { Self(Dir3::Y) }
 }
 
 /// The current speed of this entity.

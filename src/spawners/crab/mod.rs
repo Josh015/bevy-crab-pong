@@ -21,7 +21,7 @@ use crate::{
     },
     level::{
         beach::BARRIER_RADIUS,
-        side::{Side, SideSpawnPoint, SIDE_WIDTH},
+        side::{SIDE_WIDTH, Side, SideSpawnPoint},
     },
     util::hemisphere_deflection,
 };

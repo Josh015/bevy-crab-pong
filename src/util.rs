@@ -1,9 +1,7 @@
 use bevy::prelude::*;
 
 // Reflects an incidence vector around a normal vector.
-pub fn reflect(i: Vec3, n: Vec3) -> Vec3 {
-    i - (2.0 * (i.dot(n) * n))
-}
+pub fn reflect(i: Vec3, n: Vec3) -> Vec3 { i - (2.0 * (i.dot(n) * n)) }
 
 /// Get a deflection direction for a position within a range.
 pub fn hemisphere_deflection(delta: f32, width: f32, axis: Vec3) -> Vec3 {

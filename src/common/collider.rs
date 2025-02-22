@@ -38,8 +38,10 @@ fn circle_to_circle_collisions(
         With<Collider>,
     >,
 ) {
-    for [(entity1, circle1, transform1, heading1, has_movement1), (entity2, circle2, transform2, heading2, has_movement2)] in
-        balls_query.iter_combinations()
+    for [
+        (entity1, circle1, transform1, heading1, has_movement1),
+        (entity2, circle2, transform2, heading2, has_movement2),
+    ] in balls_query.iter_combinations()
     {
         // Check that both circles are close enough to touch.
         let delta = transform2.translation() - transform1.translation();

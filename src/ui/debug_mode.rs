@@ -10,8 +10,8 @@ use crate::{
     spawners::{
         ball::Ball,
         crab::{
-            ai::{CrabAi, Target, AI_CENTER_HIT_AREA_PERCENTAGE},
-            Crab, CRAB_WIDTH,
+            CRAB_WIDTH, Crab,
+            ai::{AI_CENTER_HIT_AREA_PERCENTAGE, CrabAi, Target},
         },
     },
     util::hemisphere_deflection,

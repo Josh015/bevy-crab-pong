@@ -33,9 +33,7 @@ impl Fade {
 }
 
 impl Default for Fade {
-    fn default() -> Self {
-        Self::in_default()
-    }
+    fn default() -> Self { Self::in_default() }
 }
 
 /// Specifies an entity's fade effect animation.

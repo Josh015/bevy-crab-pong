@@ -10,7 +10,7 @@ use crate::{
     spawners::ball::Ball,
 };
 
-use super::{Crab, CRAB_START_POSITION, CRAB_WIDTH};
+use super::{CRAB_START_POSITION, CRAB_WIDTH, Crab};
 
 pub const AI_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.70;
 

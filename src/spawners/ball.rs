@@ -17,9 +17,7 @@ use crate::{
 pub(super) struct BallPlugin;
 
 impl Plugin for BallPlugin {
-    fn build(&self, app: &mut App) {
-        app.observe(spawn_ball_with_position);
-    }
+    fn build(&self, app: &mut App) { app.observe(spawn_ball_with_position); }
 }
 
 #[derive(Event)]

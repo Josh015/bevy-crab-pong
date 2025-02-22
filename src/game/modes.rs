@@ -40,7 +40,5 @@ impl<'w> GameModes<'w> {
 pub(super) struct ModesPlugin;
 
 impl Plugin for ModesPlugin {
-    fn build(&self, app: &mut App) {
-        app.init_resource::<SelectedGameMode>();
-    }
+    fn build(&self, app: &mut App) { app.init_resource::<SelectedGameMode>(); }
 }
