@@ -1,4 +1,11 @@
-use bevy::prelude::*;
+use bevy::{
+    core_pipeline::experimental::taa::TemporalAntiAliasing,
+    pbr::{
+        ScreenSpaceAmbientOcclusion, ScreenSpaceAmbientOcclusionQualityLevel,
+        ScreenSpaceReflections,
+    },
+    prelude::*,
+};
 use strum::IntoEnumIterator;
 
 use crate::{
@@ -65,6 +72,13 @@ fn spawn_level(
     commands.spawn((
         Camera3d::default(),
         Msaa::Sample8,
+        // Msaa::Off,
+        // TemporalAntiAliasing::default(),
+        // ScreenSpaceAmbientOcclusion {
+        //     quality_level: ScreenSpaceAmbientOcclusionQualityLevel::High,
+        //     ..default()
+        // },
+        // ScreenSpaceReflections::default(),
         SwayingCamera {
             speed: game_config.swaying_camera_speed,
             target: BEACH_CENTER_POINT,
@@ -106,6 +120,8 @@ fn spawn_level(
                             base_color_texture: Some(
                                 game_assets.image_water.clone(),
                             ),
+                            // perceptual_roughness: 0.0,
+                            // reflectance: 1.0,
                             alpha_mode: AlphaMode::Blend,
                             ..default()
                         })),

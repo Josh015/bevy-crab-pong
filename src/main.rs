@@ -8,13 +8,14 @@ pub mod ui;
 pub mod util;
 
 use bevy::{
+    // core_pipeline::experimental::taa::TemporalAntiAliasPlugin,
     prelude::*,
     window::{PresentMode, WindowResolution},
 };
 
 fn main() {
     App::new()
-        .add_plugins(
+        .add_plugins((
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
@@ -28,7 +29,8 @@ fn main() {
                 .set(AssetPlugin {
                     ..Default::default()
                 }),
-        )
+            // TemporalAntiAliasPlugin,
+        ))
         .insert_resource(ClearColor(Color::srgba(0.7, 0.9, 1.0, 1.0)))
         .add_plugins((
             common::CommonPlugin,
