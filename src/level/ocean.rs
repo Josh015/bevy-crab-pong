@@ -26,8 +26,6 @@ fn animate_ocean_with_scrolling_texture_effect(
     query: Query<(&Ocean, &MeshMaterial3d<StandardMaterial>)>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // HACK: Translate the plane on the Z-axis, since we currently can't
-    // animate the texture coordinates.
     let (ocean, mesh_material) = query.single();
     let Some(material) = materials.get_mut(mesh_material.id()) else {
         return;
