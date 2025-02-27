@@ -61,6 +61,7 @@ pub struct GameAssets {
     pub image_sand: Handle<Image>,
 
     #[asset(path = "images/water.png")]
+    #[asset(image(sampler(filter = linear, wrap = repeat)))]
     pub image_water: Handle<Image>,
 }
 

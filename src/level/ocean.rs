@@ -23,13 +23,17 @@ impl Plugin for OceanPlugin {
 fn animate_ocean_with_scrolling_texture_effect(
     time: Res<Time>,
     mut scroll: Local<f32>,
-    mut query: Query<(&Ocean, &mut Transform)>,
+    query: Query<(&Ocean, &MeshMaterial3d<StandardMaterial>)>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // HACK: Translate the plane on the Z-axis, since we currently can't
     // animate the texture coordinates.
-    let (ocean, mut transform) = query.single_mut();
+    let (ocean, mesh_material) = query.single();
+    let Some(material) = materials.get_mut(mesh_material.id()) else {
+        return;
+    };
 
-    *transform = Transform::from_xyz(0.0, -0.01, -*scroll);
+    material.uv_transform.translation.y = *scroll;
     *scroll += ocean.speed * time.delta_secs();
     *scroll %= 1.0;
 }
