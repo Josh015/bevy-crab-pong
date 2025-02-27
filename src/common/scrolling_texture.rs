@@ -24,7 +24,7 @@ fn scrolling_texture_effect(
 ) {
     for (scrolling_texture, mesh_material) in &query {
         let Some(material) = materials.get_mut(mesh_material.id()) else {
-            return;
+            continue;
         };
 
         material.uv_transform.translation =
