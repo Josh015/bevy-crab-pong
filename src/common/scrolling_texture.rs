@@ -4,7 +4,7 @@ use crate::game::state::LoadedSet;
 
 /// Makes an entity auto-scroll its texture.
 #[derive(Clone, Component, Debug, Default)]
-#[require(Transform, Visibility, MeshMaterial3d<StandardMaterial>)]
+#[require(MeshMaterial3d<StandardMaterial>)]
 pub struct ScrollingTexture {
     pub velocity: Vec2,
 }
