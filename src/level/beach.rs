@@ -1,18 +1,11 @@
-use bevy::{
-    core_pipeline::experimental::taa::TemporalAntiAliasing,
-    math::Affine2,
-    pbr::{
-        ScreenSpaceAmbientOcclusion, ScreenSpaceAmbientOcclusionQualityLevel,
-        ScreenSpaceReflections,
-    },
-    prelude::*,
-};
+use bevy::{math::Affine2, prelude::*};
 use strum::IntoEnumIterator;
 
 use crate::{
     common::{
         collider::{CircleCollider, Collider},
         movement::Movement,
+        scrolling_texture::ScrollingTexture,
     },
     game::{
         assets::{GameAssets, GameConfig},
@@ -27,7 +20,6 @@ use crate::{
 };
 
 use super::{
-    ocean::Ocean,
     side::{SIDE_WIDTH, Side, SideSpawnPoint},
     swaying_camera::SwayingCamera,
 };
@@ -104,8 +96,8 @@ fn spawn_level(
 
     // Ocean
     commands.spawn((
-        Ocean {
-            speed: game_config.ocean_scroll_speed,
+        ScrollingTexture {
+            velocity: Vec2::Y * game_config.ocean_scroll_speed,
         },
         Mesh3d(meshes.add(Plane3d::default().mesh().size(1.0, 1.0))),
         MeshMaterial3d(materials.add(StandardMaterial {

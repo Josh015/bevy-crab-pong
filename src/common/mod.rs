@@ -1,6 +1,7 @@
 pub mod collider;
 pub mod fade;
 pub mod movement;
+pub mod scrolling_texture;
 
 use bevy::prelude::*;
 
@@ -12,6 +13,7 @@ impl Plugin for CommonPlugin {
             collider::ColliderPlugin,
             fade::FadePlugin,
             movement::MovementPlugin,
+            scrolling_texture::ScrollingTexturePlugin,
         ));
     }
 }
