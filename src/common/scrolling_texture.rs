@@ -22,11 +22,12 @@ fn scrolling_texture_effect(
     query: Query<(&ScrollingTexture, &MeshMaterial3d<StandardMaterial>)>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let (scrolling_texture, mesh_material) = query.single();
-    let Some(material) = materials.get_mut(mesh_material.id()) else {
-        return;
-    };
+    for (scrolling_texture, mesh_material) in &query {
+        let Some(material) = materials.get_mut(mesh_material.id()) else {
+            return;
+        };
 
-    material.uv_transform.translation =
-        scrolling_texture.velocity * time.elapsed_secs();
+        material.uv_transform.translation =
+            scrolling_texture.velocity * time.elapsed_secs();
+    }
 }
