@@ -4,19 +4,13 @@ use strum::IntoEnumIterator;
 use crate::{
     common::{
         collider::{CircleCollider, Collider},
-        movement::Movement,
         scrolling_texture::ScrollingTexture,
     },
     game::{
         assets::{GameAssets, GameConfig},
-        modes::GameModes,
-        state::{GameState, PlayableSet},
+        state::GameState,
     },
-    spawners::{
-        ball::{Ball, SpawnBall},
-        crab::SpawnCrab,
-        pole::SpawnPole,
-    },
+    spawners::{ball::BallSpawner, crab::SpawnCrab, pole::SpawnPole},
 };
 
 use super::{
@@ -24,7 +18,6 @@ use super::{
     swaying_camera::SwayingCamera,
 };
 
-pub const BALL_HEIGHT_FROM_GROUND: f32 = 0.05;
 pub const BEACH_CENTER_POINT: Vec3 = Vec3::ZERO;
 pub const BARRIER_DIAMETER: f32 = 0.12;
 pub const BARRIER_RADIUS: f32 = 0.5 * BARRIER_DIAMETER;
@@ -32,9 +25,7 @@ pub const BARRIER_HEIGHT: f32 = 0.2;
 
 /// Global data related to the play area.
 #[derive(Debug, Default, Resource)]
-pub struct Beach {
-    ball_count: u8,
-}
+pub struct Beach;
 
 pub(super) struct BeachPlugin;
 
@@ -44,10 +35,6 @@ impl Plugin for BeachPlugin {
             .add_systems(
                 OnExit(GameState::StartMenu),
                 (initialize_beach_data, give_each_side_a_new_crab),
-            )
-            .add_systems(
-                Update,
-                spawn_balls_sequentially_as_needed.in_set(PlayableSet),
             );
     }
 }
@@ -63,6 +50,10 @@ fn spawn_level(
 
     // Cameras
     commands.spawn((
+        SwayingCamera {
+            speed: game_config.swaying_camera_speed,
+            target: BEACH_CENTER_POINT,
+        },
         Camera3d::default(),
         Msaa::Sample8,
         // Msaa::Off,
@@ -72,26 +63,21 @@ fn spawn_level(
         //     ..default()
         // },
         // ScreenSpaceReflections::default(),
-        SwayingCamera {
-            speed: game_config.swaying_camera_speed,
-            target: BEACH_CENTER_POINT,
-        },
     ));
 
     // Light
-    let light_transform = Mat4::from_euler(
-        EulerRot::ZYX,
-        0.0,
-        std::f32::consts::FRAC_PI_4,
-        -std::f32::consts::FRAC_PI_4,
-    );
     commands.spawn((
         DirectionalLight {
             illuminance: 2_500.0,
             // shadows_enabled: true,
             ..default()
         },
-        Transform::from_matrix(light_transform),
+        Transform::from_matrix(Mat4::from_euler(
+            EulerRot::ZYX,
+            0.0,
+            std::f32::consts::FRAC_PI_4,
+            -std::f32::consts::FRAC_PI_4,
+        )),
     ));
 
     // Ocean
@@ -118,6 +104,7 @@ fn spawn_level(
 
     // Beach
     commands.spawn((
+        BallSpawner::default(),
         Mesh3d(meshes.add(Plane3d::default().mesh().size(1.0, 1.0))),
         MeshMaterial3d(materials.add(game_assets.image_sand.clone())),
         Transform::from_matrix(Mat4::from_scale_rotation_translation(
@@ -184,34 +171,12 @@ fn spawn_level(
     }
 }
 
-fn initialize_beach_data(mut commands: Commands, game_modes: GameModes) {
-    commands.insert_resource(Beach {
-        ball_count: game_modes.current().ball_count.into(),
-    });
+fn initialize_beach_data(mut commands: Commands) {
+    commands.insert_resource(Beach);
 }
 
 fn give_each_side_a_new_crab(mut commands: Commands) {
     for side in Side::iter() {
         commands.trigger(SpawnCrab(side));
     }
-}
-
-fn spawn_balls_sequentially_as_needed(
-    beach: Res<Beach>,
-    balls_query: Query<Entity, With<Ball>>,
-    non_moving_balls_query: Query<Entity, (With<Ball>, Without<Movement>)>,
-    mut commands: Commands,
-) {
-    // Make balls spawn, fade in, and then launch one at a time.
-    if balls_query.iter().len() >= beach.ball_count as usize
-        || non_moving_balls_query.iter().len() >= 1
-    {
-        return;
-    }
-
-    commands.trigger(SpawnBall(Vec3::new(
-        BEACH_CENTER_POINT.x,
-        BEACH_CENTER_POINT.y + BALL_HEIGHT_FROM_GROUND,
-        BEACH_CENTER_POINT.z,
-    )));
 }

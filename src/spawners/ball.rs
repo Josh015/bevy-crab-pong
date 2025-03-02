@@ -10,7 +10,7 @@ use crate::{
     game::{
         assets::CachedAssets,
         modes::GameModes,
-        state::{ForStates, GameState},
+        state::{ForStates, GameState, PlayableSet},
     },
 };
 
@@ -18,40 +18,65 @@ pub(super) struct BallPlugin;
 
 impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
-        app.add_observer(spawn_ball_with_position);
+        app.add_systems(
+            Update,
+            spawn_balls_sequentially_up_to_max_count.in_set(PlayableSet),
+        );
     }
 }
 
-#[derive(Event)]
-pub struct SpawnBall(pub Vec3);
+pub const BALL_HEIGHT_FROM_GROUND: f32 = 0.05;
 
 /// Marks a ball entity that can collide and score.
 #[derive(Component, Debug)]
 pub struct Ball;
 
-fn spawn_ball_with_position(
-    trigger: Trigger<SpawnBall>,
+/// Object that will spawn balls from its center-point.
+#[derive(Component, Debug, Default)]
+#[require(Transform)]
+pub struct BallSpawner;
+
+fn spawn_balls_sequentially_up_to_max_count(
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     cached_assets: Res<CachedAssets>,
     game_modes: GameModes,
+    non_moving_balls_query: Query<Entity, (With<Ball>, Without<Movement>)>,
+    balls_query: Query<Entity, With<Ball>>,
+    spawner_query: Query<&Transform, With<BallSpawner>>,
 ) {
-    // Spawn a ball that will launch it in a random direction.
-    let position = trigger.event().0;
+    // Wait for previously spawned ball to finish appearing.
+    if non_moving_balls_query.iter().len() >= 1 {
+        return;
+    }
+
+    // Spawn balls up to max ball count.
     let game_mode = game_modes.current();
+    let ball_count: u8 = game_mode.ball_count.into();
+
+    if balls_query.iter().len() >= ball_count as usize {
+        return;
+    }
+
+    // Spawn a ball in a random direction from the center of the spawner.
     let mut rng = SmallRng::from_os_rng();
     let angle = rng.random_range(0.0..std::f32::consts::TAU);
     let (angle_sin, angle_cos) = angle.sin_cos();
+    let transform = spawner_query.single();
+    let mut position = transform.translation.clone();
+
+    position.y += BALL_HEIGHT_FROM_GROUND;
+
     let ball = commands
         .spawn((
             Ball,
             CircleCollider {
                 radius: game_mode.ball_size * 0.5,
             },
+            Fade::default(),
             InsertAfterFadeIn::<Movement>::default(),
             InsertAfterFadeIn::<Collider>::default(),
             RemoveBeforeFadeOut::<Collider>::default(),
-            Fade::default(),
             ForStates(vec![GameState::Playing, GameState::Paused]),
             Heading(Dir3::new_unchecked(Vec3::new(angle_cos, 0.0, angle_sin))),
             Speed(game_mode.ball_speed),
