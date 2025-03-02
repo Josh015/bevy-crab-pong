@@ -10,7 +10,7 @@ use crate::{
         assets::{GameAssets, GameConfig},
         state::GameState,
     },
-    spawners::{ball::BallSpawner, crab::SpawnCrab, pole::SpawnPole},
+    spawners::{ball::BallSpawner, pole::SpawnPole},
 };
 
 use super::{
@@ -32,10 +32,7 @@ pub(super) struct BeachPlugin;
 impl Plugin for BeachPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnExit(GameState::Loading), spawn_level)
-            .add_systems(
-                OnExit(GameState::StartMenu),
-                (initialize_beach_data, give_each_side_a_new_crab),
-            );
+            .add_systems(OnExit(GameState::StartMenu), initialize_beach_data);
     }
 }
 
@@ -173,10 +170,4 @@ fn spawn_level(
 
 fn initialize_beach_data(mut commands: Commands) {
     commands.insert_resource(Beach);
-}
-
-fn give_each_side_a_new_crab(mut commands: Commands) {
-    for side in Side::iter() {
-        commands.trigger(SpawnCrab(side));
-    }
 }

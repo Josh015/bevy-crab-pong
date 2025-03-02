@@ -15,7 +15,7 @@ use crate::{
     game::{
         assets::{CachedAssets, CrabController, GameAssets},
         modes::GameModes,
-        state::PausableSet,
+        state::{GameState, PausableSet},
     },
     level::{
         beach::BARRIER_RADIUS,
@@ -40,7 +40,10 @@ pub(super) struct CrabPlugin;
 impl Plugin for CrabPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((ai::AiPlugin, player::InputPlugin))
-            .add_observer(spawn_crab_on_side)
+            .add_systems(
+                OnExit(GameState::StartMenu),
+                start_game_with_new_crabs_for_each_side,
+            )
             .add_systems(
                 Update,
                 restrict_crab_movement_to_space_within_its_own_goal
@@ -53,15 +56,11 @@ impl Plugin for CrabPlugin {
     }
 }
 
-#[derive(Event)]
-pub struct SpawnCrab(pub Side);
-
 /// Makes a crab entity that can deflect balls and move sideways inside a goal.
 #[derive(Component, Debug, Default)]
 pub struct Crab;
 
-fn spawn_crab_on_side(
-    trigger: Trigger<SpawnCrab>,
+fn start_game_with_new_crabs_for_each_side(
     cached_assets: Res<CachedAssets>,
     game_assets: Res<GameAssets>,
     game_modes: GameModes,
@@ -69,54 +68,59 @@ fn spawn_crab_on_side(
     mut materials: ResMut<Assets<StandardMaterial>>,
     spawn_points_query: Query<(Entity, &Side), With<SideSpawnPoint>>,
 ) {
-    let side = trigger.event().0;
-    let crab_config = &game_modes.current().competitors[&side];
-    let (spawn_point_entity, _) = spawn_points_query
-        .iter()
-        .find(|(_, spawn_point_side)| **spawn_point_side == side)
-        .unwrap();
+    for (spawn_point_entity, side) in &spawn_points_query {
+        let crab_config = &game_modes.current().competitors[side];
 
-    commands
-        .entity(spawn_point_entity)
-        .with_children(|builder| {
-            let mut crab = builder.spawn((
-                Crab,
-                side,
-                Collider,
-                InsertAfterFadeIn::<Movement>::default(),
-                RemoveBeforeFadeOut::<Movement>::default(),
-                RemoveBeforeFadeOut::<Collider>::default(),
-                Fade::default(),
-                FadeAnimation::Scale {
-                    max_scale: Vec3::new(CRAB_WIDTH, CRAB_DEPTH, CRAB_DEPTH),
-                    axis_mask: Vec3::ONE,
-                },
-                Heading(Dir3::X),
-                MaxSpeed(crab_config.max_speed),
-                Acceleration(
-                    crab_config.max_speed / crab_config.seconds_to_max_speed,
-                ),
-                Mesh3d(cached_assets.crab_mesh.clone()),
-                MeshMaterial3d(materials.add(StandardMaterial {
-                    base_color_texture: Some(game_assets.image_crab.clone()),
-                    base_color: Srgba::hex(&crab_config.color).unwrap().into(),
-                    ..default()
-                })),
-                Transform::from_matrix(Mat4::from_scale_rotation_translation(
-                    Vec3::splat(f32::EPSILON),
-                    Quat::IDENTITY,
-                    CRAB_START_POSITION,
-                )),
-            ));
+        commands
+            .entity(spawn_point_entity)
+            .with_children(|builder| {
+                let mut crab = builder.spawn((
+                    Crab,
+                    *side,
+                    Collider,
+                    InsertAfterFadeIn::<Movement>::default(),
+                    RemoveBeforeFadeOut::<Movement>::default(),
+                    RemoveBeforeFadeOut::<Collider>::default(),
+                    Fade::default(),
+                    FadeAnimation::Scale {
+                        max_scale: Vec3::new(
+                            CRAB_WIDTH, CRAB_DEPTH, CRAB_DEPTH,
+                        ),
+                        axis_mask: Vec3::ONE,
+                    },
+                    Heading(Dir3::X),
+                    MaxSpeed(crab_config.max_speed),
+                    Acceleration(
+                        crab_config.max_speed
+                            / crab_config.seconds_to_max_speed,
+                    ),
+                    Mesh3d(cached_assets.crab_mesh.clone()),
+                    MeshMaterial3d(materials.add(StandardMaterial {
+                        base_color_texture: Some(
+                            game_assets.image_crab.clone(),
+                        ),
+                        base_color:
+                            Srgba::hex(&crab_config.color).unwrap().into(),
+                        ..default()
+                    })),
+                    Transform::from_matrix(
+                        Mat4::from_scale_rotation_translation(
+                            Vec3::splat(f32::EPSILON),
+                            Quat::IDENTITY,
+                            CRAB_START_POSITION,
+                        ),
+                    ),
+                ));
 
-            if crab_config.controller == CrabController::AI {
-                crab.insert(AI);
-            } else {
-                crab.insert(Player);
-            }
-        });
+                if crab_config.controller == CrabController::AI {
+                    crab.insert(AI);
+                } else {
+                    crab.insert(Player);
+                }
+            });
 
-    info!("Crab({side:?}): Spawned");
+        info!("Crab({side:?}): Spawned");
+    }
 }
 
 fn restrict_crab_movement_to_space_within_its_own_goal(
