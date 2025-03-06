@@ -60,7 +60,7 @@ fn spawn_pole_on_side(
                 Collider,
                 RemoveBeforeFadeOut::<Collider>::default(),
                 if beach.is_some() {
-                    Fade::in_default()
+                    Fade::new_in()
                 } else {
                     Fade::In(Timer::default()) // Instantaneous
                 },

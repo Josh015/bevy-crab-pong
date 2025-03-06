@@ -18,14 +18,14 @@ pub enum Fade {
 }
 
 impl Fade {
-    pub fn in_default() -> Self {
+    pub fn new_in() -> Self {
         Self::In(Timer::from_seconds(
             FADE_DURATION_IN_SECONDS,
             TimerMode::Once,
         ))
     }
 
-    pub fn out_default() -> Self {
+    pub fn new_out() -> Self {
         Self::Out(Timer::from_seconds(
             FADE_DURATION_IN_SECONDS,
             TimerMode::Once,
@@ -34,7 +34,9 @@ impl Fade {
 }
 
 impl Default for Fade {
-    fn default() -> Self { Self::in_default() }
+    fn default() -> Self {
+        Self::new_in()
+    }
 }
 
 /// Specifies an entity's fade effect animation.

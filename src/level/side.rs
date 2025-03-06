@@ -108,7 +108,7 @@ fn allow_only_one_crab_or_pole_per_side(
     for (new_entity, new_side) in &new_query {
         for (old_entity, old_side) in &old_query {
             if old_side == new_side && old_entity != new_entity {
-                commands.entity(old_entity).insert(Fade::out_default());
+                commands.entity(old_entity).insert(Fade::new_out());
                 break;
             }
         }
@@ -130,7 +130,7 @@ fn check_if_a_ball_has_scored_in_a_side(
             let ball_distance = side.distance_to_ball(global_transform);
 
             if ball_distance <= ball_collider.radius {
-                commands.entity(ball_entity).insert(Fade::out_default());
+                commands.entity(ball_entity).insert(Fade::new_out());
                 side_scored_events.send(SideScoredEvent(*side));
                 info!("Ball({ball_entity:?}): Scored Side({side:?})");
             }

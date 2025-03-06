@@ -88,7 +88,7 @@ fn despawn_invalid_entities_for_state<S: States>(
     for (entity, for_states, has_fade_animation) in &query {
         if !for_states.0.contains(game_state.get()) {
             if has_fade_animation {
-                commands.entity(entity).insert(Fade::out_default());
+                commands.entity(entity).insert(Fade::new_out());
             } else {
                 commands.entity(entity).despawn_recursive();
             }
