@@ -73,7 +73,7 @@ fn spawn_balls_sequentially_up_to_max_count(
             CircleCollider {
                 radius: game_mode.ball_size * 0.5,
             },
-            Fade::default(),
+            Fade::new_in(),
             InsertAfterFadeIn::<Movement>::default(),
             InsertAfterFadeIn::<Collider>::default(),
             RemoveBeforeFadeOut::<Collider>::default(),

@@ -1,42 +1,19 @@
 use std::marker::PhantomData;
 
 use bevy::prelude::*;
+use derive_new::new;
 
 use crate::game::state::PausableSet;
 
 use super::{collider::Collider, movement::Movement};
 
-pub const FADE_DURATION_IN_SECONDS: f32 = 1.0;
-
 /// Makes an entity fade in/out and delay activation/despawning respectively.
-#[derive(Clone, Component, Debug, Eq, PartialEq)]
+#[derive(Clone, Component, Debug, Eq, new, PartialEq)]
 #[require(FadeAnimation)]
 #[component(storage = "SparseSet")]
 pub enum Fade {
-    In(Timer),
-    Out(Timer),
-}
-
-impl Fade {
-    pub fn new_in() -> Self {
-        Self::In(Timer::from_seconds(
-            FADE_DURATION_IN_SECONDS,
-            TimerMode::Once,
-        ))
-    }
-
-    pub fn new_out() -> Self {
-        Self::Out(Timer::from_seconds(
-            FADE_DURATION_IN_SECONDS,
-            TimerMode::Once,
-        ))
-    }
-}
-
-impl Default for Fade {
-    fn default() -> Self {
-        Self::new_in()
-    }
+    In(#[new(value = "Timer::from_seconds(1.0, TimerMode::Once)")] Timer),
+    Out(#[new(value = "Timer::from_seconds(1.0, TimerMode::Once)")] Timer),
 }
 
 /// Specifies an entity's fade effect animation.

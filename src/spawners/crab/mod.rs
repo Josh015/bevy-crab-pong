@@ -81,7 +81,7 @@ fn start_game_with_new_crabs_for_each_side(
                     InsertAfterFadeIn::<Movement>::default(),
                     RemoveBeforeFadeOut::<Movement>::default(),
                     RemoveBeforeFadeOut::<Collider>::default(),
-                    Fade::default(),
+                    Fade::new_in(),
                     FadeAnimation::Scale {
                         max_scale: Vec3::new(
                             CRAB_WIDTH, CRAB_DEPTH, CRAB_DEPTH,
