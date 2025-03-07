@@ -143,7 +143,10 @@ fn block_eliminated_sides_with_poles(
     mut commands: Commands,
 ) {
     for SideEliminatedEvent(side) in side_eliminated_events.read() {
-        commands.trigger(SpawnPole(*side, Fade::new_in()));
+        commands.trigger(SpawnPole {
+            side: *side,
+            fade_in: true,
+        });
         info!("Side({side:?}): Eliminated");
     }
 }

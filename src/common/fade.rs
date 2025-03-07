@@ -16,13 +16,6 @@ pub enum Fade {
     Out(#[new(value = "Timer::from_seconds(1.0, TimerMode::Once)")] Timer),
 }
 
-impl Fade {
-    /// Skip fade effect to instantly make entity appear.
-    pub fn skip_effect() -> Self {
-        Self::In(Timer::default())
-    }
-}
-
 /// Specifies an entity's fade effect animation.
 #[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
 pub enum FadeAnimation {

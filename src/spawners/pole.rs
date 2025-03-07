@@ -29,7 +29,10 @@ impl Plugin for PolePlugin {
 }
 
 #[derive(Event)]
-pub struct SpawnPole(pub Side, pub Fade);
+pub struct SpawnPole {
+    pub side: Side,
+    pub fade_in: bool,
+}
 
 /// Makes an entity a pole that deflects all balls away from a side.
 #[derive(Component, Debug)]
@@ -41,11 +44,10 @@ fn spawn_pole_on_side(
     mut commands: Commands,
     spawn_points_query: Query<(Entity, &Side), With<SideSpawnPoint>>,
 ) {
-    let event = trigger.event();
-    let side = event.0;
+    let SpawnPole { side, fade_in } = trigger.event();
     let (spawn_point_entity, _) = spawn_points_query
         .iter()
-        .find(|(_, spawn_point_side)| **spawn_point_side == side)
+        .find(|(_, spawn_point_side)| **spawn_point_side == *side)
         .unwrap();
 
     commands
@@ -53,10 +55,14 @@ fn spawn_pole_on_side(
         .with_children(|builder| {
             builder.spawn((
                 Pole,
-                side,
+                *side,
                 Collider,
                 RemoveBeforeFadeOut::<Collider>::default(),
-                event.1.clone(),
+                if *fade_in {
+                    Fade::new_in()
+                } else {
+                    Fade::In(Timer::default()) // Skip to end of animation.
+                },
                 FadeAnimation::Scale {
                     max_scale: Vec3::new(
                         POLE_DIAMETER,

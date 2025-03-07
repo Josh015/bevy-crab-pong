@@ -4,7 +4,6 @@ use strum::IntoEnumIterator;
 use crate::{
     common::{
         collider::{CircleCollider, Collider},
-        fade::Fade,
         scrolling_texture::ScrollingTexture,
     },
     game::{
@@ -160,6 +159,9 @@ fn spawn_level(
             });
 
         // Poles
-        commands.trigger(SpawnPole(side, Fade::skip_effect()));
+        commands.trigger(SpawnPole {
+            side,
+            fade_in: false,
+        });
     }
 }
