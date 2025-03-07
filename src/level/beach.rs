@@ -160,6 +160,6 @@ fn spawn_level(
             });
 
         // Poles
-        commands.trigger(SpawnPole(side, Fade::default()));
+        commands.trigger(SpawnPole(side, Fade::skip_effect()));
     }
 }
