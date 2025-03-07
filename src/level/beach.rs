@@ -4,6 +4,7 @@ use strum::IntoEnumIterator;
 use crate::{
     common::{
         collider::{CircleCollider, Collider},
+        fade::Fade,
         scrolling_texture::ScrollingTexture,
     },
     game::{
@@ -23,16 +24,11 @@ pub const BARRIER_DIAMETER: f32 = 0.12;
 pub const BARRIER_RADIUS: f32 = 0.5 * BARRIER_DIAMETER;
 pub const BARRIER_HEIGHT: f32 = 0.2;
 
-/// Global data related to the play area.
-#[derive(Debug, Default, Resource)]
-pub struct Beach;
-
 pub(super) struct BeachPlugin;
 
 impl Plugin for BeachPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnExit(GameState::Loading), spawn_level)
-            .add_systems(OnExit(GameState::StartMenu), initialize_beach_data);
+        app.add_systems(OnExit(GameState::Loading), spawn_level);
     }
 }
 
@@ -164,10 +160,6 @@ fn spawn_level(
             });
 
         // Poles
-        commands.trigger(SpawnPole(side));
+        commands.trigger(SpawnPole(side, Fade::default()));
     }
-}
-
-fn initialize_beach_data(mut commands: Commands) {
-    commands.insert_resource(Beach);
 }

@@ -7,10 +7,7 @@ use crate::{
         movement::{Heading, Movement},
     },
     game::{assets::CachedAssets, state::PausableSet},
-    level::{
-        beach::Beach,
-        side::{SIDE_WIDTH, Side, SideSpawnPoint},
-    },
+    level::side::{SIDE_WIDTH, Side, SideSpawnPoint},
     util::reflect,
 };
 
@@ -32,7 +29,7 @@ impl Plugin for PolePlugin {
 }
 
 #[derive(Event)]
-pub struct SpawnPole(pub Side);
+pub struct SpawnPole(pub Side, pub Fade);
 
 /// Makes an entity a pole that deflects all balls away from a side.
 #[derive(Component, Debug)]
@@ -42,10 +39,10 @@ fn spawn_pole_on_side(
     trigger: Trigger<SpawnPole>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
-    beach: Option<Res<Beach>>,
     spawn_points_query: Query<(Entity, &Side), With<SideSpawnPoint>>,
 ) {
-    let side = trigger.event().0;
+    let event = trigger.event();
+    let side = event.0;
     let (spawn_point_entity, _) = spawn_points_query
         .iter()
         .find(|(_, spawn_point_side)| **spawn_point_side == side)
@@ -59,11 +56,7 @@ fn spawn_pole_on_side(
                 side,
                 Collider,
                 RemoveBeforeFadeOut::<Collider>::default(),
-                if beach.is_some() {
-                    Fade::new_in()
-                } else {
-                    Fade::In(Timer::default()) // Instantaneous
-                },
+                event.1.clone(),
                 FadeAnimation::Scale {
                     max_scale: Vec3::new(
                         POLE_DIAMETER,
