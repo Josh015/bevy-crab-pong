@@ -185,21 +185,21 @@ fn crab_collider_ball_deflection_direction_gizmos(
         (&Parent, &CrabCollider, &Transform, &GlobalTransform),
         (With<Crab>, With<Collider>),
     >,
-    goals_query: Query<&Goal>,
+    goals_query: Query<&GlobalTransform, With<Goal>>,
     mut gizmos: Gizmos,
 ) {
     for (parent, crab_collider, crab_transform, crab_global_transform) in
         &crabs_query
     {
         // Check that the ball is near the crab and facing the goal.
-        let Ok(goal) = goals_query.get(parent.get()) else {
+        let Ok(goal_global_transform) = goals_query.get(parent.get()) else {
             continue;
         };
         for (ball_global_transform, ball_heading) in &balls_query {
             // Check that the ball is facing the goal.
-            let goal_forward = goal.forward;
+            let goal_back = *goal_global_transform.back();
 
-            if ball_heading.0.dot(goal_forward) <= 0.0 {
+            if ball_heading.0.dot(goal_back) <= 0.0 {
                 continue;
             }
 
@@ -218,7 +218,7 @@ fn crab_collider_ball_deflection_direction_gizmos(
             // Get ball deflection direction.
             let delta = crab_transform.translation.x - ball_axis_position;
             let ball_deflection_direction =
-                hemisphere_deflection(delta, crab_collider.width, goal_forward);
+                hemisphere_deflection(delta, crab_collider.width, goal_back);
 
             gizmos.line(
                 crab_global_transform.translation(),

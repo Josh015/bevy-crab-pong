@@ -33,7 +33,7 @@ pub struct Pole;
 
 fn pole_and_ball_collisions(
     mut commands: Commands,
-    goals_query: Query<&Goal>,
+    goals_query: Query<(&Goal, &GlobalTransform)>,
     poles_query: Query<&Parent, (With<Pole>, With<Collider>)>,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading, &CircleCollider),
@@ -41,25 +41,27 @@ fn pole_and_ball_collisions(
     >,
 ) {
     for parent in &poles_query {
-        let Ok(goal) = goals_query.get(parent.get()) else {
+        let Ok((goal, goal_global_transform)) = goals_query.get(parent.get())
+        else {
             continue;
         };
-        for (entity, ball_transform, ball_heading, ball_collider) in
+        for (entity, ball_global_transform, ball_heading, ball_collider) in
             &balls_query
         {
-            let ball_to_pole_distance = goal.distance_to_entity(ball_transform);
-            let goal_forward = goal.forward;
+            let goal_back = *goal_global_transform.back();
+            let ball_to_pole_distance = (0.5 * goal.width)
+                - ball_global_transform.translation().dot(goal_back);
 
             // Check that the ball is touching and facing the pole.
             if ball_to_pole_distance > ball_collider.radius + POLE_RADIUS
-                || ball_heading.0.dot(goal_forward) <= 0.0
+                || ball_heading.0.dot(goal_back) <= 0.0
             {
                 continue;
             }
 
             // Deflect the ball away from the pole.
             commands.entity(entity).insert(Heading(Dir3::new_unchecked(
-                reflect(*ball_heading.0, goal_forward).normalize(),
+                reflect(*ball_heading.0, goal_back).normalize(),
             )));
 
             info!("Ball({entity:?}): Collided Pole({goal:?})");

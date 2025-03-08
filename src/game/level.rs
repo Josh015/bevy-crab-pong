@@ -198,26 +198,19 @@ fn spawn_level(
     });
     let barrier_material =
         materials.add(Color::Srgba(Srgba::hex("750000").unwrap()));
-    let goal_config: [(Side, Vec3); 4] = [
-        (Side::Bottom, Vec3::Z),
-        (Side::Right, Vec3::X),
-        (Side::Top, Vec3::NEG_Z),
-        (Side::Left, Vec3::NEG_X),
-    ];
 
-    for (i, (side, axis)) in goal_config.iter().enumerate() {
+    let side_iter = Side::iter();
+    let num_sides = side_iter.len();
+
+    for (i, side) in side_iter.enumerate() {
         // Spawn Point
         commands
             .spawn((
-                Goal {
-                    forward: *axis,
-                    width: GOAL_WIDTH,
-                },
-                *side,
+                Goal { width: GOAL_WIDTH },
+                side,
                 Transform::from_rotation(Quat::from_axis_angle(
                     Vec3::Y,
-                    std::f32::consts::TAU
-                        * (i as f32 / Side::iter().len() as f32),
+                    std::f32::consts::TAU * (i as f32 / num_sides as f32),
                 ))
                 .mul_transform(Transform::from_xyz(
                     0.0,
@@ -254,7 +247,7 @@ fn spawn_level(
 
         // Poles
         commands.trigger(SpawnPole {
-            side: *side,
+            side,
             fade_in: false,
         });
     }

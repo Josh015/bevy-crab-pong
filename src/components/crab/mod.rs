@@ -87,7 +87,7 @@ fn restrict_crab_movement_to_space_within_its_own_goal(
 
 fn crab_and_ball_collisions(
     mut commands: Commands,
-    goals_query: Query<&Goal>,
+    goals_query: Query<(&Goal, &GlobalTransform)>,
     crabs_query: Query<
         (&Parent, &CrabCollider, &Transform, &GlobalTransform),
         (With<Crab>, With<Collider>),
@@ -100,7 +100,8 @@ fn crab_and_ball_collisions(
     for (parent, crab_collider, crab_transform, crab_global_transform) in
         &crabs_query
     {
-        let Ok(goal) = goals_query.get(parent.get()) else {
+        let Ok((goal, goal_global_transform)) = goals_query.get(parent.get())
+        else {
             continue;
         };
 
@@ -108,15 +109,15 @@ fn crab_and_ball_collisions(
             &balls_query
         {
             // Check that the ball is facing the goal.
-            let goal_forward = goal.forward;
+            let goal_back = *goal_global_transform.back();
 
-            if ball_heading.0.dot(goal_forward) <= 0.0 {
+            if ball_heading.0.dot(goal_back) <= 0.0 {
                 continue;
             }
 
             // Check that the ball is close enough to the goal.
-            let ball_to_goal_distance =
-                goal.distance_to_entity(ball_global_transform);
+            let ball_to_goal_distance = (0.5 * goal.width)
+                - ball_global_transform.translation().dot(goal_back);
 
             if ball_to_goal_distance > ball_collider.radius + (0.5 * CRAB_DEPTH)
             {
@@ -138,7 +139,7 @@ fn crab_and_ball_collisions(
 
             // Deflect the ball.
             let ball_deflection_direction =
-                hemisphere_deflection(delta, crab_collider.width, goal_forward);
+                hemisphere_deflection(delta, crab_collider.width, goal_back);
 
             commands
                 .entity(ball_entity)
