@@ -7,8 +7,7 @@ use crate::{
         ball::Ball,
         collider::{CircleCollider, Collider},
         crab::{
-            CRAB_DEPTH, CRAB_START_POSITION, CRAB_WIDTH, Crab, CrabWalkAxis,
-            ai::AI, player::Player,
+            CRAB_DEPTH, CRAB_WIDTH, Crab, CrabCollider, ai::AI, player::Player,
         },
         fade::{Fade, FadeEffect, InsertAfterFadeIn, RemoveBeforeFadeOut},
         goal::Goal,
@@ -37,6 +36,7 @@ pub const BARRIER_RADIUS: f32 = 0.5 * BARRIER_DIAMETER;
 pub const BARRIER_HEIGHT: f32 = 0.2;
 pub const BALL_HEIGHT_FROM_GROUND: f32 = 0.05;
 pub const GOAL_WIDTH: f32 = 1.0;
+pub const CRAB_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
 
 pub(super) struct LevelPlugin;
 
@@ -268,7 +268,7 @@ fn spawn_crabs_for_each_side(
     mut materials: ResMut<Assets<StandardMaterial>>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
-    let walk_axis: HashMap<Side, Vec3> = HashMap::from([
+    let crab_collider_axis: HashMap<Side, Vec3> = HashMap::from([
         (Side::Bottom, Vec3::X),
         (Side::Right, Vec3::NEG_Z),
         (Side::Top, Vec3::NEG_X),
@@ -281,7 +281,10 @@ fn spawn_crabs_for_each_side(
         commands.entity(goal_entity).with_children(|builder| {
             let mut crab = builder.spawn((
                 Crab,
-                CrabWalkAxis(walk_axis[side]),
+                CrabCollider {
+                    axis: crab_collider_axis[side],
+                    width: CRAB_WIDTH,
+                },
                 *side,
                 Collider,
                 InsertAfterFadeIn::<Movement>::default(),

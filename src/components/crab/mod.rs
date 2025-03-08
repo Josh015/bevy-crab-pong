@@ -20,7 +20,6 @@ use super::goal::Goal;
 
 pub const CRAB_WIDTH: f32 = 0.2;
 pub const CRAB_DEPTH: f32 = 0.1;
-pub const CRAB_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
 pub const CRAB_POSITION_X_MAX: f32 =
     (0.5 * GOAL_WIDTH) - BARRIER_RADIUS - (0.5 * CRAB_WIDTH);
 
@@ -45,14 +44,20 @@ impl Plugin for CrabPlugin {
 #[derive(Component, Debug, Default)]
 pub struct Crab;
 
-/// The world-space axis for a [Crab] entity's side-to-side movement.
+/// Physics and collision data for a [Crab] entity.
 #[derive(Component, Debug, Default)]
-pub struct CrabWalkAxis(pub Vec3);
+pub struct CrabCollider {
+    /// The world-space axis for  side-to-side movement.
+    pub axis: Vec3,
 
-impl CrabWalkAxis {
+    /// Width of the bounding shape.
+    pub width: f32,
+}
+
+impl CrabCollider {
     /// Map an entity's global position to a crab's local axis.
     pub fn get_axis_position(&self, global_transform: &GlobalTransform) -> f32 {
-        global_transform.translation().dot(self.0)
+        global_transform.translation().dot(self.axis)
     }
 }
 
@@ -94,7 +99,7 @@ fn crab_and_ball_collisions(
     mut commands: Commands,
     goals_query: Query<&Goal>,
     crabs_query: Query<
-        (&Parent, &CrabWalkAxis, &Transform),
+        (&Parent, &CrabCollider, &Transform),
         (With<Crab>, With<Collider>),
     >,
     balls_query: Query<
@@ -102,7 +107,7 @@ fn crab_and_ball_collisions(
         (With<Ball>, With<Collider>, With<Movement>),
     >,
 ) {
-    for (parent, walk_axis, crab_transform) in &crabs_query {
+    for (parent, crab_collider, crab_transform) in &crabs_query {
         let Ok(goal) = goals_query.get(parent.get()) else {
             continue;
         };
@@ -114,20 +119,20 @@ fn crab_and_ball_collisions(
             let axis = goal.axis;
             let ball_to_side_distance = goal.distance_to_entity(ball_transform);
             let ball_side_position =
-                walk_axis.get_axis_position(ball_transform);
+                crab_collider.get_axis_position(ball_transform);
             let delta = crab_transform.translation.x - ball_side_position;
             let ball_to_crab_distance = delta.abs();
 
             if ball_to_side_distance > ball_collider.radius + (0.5 * CRAB_DEPTH)
                 || ball_to_crab_distance
-                    > ball_collider.radius + (0.5 * CRAB_WIDTH)
+                    > ball_collider.radius + (0.5 * crab_collider.width)
                 || ball_heading.0.dot(axis) <= 0.0
             {
                 continue;
             }
 
             let ball_deflection_direction =
-                hemisphere_deflection(delta, CRAB_WIDTH, axis);
+                hemisphere_deflection(delta, crab_collider.width, axis);
 
             commands
                 .entity(ball_entity)

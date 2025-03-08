@@ -5,7 +5,7 @@ use crate::{
         ball::Ball,
         collider::Collider,
         crab::{
-            CRAB_WIDTH, Crab, CrabWalkAxis,
+            Crab, CrabCollider,
             ai::{AI, AI_CENTER_HIT_AREA_PERCENTAGE, Target},
         },
         goal::Goal,
@@ -162,15 +162,16 @@ fn crab_ai_ball_targeting_gizmos(
 
 fn crab_ai_ideal_ball_hit_area_gizmos(
     crabs_query: Query<
-        &GlobalTransform,
+        (&GlobalTransform, &CrabCollider),
         (With<AI>, With<Crab>, With<Movement>),
     >,
     mut gizmos: Gizmos,
 ) {
-    for global_transform in &crabs_query {
+    for (global_transform, crab_collider) in &crabs_query {
         let mut hit_area_transform = global_transform.compute_transform();
 
-        hit_area_transform.scale.x = AI_CENTER_HIT_AREA_PERCENTAGE * CRAB_WIDTH;
+        hit_area_transform.scale.x =
+            AI_CENTER_HIT_AREA_PERCENTAGE * crab_collider.width;
         gizmos.cuboid(hit_area_transform, Srgba::hex("FFFF00").unwrap());
     }
 }
@@ -181,32 +182,36 @@ fn crab_collider_ball_deflection_direction_gizmos(
         (With<Ball>, With<Movement>, With<Collider>),
     >,
     crabs_query: Query<
-        (&Parent, &CrabWalkAxis, &Transform, &GlobalTransform),
+        (&Parent, &CrabCollider, &Transform, &GlobalTransform),
         (With<Crab>, With<Collider>),
     >,
     goals_query: Query<&Goal>,
     mut gizmos: Gizmos,
 ) {
-    for (parent, walk_axis, transform, crab_global_transform) in &crabs_query {
+    for (parent, crab_collider, transform, crab_global_transform) in
+        &crabs_query
+    {
         // Check that the ball is near the crab and facing the side.
         let Ok(goal) = goals_query.get(parent.get()) else {
             continue;
         };
         for (ball_transform, ball_heading) in &balls_query {
-            let axis = goal.axis;
+            let goal_axis = goal.axis;
             let ball_side_position =
-                walk_axis.get_axis_position(ball_transform);
+                crab_collider.get_axis_position(ball_transform);
             let delta = transform.translation.x - ball_side_position;
             let crab_to_ball_distance = ball_transform
                 .translation()
                 .distance(crab_global_transform.translation());
 
-            if crab_to_ball_distance > 0.25 || ball_heading.0.dot(axis) <= 0.0 {
+            if crab_to_ball_distance > 0.25
+                || ball_heading.0.dot(goal_axis) <= 0.0
+            {
                 continue;
             }
 
             let ball_deflection_direction =
-                hemisphere_deflection(delta, CRAB_WIDTH, axis);
+                hemisphere_deflection(delta, crab_collider.width, goal_axis);
 
             gizmos.line(
                 crab_global_transform.translation(),
