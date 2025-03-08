@@ -26,7 +26,7 @@ use crate::{
 
 use super::{
     assets::CachedAssets,
-    events::{SideEliminatedEvent, SideScoredEvent},
+    events::SideEliminatedEvent,
     modes::GameModes,
     state::{PausableSet, PlayableSet},
 };
@@ -125,8 +125,11 @@ fn spawn_level(
     // Cameras
     commands.spawn((
         SwayingCamera {
-            speed: game_config.swaying_camera_speed,
             target: LEVEL_CENTER_POINT,
+            starting_position: Vec3::new(0., 2., 1.5),
+            up_direction: Vec3::Y,
+            range: SIDE_WIDTH * 0.5,
+            speed: game_config.swaying_camera_speed,
         },
         Camera3d::default(),
         Msaa::Sample8,
