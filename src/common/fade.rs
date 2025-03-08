@@ -9,7 +9,7 @@ use super::{collider::Collider, movement::Movement};
 
 /// Makes an entity fade in/out and delay activation/despawning respectively.
 #[derive(Clone, Component, Debug, Eq, new, PartialEq)]
-#[require(FadeAnimation)]
+#[require(FadeEffect)]
 #[component(storage = "SparseSet")]
 pub enum Fade {
     In(#[new(value = "Timer::from_seconds(1.0, TimerMode::Once)")] Timer),
@@ -18,7 +18,7 @@ pub enum Fade {
 
 /// Specifies an entity's fade effect animation.
 #[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
-pub enum FadeAnimation {
+pub enum FadeEffect {
     /// Uses alpha-blending to fade in/out an entity.
     ///
     /// Will take control of the entity's [`StandardMaterial`] by setting it to
@@ -76,10 +76,10 @@ fn animate_fade_effect(
         &mut Fade,
         &mut Transform,
         &MeshMaterial3d<StandardMaterial>,
-        &FadeAnimation,
+        &FadeEffect,
     )>,
 ) {
-    for (mut fade, mut transform, material, animation) in &mut query {
+    for (mut fade, mut transform, material, effect) in &mut query {
         let weight = match *fade {
             Fade::In(ref mut timer) => {
                 timer.tick(time.delta());
@@ -91,15 +91,15 @@ fn animate_fade_effect(
             },
         };
 
-        match *animation {
-            FadeAnimation::Scale {
+        match *effect {
+            FadeEffect::Scale {
                 max_scale,
                 axis_mask,
             } => {
                 transform.scale =
                     (max_scale * axis_mask) * weight + (Vec3::ONE - axis_mask);
             },
-            FadeAnimation::Opacity => {
+            FadeEffect::Opacity => {
                 let material = materials.get_mut(material).unwrap();
 
                 material.base_color = material.base_color.with_alpha(weight);

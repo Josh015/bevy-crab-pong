@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use strum::{EnumIter, IntoEnumIterator};
 
-use crate::common::fade::{Fade, FadeAnimation};
+use crate::common::fade::{Fade, FadeEffect};
 
 // All the app's possible states.
 #[derive(
@@ -83,11 +83,11 @@ impl Plugin for StatePlugin {
 fn despawn_invalid_entities_for_state<S: States>(
     mut commands: Commands,
     game_state: Res<State<S>>,
-    query: Query<(Entity, &ForStates<S>, Has<FadeAnimation>)>,
+    query: Query<(Entity, &ForStates<S>, Has<FadeEffect>)>,
 ) {
-    for (entity, for_states, has_fade_animation) in &query {
+    for (entity, for_states, has_fade_effect) in &query {
         if !for_states.0.contains(game_state.get()) {
-            if has_fade_animation {
+            if has_fade_effect {
                 commands.entity(entity).insert(Fade::new_out());
             } else {
                 commands.entity(entity).despawn_recursive();

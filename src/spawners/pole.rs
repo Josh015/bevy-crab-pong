@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     common::{
         collider::{CircleCollider, Collider},
-        fade::{Fade, FadeAnimation, RemoveBeforeFadeOut},
+        fade::{Fade, FadeEffect, RemoveBeforeFadeOut},
         movement::{Heading, Movement},
     },
     game::{assets::CachedAssets, state::PausableSet},
@@ -63,7 +63,7 @@ fn spawn_pole_on_side(
                 } else {
                     Fade::In(Timer::default()) // Skip to end of animation.
                 },
-                FadeAnimation::Scale {
+                FadeEffect::Scale {
                     max_scale: Vec3::new(
                         POLE_DIAMETER,
                         SIDE_WIDTH,

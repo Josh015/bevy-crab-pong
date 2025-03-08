@@ -6,7 +6,7 @@ use bevy::prelude::*;
 use crate::{
     common::{
         collider::{CircleCollider, Collider},
-        fade::{Fade, FadeAnimation, InsertAfterFadeIn, RemoveBeforeFadeOut},
+        fade::{Fade, FadeEffect, InsertAfterFadeIn, RemoveBeforeFadeOut},
         movement::{
             Acceleration, Force, Heading, MaxSpeed, Movement, Speed,
             StoppingDistance,
@@ -82,7 +82,7 @@ fn start_game_with_new_crabs_for_each_side(
                     RemoveBeforeFadeOut::<Movement>::default(),
                     RemoveBeforeFadeOut::<Collider>::default(),
                     Fade::new_in(),
-                    FadeAnimation::Scale {
+                    FadeEffect::Scale {
                         max_scale: Vec3::new(
                             CRAB_WIDTH, CRAB_DEPTH, CRAB_DEPTH,
                         ),
