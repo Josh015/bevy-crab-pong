@@ -1,4 +1,4 @@
-use bevy::{math::Affine2, prelude::*};
+use bevy::{math::Affine2, prelude::*, utils::hashbrown::HashMap};
 use rand::prelude::*;
 use strum::IntoEnumIterator;
 
@@ -7,8 +7,8 @@ use crate::{
         ball::Ball,
         collider::{CircleCollider, Collider},
         crab::{
-            CRAB_DEPTH, CRAB_START_POSITION, CRAB_WIDTH, Crab, ai::AI,
-            player::Player,
+            CRAB_DEPTH, CRAB_START_POSITION, CRAB_WIDTH, Crab, CrabWalkAxis,
+            ai::AI, player::Player,
         },
         fade::{Fade, FadeEffect, InsertAfterFadeIn, RemoveBeforeFadeOut},
         goal::Goal,
@@ -261,9 +261,17 @@ fn spawn_crabs_for_each_side(
     for (goal_entity, side) in &goals_query {
         let crab_config = &game_modes.current().competitors[side];
 
+        let axis: HashMap<Side, Vec3> = HashMap::from([
+            (Side::Bottom, Vec3::X),
+            (Side::Right, Vec3::NEG_Z),
+            (Side::Top, Vec3::NEG_X),
+            (Side::Left, Vec3::Z),
+        ]);
+
         commands.entity(goal_entity).with_children(|builder| {
             let mut crab = builder.spawn((
                 Crab,
+                CrabWalkAxis(axis[side]),
                 *side,
                 Collider,
                 InsertAfterFadeIn::<Movement>::default(),

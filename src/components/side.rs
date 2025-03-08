@@ -60,16 +60,6 @@ impl Side {
             Self::Left => -Vec3::X,
         }
     }
-
-    /// Map a ball's global position to a side's local x-axis.
-    pub fn get_ball_position(&self, ball_transform: &GlobalTransform) -> f32 {
-        match *self {
-            Self::Bottom => ball_transform.translation().x,
-            Self::Right => -ball_transform.translation().z,
-            Self::Top => -ball_transform.translation().x,
-            Self::Left => ball_transform.translation().z,
-        }
-    }
 }
 
 fn check_if_a_ball_has_scored_in_a_side(

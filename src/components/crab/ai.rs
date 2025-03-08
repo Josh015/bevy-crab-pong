@@ -10,7 +10,7 @@ use crate::{
     game::state::PlayableSet,
 };
 
-use super::{CRAB_START_POSITION, CRAB_WIDTH, Crab};
+use super::{CRAB_START_POSITION, CRAB_WIDTH, Crab, CrabWalkAxis};
 
 pub const AI_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.70;
 
@@ -74,9 +74,9 @@ fn move_ai_crabs_toward_their_targeted_ball(
     crabs_query: Query<
         (
             Entity,
-            &Side,
             &Transform,
             &StoppingDistance,
+            &CrabWalkAxis,
             Option<&Target>,
         ),
         (With<AI>, With<Crab>, With<Movement>),
@@ -86,13 +86,16 @@ fn move_ai_crabs_toward_their_targeted_ball(
         (With<Ball>, With<Movement>, With<Collider>),
     >,
 ) {
-    for (entity, side, transform, stopping_distance, target) in &crabs_query {
+    for (entity, transform, stopping_distance, walk_axis, target) in
+        &crabs_query
+    {
         // Use the ball's side position or default to the center of the side.
         let mut target_side_position = CRAB_START_POSITION.x;
 
         if let Some(target) = target {
             if let Ok(ball_transform) = balls_query.get(target.0) {
-                target_side_position = side.get_ball_position(ball_transform)
+                target_side_position =
+                    walk_axis.get_axis_position(ball_transform)
             }
         }
 

@@ -41,6 +41,17 @@ impl Plugin for CrabPlugin {
 #[derive(Component, Debug, Default)]
 pub struct Crab;
 
+/// The world-space axis for a [Crab] entity's side-to-side movement.
+#[derive(Component, Debug, Default)]
+pub struct CrabWalkAxis(pub Vec3);
+
+impl CrabWalkAxis {
+    /// Map an entity's global position to a crab's local axis.
+    pub fn get_axis_position(&self, global_transform: &GlobalTransform) -> f32 {
+        global_transform.translation().dot(self.0)
+    }
+}
+
 fn restrict_crab_movement_to_space_within_its_own_goal(
     mut commands: Commands,
     mut query: Query<
@@ -81,16 +92,20 @@ fn crab_and_ball_collisions(
         (Entity, &GlobalTransform, &Heading, &CircleCollider),
         (With<Ball>, With<Collider>, With<Movement>),
     >,
-    crabs_query: Query<(&Side, &Transform), (With<Crab>, With<Collider>)>,
+    crabs_query: Query<
+        (&Side, &CrabWalkAxis, &Transform),
+        (With<Crab>, With<Collider>),
+    >,
 ) {
     for (ball_entity, ball_transform, ball_heading, ball_collider) in
         &balls_query
     {
-        for (side, crab_transform) in &crabs_query {
+        for (side, walk_axis, crab_transform) in &crabs_query {
             // Check that the ball is touching the crab and facing the goal.
             let axis = side.axis();
             let ball_to_side_distance = side.distance_to_ball(ball_transform);
-            let ball_side_position = side.get_ball_position(ball_transform);
+            let ball_side_position =
+                walk_axis.get_axis_position(ball_transform);
             let delta = crab_transform.translation.x - ball_side_position;
             let ball_to_crab_distance = delta.abs();
 
