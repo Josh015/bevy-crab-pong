@@ -3,6 +3,14 @@ use std::ops::Add;
 
 use super::assets::{GameAssets, GameMode};
 
+pub(super) struct SystemParamsPlugin;
+
+impl Plugin for SystemParamsPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<SelectedGameMode>();
+    }
+}
+
 #[derive(Debug, Default, Resource)]
 struct SelectedGameMode(usize);
 
@@ -35,10 +43,4 @@ impl GameModes<'_> {
             .add(1)
             .min(self.game_assets.game_modes.len() - 1);
     }
-}
-
-pub(super) struct ModesPlugin;
-
-impl Plugin for ModesPlugin {
-    fn build(&self, app: &mut App) { app.init_resource::<SelectedGameMode>(); }
 }

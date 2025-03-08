@@ -4,8 +4,8 @@ pub use leafwing_input_manager::prelude::*;
 use crate::game::{
     assets::{GameAssets, GameConfig},
     competitors::WinningTeam,
-    modes::GameModes,
     state::{ForStates, GameState, LoadedSet, PlayableSet},
+    system_params::GameModes,
 };
 
 /// An event fired when spawning a message UI.

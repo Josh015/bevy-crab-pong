@@ -6,8 +6,8 @@ use crate::components::side::Side;
 
 use super::{
     events::{SideEliminatedEvent, SideScoredEvent},
-    modes::GameModes,
     state::{GameState, PlayableSet},
+    system_params::GameModes,
 };
 
 /// A member of a competing team.

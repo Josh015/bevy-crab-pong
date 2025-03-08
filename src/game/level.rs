@@ -26,8 +26,8 @@ use crate::{
 use super::{
     assets::CachedAssets,
     events::SideEliminatedEvent,
-    modes::GameModes,
     state::{PausableSet, PlayableSet},
+    system_params::GameModes,
 };
 
 pub const LEVEL_CENTER_POINT: Vec3 = Vec3::ZERO;
