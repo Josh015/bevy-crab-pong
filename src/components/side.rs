@@ -2,29 +2,6 @@ use bevy::prelude::*;
 use serde::Deserialize;
 use strum::EnumIter;
 
-use crate::game::{events::SideScoredEvent, state::PlayableSet};
-
-use super::{
-    ball::Ball,
-    collider::{CircleCollider, Collider},
-    crab::Crab,
-    fade::Fade,
-    movement::Movement,
-};
-
-pub const SIDE_WIDTH: f32 = 1.0;
-
-pub(super) struct SidePlugin;
-
-impl Plugin for SidePlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(
-            PostUpdate,
-            check_if_a_ball_has_scored_in_a_side.after(PlayableSet),
-        );
-    }
-}
-
 /// Assigns an entity to a given side of the beach.
 #[derive(
     Clone, Component, Copy, Debug, Deserialize, EnumIter, Eq, Hash, PartialEq,
@@ -34,53 +11,4 @@ pub enum Side {
     Right = 1,
     Top = 2,
     Left = 3,
-}
-
-impl Side {
-    /// Perpendicular distance from a given side to a ball's center.
-    ///
-    /// Positive distances for inside the beach, negative for out of bounds.
-    pub fn distance_to_ball(&self, ball_transform: &GlobalTransform) -> f32 {
-        let ball_translation = ball_transform.translation();
-
-        match *self {
-            Self::Bottom => (0.5 * SIDE_WIDTH) - ball_translation.z,
-            Self::Right => (0.5 * SIDE_WIDTH) - ball_translation.x,
-            Self::Top => (0.5 * SIDE_WIDTH) + ball_translation.z,
-            Self::Left => (0.5 * SIDE_WIDTH) + ball_translation.x,
-        }
-    }
-
-    /// Get the normalized (+/-)(X/Z) axis the side occupies.
-    pub fn axis(&self) -> Vec3 {
-        match *self {
-            Self::Bottom => Vec3::Z,
-            Self::Right => Vec3::X,
-            Self::Top => -Vec3::Z,
-            Self::Left => -Vec3::X,
-        }
-    }
-}
-
-fn check_if_a_ball_has_scored_in_a_side(
-    mut commands: Commands,
-    mut side_scored_events: EventWriter<SideScoredEvent>,
-    balls_query: Query<
-        (Entity, &GlobalTransform, &CircleCollider),
-        (With<Ball>, With<Movement>, With<Collider>),
-    >,
-    crabs_query: Query<&Side, (With<Crab>, With<Movement>, With<Collider>)>,
-) {
-    // If a ball passes a side's alive crab then despawn it and raise an event.
-    for (ball_entity, global_transform, ball_collider) in &balls_query {
-        for side in &crabs_query {
-            let ball_distance = side.distance_to_ball(global_transform);
-
-            if ball_distance <= ball_collider.radius {
-                commands.entity(ball_entity).insert(Fade::new_out());
-                side_scored_events.send(SideScoredEvent(*side));
-                info!("Ball({ball_entity:?}): Scored Side({side:?})");
-            }
-        }
-    }
 }

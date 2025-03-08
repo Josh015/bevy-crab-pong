@@ -1,4 +1,4 @@
-use bevy::{math::Affine2, prelude::*, utils::hashbrown::HashMap};
+use bevy::{math::Affine2, prelude::*, utils::HashMap};
 use rand::prelude::*;
 use strum::IntoEnumIterator;
 
@@ -15,7 +15,7 @@ use crate::{
         movement::{Acceleration, Heading, MaxSpeed, Movement, Speed},
         pole::{POLE_DIAMETER, POLE_HEIGHT, Pole},
         scrolling_texture::ScrollingTexture,
-        side::{SIDE_WIDTH, Side},
+        side::Side,
         swaying_camera::SwayingCamera,
     },
     game::{
@@ -36,6 +36,7 @@ pub const BARRIER_DIAMETER: f32 = 0.12;
 pub const BARRIER_RADIUS: f32 = 0.5 * BARRIER_DIAMETER;
 pub const BARRIER_HEIGHT: f32 = 0.2;
 pub const BALL_HEIGHT_FROM_GROUND: f32 = 0.05;
+pub const GOAL_WIDTH: f32 = 1.0;
 
 pub(super) struct LevelPlugin;
 
@@ -92,7 +93,7 @@ fn spawn_pole_on_a_side(
                 Fade::In(Timer::default()) // Skip to end of animation.
             },
             FadeEffect::Scale {
-                max_scale: Vec3::new(POLE_DIAMETER, SIDE_WIDTH, POLE_DIAMETER),
+                max_scale: Vec3::new(POLE_DIAMETER, GOAL_WIDTH, POLE_DIAMETER),
                 axis_mask: Vec3::new(1.0, 0.0, 1.0),
             },
             Mesh3d(cached_assets.pole_mesh.clone()),
@@ -128,7 +129,7 @@ fn spawn_level(
             target: LEVEL_CENTER_POINT,
             starting_position: Vec3::new(0., 2., 1.5),
             up_direction: Vec3::Y,
-            range: SIDE_WIDTH * 0.5,
+            range: GOAL_WIDTH * 0.5,
             speed: game_config.swaying_camera_speed,
         },
         Camera3d::default(),
@@ -184,7 +185,7 @@ fn spawn_level(
         Mesh3d(meshes.add(Plane3d::default().mesh().size(1.0, 1.0))),
         MeshMaterial3d(materials.add(game_assets.image_sand.clone())),
         Transform::from_matrix(Mat4::from_scale_rotation_translation(
-            Vec3::splat(SIDE_WIDTH),
+            Vec3::splat(GOAL_WIDTH),
             Quat::IDENTITY,
             LEVEL_CENTER_POINT,
         )),
@@ -197,13 +198,22 @@ fn spawn_level(
     });
     let barrier_material =
         materials.add(Color::Srgba(Srgba::hex("750000").unwrap()));
+    let goal_config: [(Side, Vec3); 4] = [
+        (Side::Bottom, Vec3::Z),
+        (Side::Right, Vec3::X),
+        (Side::Top, Vec3::NEG_Z),
+        (Side::Left, Vec3::NEG_X),
+    ];
 
-    for (i, side) in Side::iter().enumerate() {
+    for (i, (side, axis)) in goal_config.iter().enumerate() {
         // Spawn Point
         commands
             .spawn((
-                Goal,
-                side,
+                Goal {
+                    axis: *axis,
+                    width: GOAL_WIDTH,
+                },
+                *side,
                 Transform::from_rotation(Quat::from_axis_angle(
                     Vec3::Y,
                     std::f32::consts::TAU
@@ -212,7 +222,7 @@ fn spawn_level(
                 .mul_transform(Transform::from_xyz(
                     0.0,
                     0.0,
-                    0.5 * SIDE_WIDTH,
+                    0.5 * GOAL_WIDTH,
                 )),
             ))
             .with_children(|builder| {
@@ -233,7 +243,7 @@ fn spawn_level(
                             ),
                             Quat::IDENTITY,
                             Vec3::new(
-                                0.5 * SIDE_WIDTH,
+                                0.5 * GOAL_WIDTH,
                                 0.5 * BARRIER_HEIGHT,
                                 0.0,
                             ),
@@ -244,7 +254,7 @@ fn spawn_level(
 
         // Poles
         commands.trigger(SpawnPole {
-            side,
+            side: *side,
             fade_in: false,
         });
     }
@@ -258,20 +268,20 @@ fn spawn_crabs_for_each_side(
     mut materials: ResMut<Assets<StandardMaterial>>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
+    let walk_axis: HashMap<Side, Vec3> = HashMap::from([
+        (Side::Bottom, Vec3::X),
+        (Side::Right, Vec3::NEG_Z),
+        (Side::Top, Vec3::NEG_X),
+        (Side::Left, Vec3::Z),
+    ]);
+
     for (goal_entity, side) in &goals_query {
         let crab_config = &game_modes.current().competitors[side];
-
-        let axis: HashMap<Side, Vec3> = HashMap::from([
-            (Side::Bottom, Vec3::X),
-            (Side::Right, Vec3::NEG_Z),
-            (Side::Top, Vec3::NEG_X),
-            (Side::Left, Vec3::Z),
-        ]);
 
         commands.entity(goal_entity).with_children(|builder| {
             let mut crab = builder.spawn((
                 Crab,
-                CrabWalkAxis(axis[side]),
+                CrabWalkAxis(walk_axis[side]),
                 *side,
                 Collider,
                 InsertAfterFadeIn::<Movement>::default(),

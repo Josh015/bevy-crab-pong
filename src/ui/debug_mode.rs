@@ -8,8 +8,8 @@ use crate::{
             CRAB_WIDTH, Crab, CrabWalkAxis,
             ai::{AI, AI_CENTER_HIT_AREA_PERCENTAGE, Target},
         },
+        goal::Goal,
         movement::{Heading, Movement, StoppingDistance},
-        side::Side,
     },
     game::state::LoadedSet,
     util::hemisphere_deflection,
@@ -181,16 +181,19 @@ fn crab_collider_ball_deflection_direction_gizmos(
         (With<Ball>, With<Movement>, With<Collider>),
     >,
     crabs_query: Query<
-        (&Side, &CrabWalkAxis, &Transform, &GlobalTransform),
+        (&Parent, &CrabWalkAxis, &Transform, &GlobalTransform),
         (With<Crab>, With<Collider>),
     >,
+    goals_query: Query<&Goal>,
     mut gizmos: Gizmos,
 ) {
-    for (ball_transform, ball_heading) in &balls_query {
-        for (side, walk_axis, transform, crab_global_transform) in &crabs_query
-        {
-            // Check that the ball is near the crab and facing the side.
-            let axis = side.axis();
+    for (parent, walk_axis, transform, crab_global_transform) in &crabs_query {
+        // Check that the ball is near the crab and facing the side.
+        let Ok(goal) = goals_query.get(parent.get()) else {
+            continue;
+        };
+        for (ball_transform, ball_heading) in &balls_query {
+            let axis = goal.axis;
             let ball_side_position =
                 walk_axis.get_axis_position(ball_transform);
             let delta = transform.translation.x - ball_side_position;

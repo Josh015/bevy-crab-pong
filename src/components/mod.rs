@@ -19,10 +19,10 @@ impl Plugin for ComponentsPlugin {
             collider::ColliderPlugin,
             crab::CrabPlugin,
             fade::FadePlugin,
+            goal::GoalPlugin,
             movement::MovementPlugin,
             pole::PolePlugin,
             scrolling_texture::ScrollingTexturePlugin,
-            side::SidePlugin,
             swaying_camera::SwayingCameraPlugin,
         ));
     }

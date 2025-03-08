@@ -5,11 +5,12 @@ use crate::{
         ball::Ball,
         collider::{CircleCollider, Collider},
         movement::{Heading, Movement},
-        side::Side,
     },
     game::state::PausableSet,
     util::reflect,
 };
+
+use super::goal::Goal;
 
 pub const POLE_DIAMETER: f32 = 0.05;
 pub const POLE_HEIGHT: f32 = 0.1;
@@ -32,16 +33,22 @@ pub struct Pole;
 
 fn pole_and_ball_collisions(
     mut commands: Commands,
+    goals_query: Query<&Goal>,
+    poles_query: Query<&Parent, (With<Pole>, With<Collider>)>,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading, &CircleCollider),
         (With<Ball>, With<Collider>, With<Movement>),
     >,
-    poles_query: Query<&Side, (With<Pole>, With<Collider>)>,
 ) {
-    for (entity, ball_transform, ball_heading, ball_collider) in &balls_query {
-        for side in &poles_query {
-            let ball_to_pole_distance = side.distance_to_ball(ball_transform);
-            let axis = side.axis();
+    for parent in &poles_query {
+        let Ok(goal) = goals_query.get(parent.get()) else {
+            continue;
+        };
+        for (entity, ball_transform, ball_heading, ball_collider) in
+            &balls_query
+        {
+            let ball_to_pole_distance = goal.distance_to_entity(ball_transform);
+            let axis = goal.axis;
 
             // Check that the ball is touching and facing the pole.
             if ball_to_pole_distance > ball_collider.radius + POLE_RADIUS
@@ -55,7 +62,7 @@ fn pole_and_ball_collisions(
                 reflect(*ball_heading.0, axis).normalize(),
             )));
 
-            info!("Ball({entity:?}): Collided Pole({side:?})");
+            info!("Ball({entity:?}): Collided Pole({goal:?})");
             break;
         }
     }
