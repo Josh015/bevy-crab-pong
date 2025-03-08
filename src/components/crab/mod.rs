@@ -115,22 +115,34 @@ fn crab_and_ball_collisions(
         for (ball_entity, ball_transform, ball_heading, ball_collider) in
             &balls_query
         {
-            // Check that the ball is touching the crab and facing the goal.
+            // Check that the ball is facing the goal.
             let goal_forward = goal.forward;
+
+            if ball_heading.0.dot(goal_forward) <= 0.0 {
+                continue;
+            }
+
+            // Check that the ball is close enough to the goal.
             let ball_to_goal_distance = goal.distance_to_entity(ball_transform);
+
+            if ball_to_goal_distance > ball_collider.radius + (0.5 * CRAB_DEPTH)
+            {
+                continue;
+            }
+
+            // Check that the ball is close enough to the crab.
             let ball_axis_position =
                 crab_collider.get_axis_position(ball_transform);
             let delta = crab_transform.translation.x - ball_axis_position;
             let ball_to_crab_distance = delta.abs();
 
-            if ball_to_goal_distance > ball_collider.radius + (0.5 * CRAB_DEPTH)
-                || ball_to_crab_distance
-                    > ball_collider.radius + (0.5 * crab_collider.width)
-                || ball_heading.0.dot(goal_forward) <= 0.0
+            if ball_to_crab_distance
+                > ball_collider.radius + (0.5 * crab_collider.width)
             {
                 continue;
             }
 
+            // Deflect the ball.
             let ball_deflection_direction =
                 hemisphere_deflection(delta, crab_collider.width, goal_forward);
 
