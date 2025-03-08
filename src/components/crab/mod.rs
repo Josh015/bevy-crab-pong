@@ -47,18 +47,8 @@ pub struct Crab;
 /// Physics and collision data for a [Crab] entity.
 #[derive(Component, Debug, Default)]
 pub struct CrabCollider {
-    /// The world-space axis for side-to-side movement.
-    pub side_axis: Vec3,
-
     /// Width of the bounding shape.
     pub width: f32,
-}
-
-impl CrabCollider {
-    /// Map an entity's global position to a crab's local axis.
-    pub fn get_axis_position(&self, global_transform: &GlobalTransform) -> f32 {
-        global_transform.translation().dot(self.side_axis)
-    }
 }
 
 fn restrict_crab_movement_to_space_within_its_own_goal(
@@ -99,7 +89,7 @@ fn crab_and_ball_collisions(
     mut commands: Commands,
     goals_query: Query<&Goal>,
     crabs_query: Query<
-        (&Parent, &CrabCollider, &Transform),
+        (&Parent, &CrabCollider, &Transform, &GlobalTransform),
         (With<Crab>, With<Collider>),
     >,
     balls_query: Query<
@@ -107,12 +97,14 @@ fn crab_and_ball_collisions(
         (With<Ball>, With<Collider>, With<Movement>),
     >,
 ) {
-    for (parent, crab_collider, crab_transform) in &crabs_query {
+    for (parent, crab_collider, crab_transform, crab_global_transform) in
+        &crabs_query
+    {
         let Ok(goal) = goals_query.get(parent.get()) else {
             continue;
         };
 
-        for (ball_entity, ball_transform, ball_heading, ball_collider) in
+        for (ball_entity, ball_global_transform, ball_heading, ball_collider) in
             &balls_query
         {
             // Check that the ball is facing the goal.
@@ -123,7 +115,8 @@ fn crab_and_ball_collisions(
             }
 
             // Check that the ball is close enough to the goal.
-            let ball_to_goal_distance = goal.distance_to_entity(ball_transform);
+            let ball_to_goal_distance =
+                goal.distance_to_entity(ball_global_transform);
 
             if ball_to_goal_distance > ball_collider.radius + (0.5 * CRAB_DEPTH)
             {
@@ -131,8 +124,9 @@ fn crab_and_ball_collisions(
             }
 
             // Check that the ball is close enough to the crab.
-            let ball_axis_position =
-                crab_collider.get_axis_position(ball_transform);
+            let ball_axis_position = ball_global_transform
+                .translation()
+                .dot(*crab_global_transform.right());
             let delta = crab_transform.translation.x - ball_axis_position;
             let ball_to_crab_distance = delta.abs();
 

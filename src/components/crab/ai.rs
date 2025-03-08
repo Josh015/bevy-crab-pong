@@ -82,6 +82,7 @@ fn move_ai_crabs_toward_their_targeted_ball(
         (
             Entity,
             &Transform,
+            &GlobalTransform,
             &StoppingDistance,
             &CrabCollider,
             Option<&Target>,
@@ -93,21 +94,29 @@ fn move_ai_crabs_toward_their_targeted_ball(
         (With<Ball>, With<Movement>, With<Collider>),
     >,
 ) {
-    for (entity, transform, stopping_distance, crab_collider, target) in
-        &crabs_query
+    for (
+        entity,
+        crab_transform,
+        crab_global_transform,
+        stopping_distance,
+        crab_collider,
+        target,
+    ) in &crabs_query
     {
         // Use the ball's side position or default to the center of the side.
         let mut target_side_position = 0.0;
 
         if let Some(target) = target {
-            if let Ok(ball_transform) = balls_query.get(target.0) {
-                target_side_position =
-                    crab_collider.get_axis_position(ball_transform)
+            if let Ok(ball_global_transform) = balls_query.get(target.0) {
+                target_side_position = ball_global_transform
+                    .translation()
+                    .dot(*crab_global_transform.right())
             }
         }
 
         // Make the crab move to try to keep its ideal hit area under the ball.
-        let crab_stop_position = transform.translation.x + stopping_distance.0;
+        let crab_stop_position =
+            crab_transform.translation.x + stopping_distance.0;
         let distance_from_crab_center =
             (crab_stop_position - target_side_position).abs();
 
@@ -117,7 +126,7 @@ fn move_ai_crabs_toward_their_targeted_ball(
             commands.entity(entity).remove::<Force>();
         } else {
             commands.entity(entity).insert(
-                if target_side_position < transform.translation.x {
+                if target_side_position < crab_transform.translation.x {
                     Force::Negative // Left
                 } else {
                     Force::Positive // Right

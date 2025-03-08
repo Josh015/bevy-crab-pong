@@ -1,4 +1,4 @@
-use bevy::{math::Affine2, prelude::*, utils::HashMap};
+use bevy::{math::Affine2, prelude::*};
 use rand::prelude::*;
 use strum::IntoEnumIterator;
 
@@ -268,23 +268,13 @@ fn spawn_crabs_for_each_side(
     mut materials: ResMut<Assets<StandardMaterial>>,
     goals_query: Query<(Entity, &Side), With<Goal>>,
 ) {
-    let crab_collider_axis: HashMap<Side, Vec3> = HashMap::from([
-        (Side::Bottom, Vec3::X),
-        (Side::Right, Vec3::NEG_Z),
-        (Side::Top, Vec3::NEG_X),
-        (Side::Left, Vec3::Z),
-    ]);
-
     for (goal_entity, side) in &goals_query {
         let crab_config = &game_modes.current().competitors[side];
 
         commands.entity(goal_entity).with_children(|builder| {
             let mut crab = builder.spawn((
                 Crab,
-                CrabCollider {
-                    side_axis: crab_collider_axis[side],
-                    width: CRAB_WIDTH,
-                },
+                CrabCollider { width: CRAB_WIDTH },
                 *side,
                 Collider,
                 InsertAfterFadeIn::<Movement>::default(),
