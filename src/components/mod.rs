@@ -2,6 +2,7 @@ pub mod ball;
 pub mod collider;
 pub mod crab;
 pub mod fade;
+pub mod goal;
 pub mod movement;
 pub mod pole;
 pub mod scrolling_texture;
@@ -15,7 +16,6 @@ pub(super) struct ComponentsPlugin;
 impl Plugin for ComponentsPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
-            ball::BallPlugin,
             collider::ColliderPlugin,
             crab::CrabPlugin,
             fade::FadePlugin,

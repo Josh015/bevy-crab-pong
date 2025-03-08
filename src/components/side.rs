@@ -2,32 +2,28 @@ use bevy::prelude::*;
 use serde::Deserialize;
 use strum::EnumIter;
 
-use crate::{
-    components::{
-        ball::Ball,
-        collider::{CircleCollider, Collider},
-        crab::Crab,
-        fade::Fade,
-        movement::Movement,
-        pole::{Pole, SpawnPole},
-    },
-    game::state::{PausableSet, PlayableSet},
+use crate::game::{events::SideScoredEvent, state::PlayableSet};
+
+use super::{
+    ball::Ball,
+    collider::{CircleCollider, Collider},
+    crab::Crab,
+    fade::Fade,
+    movement::Movement,
 };
 
 pub const SIDE_WIDTH: f32 = 1.0;
 
-/// Signals that a side has been scored in by a ball.
-#[derive(Clone, Debug, Event)]
-pub struct SideScoredEvent(pub Side);
+pub(super) struct SidePlugin;
 
-/// Signals that a side has been eliminated from the game.
-#[derive(Clone, Debug, Event)]
-pub struct SideEliminatedEvent(pub Side);
-
-/// Marks an entity that can be used as a parent to spawn [`Side`] entities.
-#[derive(Component, Debug)]
-#[require(Transform, Visibility)]
-pub struct SideSpawnPoint;
+impl Plugin for SidePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            PostUpdate,
+            check_if_a_ball_has_scored_in_a_side.after(PlayableSet),
+        );
+    }
+}
 
 /// Assigns an entity to a given side of the beach.
 #[derive(
@@ -76,43 +72,6 @@ impl Side {
     }
 }
 
-pub(super) struct SidePlugin;
-
-impl Plugin for SidePlugin {
-    fn build(&self, app: &mut App) {
-        app.add_event::<SideScoredEvent>()
-            .add_event::<SideEliminatedEvent>()
-            .add_systems(
-                Update,
-                allow_only_one_crab_or_pole_per_side.in_set(PausableSet),
-            )
-            .add_systems(
-                PostUpdate,
-                (
-                    check_if_a_ball_has_scored_in_a_side,
-                    block_eliminated_sides_with_poles,
-                )
-                    .chain()
-                    .after(PlayableSet),
-            );
-    }
-}
-
-fn allow_only_one_crab_or_pole_per_side(
-    mut commands: Commands,
-    new_query: Query<(Entity, &Side), Or<(Added<Crab>, Added<Pole>)>>,
-    old_query: Query<(Entity, &Side), Or<(With<Crab>, With<Pole>)>>,
-) {
-    for (new_entity, new_side) in &new_query {
-        for (old_entity, old_side) in &old_query {
-            if old_side == new_side && old_entity != new_entity {
-                commands.entity(old_entity).insert(Fade::new_out());
-                break;
-            }
-        }
-    }
-}
-
 fn check_if_a_ball_has_scored_in_a_side(
     mut commands: Commands,
     mut side_scored_events: EventWriter<SideScoredEvent>,
@@ -133,18 +92,5 @@ fn check_if_a_ball_has_scored_in_a_side(
                 info!("Ball({ball_entity:?}): Scored Side({side:?})");
             }
         }
-    }
-}
-
-fn block_eliminated_sides_with_poles(
-    mut side_eliminated_events: EventReader<SideEliminatedEvent>,
-    mut commands: Commands,
-) {
-    for SideEliminatedEvent(side) in side_eliminated_events.read() {
-        commands.trigger(SpawnPole {
-            side: *side,
-            fade_in: true,
-        });
-        info!("Side({side:?}): Eliminated");
     }
 }

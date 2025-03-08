@@ -7,23 +7,12 @@ use crate::{
     components::{
         ball::Ball,
         collider::{CircleCollider, Collider},
-        fade::{Fade, FadeEffect, InsertAfterFadeIn, RemoveBeforeFadeOut},
-        movement::{
-            Acceleration, Force, Heading, MaxSpeed, Movement, Speed,
-            StoppingDistance,
-        },
-        side::{SIDE_WIDTH, Side, SideSpawnPoint},
+        movement::{Force, Heading, Movement, Speed, StoppingDistance},
+        side::{SIDE_WIDTH, Side},
     },
-    game::{
-        assets::{CachedAssets, CrabController, GameAssets},
-        level::BARRIER_RADIUS,
-        modes::GameModes,
-        state::{GameState, PausableSet},
-    },
+    game::{level::BARRIER_RADIUS, state::PausableSet},
     util::hemisphere_deflection,
 };
-
-use super::crab::{ai::AI, player::Player};
 
 pub const CRAB_WIDTH: f32 = 0.2;
 pub const CRAB_DEPTH: f32 = 0.1;
@@ -36,10 +25,6 @@ pub(super) struct CrabPlugin;
 impl Plugin for CrabPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((ai::AiPlugin, player::InputPlugin))
-            .add_systems(
-                OnExit(GameState::StartMenu),
-                start_game_with_new_crabs_for_each_side,
-            )
             .add_systems(
                 Update,
                 restrict_crab_movement_to_space_within_its_own_goal
@@ -55,69 +40,6 @@ impl Plugin for CrabPlugin {
 /// Makes a crab entity that can deflect balls and move sideways inside a goal.
 #[derive(Component, Debug, Default)]
 pub struct Crab;
-
-fn start_game_with_new_crabs_for_each_side(
-    cached_assets: Res<CachedAssets>,
-    game_assets: Res<GameAssets>,
-    game_modes: GameModes,
-    mut commands: Commands,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    spawn_points_query: Query<(Entity, &Side), With<SideSpawnPoint>>,
-) {
-    for (spawn_point_entity, side) in &spawn_points_query {
-        let crab_config = &game_modes.current().competitors[side];
-
-        commands
-            .entity(spawn_point_entity)
-            .with_children(|builder| {
-                let mut crab = builder.spawn((
-                    Crab,
-                    *side,
-                    Collider,
-                    InsertAfterFadeIn::<Movement>::default(),
-                    RemoveBeforeFadeOut::<Movement>::default(),
-                    RemoveBeforeFadeOut::<Collider>::default(),
-                    Fade::new_in(),
-                    FadeEffect::Scale {
-                        max_scale: Vec3::new(
-                            CRAB_WIDTH, CRAB_DEPTH, CRAB_DEPTH,
-                        ),
-                        axis_mask: Vec3::ONE,
-                    },
-                    Heading(Dir3::X),
-                    MaxSpeed(crab_config.max_speed),
-                    Acceleration(
-                        crab_config.max_speed
-                            / crab_config.seconds_to_max_speed,
-                    ),
-                    Mesh3d(cached_assets.crab_mesh.clone()),
-                    MeshMaterial3d(materials.add(StandardMaterial {
-                        base_color_texture: Some(
-                            game_assets.image_crab.clone(),
-                        ),
-                        base_color:
-                            Srgba::hex(&crab_config.color).unwrap().into(),
-                        ..default()
-                    })),
-                    Transform::from_matrix(
-                        Mat4::from_scale_rotation_translation(
-                            Vec3::splat(f32::EPSILON),
-                            Quat::IDENTITY,
-                            CRAB_START_POSITION,
-                        ),
-                    ),
-                ));
-
-                if crab_config.controller == CrabController::AI {
-                    crab.insert(AI);
-                } else {
-                    crab.insert(Player);
-                }
-            });
-
-        info!("Crab({side:?}): Spawned");
-    }
-}
 
 fn restrict_crab_movement_to_space_within_its_own_goal(
     mut commands: Commands,
