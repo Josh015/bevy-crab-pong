@@ -3,17 +3,15 @@ use serde::Deserialize;
 use strum::EnumIter;
 
 use crate::{
-    common::{
+    components::{
+        ball::Ball,
         collider::{CircleCollider, Collider},
+        crab::Crab,
         fade::Fade,
         movement::Movement,
-    },
-    game::state::{PausableSet, PlayableSet},
-    spawners::{
-        ball::Ball,
-        crab::Crab,
         pole::{Pole, SpawnPole},
     },
+    game::state::{PausableSet, PlayableSet},
 };
 
 pub const SIDE_WIDTH: f32 = 1.0;

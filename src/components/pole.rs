@@ -1,17 +1,16 @@
 use bevy::prelude::*;
 
 use crate::{
-    common::{
+    components::{
+        ball::Ball,
         collider::{CircleCollider, Collider},
         fade::{Fade, FadeEffect, RemoveBeforeFadeOut},
         movement::{Heading, Movement},
+        side::{SIDE_WIDTH, Side, SideSpawnPoint},
     },
     game::{assets::CachedAssets, state::PausableSet},
-    level::side::{SIDE_WIDTH, Side, SideSpawnPoint},
     util::reflect,
 };
-
-use super::ball::Ball;
 
 pub const POLE_DIAMETER: f32 = 0.05;
 pub const POLE_HEIGHT: f32 = 0.1;

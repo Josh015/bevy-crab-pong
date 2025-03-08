@@ -4,7 +4,7 @@ use bevy_common_assets::yaml::YamlAssetPlugin;
 use serde::Deserialize;
 use std::num::{NonZeroU8, NonZeroUsize};
 
-use crate::level::side::Side;
+use crate::components::side::Side;
 
 use super::state::GameState;
 

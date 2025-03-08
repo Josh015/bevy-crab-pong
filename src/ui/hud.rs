@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
 use crate::{
+    components::side::Side,
     game::{
         assets::GameAssets,
         competitors::Competitors,
         state::{GameState, LoadedSet},
     },
-    level::side::Side,
 };
 
 /// Marks a [`Text`] entity to display the HP for an associated [`Side`].

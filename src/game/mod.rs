@@ -1,5 +1,6 @@
 pub mod assets;
 pub mod competitors;
+pub mod level;
 pub mod modes;
 pub mod state;
 
@@ -12,6 +13,7 @@ impl Plugin for GamePlugin {
         app.add_plugins((
             assets::AssetsPlugin,
             competitors::CompetitorsPlugin,
+            level::LevelPlugin,
             modes::ModesPlugin,
             state::StatePlugin,
         ));

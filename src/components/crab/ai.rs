@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 
 use crate::{
-    common::{
+    components::{
+        ball::Ball,
         collider::Collider,
         movement::{Force, Movement, StoppingDistance},
+        side::Side,
     },
     game::state::PlayableSet,
-    level::side::Side,
-    spawners::ball::Ball,
 };
 
 use super::{CRAB_START_POSITION, CRAB_WIDTH, Crab};

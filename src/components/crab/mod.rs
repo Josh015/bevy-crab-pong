@@ -4,30 +4,26 @@ pub mod player;
 use bevy::prelude::*;
 
 use crate::{
-    common::{
+    components::{
+        ball::Ball,
         collider::{CircleCollider, Collider},
         fade::{Fade, FadeEffect, InsertAfterFadeIn, RemoveBeforeFadeOut},
         movement::{
             Acceleration, Force, Heading, MaxSpeed, Movement, Speed,
             StoppingDistance,
         },
+        side::{SIDE_WIDTH, Side, SideSpawnPoint},
     },
     game::{
         assets::{CachedAssets, CrabController, GameAssets},
+        level::BARRIER_RADIUS,
         modes::GameModes,
         state::{GameState, PausableSet},
-    },
-    level::{
-        beach::BARRIER_RADIUS,
-        side::{SIDE_WIDTH, Side, SideSpawnPoint},
     },
     util::hemisphere_deflection,
 };
 
-use super::{
-    ball::Ball,
-    crab::{ai::AI, player::Player},
-};
+use super::crab::{ai::AI, player::Player};
 
 pub const CRAB_WIDTH: f32 = 0.2;
 pub const CRAB_DEPTH: f32 = 0.1;

@@ -1,19 +1,17 @@
 use bevy::prelude::*;
 
 use crate::{
-    common::{
-        collider::Collider,
-        movement::{Heading, Movement, StoppingDistance},
-    },
-    game::state::LoadedSet,
-    level::side::Side,
-    spawners::{
+    components::{
         ball::Ball,
+        collider::Collider,
         crab::{
             CRAB_WIDTH, Crab,
             ai::{AI, AI_CENTER_HIT_AREA_PERCENTAGE, Target},
         },
+        movement::{Heading, Movement, StoppingDistance},
+        side::Side,
     },
+    game::state::LoadedSet,
     util::hemisphere_deflection,
 };
 

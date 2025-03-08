@@ -2,7 +2,7 @@ use std::num::NonZeroUsize;
 
 use bevy::{prelude::*, utils::HashMap};
 
-use crate::level::side::{Side, SideEliminatedEvent, SideScoredEvent};
+use crate::components::side::{Side, SideEliminatedEvent, SideScoredEvent};
 
 use super::{
     modes::GameModes,

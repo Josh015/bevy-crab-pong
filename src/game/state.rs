@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use strum::{EnumIter, IntoEnumIterator};
 
-use crate::common::fade::{Fade, FadeEffect};
+use crate::components::fade::{Fade, FadeEffect};
 
 // All the app's possible states.
 #[derive(

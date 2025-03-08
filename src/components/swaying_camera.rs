@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::state::LoadedSet;
-
-use super::side::SIDE_WIDTH;
+use crate::{components::side::SIDE_WIDTH, game::state::LoadedSet};
 
 /// Marks a [`Camera3d`] entity to sway back and forth in a slow reciprocating
 /// motion while looking at the center of the beach.

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use rand::prelude::*;
 
 use crate::{
-    common::{
+    components::{
         collider::{CircleCollider, Collider},
         fade::{Fade, InsertAfterFadeIn, RemoveBeforeFadeOut},
         movement::{Heading, Movement, Speed},

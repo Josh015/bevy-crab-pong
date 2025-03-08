@@ -1,9 +1,7 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
-pub mod common;
+pub mod components;
 pub mod game;
-pub mod level;
-pub mod spawners;
 pub mod ui;
 pub mod util;
 
@@ -33,10 +31,8 @@ fn main() {
         ))
         .insert_resource(ClearColor(Color::srgba(0.7, 0.9, 1.0, 1.0)))
         .add_plugins((
-            common::CommonPlugin,
+            components::ComponentsPlugin,
             game::GamePlugin,
-            level::LevelPlugin,
-            spawners::SpawnersPlugin,
             ui::UiPlugin,
         ))
         .run();

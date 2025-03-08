@@ -2,30 +2,28 @@ use bevy::{math::Affine2, prelude::*};
 use strum::IntoEnumIterator;
 
 use crate::{
-    common::{
+    components::{
+        ball::BallSpawner,
         collider::{CircleCollider, Collider},
+        pole::SpawnPole,
         scrolling_texture::ScrollingTexture,
+        side::{SIDE_WIDTH, Side, SideSpawnPoint},
+        swaying_camera::SwayingCamera,
     },
     game::{
         assets::{GameAssets, GameConfig},
         state::GameState,
     },
-    spawners::{ball::BallSpawner, pole::SpawnPole},
 };
 
-use super::{
-    side::{SIDE_WIDTH, Side, SideSpawnPoint},
-    swaying_camera::SwayingCamera,
-};
-
-pub const BEACH_CENTER_POINT: Vec3 = Vec3::ZERO;
+pub const LEVEL_CENTER_POINT: Vec3 = Vec3::ZERO;
 pub const BARRIER_DIAMETER: f32 = 0.12;
 pub const BARRIER_RADIUS: f32 = 0.5 * BARRIER_DIAMETER;
 pub const BARRIER_HEIGHT: f32 = 0.2;
 
-pub(super) struct BeachPlugin;
+pub(super) struct LevelPlugin;
 
-impl Plugin for BeachPlugin {
+impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnExit(GameState::Loading), spawn_level);
     }
@@ -44,7 +42,7 @@ fn spawn_level(
     commands.spawn((
         SwayingCamera {
             speed: game_config.swaying_camera_speed,
-            target: BEACH_CENTER_POINT,
+            target: LEVEL_CENTER_POINT,
         },
         Camera3d::default(),
         Msaa::Sample8,
@@ -102,7 +100,7 @@ fn spawn_level(
         Transform::from_matrix(Mat4::from_scale_rotation_translation(
             Vec3::splat(SIDE_WIDTH),
             Quat::IDENTITY,
-            BEACH_CENTER_POINT,
+            LEVEL_CENTER_POINT,
         )),
     ));
 
