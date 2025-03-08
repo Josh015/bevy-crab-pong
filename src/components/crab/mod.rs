@@ -104,13 +104,13 @@ fn crab_and_ball_collisions(
         else {
             continue;
         };
+        let goal_back = *goal_global_transform.back();
+        let crab_right = *crab_global_transform.right();
 
         for (ball_entity, ball_global_transform, ball_heading, ball_collider) in
             &balls_query
         {
             // Check that the ball is facing the goal.
-            let goal_back = *goal_global_transform.back();
-
             if ball_heading.0.dot(goal_back) <= 0.0 {
                 continue;
             }
@@ -125,9 +125,8 @@ fn crab_and_ball_collisions(
             }
 
             // Check that the ball is close enough to the crab.
-            let ball_axis_position = ball_global_transform
-                .translation()
-                .dot(*crab_global_transform.right());
+            let ball_axis_position =
+                ball_global_transform.translation().dot(crab_right);
             let delta = crab_transform.translation.x - ball_axis_position;
             let ball_to_crab_distance = delta.abs();
 

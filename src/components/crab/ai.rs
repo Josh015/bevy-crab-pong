@@ -57,14 +57,13 @@ fn make_ai_crabs_target_the_ball_closest_to_their_side(
         else {
             continue;
         };
+        let goal_back = *goal_global_transform.back();
         let mut closest_ball_distance = f32::MAX;
         let mut closest_ball = None;
 
         for (ball_entity, ball_global_transform) in &balls_query {
             let ball_distance_to_goal = (0.5 * goal.width)
-                - ball_global_transform
-                    .translation()
-                    .dot(*goal_global_transform.back());
+                - ball_global_transform.translation().dot(goal_back);
 
             if ball_distance_to_goal < closest_ball_distance {
                 closest_ball_distance = ball_distance_to_goal;

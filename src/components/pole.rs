@@ -45,17 +45,22 @@ fn pole_and_ball_collisions(
         else {
             continue;
         };
+        let goal_back = *goal_global_transform.back();
+
         for (entity, ball_global_transform, ball_heading, ball_collider) in
             &balls_query
         {
-            let goal_back = *goal_global_transform.back();
+            // Check that the ball is facing the goal.
+
+            if ball_heading.0.dot(goal_back) <= 0.0 {
+                continue;
+            }
+
             let ball_to_pole_distance = (0.5 * goal.width)
                 - ball_global_transform.translation().dot(goal_back);
 
             // Check that the ball is touching and facing the pole.
-            if ball_to_pole_distance > ball_collider.radius + POLE_RADIUS
-                || ball_heading.0.dot(goal_back) <= 0.0
-            {
+            if ball_to_pole_distance > ball_collider.radius + POLE_RADIUS {
                 continue;
             }
 

@@ -33,27 +33,28 @@ pub struct Goal {
 fn check_if_a_ball_has_scored_in_a_goal(
     mut commands: Commands,
     mut side_scored_events: EventWriter<SideScoredEvent>,
-    goals_query: Query<(&Goal, &GlobalTransform, &Side)>,
-    crabs_query: Query<&Parent, (With<Crab>, With<Movement>, With<Collider>)>,
+    goals_query: Query<(&Goal, &GlobalTransform)>,
+    crabs_query: Query<
+        (&Parent, &Side),
+        (With<Crab>, With<Movement>, With<Collider>),
+    >,
     balls_query: Query<
         (Entity, &GlobalTransform, &CircleCollider),
         (With<Ball>, With<Movement>, With<Collider>),
     >,
 ) {
     // If a ball passes a side's alive crab then despawn it and raise an event.
-    for parent in &crabs_query {
-        let Ok((goal, goal_global_transform, side)) =
-            goals_query.get(parent.get())
+    for (parent, side) in &crabs_query {
+        let Ok((goal, goal_global_transform)) = goals_query.get(parent.get())
         else {
             continue;
         };
+        let goal_back = *goal_global_transform.back();
 
         for (ball_entity, ball_global_transform, ball_collider) in &balls_query
         {
             let ball_distance = (0.5 * goal.width)
-                - ball_global_transform
-                    .translation()
-                    .dot(*goal_global_transform.back());
+                - ball_global_transform.translation().dot(goal_back);
 
             if ball_distance <= ball_collider.radius {
                 commands.entity(ball_entity).insert(Fade::new_out());
