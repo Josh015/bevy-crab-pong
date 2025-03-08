@@ -47,8 +47,8 @@ pub struct Crab;
 /// Physics and collision data for a [Crab] entity.
 #[derive(Component, Debug, Default)]
 pub struct CrabCollider {
-    /// The world-space axis for  side-to-side movement.
-    pub axis: Vec3,
+    /// The world-space axis for side-to-side movement.
+    pub side_axis: Vec3,
 
     /// Width of the bounding shape.
     pub width: f32,
@@ -57,7 +57,7 @@ pub struct CrabCollider {
 impl CrabCollider {
     /// Map an entity's global position to a crab's local axis.
     pub fn get_axis_position(&self, global_transform: &GlobalTransform) -> f32 {
-        global_transform.translation().dot(self.axis)
+        global_transform.translation().dot(self.side_axis)
     }
 }
 
@@ -117,13 +117,13 @@ fn crab_and_ball_collisions(
         {
             // Check that the ball is touching the crab and facing the goal.
             let goal_forward = goal.forward;
-            let ball_to_side_distance = goal.distance_to_entity(ball_transform);
-            let ball_side_position =
+            let ball_to_goal_distance = goal.distance_to_entity(ball_transform);
+            let ball_axis_position =
                 crab_collider.get_axis_position(ball_transform);
-            let delta = crab_transform.translation.x - ball_side_position;
+            let delta = crab_transform.translation.x - ball_axis_position;
             let ball_to_crab_distance = delta.abs();
 
-            if ball_to_side_distance > ball_collider.radius + (0.5 * CRAB_DEPTH)
+            if ball_to_goal_distance > ball_collider.radius + (0.5 * CRAB_DEPTH)
                 || ball_to_crab_distance
                     > ball_collider.radius + (0.5 * crab_collider.width)
                 || ball_heading.0.dot(goal_forward) <= 0.0

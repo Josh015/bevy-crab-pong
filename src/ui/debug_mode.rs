@@ -191,16 +191,16 @@ fn crab_collider_ball_deflection_direction_gizmos(
     for (parent, crab_collider, transform, crab_global_transform) in
         &crabs_query
     {
-        // Check that the ball is near the crab and facing the side.
+        // Check that the ball is near the crab and facing the goal.
         let Ok(goal) = goals_query.get(parent.get()) else {
             continue;
         };
-        for (ball_transform, ball_heading) in &balls_query {
+        for (ball_global_transform, ball_heading) in &balls_query {
             let goal_forward = goal.forward;
-            let ball_side_position =
-                crab_collider.get_axis_position(ball_transform);
-            let delta = transform.translation.x - ball_side_position;
-            let crab_to_ball_distance = ball_transform
+            let ball_axis_position =
+                crab_collider.get_axis_position(ball_global_transform);
+            let delta = transform.translation.x - ball_axis_position;
+            let crab_to_ball_distance = ball_global_transform
                 .translation()
                 .distance(crab_global_transform.translation());
 

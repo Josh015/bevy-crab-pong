@@ -282,7 +282,7 @@ fn spawn_crabs_for_each_side(
             let mut crab = builder.spawn((
                 Crab,
                 CrabCollider {
-                    axis: crab_collider_axis[side],
+                    side_axis: crab_collider_axis[side],
                     width: CRAB_WIDTH,
                 },
                 *side,
