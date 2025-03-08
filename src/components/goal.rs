@@ -27,7 +27,7 @@ impl Plugin for GoalPlugin {
 #[derive(Component, Debug)]
 #[require(Transform, Visibility)]
 pub struct Goal {
-    pub axis: Vec3,
+    pub forward: Vec3,
     pub width: f32,
 }
 
@@ -39,7 +39,7 @@ impl Goal {
         &self,
         global_transform: &GlobalTransform,
     ) -> f32 {
-        (0.5 * self.width) - global_transform.translation().dot(self.axis)
+        (0.5 * self.width) - global_transform.translation().dot(self.forward)
     }
 }
 

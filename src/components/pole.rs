@@ -48,18 +48,18 @@ fn pole_and_ball_collisions(
             &balls_query
         {
             let ball_to_pole_distance = goal.distance_to_entity(ball_transform);
-            let axis = goal.axis;
+            let goal_forward = goal.forward;
 
             // Check that the ball is touching and facing the pole.
             if ball_to_pole_distance > ball_collider.radius + POLE_RADIUS
-                || ball_heading.0.dot(axis) <= 0.0
+                || ball_heading.0.dot(goal_forward) <= 0.0
             {
                 continue;
             }
 
             // Deflect the ball away from the pole.
             commands.entity(entity).insert(Heading(Dir3::new_unchecked(
-                reflect(*ball_heading.0, axis).normalize(),
+                reflect(*ball_heading.0, goal_forward).normalize(),
             )));
 
             info!("Ball({entity:?}): Collided Pole({goal:?})");

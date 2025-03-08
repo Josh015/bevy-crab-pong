@@ -196,7 +196,7 @@ fn crab_collider_ball_deflection_direction_gizmos(
             continue;
         };
         for (ball_transform, ball_heading) in &balls_query {
-            let goal_axis = goal.axis;
+            let goal_forward = goal.forward;
             let ball_side_position =
                 crab_collider.get_axis_position(ball_transform);
             let delta = transform.translation.x - ball_side_position;
@@ -205,13 +205,13 @@ fn crab_collider_ball_deflection_direction_gizmos(
                 .distance(crab_global_transform.translation());
 
             if crab_to_ball_distance > 0.25
-                || ball_heading.0.dot(goal_axis) <= 0.0
+                || ball_heading.0.dot(goal_forward) <= 0.0
             {
                 continue;
             }
 
             let ball_deflection_direction =
-                hemisphere_deflection(delta, crab_collider.width, goal_axis);
+                hemisphere_deflection(delta, crab_collider.width, goal_forward);
 
             gizmos.line(
                 crab_global_transform.translation(),

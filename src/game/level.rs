@@ -210,7 +210,7 @@ fn spawn_level(
         commands
             .spawn((
                 Goal {
-                    axis: *axis,
+                    forward: *axis,
                     width: GOAL_WIDTH,
                 },
                 *side,
