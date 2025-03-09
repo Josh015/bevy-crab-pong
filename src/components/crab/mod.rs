@@ -102,6 +102,7 @@ fn crab_and_ball_collisions(
         };
 
         for (entity, global_transform, heading, collider) in &balls_query {
+            // Check that the ball is facing the goal and close enough to collide.
             if !goal.is_facing(heading) {
                 continue;
             }
@@ -112,7 +113,7 @@ fn crab_and_ball_collisions(
                 continue;
             }
 
-            // Check that the ball is close enough to the crab.
+            // Check that the ball is over the crab's hit area.
             let ball_local_x = goal.map_to_local_x(global_transform);
             let delta = crab_transform.translation.x - ball_local_x;
             let center_distance = delta.abs();
