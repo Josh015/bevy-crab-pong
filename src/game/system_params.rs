@@ -60,13 +60,13 @@ pub struct Goals<'w, 's> {
 
 impl Goals<'_, '_> {
     /// Get an API for the corresponding [Goal] entity.
-    pub fn get(&self, entity: Entity) -> Result<GoalApi, ()> {
+    pub fn get(&self, entity: Entity) -> Result<GoalData, ()> {
         let Ok((side, global_transform)) = self.goals_query.get(entity) else {
             return Err(());
         };
         let back = *global_transform.back();
 
-        Ok(GoalApi {
+        Ok(GoalData {
             level_width: self.level.width,
             back,
             side: *side,
@@ -75,13 +75,13 @@ impl Goals<'_, '_> {
 }
 
 /// Data and methods related to goal logic.
-pub struct GoalApi {
+pub struct GoalData {
     pub level_width: f32,
     pub back: Vec3,
     pub side: Side,
 }
 
-impl GoalApi {
+impl GoalData {
     /// Get the perpendicular distance from the goal to the ball.
     pub fn distance_to_ball(
         &self,

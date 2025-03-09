@@ -88,7 +88,7 @@ fn crab_and_ball_collisions(
     mut commands: Commands,
     goals: Goals,
     crabs_query: Query<
-        (&Parent, &CrabCollider, &Transform, &GlobalTransform),
+        (&Parent, &Transform, &GlobalTransform, &CrabCollider),
         (With<Crab>, With<Collider>),
     >,
     balls_query: Query<
@@ -96,7 +96,7 @@ fn crab_and_ball_collisions(
         (With<Ball>, With<Collider>, With<Movement>),
     >,
 ) {
-    for (parent, crab_collider, crab_transform, crab_global_transform) in
+    for (parent, crab_transform, crab_global_transform, crab_collider) in
         &crabs_query
     {
         let Ok(goal) = goals.get(parent.get()) else {
