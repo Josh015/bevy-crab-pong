@@ -1,4 +1,7 @@
-use bevy::{ecs::system::SystemParam, prelude::*};
+use bevy::{
+    ecs::{query::QueryEntityError, system::SystemParam},
+    prelude::*,
+};
 use std::ops::Add;
 
 use crate::components::{goal::Goal, movement::Heading, side::Side};
@@ -59,18 +62,14 @@ pub struct Goals<'w, 's> {
 }
 
 impl Goals<'_, '_> {
-    /// Get an API for the corresponding [Goal] entity.
-    pub fn get(&self, entity: Entity) -> Result<GoalData, ()> {
-        let Ok((side, global_transform)) = self.goals_query.get(entity) else {
-            return Err(());
-        };
-        let back = *global_transform.back();
-        let right = *global_transform.right();
+    /// Get the relevant data for the corresponding [Goal] entity.
+    pub fn get(&self, entity: Entity) -> Result<GoalData, QueryEntityError> {
+        let (side, global_transform) = self.goals_query.get(entity)?;
 
         Ok(GoalData {
             level_width: self.level.width,
-            back,
-            right,
+            back: *global_transform.back(),
+            right: *global_transform.right(),
             side: *side,
         })
     }
