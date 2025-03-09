@@ -34,7 +34,7 @@ impl From<Vec3> for Heading {
 
 impl Heading {
     pub fn reflect(heading: &Heading, axis: Vec3) -> Self {
-        Heading(Dir3::new_unchecked(reflect(*heading.0, axis).normalize()))
+        Heading::from(reflect(*heading.0, axis))
     }
 }
 
