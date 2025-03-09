@@ -78,11 +78,12 @@ fn make_ai_crabs_target_the_ball_closest_to_their_side(
 
 fn move_ai_crabs_toward_their_targeted_ball(
     mut commands: Commands,
+    goals: Goals,
     crabs_query: Query<
         (
             Entity,
+            &Parent,
             &Transform,
-            &GlobalTransform,
             &StoppingDistance,
             &CrabCollider,
             Option<&Target>,
@@ -96,21 +97,24 @@ fn move_ai_crabs_toward_their_targeted_ball(
 ) {
     for (
         entity,
+        parent,
         crab_transform,
-        crab_global_transform,
         stopping_distance,
         crab_collider,
         target,
     ) in &crabs_query
     {
+        let Ok(goal) = goals.get(parent.get()) else {
+            continue;
+        };
+
         // Use the ball's side position or default to the center of the side.
-        let mut target_side_position = 0.0;
+        let mut target_goal_position = 0.0;
 
         if let Some(target) = target {
             if let Ok(ball_global_transform) = balls_query.get(target.0) {
-                target_side_position = ball_global_transform
-                    .translation()
-                    .dot(*crab_global_transform.right())
+                target_goal_position =
+                    goal.map_ball_to_local_x(ball_global_transform);
             }
         }
 
@@ -118,7 +122,7 @@ fn move_ai_crabs_toward_their_targeted_ball(
         let crab_stop_position =
             crab_transform.translation.x + stopping_distance.0;
         let distance_from_crab_center =
-            (crab_stop_position - target_side_position).abs();
+            (crab_stop_position - target_goal_position).abs();
 
         if distance_from_crab_center
             < 0.5 * crab_collider.width * AI_CENTER_HIT_AREA_PERCENTAGE
@@ -126,7 +130,7 @@ fn move_ai_crabs_toward_their_targeted_ball(
             commands.entity(entity).remove::<Force>();
         } else {
             commands.entity(entity).insert(
-                if target_side_position < crab_transform.translation.x {
+                if target_goal_position < crab_transform.translation.x {
                     Force::Negative // Left
                 } else {
                     Force::Positive // Right

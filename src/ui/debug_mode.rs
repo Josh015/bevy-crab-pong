@@ -193,19 +193,19 @@ fn crab_collider_ball_deflection_direction_gizmos(
         let Ok(goal) = goals.get(parent.get()) else {
             continue;
         };
-        let crab_right = *crab_global_transform.right();
 
         for (ball_global_transform, ball_heading) in &balls_query {
-            if !goal.has_incoming_ball(ball_heading) {
+            if !goal.has_ball_facing_it(ball_heading) {
                 continue;
             }
 
             // Check that the ball is close enough to the crab.
             let ball_axis_position =
-                ball_global_transform.translation().dot(crab_right);
+                goal.map_ball_to_local_x(ball_global_transform);
+            let crab_global_translation = crab_global_transform.translation();
             let ball_to_crab_distance = ball_global_transform
                 .translation()
-                .distance(crab_global_transform.translation());
+                .distance(crab_global_translation);
 
             if ball_to_crab_distance > 0.25 {
                 continue;
@@ -217,8 +217,8 @@ fn crab_collider_ball_deflection_direction_gizmos(
                 hemisphere_deflection(delta, crab_collider.width, goal.back);
 
             gizmos.line(
-                crab_global_transform.translation(),
-                crab_global_transform.translation()
+                crab_global_translation,
+                crab_global_translation
                     + DEBUGGING_RAY_LENGTH * ball_deflection_direction,
                 Srgba::WHITE,
             );

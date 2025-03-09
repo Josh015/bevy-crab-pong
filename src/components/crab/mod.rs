@@ -88,7 +88,7 @@ fn crab_and_ball_collisions(
     mut commands: Commands,
     goals: Goals,
     crabs_query: Query<
-        (&Parent, &Transform, &GlobalTransform, &CrabCollider),
+        (&Parent, &Transform, &CrabCollider),
         (With<Crab>, With<Collider>),
     >,
     balls_query: Query<
@@ -96,18 +96,15 @@ fn crab_and_ball_collisions(
         (With<Ball>, With<Collider>, With<Movement>),
     >,
 ) {
-    for (parent, crab_transform, crab_global_transform, crab_collider) in
-        &crabs_query
-    {
+    for (parent, crab_transform, crab_collider) in &crabs_query {
         let Ok(goal) = goals.get(parent.get()) else {
             continue;
         };
-        let crab_right = *crab_global_transform.right();
 
         for (ball_entity, ball_global_transform, ball_heading, ball_collider) in
             &balls_query
         {
-            if !goal.has_incoming_ball(ball_heading) {
+            if !goal.has_ball_facing_it(ball_heading) {
                 continue;
             }
 
@@ -120,9 +117,9 @@ fn crab_and_ball_collisions(
             }
 
             // Check that the ball is close enough to the crab.
-            let ball_axis_position =
-                ball_global_transform.translation().dot(crab_right);
-            let delta = crab_transform.translation.x - ball_axis_position;
+            let ball_local_position =
+                goal.map_ball_to_local_x(ball_global_transform);
+            let delta = crab_transform.translation.x - ball_local_position;
             let ball_to_crab_distance = delta.abs();
 
             if ball_to_crab_distance

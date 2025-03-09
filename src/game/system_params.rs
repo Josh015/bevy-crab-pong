@@ -65,10 +65,12 @@ impl Goals<'_, '_> {
             return Err(());
         };
         let back = *global_transform.back();
+        let right = *global_transform.right();
 
         Ok(GoalData {
             level_width: self.level.width,
             back,
+            right,
             side: *side,
         })
     }
@@ -78,10 +80,19 @@ impl Goals<'_, '_> {
 pub struct GoalData {
     pub level_width: f32,
     pub back: Vec3,
+    pub right: Vec3,
     pub side: Side,
 }
 
 impl GoalData {
+    /// Gets the ball's x position in the goal's local coordinate space.
+    pub fn map_ball_to_local_x(
+        &self,
+        ball_global_transform: &GlobalTransform,
+    ) -> f32 {
+        ball_global_transform.translation().dot(self.right)
+    }
+
     /// Get the perpendicular distance from the goal to the ball.
     pub fn distance_to_ball(
         &self,
@@ -92,7 +103,7 @@ impl GoalData {
     }
 
     /// Check if a ball is facing the goal.
-    pub fn has_incoming_ball(&self, ball_heading: &Heading) -> bool {
+    pub fn has_ball_facing_it(&self, ball_heading: &Heading) -> bool {
         ball_heading.0.dot(self.back) > 0.0
     }
 }

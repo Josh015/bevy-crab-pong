@@ -46,7 +46,7 @@ fn pole_and_ball_collisions(
         for (entity, ball_global_transform, ball_heading, ball_collider) in
             &balls_query
         {
-            if !goal.has_incoming_ball(ball_heading) {
+            if !goal.has_ball_facing_it(ball_heading) {
                 continue;
             }
 
