@@ -29,54 +29,13 @@ impl Plugin for AiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (
-                make_ai_crabs_target_the_ball_closest_to_their_side,
-                move_ai_crabs_toward_their_targeted_ball,
-            )
-                .chain()
+            make_ai_crabs_target_and_move_toward_the_ball_closest_to_their_goal
                 .in_set(PlayableSet),
         );
     }
 }
 
-fn make_ai_crabs_target_the_ball_closest_to_their_side(
-    mut commands: Commands,
-    goals: Goals,
-    crabs_query: Query<
-        (Entity, &Parent),
-        (With<AI>, With<Crab>, With<Movement>),
-    >,
-    balls_query: Query<
-        (Entity, &GlobalTransform),
-        (With<Ball>, With<Movement>, With<Collider>),
-    >,
-) {
-    for (crab_entity, parent) in &crabs_query {
-        let Ok(goal) = goals.get(parent.get()) else {
-            continue;
-        };
-        let mut closest_ball_distance = f32::MAX;
-        let mut closest_ball = None;
-
-        for (ball_entity, ball_global_transform) in &balls_query {
-            let ball_distance_to_goal =
-                goal.distance_to_ball(ball_global_transform);
-
-            if ball_distance_to_goal < closest_ball_distance {
-                closest_ball_distance = ball_distance_to_goal;
-                closest_ball = Some(ball_entity);
-            }
-        }
-
-        if let Some(closest_ball) = closest_ball {
-            commands.entity(crab_entity).insert(Target(closest_ball));
-        } else {
-            commands.entity(crab_entity).remove::<Target>();
-        }
-    }
-}
-
-fn move_ai_crabs_toward_their_targeted_ball(
+fn make_ai_crabs_target_and_move_toward_the_ball_closest_to_their_goal(
     mut commands: Commands,
     goals: Goals,
     crabs_query: Query<
@@ -86,36 +45,47 @@ fn move_ai_crabs_toward_their_targeted_ball(
             &Transform,
             &StoppingDistance,
             &CrabCollider,
-            Option<&Target>,
         ),
         (With<AI>, With<Crab>, With<Movement>),
     >,
     balls_query: Query<
-        &GlobalTransform,
+        (Entity, &GlobalTransform),
         (With<Ball>, With<Movement>, With<Collider>),
     >,
 ) {
     for (
-        entity,
+        crab_entity,
         parent,
         crab_transform,
         stopping_distance,
         crab_collider,
-        target,
     ) in &crabs_query
     {
         let Ok(goal) = goals.get(parent.get()) else {
             continue;
         };
 
+        let mut closest_ball_distance = f32::MAX;
+        let mut closest_ball = None;
+
+        for (ball_entity, ball_global_transform) in &balls_query {
+            let ball_distance_to_goal =
+                goal.distance_to_ball(ball_global_transform);
+
+            if ball_distance_to_goal < closest_ball_distance {
+                closest_ball_distance = ball_distance_to_goal;
+                closest_ball = Some((ball_entity, ball_global_transform));
+            }
+        }
+
         // Use the ball's side position or default to the center of the side.
         let mut target_goal_position = 0.0;
 
-        if let Some(target) = target {
-            if let Ok(ball_global_transform) = balls_query.get(target.0) {
-                target_goal_position =
-                    goal.map_ball_to_local_x(ball_global_transform);
-            }
+        if let Some((closest_ball, global_transform)) = closest_ball {
+            target_goal_position = goal.map_ball_to_local_x(global_transform);
+            commands.entity(crab_entity).insert(Target(closest_ball));
+        } else {
+            commands.entity(crab_entity).remove::<Target>();
         }
 
         // Make the crab move to try to keep its ideal hit area under the ball.
@@ -127,9 +97,9 @@ fn move_ai_crabs_toward_their_targeted_ball(
         if distance_from_crab_center
             < 0.5 * crab_collider.width * AI_CENTER_HIT_AREA_PERCENTAGE
         {
-            commands.entity(entity).remove::<Force>();
+            commands.entity(crab_entity).remove::<Force>();
         } else {
-            commands.entity(entity).insert(
+            commands.entity(crab_entity).insert(
                 if target_goal_position < crab_transform.translation.x {
                     Force::Negative // Left
                 } else {
