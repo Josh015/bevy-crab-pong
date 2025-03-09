@@ -84,25 +84,18 @@ pub struct GoalData {
 }
 
 impl GoalData {
-    /// Gets the ball's x position in the goal's local coordinate space.
-    pub fn map_ball_to_local_x(
-        &self,
-        ball_global_transform: &GlobalTransform,
-    ) -> f32 {
-        ball_global_transform.translation().dot(self.right)
+    /// Gets the entity's x position in the goal's local coordinate space.
+    pub fn map_to_local_x(&self, global_transform: &GlobalTransform) -> f32 {
+        global_transform.translation().dot(self.right)
     }
 
-    /// Get the perpendicular distance from the goal to the ball.
-    pub fn distance_to_ball(
-        &self,
-        ball_global_transform: &GlobalTransform,
-    ) -> f32 {
-        (0.5 * self.level_width)
-            - ball_global_transform.translation().dot(self.back)
+    /// Get the perpendicular distance from the goal to the entity.
+    pub fn distance_to(&self, global_transform: &GlobalTransform) -> f32 {
+        (0.5 * self.level_width) - global_transform.translation().dot(self.back)
     }
 
-    /// Check if a ball is facing the goal.
-    pub fn has_ball_facing_it(&self, ball_heading: &Heading) -> bool {
-        ball_heading.0.dot(self.back) > 0.0
+    /// Check if an entity is facing the goal.
+    pub fn is_facing(&self, heading: &Heading) -> bool {
+        heading.0.dot(self.back) > 0.0
     }
 }

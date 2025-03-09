@@ -11,7 +11,7 @@ use crate::{
 
 use super::{Crab, CrabCollider};
 
-pub const AI_CENTER_HIT_AREA_PERCENTAGE: f32 = 0.70;
+pub const IDEAL_HIT_AREA_PERCENTAGE: f32 = 0.70;
 
 /// Marks a [`Crab`] entity as being controlled by AI.
 #[derive(Component, Debug)]
@@ -53,59 +53,46 @@ fn make_ai_crabs_target_and_move_toward_the_ball_closest_to_their_goal(
         (With<Ball>, With<Movement>, With<Collider>),
     >,
 ) {
-    for (
-        crab_entity,
-        parent,
-        crab_transform,
-        stopping_distance,
-        crab_collider,
-    ) in &crabs_query
+    for (crab_entity, parent, transform, stopping_distance, collider) in
+        &crabs_query
     {
+        // Target the ball that's closest to the goal.
+        let mut closest_ball_distance = f32::MAX;
+        let mut closest_ball = None;
         let Ok(goal) = goals.get(parent.get()) else {
             continue;
         };
 
-        let mut closest_ball_distance = f32::MAX;
-        let mut closest_ball = None;
+        for (entity, global_transform) in &balls_query {
+            let ball_distance = goal.distance_to(global_transform);
 
-        for (ball_entity, ball_global_transform) in &balls_query {
-            let ball_distance_to_goal =
-                goal.distance_to_ball(ball_global_transform);
-
-            if ball_distance_to_goal < closest_ball_distance {
-                closest_ball_distance = ball_distance_to_goal;
-                closest_ball = Some((ball_entity, ball_global_transform));
+            if ball_distance < closest_ball_distance {
+                closest_ball_distance = ball_distance;
+                closest_ball = Some((entity, global_transform));
             }
         }
 
-        // Use the ball's side position or default to the center of the side.
-        let mut target_goal_position = 0.0;
-
-        if let Some((closest_ball, global_transform)) = closest_ball {
-            target_goal_position = goal.map_ball_to_local_x(global_transform);
-            commands.entity(crab_entity).insert(Target(closest_ball));
+        let target_x = if let Some((entity, global_transform)) = closest_ball {
+            commands.entity(crab_entity).insert(Target(entity));
+            goal.map_to_local_x(global_transform)
         } else {
             commands.entity(crab_entity).remove::<Target>();
-        }
+            0.0
+        };
 
-        // Make the crab move to try to keep its ideal hit area under the ball.
-        let crab_stop_position =
-            crab_transform.translation.x + stopping_distance.0;
-        let distance_from_crab_center =
-            (crab_stop_position - target_goal_position).abs();
+        // Move the crab to try to keep its ideal hit area under the ball.
+        let crab_x = transform.translation.x;
+        let stop_position_x = crab_x + stopping_distance.0;
+        let center_distance = (stop_position_x - target_x).abs();
 
-        if distance_from_crab_center
-            < 0.5 * crab_collider.width * AI_CENTER_HIT_AREA_PERCENTAGE
-        {
+        if center_distance < 0.5 * collider.width * IDEAL_HIT_AREA_PERCENTAGE {
             commands.entity(crab_entity).remove::<Force>();
         } else {
-            commands.entity(crab_entity).insert(
-                if target_goal_position < crab_transform.translation.x {
-                    Force::Negative // Left
-                } else {
-                    Force::Positive // Right
-                },
-            );
+            commands.entity(crab_entity).insert(if target_x < crab_x {
+                Force::Negative // Left
+            } else {
+                Force::Positive // Right
+            });
         }
     }
 }

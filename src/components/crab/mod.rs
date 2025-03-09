@@ -101,30 +101,23 @@ fn crab_and_ball_collisions(
             continue;
         };
 
-        for (ball_entity, ball_global_transform, ball_heading, ball_collider) in
-            &balls_query
-        {
-            if !goal.has_ball_facing_it(ball_heading) {
+        for (entity, global_transform, heading, collider) in &balls_query {
+            if !goal.is_facing(heading) {
                 continue;
             }
 
-            let ball_to_goal_distance =
-                goal.distance_to_ball(ball_global_transform);
+            let ball_distance = goal.distance_to(global_transform);
 
-            if ball_to_goal_distance > ball_collider.radius + (0.5 * CRAB_DEPTH)
-            {
+            if ball_distance > collider.radius + (0.5 * CRAB_DEPTH) {
                 continue;
             }
 
             // Check that the ball is close enough to the crab.
-            let ball_local_position =
-                goal.map_ball_to_local_x(ball_global_transform);
-            let delta = crab_transform.translation.x - ball_local_position;
-            let ball_to_crab_distance = delta.abs();
+            let ball_local_x = goal.map_to_local_x(global_transform);
+            let delta = crab_transform.translation.x - ball_local_x;
+            let center_distance = delta.abs();
 
-            if ball_to_crab_distance
-                > ball_collider.radius + (0.5 * crab_collider.width)
-            {
+            if center_distance > collider.radius + (0.5 * crab_collider.width) {
                 continue;
             }
 
@@ -132,12 +125,10 @@ fn crab_and_ball_collisions(
             let ball_deflection_direction =
                 hemisphere_deflection(delta, crab_collider.width, goal.back);
 
-            commands
-                .entity(ball_entity)
-                .insert(Heading(Dir3::new_unchecked(
-                    ball_deflection_direction.normalize(),
-                )));
-            info!("Ball({:?}): Collided Crab({:?})", ball_entity, goal.side);
+            commands.entity(entity).insert(Heading(Dir3::new_unchecked(
+                ball_deflection_direction.normalize(),
+            )));
+            info!("Ball({:?}): Collided Crab({:?})", entity, goal.side);
             break;
         }
     }

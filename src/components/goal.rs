@@ -44,7 +44,7 @@ fn check_if_a_ball_has_scored_in_a_goal(
         };
 
         for (entity, global_transform, collider) in &balls_query {
-            let ball_distance = goal.distance_to_ball(global_transform);
+            let ball_distance = goal.distance_to(global_transform);
 
             if ball_distance <= collider.radius {
                 commands.entity(entity).insert(Fade::new_out());

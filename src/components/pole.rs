@@ -43,22 +43,19 @@ fn pole_and_ball_collisions(
             continue;
         };
 
-        for (entity, ball_global_transform, ball_heading, ball_collider) in
-            &balls_query
-        {
-            if !goal.has_ball_facing_it(ball_heading) {
+        for (entity, global_transform, heading, collider) in &balls_query {
+            if !goal.is_facing(heading) {
                 continue;
             }
 
-            let ball_to_pole_distance =
-                goal.distance_to_ball(ball_global_transform);
+            let ball_distance = goal.distance_to(global_transform);
 
-            if ball_to_pole_distance > ball_collider.radius + POLE_RADIUS {
+            if ball_distance > collider.radius + POLE_RADIUS {
                 continue;
             }
 
             commands.entity(entity).insert(Heading(Dir3::new_unchecked(
-                reflect(*ball_heading.0, goal.back).normalize(),
+                reflect(*heading.0, goal.back).normalize(),
             )));
 
             info!("Ball({:?}): Collided Pole({:?})", entity, goal.side);

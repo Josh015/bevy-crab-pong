@@ -6,7 +6,7 @@ use crate::{
         collider::Collider,
         crab::{
             Crab, CrabCollider,
-            ai::{AI, AI_CENTER_HIT_AREA_PERCENTAGE, Target},
+            ai::{AI, IDEAL_HIT_AREA_PERCENTAGE, Target},
         },
         movement::{Heading, Movement, StoppingDistance},
     },
@@ -170,7 +170,7 @@ fn crab_ai_ideal_ball_hit_area_gizmos(
         let mut hit_area_transform = global_transform.compute_transform();
 
         hit_area_transform.scale.x =
-            AI_CENTER_HIT_AREA_PERCENTAGE * crab_collider.width;
+            IDEAL_HIT_AREA_PERCENTAGE * crab_collider.width;
         gizmos.cuboid(hit_area_transform, Srgba::hex("FFFF00").unwrap());
     }
 }
@@ -194,31 +194,29 @@ fn crab_collider_ball_deflection_direction_gizmos(
             continue;
         };
 
-        for (ball_global_transform, ball_heading) in &balls_query {
-            if !goal.has_ball_facing_it(ball_heading) {
+        for (global_transform, heading) in &balls_query {
+            if !goal.is_facing(heading) {
                 continue;
             }
 
             // Check that the ball is close enough to the crab.
-            let ball_axis_position =
-                goal.map_ball_to_local_x(ball_global_transform);
-            let crab_global_translation = crab_global_transform.translation();
-            let ball_to_crab_distance = ball_global_transform
-                .translation()
-                .distance(crab_global_translation);
+            let ball_local_x = goal.map_to_local_x(global_transform);
+            let crab_translation = crab_global_transform.translation();
+            let ball_to_crab_distance =
+                global_transform.translation().distance(crab_translation);
 
             if ball_to_crab_distance > 0.25 {
                 continue;
             }
 
             // Get ball deflection direction.
-            let delta = crab_transform.translation.x - ball_axis_position;
+            let delta = crab_transform.translation.x - ball_local_x;
             let ball_deflection_direction =
                 hemisphere_deflection(delta, crab_collider.width, goal.back);
 
             gizmos.line(
-                crab_global_translation,
-                crab_global_translation
+                crab_translation,
+                crab_translation
                     + DEBUGGING_RAY_LENGTH * ball_deflection_direction,
                 Srgba::WHITE,
             );
