@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::ops::{Add, Sub};
 
-use crate::game::state::PausableSet;
+use crate::{game::state::PausableSet, util::reflect};
 
 /// Marks an entity as able to move.
 #[derive(Component, Default)]
@@ -21,7 +21,21 @@ pub enum Force {
 pub struct Heading(pub Dir3);
 
 impl Default for Heading {
-    fn default() -> Self { Self(Dir3::Y) }
+    fn default() -> Self {
+        Self(Dir3::NEG_Z)
+    }
+}
+
+impl From<Vec3> for Heading {
+    fn from(value: Vec3) -> Self {
+        Heading(Dir3::new_unchecked(value.normalize()))
+    }
+}
+
+impl Heading {
+    pub fn reflect(heading: &Heading, axis: Vec3) -> Self {
+        Heading(Dir3::new_unchecked(reflect(*heading.0, axis).normalize()))
+    }
 }
 
 /// The current speed of this entity.

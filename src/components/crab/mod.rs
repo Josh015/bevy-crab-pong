@@ -126,9 +126,9 @@ fn crab_and_ball_collisions(
             let ball_deflection_direction =
                 hemisphere_deflection(delta, crab_collider.width, goal.back);
 
-            commands.entity(entity).insert(Heading(Dir3::new_unchecked(
-                ball_deflection_direction.normalize(),
-            )));
+            commands
+                .entity(entity)
+                .insert(Heading::from(ball_deflection_direction));
             info!("Ball({:?}): Collided Crab({:?})", entity, goal.side);
             break;
         }

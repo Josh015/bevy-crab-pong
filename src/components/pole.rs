@@ -7,7 +7,6 @@ use crate::{
         movement::{Heading, Movement},
     },
     game::{state::PausableSet, system_params::Goals},
-    util::reflect,
 };
 
 pub const POLE_DIAMETER: f32 = 0.05;
@@ -54,9 +53,9 @@ fn pole_and_ball_collisions(
                 continue;
             }
 
-            commands.entity(entity).insert(Heading(Dir3::new_unchecked(
-                reflect(*heading.0, goal.back).normalize(),
-            )));
+            commands
+                .entity(entity)
+                .insert(Heading::reflect(heading, goal.back));
 
             info!("Ball({:?}): Collided Pole({:?})", entity, goal.side);
             break;
