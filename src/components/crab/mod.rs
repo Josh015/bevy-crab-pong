@@ -124,7 +124,7 @@ fn crab_and_ball_collisions(
 
             // Deflect the ball.
             let ball_deflection_direction =
-                hemisphere_deflection(delta, crab_collider.width, goal.back);
+                hemisphere_deflection(delta, crab_collider.width, goal.forward);
 
             commands
                 .entity(entity)

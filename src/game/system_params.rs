@@ -68,7 +68,7 @@ impl Goals<'_, '_> {
 
         Ok(GoalData {
             level_width: self.level.width,
-            back: *global_transform.back(),
+            forward: *global_transform.forward(),
             right: *global_transform.right(),
             side: *side,
         })
@@ -78,7 +78,7 @@ impl Goals<'_, '_> {
 /// Data and methods related to goal logic.
 pub struct GoalData {
     pub level_width: f32,
-    pub back: Vec3,
+    pub forward: Vec3,
     pub right: Vec3,
     pub side: Side,
 }
@@ -91,11 +91,12 @@ impl GoalData {
 
     /// Get the perpendicular distance from the goal to the entity.
     pub fn distance_to(&self, global_transform: &GlobalTransform) -> f32 {
-        (0.5 * self.level_width) - global_transform.translation().dot(self.back)
+        (0.5 * self.level_width)
+            + global_transform.translation().dot(self.forward)
     }
 
     /// Check if an entity is facing the goal.
     pub fn is_facing(&self, heading: &Heading) -> bool {
-        heading.0.dot(self.back) > 0.0
+        heading.0.dot(self.forward) <= 0.0
     }
 }

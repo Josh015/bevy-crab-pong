@@ -212,7 +212,7 @@ fn crab_collider_ball_deflection_direction_gizmos(
             // Get ball deflection direction.
             let delta = crab_transform.translation.x - ball_local_x;
             let ball_deflection_direction =
-                hemisphere_deflection(delta, crab_collider.width, goal.back);
+                hemisphere_deflection(delta, crab_collider.width, goal.forward);
 
             gizmos.line(
                 crab_translation,
