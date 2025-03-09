@@ -165,17 +165,17 @@ fn handle_menu_inputs(
     use MenuAction::*;
 
     match game_state.get() {
-        StartMenu => {
-            if menu_action_state.just_pressed(&Accept) {
-                next_game_state.set(Playing);
-                info!("New Game");
-            } else if menu_action_state.just_pressed(&PrevGameMode) {
-                game_modes.previous();
-                info!("Game Mode: {}", &game_modes.current().name);
-            } else if menu_action_state.just_pressed(&NextGameMode) {
-                game_modes.next();
-                info!("Game Mode: {}", &game_modes.current().name);
-            }
+        StartMenu if menu_action_state.just_pressed(&Accept) => {
+            next_game_state.set(Playing);
+            info!("New Game");
+        },
+        StartMenu if menu_action_state.just_pressed(&PrevGameMode) => {
+            game_modes.previous();
+            info!("Game Mode: {}", &game_modes.current().name);
+        },
+        StartMenu if menu_action_state.just_pressed(&NextGameMode) => {
+            game_modes.next();
+            info!("Game Mode: {}", &game_modes.current().name);
         },
         Playing if menu_action_state.just_pressed(&PauseUnpause) => {
             next_game_state.set(Paused);
