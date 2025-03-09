@@ -42,7 +42,8 @@ pub(super) struct LevelPlugin;
 
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
-        app.add_observer(spawn_pole_on_a_side)
+        app.insert_resource(Level { width: GOAL_WIDTH })
+            .add_observer(spawn_pole_on_a_side)
             .add_systems(OnExit(GameState::Loading), spawn_level)
             .add_systems(
                 OnExit(GameState::StartMenu),
@@ -61,6 +62,11 @@ impl Plugin for LevelPlugin {
                 despawn_existing_crab_or_pole_per_side.in_set(PausableSet),
             );
     }
+}
+
+#[derive(Debug, Resource)]
+pub struct Level {
+    pub width: f32,
 }
 
 #[derive(Event)]
@@ -206,7 +212,7 @@ fn spawn_level(
         // Spawn Point
         commands
             .spawn((
-                Goal { width: GOAL_WIDTH },
+                Goal,
                 side,
                 Transform::from_rotation(Quat::from_axis_angle(
                     Vec3::Y,

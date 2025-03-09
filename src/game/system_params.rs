@@ -3,7 +3,10 @@ use std::ops::Add;
 
 use crate::components::{goal::Goal, movement::Heading, side::Side};
 
-use super::assets::{GameAssets, GameMode};
+use super::{
+    assets::{GameAssets, GameMode},
+    level::Level,
+};
 
 pub(super) struct SystemParamsPlugin;
 
@@ -50,23 +53,22 @@ impl GameModes<'_> {
 /// Allows system to do work related to [Goal] entities.
 #[derive(SystemParam)]
 pub struct Goals<'w, 's> {
+    level: Res<'w, Level>,
     goals_query:
-        Query<'w, 's, (&'static Goal, &'static Side, &'static GlobalTransform)>,
+        Query<'w, 's, (&'static Side, &'static GlobalTransform), With<Goal>>,
 }
 
 impl Goals<'_, '_> {
     /// Get an API for the corresponding [Goal] entity.
     pub fn get(&self, entity: Entity) -> Result<GoalApi, ()> {
-        let Ok((goal, side, goal_global_transform)) =
-            self.goals_query.get(entity)
-        else {
+        let Ok((side, global_transform)) = self.goals_query.get(entity) else {
             return Err(());
         };
-        let back = *goal_global_transform.back();
+        let back = *global_transform.back();
 
         Ok(GoalApi {
+            level_width: self.level.width,
             back,
-            width: goal.width,
             side: *side,
         })
     }
@@ -74,8 +76,8 @@ impl Goals<'_, '_> {
 
 /// Data and methods related to goal logic.
 pub struct GoalApi {
+    pub level_width: f32,
     pub back: Vec3,
-    pub width: f32,
     pub side: Side,
 }
 
@@ -85,7 +87,8 @@ impl GoalApi {
         &self,
         ball_global_transform: &GlobalTransform,
     ) -> f32 {
-        (0.5 * self.width) - ball_global_transform.translation().dot(self.back)
+        (0.5 * self.level_width)
+            - ball_global_transform.translation().dot(self.back)
     }
 
     /// Check if a ball is facing the goal.

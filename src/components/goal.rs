@@ -25,9 +25,7 @@ impl Plugin for GoalPlugin {
 /// Marks a goal that can be used as a parent to spawn entities.
 #[derive(Component, Debug)]
 #[require(Transform, Visibility)]
-pub struct Goal {
-    pub width: f32,
-}
+pub struct Goal;
 
 fn check_if_a_ball_has_scored_in_a_goal(
     mut commands: Commands,
