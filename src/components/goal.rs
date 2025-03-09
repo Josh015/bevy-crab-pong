@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 
-use crate::components::side::Side;
-
+use crate::game::system_params::Goals;
 use crate::game::{events::SideScoredEvent, state::PlayableSet};
 
 use super::{
@@ -33,33 +32,26 @@ pub struct Goal {
 fn check_if_a_ball_has_scored_in_a_goal(
     mut commands: Commands,
     mut side_scored_events: EventWriter<SideScoredEvent>,
-    goals_query: Query<(&Goal, &GlobalTransform)>,
-    crabs_query: Query<
-        (&Parent, &Side),
-        (With<Crab>, With<Movement>, With<Collider>),
-    >,
+    goals: Goals,
+    crabs_query: Query<&Parent, (With<Crab>, With<Movement>, With<Collider>)>,
     balls_query: Query<
         (Entity, &GlobalTransform, &CircleCollider),
         (With<Ball>, With<Movement>, With<Collider>),
     >,
 ) {
     // If a ball passes a side's alive crab then despawn it and raise an event.
-    for (parent, side) in &crabs_query {
-        let Ok((goal, goal_global_transform)) = goals_query.get(parent.get())
-        else {
+    for parent in &crabs_query {
+        let Ok(goal) = goals.get(parent.get()) else {
             continue;
         };
-        let goal_back = *goal_global_transform.back();
 
-        for (ball_entity, ball_global_transform, ball_collider) in &balls_query
-        {
-            let ball_distance = (0.5 * goal.width)
-                - ball_global_transform.translation().dot(goal_back);
+        for (entity, global_transform, collider) in &balls_query {
+            let ball_distance = goal.distance_to_ball(global_transform);
 
-            if ball_distance <= ball_collider.radius {
-                commands.entity(ball_entity).insert(Fade::new_out());
-                side_scored_events.send(SideScoredEvent(*side));
-                info!("Ball({ball_entity:?}): Scored Side({side:?})");
+            if ball_distance <= collider.radius {
+                commands.entity(entity).insert(Fade::new_out());
+                side_scored_events.send(SideScoredEvent(goal.side));
+                info!("Ball({:?}): Scored Side({:?})", entity, goal.side);
             }
         }
     }

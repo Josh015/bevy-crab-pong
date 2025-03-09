@@ -4,10 +4,9 @@ use crate::{
     components::{
         ball::Ball,
         collider::Collider,
-        goal::Goal,
         movement::{Force, Movement, StoppingDistance},
     },
-    game::state::PlayableSet,
+    game::{state::PlayableSet, system_params::Goals},
 };
 
 use super::{Crab, CrabCollider};
@@ -42,7 +41,7 @@ impl Plugin for AiPlugin {
 
 fn make_ai_crabs_target_the_ball_closest_to_their_side(
     mut commands: Commands,
-    goals_query: Query<(&Goal, &GlobalTransform)>,
+    goals: Goals,
     crabs_query: Query<
         (Entity, &Parent),
         (With<AI>, With<Crab>, With<Movement>),
@@ -53,17 +52,15 @@ fn make_ai_crabs_target_the_ball_closest_to_their_side(
     >,
 ) {
     for (crab_entity, parent) in &crabs_query {
-        let Ok((goal, goal_global_transform)) = goals_query.get(parent.get())
-        else {
+        let Ok(goal) = goals.get(parent.get()) else {
             continue;
         };
-        let goal_back = *goal_global_transform.back();
         let mut closest_ball_distance = f32::MAX;
         let mut closest_ball = None;
 
         for (ball_entity, ball_global_transform) in &balls_query {
-            let ball_distance_to_goal = (0.5 * goal.width)
-                - ball_global_transform.translation().dot(goal_back);
+            let ball_distance_to_goal =
+                goal.distance_to_ball(ball_global_transform);
 
             if ball_distance_to_goal < closest_ball_distance {
                 closest_ball_distance = ball_distance_to_goal;

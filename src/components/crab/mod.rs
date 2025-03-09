@@ -12,11 +12,10 @@ use crate::{
     game::{
         level::{BARRIER_RADIUS, GOAL_WIDTH},
         state::PausableSet,
+        system_params::Goals,
     },
     util::hemisphere_deflection,
 };
-
-use super::goal::Goal;
 
 pub const CRAB_WIDTH: f32 = 0.2;
 pub const CRAB_DEPTH: f32 = 0.1;
@@ -87,7 +86,7 @@ fn restrict_crab_movement_to_space_within_its_own_goal(
 
 fn crab_and_ball_collisions(
     mut commands: Commands,
-    goals_query: Query<(&Goal, &GlobalTransform)>,
+    goals: Goals,
     crabs_query: Query<
         (&Parent, &CrabCollider, &Transform, &GlobalTransform),
         (With<Crab>, With<Collider>),
@@ -100,24 +99,20 @@ fn crab_and_ball_collisions(
     for (parent, crab_collider, crab_transform, crab_global_transform) in
         &crabs_query
     {
-        let Ok((goal, goal_global_transform)) = goals_query.get(parent.get())
-        else {
+        let Ok(goal) = goals.get(parent.get()) else {
             continue;
         };
-        let goal_back = *goal_global_transform.back();
         let crab_right = *crab_global_transform.right();
 
         for (ball_entity, ball_global_transform, ball_heading, ball_collider) in
             &balls_query
         {
-            // Check that the ball is facing the goal.
-            if ball_heading.0.dot(goal_back) <= 0.0 {
+            if !goal.has_incoming_ball(ball_heading) {
                 continue;
             }
 
-            // Check that the ball is close enough to the goal.
-            let ball_to_goal_distance = (0.5 * goal.width)
-                - ball_global_transform.translation().dot(goal_back);
+            let ball_to_goal_distance =
+                goal.distance_to_ball(ball_global_transform);
 
             if ball_to_goal_distance > ball_collider.radius + (0.5 * CRAB_DEPTH)
             {
@@ -138,14 +133,14 @@ fn crab_and_ball_collisions(
 
             // Deflect the ball.
             let ball_deflection_direction =
-                hemisphere_deflection(delta, crab_collider.width, goal_back);
+                hemisphere_deflection(delta, crab_collider.width, goal.back);
 
             commands
                 .entity(ball_entity)
                 .insert(Heading(Dir3::new_unchecked(
                     ball_deflection_direction.normalize(),
                 )));
-            info!("Ball({ball_entity:?}): Collided Crab({goal:?})");
+            info!("Ball({:?}): Collided Crab({:?})", ball_entity, goal.side);
             break;
         }
     }

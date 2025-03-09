@@ -1,6 +1,8 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use std::ops::Add;
 
+use crate::components::{goal::Goal, movement::Heading, side::Side};
+
 use super::assets::{GameAssets, GameMode};
 
 pub(super) struct SystemParamsPlugin;
@@ -42,5 +44,52 @@ impl GameModes<'_> {
             .0
             .add(1)
             .min(self.game_assets.game_modes.len() - 1);
+    }
+}
+
+/// Allows system to do work related to [Goal] entities.
+#[derive(SystemParam)]
+pub struct Goals<'w, 's> {
+    goals_query:
+        Query<'w, 's, (&'static Goal, &'static Side, &'static GlobalTransform)>,
+}
+
+impl Goals<'_, '_> {
+    /// Get an API for the corresponding [Goal] entity.
+    pub fn get(&self, entity: Entity) -> Result<GoalApi, ()> {
+        let Ok((goal, side, goal_global_transform)) =
+            self.goals_query.get(entity)
+        else {
+            return Err(());
+        };
+        let back = *goal_global_transform.back();
+
+        Ok(GoalApi {
+            back,
+            width: goal.width,
+            side: *side,
+        })
+    }
+}
+
+/// Data and methods related to goal logic.
+pub struct GoalApi {
+    pub back: Vec3,
+    pub width: f32,
+    pub side: Side,
+}
+
+impl GoalApi {
+    /// Get the perpendicular distance from the goal to the ball.
+    pub fn distance_to_ball(
+        &self,
+        ball_global_transform: &GlobalTransform,
+    ) -> f32 {
+        (0.5 * self.width) - ball_global_transform.translation().dot(self.back)
+    }
+
+    /// Check if a ball is facing the goal.
+    pub fn has_incoming_ball(&self, ball_heading: &Heading) -> bool {
+        ball_heading.0.dot(self.back) > 0.0
     }
 }

@@ -8,10 +8,9 @@ use crate::{
             Crab, CrabCollider,
             ai::{AI, AI_CENTER_HIT_AREA_PERCENTAGE, Target},
         },
-        goal::Goal,
         movement::{Heading, Movement, StoppingDistance},
     },
-    game::state::LoadedSet,
+    game::{state::LoadedSet, system_params::Goals},
     util::hemisphere_deflection,
 };
 
@@ -177,29 +176,27 @@ fn crab_ai_ideal_ball_hit_area_gizmos(
 }
 
 fn crab_collider_ball_deflection_direction_gizmos(
-    balls_query: Query<
-        (&GlobalTransform, &Heading),
-        (With<Ball>, With<Movement>, With<Collider>),
-    >,
+    goals: Goals,
     crabs_query: Query<
         (&Parent, &CrabCollider, &Transform, &GlobalTransform),
         (With<Crab>, With<Collider>),
     >,
-    goals_query: Query<&GlobalTransform, With<Goal>>,
+    balls_query: Query<
+        (&GlobalTransform, &Heading),
+        (With<Ball>, With<Movement>, With<Collider>),
+    >,
     mut gizmos: Gizmos,
 ) {
     for (parent, crab_collider, crab_transform, crab_global_transform) in
         &crabs_query
     {
-        let Ok(goal_global_transform) = goals_query.get(parent.get()) else {
+        let Ok(goal) = goals.get(parent.get()) else {
             continue;
         };
-        let goal_back = *goal_global_transform.back();
         let crab_right = *crab_global_transform.right();
 
         for (ball_global_transform, ball_heading) in &balls_query {
-            // Check that the ball is facing the goal.
-            if ball_heading.0.dot(goal_back) <= 0.0 {
+            if !goal.has_incoming_ball(ball_heading) {
                 continue;
             }
 
@@ -217,7 +214,7 @@ fn crab_collider_ball_deflection_direction_gizmos(
             // Get ball deflection direction.
             let delta = crab_transform.translation.x - ball_axis_position;
             let ball_deflection_direction =
-                hemisphere_deflection(delta, crab_collider.width, goal_back);
+                hemisphere_deflection(delta, crab_collider.width, goal.back);
 
             gizmos.line(
                 crab_global_transform.translation(),

@@ -6,11 +6,9 @@ use crate::{
         collider::{CircleCollider, Collider},
         movement::{Heading, Movement},
     },
-    game::state::PausableSet,
+    game::{state::PausableSet, system_params::Goals},
     util::reflect,
 };
-
-use super::goal::Goal;
 
 pub const POLE_DIAMETER: f32 = 0.05;
 pub const POLE_HEIGHT: f32 = 0.1;
@@ -33,7 +31,7 @@ pub struct Pole;
 
 fn pole_and_ball_collisions(
     mut commands: Commands,
-    goals_query: Query<(&Goal, &GlobalTransform)>,
+    goals: Goals,
     poles_query: Query<&Parent, (With<Pole>, With<Collider>)>,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading, &CircleCollider),
@@ -41,35 +39,29 @@ fn pole_and_ball_collisions(
     >,
 ) {
     for parent in &poles_query {
-        let Ok((goal, goal_global_transform)) = goals_query.get(parent.get())
-        else {
+        let Ok(goal) = goals.get(parent.get()) else {
             continue;
         };
-        let goal_back = *goal_global_transform.back();
 
         for (entity, ball_global_transform, ball_heading, ball_collider) in
             &balls_query
         {
-            // Check that the ball is facing the goal.
-
-            if ball_heading.0.dot(goal_back) <= 0.0 {
+            if !goal.has_incoming_ball(ball_heading) {
                 continue;
             }
 
-            let ball_to_pole_distance = (0.5 * goal.width)
-                - ball_global_transform.translation().dot(goal_back);
+            let ball_to_pole_distance =
+                goal.distance_to_ball(ball_global_transform);
 
-            // Check that the ball is touching and facing the pole.
             if ball_to_pole_distance > ball_collider.radius + POLE_RADIUS {
                 continue;
             }
 
-            // Deflect the ball away from the pole.
             commands.entity(entity).insert(Heading(Dir3::new_unchecked(
-                reflect(*ball_heading.0, goal_back).normalize(),
+                reflect(*ball_heading.0, goal.back).normalize(),
             )));
 
-            info!("Ball({entity:?}): Collided Pole({goal:?})");
+            info!("Ball({:?}): Collided Pole({:?})", entity, goal.side);
             break;
         }
     }
