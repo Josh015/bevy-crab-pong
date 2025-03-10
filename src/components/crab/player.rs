@@ -11,6 +11,18 @@ use crate::{
 
 use super::Crab;
 
+pub(super) struct InputPlugin;
+
+impl Plugin for InputPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(InputManagerPlugin::<CrabAction>::default())
+            .add_systems(
+                Update,
+                move_crabs_based_on_user_input.in_set(PlayableSet),
+            );
+    }
+}
+
 #[derive(Actionlike, Clone, Copy, Debug, Eq, Hash, PartialEq, Reflect)]
 pub enum CrabAction {
     MoveUp,
@@ -63,18 +75,6 @@ fn player_input_map() -> InputMap<CrabAction> {
     // );
 
     input_map
-}
-
-pub(super) struct InputPlugin;
-
-impl Plugin for InputPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_plugins(InputManagerPlugin::<CrabAction>::default())
-            .add_systems(
-                Update,
-                move_crabs_based_on_user_input.in_set(PlayableSet),
-            );
-    }
 }
 
 fn move_crabs_based_on_user_input(

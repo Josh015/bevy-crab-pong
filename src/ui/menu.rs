@@ -8,6 +8,28 @@ use crate::game::{
     system_params::GameModes,
 };
 
+pub(super) struct MenuPlugin;
+
+impl Plugin for MenuPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(InputManagerPlugin::<MenuAction>::default())
+            .init_resource::<ActionState<MenuAction>>()
+            .insert_resource(MenuAction::make_input_map())
+            .add_event::<MessageUiEvent>()
+            .add_systems(OnEnter(GameState::StartMenu), spawn_start_menu_ui)
+            .add_systems(OnEnter(GameState::Paused), spawn_pause_ui)
+            .add_systems(
+                Update,
+                (handle_spawn_ui_message_event, handle_menu_inputs)
+                    .in_set(LoadedSet),
+            )
+            .add_systems(
+                Update,
+                pause_game_when_window_loses_focus.in_set(PlayableSet),
+            );
+    }
+}
+
 /// An event fired when spawning a message UI.
 #[derive(Debug, Event)]
 pub struct MessageUiEvent {
@@ -47,28 +69,6 @@ impl MenuAction {
         ]);
 
         input_map
-    }
-}
-
-pub(super) struct MenuPlugin;
-
-impl Plugin for MenuPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_plugins(InputManagerPlugin::<MenuAction>::default())
-            .init_resource::<ActionState<MenuAction>>()
-            .insert_resource(MenuAction::make_input_map())
-            .add_event::<MessageUiEvent>()
-            .add_systems(OnEnter(GameState::StartMenu), spawn_start_menu_ui)
-            .add_systems(OnEnter(GameState::Paused), spawn_pause_ui)
-            .add_systems(
-                Update,
-                (handle_spawn_ui_message_event, handle_menu_inputs)
-                    .in_set(LoadedSet),
-            )
-            .add_systems(
-                Update,
-                pause_game_when_window_loses_focus.in_set(PlayableSet),
-            );
     }
 }
 

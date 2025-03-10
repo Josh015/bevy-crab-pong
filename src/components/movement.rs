@@ -3,6 +3,19 @@ use std::ops::{Add, Sub};
 
 use crate::{game::state::PausableSet, util::reflect};
 
+pub(super) struct MovementPlugin;
+
+impl Plugin for MovementPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            (acceleration, deceleration, velocity, stopping_distance)
+                .chain()
+                .in_set(PausableSet),
+        );
+    }
+}
+
 /// Marks an entity as able to move.
 #[derive(Component, Default)]
 pub struct Movement;
@@ -55,19 +68,6 @@ pub struct Acceleration(pub f32);
 /// stop if it begins decelerating immediately.
 #[derive(Clone, Component, Debug, Default)]
 pub struct StoppingDistance(pub f32);
-
-pub(super) struct MovementPlugin;
-
-impl Plugin for MovementPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            (acceleration, deceleration, velocity, stopping_distance)
-                .chain()
-                .in_set(PausableSet),
-        );
-    }
-}
 
 fn acceleration(
     time: Res<Time>,

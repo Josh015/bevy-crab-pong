@@ -16,16 +16,6 @@ use crate::{
 
 pub const DEBUGGING_RAY_LENGTH: f32 = 20.0;
 
-/// Toggles displaying various debugging gizmos.
-#[derive(Debug, Default, Resource)]
-pub struct DebugMode {
-    pub has_ball_movement: bool,
-    pub has_crab_stop_positions: bool,
-    pub has_crab_ai_ball_targeting: bool,
-    pub has_crab_ai_ideal_ball_hit_area: bool,
-    pub has_crab_collider_ball_deflection_direction: bool,
-}
-
 pub(super) struct DebugModePlugin;
 
 impl Plugin for DebugModePlugin {
@@ -68,6 +58,16 @@ impl Plugin for DebugModePlugin {
                     .after(LoadedSet),
             );
     }
+}
+
+/// Toggles displaying various debugging gizmos.
+#[derive(Debug, Default, Resource)]
+pub struct DebugMode {
+    pub has_ball_movement: bool,
+    pub has_crab_stop_positions: bool,
+    pub has_crab_ai_ball_targeting: bool,
+    pub has_crab_ai_ideal_ball_hit_area: bool,
+    pub has_crab_collider_ball_deflection_direction: bool,
 }
 
 fn handle_debug_mode_keyboard_toggles(

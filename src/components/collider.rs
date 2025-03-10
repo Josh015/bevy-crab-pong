@@ -4,16 +4,6 @@ use crate::game::state::PausableSet;
 
 use super::movement::{Heading, Movement};
 
-/// Marks an entity as collidable.
-#[derive(Component, Debug, Default)]
-pub struct Collider;
-
-/// Adds a circular collider shape.
-#[derive(Component, Debug)]
-pub struct CircleCollider {
-    pub radius: f32,
-}
-
 pub(super) struct ColliderPlugin;
 
 impl Plugin for ColliderPlugin {
@@ -23,6 +13,16 @@ impl Plugin for ColliderPlugin {
             circle_to_circle_collisions.in_set(PausableSet),
         );
     }
+}
+
+/// Marks an entity as collidable.
+#[derive(Component, Debug, Default)]
+pub struct Collider;
+
+/// Adds a circular collider shape.
+#[derive(Component, Debug)]
+pub struct CircleCollider {
+    pub radius: f32,
 }
 
 fn circle_to_circle_collisions(

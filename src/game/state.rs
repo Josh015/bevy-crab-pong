@@ -3,34 +3,6 @@ use strum::{EnumIter, IntoEnumIterator};
 
 use crate::components::fade::{Fade, FadeEffect};
 
-// All the app's possible states.
-#[derive(
-    Clone, Copy, Debug, Default, EnumIter, Eq, Hash, PartialEq, States,
-)]
-pub enum GameState {
-    #[default]
-    Loading,
-    StartMenu,
-    Playing,
-    Paused,
-}
-
-/// Tags an entity to only exist in its associated game states.
-#[derive(Clone, Component, Debug)]
-pub struct ForStates<S: States>(pub Vec<S>);
-
-/// Systems that are always running after everything is loaded.
-#[derive(Clone, Debug, Eq, Hash, PartialEq, SystemSet)]
-pub struct LoadedSet;
-
-/// Systems that stop when the game is paused.
-#[derive(Clone, Debug, Eq, Hash, PartialEq, SystemSet)]
-pub struct PausableSet;
-
-/// Systems that only run during gameplay.
-#[derive(Clone, Debug, Eq, Hash, PartialEq, SystemSet)]
-pub struct PlayableSet;
-
 pub(super) struct StatePlugin;
 
 impl Plugin for StatePlugin {
@@ -79,6 +51,34 @@ impl Plugin for StatePlugin {
         }
     }
 }
+
+// All the app's possible states.
+#[derive(
+    Clone, Copy, Debug, Default, EnumIter, Eq, Hash, PartialEq, States,
+)]
+pub enum GameState {
+    #[default]
+    Loading,
+    StartMenu,
+    Playing,
+    Paused,
+}
+
+/// Tags an entity to only exist in its associated game states.
+#[derive(Clone, Component, Debug)]
+pub struct ForStates<S: States>(pub Vec<S>);
+
+/// Systems that are always running after everything is loaded.
+#[derive(Clone, Debug, Eq, Hash, PartialEq, SystemSet)]
+pub struct LoadedSet;
+
+/// Systems that stop when the game is paused.
+#[derive(Clone, Debug, Eq, Hash, PartialEq, SystemSet)]
+pub struct PausableSet;
+
+/// Systems that only run during gameplay.
+#[derive(Clone, Debug, Eq, Hash, PartialEq, SystemSet)]
+pub struct PlayableSet;
 
 fn despawn_invalid_entities_for_state<S: States>(
     mut commands: Commands,

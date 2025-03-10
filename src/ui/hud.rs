@@ -9,10 +9,6 @@ use crate::{
     },
 };
 
-/// Marks a [`Text`] entity to display the HP for an associated [`Side`].
-#[derive(Component, Debug)]
-pub struct HitPointsUi;
-
 pub(super) struct HudPlugin;
 
 impl Plugin for HudPlugin {
@@ -24,6 +20,10 @@ impl Plugin for HudPlugin {
             );
     }
 }
+
+/// Marks a [`Text`] entity to display the HP for an associated [`Side`].
+#[derive(Component, Debug)]
+pub struct HitPointsUi;
 
 fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
     let hp_ui_configs = [

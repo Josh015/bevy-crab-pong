@@ -2,19 +2,19 @@ use bevy::prelude::*;
 
 use crate::game::state::LoadedSet;
 
-/// Makes an entity auto-scroll its texture.
-#[derive(Clone, Component, Debug, Default)]
-#[require(MeshMaterial3d<StandardMaterial>)]
-pub struct ScrollingTexture {
-    pub velocity: Vec2,
-}
-
 pub(super) struct ScrollingTexturePlugin;
 
 impl Plugin for ScrollingTexturePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, scrolling_texture_effect.in_set(LoadedSet));
     }
+}
+
+/// Makes an entity auto-scroll its texture.
+#[derive(Clone, Component, Debug, Default)]
+#[require(MeshMaterial3d<StandardMaterial>)]
+pub struct ScrollingTexture {
+    pub velocity: Vec2,
 }
 
 fn scrolling_texture_effect(

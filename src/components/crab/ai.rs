@@ -13,16 +13,6 @@ use super::{Crab, CrabCollider};
 
 pub const IDEAL_HIT_AREA_PERCENTAGE: f32 = 0.70;
 
-/// Marks a [`Crab`] entity as being controlled by AI.
-#[derive(Component, Debug)]
-#[require(Crab)]
-pub struct AI;
-
-/// The [`Ball`] entity targeted by an [`AI`] [`Crab`] entity.
-#[derive(Clone, Component, Debug)]
-#[component(storage = "SparseSet")]
-pub struct Target(pub Entity);
-
 pub(super) struct AiPlugin;
 
 impl Plugin for AiPlugin {
@@ -34,6 +24,16 @@ impl Plugin for AiPlugin {
         );
     }
 }
+
+/// Marks a [`Crab`] entity as being controlled by AI.
+#[derive(Component, Debug)]
+#[require(Crab)]
+pub struct AI;
+
+/// The [`Ball`] entity targeted by an [`AI`] [`Crab`] entity.
+#[derive(Clone, Component, Debug)]
+#[component(storage = "SparseSet")]
+pub struct Target(pub Entity);
 
 fn make_ai_crabs_target_and_move_toward_the_ball_closest_to_their_goal(
     mut commands: Commands,

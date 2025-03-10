@@ -7,6 +7,28 @@ use crate::game::state::PausableSet;
 
 use super::{collider::Collider, movement::Movement};
 
+pub(super) struct FadePlugin;
+
+impl Plugin for FadePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(PostUpdate, animate_fade_effect.in_set(PausableSet))
+            .add_systems(
+                Last,
+                clean_up_components_or_entities_after_they_finish_fading,
+            );
+        app.add_systems(
+            Update,
+            (
+                insert_component_after_fading_in::<Movement>,
+                remove_component_before_fading_out::<Movement>,
+                insert_component_after_fading_in::<Collider>,
+                remove_component_before_fading_out::<Collider>,
+            )
+                .in_set(PausableSet),
+        );
+    }
+}
+
 /// Makes an entity fade in/out and delay activation/despawning respectively.
 #[derive(Clone, Component, Debug, Eq, new, PartialEq)]
 #[require(FadeEffect)]
@@ -46,28 +68,6 @@ pub struct InsertAfterFadeIn<B: Bundle + Default>(PhantomData<B>);
 // Removes a component before a fade-out starts.
 #[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
 pub struct RemoveBeforeFadeOut<B: Bundle>(PhantomData<B>);
-
-pub(super) struct FadePlugin;
-
-impl Plugin for FadePlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(PostUpdate, animate_fade_effect.in_set(PausableSet))
-            .add_systems(
-                Last,
-                clean_up_components_or_entities_after_they_finish_fading,
-            );
-        app.add_systems(
-            Update,
-            (
-                insert_component_after_fading_in::<Movement>,
-                remove_component_before_fading_out::<Movement>,
-                insert_component_after_fading_in::<Collider>,
-                remove_component_before_fading_out::<Collider>,
-            )
-                .in_set(PausableSet),
-        );
-    }
-}
 
 fn animate_fade_effect(
     time: Res<Time>,

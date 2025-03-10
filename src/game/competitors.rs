@@ -10,21 +10,6 @@ use super::{
     system_params::GameModes,
 };
 
-/// A member of a competing team.
-#[derive(Debug)]
-pub struct TeamMember {
-    pub team: NonZeroUsize,
-    pub hit_points: u8,
-}
-
-/// All the competitors in the current round.
-#[derive(Debug, Default, Resource)]
-pub struct Competitors(pub HashMap<Side, TeamMember>);
-
-/// The team that won the previous round.
-#[derive(Debug, Default, Resource)]
-pub struct WinningTeam(pub usize);
-
 pub(super) struct CompetitorsPlugin;
 
 impl Plugin for CompetitorsPlugin {
@@ -43,6 +28,21 @@ impl Plugin for CompetitorsPlugin {
             );
     }
 }
+
+/// A member of a competing team.
+#[derive(Debug)]
+pub struct TeamMember {
+    pub team: NonZeroUsize,
+    pub hit_points: u8,
+}
+
+/// All the competitors in the current round.
+#[derive(Debug, Default, Resource)]
+pub struct Competitors(pub HashMap<Side, TeamMember>);
+
+/// The team that won the previous round.
+#[derive(Debug, Default, Resource)]
+pub struct WinningTeam(pub usize);
 
 fn reset_competitors(
     game_modes: GameModes,

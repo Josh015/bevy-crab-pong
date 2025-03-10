@@ -8,6 +8,24 @@ use crate::components::side::Side;
 
 use super::state::GameState;
 
+pub(super) struct AssetsPlugin;
+
+impl Plugin for AssetsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(YamlAssetPlugin::<GameConfig>::new(&["config.yaml"]))
+            .add_plugins(YamlAssetPlugin::<GameMode>::new(&["mode.yaml"]))
+            .add_loading_state(
+                LoadingState::new(GameState::Loading)
+                    .continue_to_state(GameState::StartMenu),
+            )
+            .configure_loading_state(
+                LoadingStateConfig::new(GameState::Loading)
+                    .load_collection::<GameAssets>()
+                    .init_resource::<CachedAssets>(),
+            );
+    }
+}
+
 /// Game settings read from a config file.
 #[derive(Asset, Debug, Deserialize, Resource, TypePath)]
 pub struct GameConfig {
@@ -106,23 +124,5 @@ impl FromWorld for CachedAssets {
             pole_mesh,
             pole_material,
         }
-    }
-}
-
-pub(super) struct AssetsPlugin;
-
-impl Plugin for AssetsPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_plugins(YamlAssetPlugin::<GameConfig>::new(&["config.yaml"]))
-            .add_plugins(YamlAssetPlugin::<GameMode>::new(&["mode.yaml"]))
-            .add_loading_state(
-                LoadingState::new(GameState::Loading)
-                    .continue_to_state(GameState::StartMenu),
-            )
-            .configure_loading_state(
-                LoadingStateConfig::new(GameState::Loading)
-                    .load_collection::<GameAssets>()
-                    .init_resource::<CachedAssets>(),
-            );
     }
 }
