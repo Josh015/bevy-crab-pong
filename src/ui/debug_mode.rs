@@ -11,7 +11,6 @@ use crate::{
         movement::{Heading, Movement, StoppingDistance},
     },
     game::{state::LoadedSet, system_params::Goals},
-    util::hemisphere_deflection,
 };
 
 pub const DEBUGGING_RAY_LENGTH: f32 = 20.0;
@@ -211,8 +210,7 @@ fn crab_collider_ball_deflection_direction_gizmos(
 
             // Get ball deflection direction.
             let delta = crab_transform.translation.x - ball_local_x;
-            let ball_deflection_direction =
-                hemisphere_deflection(delta, crab_collider.width, goal.forward);
+            let ball_deflection_direction = crab_collider.deflect(&goal, delta);
 
             gizmos.line(
                 crab_translation,

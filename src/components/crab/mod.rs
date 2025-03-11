@@ -12,9 +12,8 @@ use crate::{
     game::{
         level::{BARRIER_RADIUS, GOAL_WIDTH},
         state::PausableSet,
-        system_params::Goals,
+        system_params::{GoalData, Goals},
     },
-    util::hemisphere_deflection,
 };
 
 pub const CRAB_WIDTH: f32 = 0.2;
@@ -48,6 +47,19 @@ pub struct Crab;
 pub struct CrabCollider {
     /// Width of the bounding shape.
     pub width: f32,
+}
+
+impl CrabCollider {
+    /// Get a ball deflection direction based on the its local x delta from
+    /// the crab's center.
+    pub fn deflect(&self, goal: &GoalData, local_x_delta: f32) -> Vec3 {
+        let rotation_away_from_center = Quat::from_rotation_y(
+            std::f32::consts::FRAC_PI_4
+                * (local_x_delta / (0.5 * self.width)).clamp(-1.0, 1.0),
+        );
+
+        rotation_away_from_center * goal.forward
+    }
 }
 
 fn restrict_crab_movement_to_space_within_its_own_goal(
@@ -102,7 +114,8 @@ fn crab_and_ball_collisions(
         };
 
         for (entity, global_transform, heading, collider) in &balls_query {
-            // Check that the ball is facing the goal and close enough to collide.
+            // Check that the ball is facing the goal and close enough to
+            // collide.
             if !goal.is_facing(heading) {
                 continue;
             }
@@ -123,8 +136,7 @@ fn crab_and_ball_collisions(
             }
 
             // Deflect the ball.
-            let ball_deflection_direction =
-                hemisphere_deflection(delta, crab_collider.width, goal.forward);
+            let ball_deflection_direction = crab_collider.deflect(&goal, delta);
 
             commands
                 .entity(entity)
