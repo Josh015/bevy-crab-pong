@@ -14,9 +14,7 @@ use super::{
 pub(super) struct SystemParamsPlugin;
 
 impl Plugin for SystemParamsPlugin {
-    fn build(&self, app: &mut App) {
-        app.init_resource::<SelectedGameMode>();
-    }
+    fn build(&self, app: &mut App) { app.init_resource::<SelectedGameMode>(); }
 }
 
 #[derive(Debug, Default, Resource)]

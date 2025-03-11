@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
-use crate::game::system_params::Goals;
-use crate::game::{events::SideScoredEvent, state::PlayableSet};
+use crate::game::{
+    events::SideScoredEvent, state::PlayableSet, system_params::Goals,
+};
 
 use super::{
     ball::Ball,
