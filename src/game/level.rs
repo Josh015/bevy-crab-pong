@@ -139,6 +139,7 @@ fn spawn_level(
             speed: game_config.swaying_camera_speed,
         },
         Camera3d::default(),
+        IsDefaultUiCamera,
         Msaa::Sample8,
         // Msaa::Off,
         // TemporalAntiAliasing::default(),
@@ -213,10 +214,8 @@ fn spawn_level(
             Vec3::Y,
             std::f32::consts::TAU * (i as f32 / num_sides as f32),
         ))
-        .mul_transform(Transform::from_xyz(
-            0.0,
-            0.0,
-            0.5 * GOAL_WIDTH,
+        .mul_transform(Transform::from_translation(
+            LEVEL_CENTER_POINT.with_z(0.5 * GOAL_WIDTH),
         ));
 
         commands.spawn((Goal, side, goal_transform));
