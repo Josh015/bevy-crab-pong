@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::ops::{Add, Sub};
 
-use crate::{game::state::PausableSet, util::reflect};
+use crate::game::state::PausableSet;
 
 pub(super) struct MovementPlugin;
 
@@ -45,7 +45,11 @@ impl From<Vec3> for Heading {
 
 impl Heading {
     pub fn reflect(heading: &Heading, axis: Vec3) -> Self {
-        Heading::from(reflect(*heading.0, axis))
+        let i = *heading.0;
+        let n = axis;
+        let r = i - (2.0 * (i.dot(n) * n));
+
+        Heading::from(r)
     }
 }
 
