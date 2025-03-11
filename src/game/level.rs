@@ -205,57 +205,48 @@ fn spawn_level(
     let barrier_material =
         materials.add(Color::Srgba(Srgba::hex("750000").unwrap()));
 
-    let side_iter = Side::iter();
-    let num_sides = side_iter.len();
+    let num_sides = Side::iter().len();
 
-    for (i, side) in side_iter.enumerate() {
-        // Spawn Point
-        commands
-            .spawn((
-                Goal,
-                side,
-                Transform::from_rotation(Quat::from_axis_angle(
-                    Vec3::Y,
-                    std::f32::consts::TAU * (i as f32 / num_sides as f32),
-                ))
-                .mul_transform(Transform::from_xyz(
-                    0.0,
-                    0.0,
-                    0.5 * GOAL_WIDTH,
-                )),
-            ))
-            .with_children(|builder| {
-                // Barrier
-                builder.spawn((
-                    Collider,
-                    CircleCollider {
-                        radius: BARRIER_RADIUS,
-                    },
-                    Mesh3d(cylinder.clone()),
-                    MeshMaterial3d(barrier_material.clone()),
-                    Transform::from_matrix(
-                        Mat4::from_scale_rotation_translation(
-                            Vec3::new(
-                                BARRIER_DIAMETER,
-                                BARRIER_HEIGHT,
-                                BARRIER_DIAMETER,
-                            ),
-                            Quat::IDENTITY,
-                            Vec3::new(
-                                0.5 * GOAL_WIDTH,
-                                0.5 * BARRIER_HEIGHT,
-                                0.0,
-                            ),
-                        ),
-                    ),
-                ));
-            });
+    for (i, side) in Side::iter().enumerate() {
+        // Goal
+        let goal_transform = Transform::from_rotation(Quat::from_axis_angle(
+            Vec3::Y,
+            std::f32::consts::TAU * (i as f32 / num_sides as f32),
+        ))
+        .mul_transform(Transform::from_xyz(
+            0.0,
+            0.0,
+            0.5 * GOAL_WIDTH,
+        ));
 
-        // Poles
+        commands.spawn((Goal, side, goal_transform));
+
+        // Pole
         commands.trigger(SpawnPole {
             side,
             fade_in: false,
         });
+
+        // Corner Barriers
+        commands.spawn((
+            Collider,
+            CircleCollider {
+                radius: BARRIER_RADIUS,
+            },
+            Mesh3d(cylinder.clone()),
+            MeshMaterial3d(barrier_material.clone()),
+            goal_transform.mul_transform(Transform::from_matrix(
+                Mat4::from_scale_rotation_translation(
+                    Vec3::new(
+                        BARRIER_DIAMETER,
+                        BARRIER_HEIGHT,
+                        BARRIER_DIAMETER,
+                    ),
+                    Quat::IDENTITY,
+                    Vec3::new(0.5 * GOAL_WIDTH, 0.5 * BARRIER_HEIGHT, 0.0),
+                ),
+            )),
+        ));
     }
 }
 
