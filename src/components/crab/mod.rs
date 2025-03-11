@@ -52,10 +52,10 @@ pub struct CrabCollider {
 impl CrabCollider {
     /// Get a ball deflection direction based on the its local x delta from
     /// the crab's center.
-    pub fn deflect(&self, goal: &GoalData, local_x_delta: f32) -> Vec3 {
+    pub fn deflect(&self, goal: &GoalData, ball_delta_x: f32) -> Vec3 {
         let rotation_away_from_center = Quat::from_rotation_y(
             std::f32::consts::FRAC_PI_4
-                * (local_x_delta / (0.5 * self.width)).clamp(-1.0, 1.0),
+                * (ball_delta_x / (0.5 * self.width)).clamp(-1.0, 1.0),
         );
 
         rotation_away_from_center * goal.forward
@@ -128,19 +128,19 @@ fn crab_and_ball_collisions(
 
             // Check that the ball is over the crab's hit area.
             let ball_local_x = goal.map_to_local_x(global_transform);
-            let delta = crab_transform.translation.x - ball_local_x;
-            let center_distance = delta.abs();
+            let ball_delta_x = crab_transform.translation.x - ball_local_x;
+            let center_distance = ball_delta_x.abs();
 
             if center_distance > collider.radius + (0.5 * crab_collider.width) {
                 continue;
             }
 
             // Deflect the ball.
-            let ball_deflection_direction = crab_collider.deflect(&goal, delta);
+            let new_ball_direction = crab_collider.deflect(&goal, ball_delta_x);
 
             commands
                 .entity(entity)
-                .insert(Heading::from(ball_deflection_direction));
+                .insert(Heading::from(new_ball_direction));
             info!("Ball({:?}): Collided Crab({:?})", entity, goal.side);
             break;
         }

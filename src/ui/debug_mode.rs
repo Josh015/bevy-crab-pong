@@ -209,13 +209,12 @@ fn crab_collider_ball_deflection_direction_gizmos(
             }
 
             // Get ball deflection direction.
-            let delta = crab_transform.translation.x - ball_local_x;
-            let ball_deflection_direction = crab_collider.deflect(&goal, delta);
+            let ball_delta_x = crab_transform.translation.x - ball_local_x;
+            let new_ball_direction = crab_collider.deflect(&goal, ball_delta_x);
 
             gizmos.line(
                 crab_translation,
-                crab_translation
-                    + DEBUGGING_RAY_LENGTH * ball_deflection_direction,
+                crab_translation + DEBUGGING_RAY_LENGTH * new_ball_direction,
                 Srgba::WHITE,
             );
         }
