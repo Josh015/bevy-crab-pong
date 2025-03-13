@@ -96,6 +96,6 @@ fn update_hit_points_ui(
     for (mut text, side) in &mut hp_ui_query {
         let competitor = &competitors.0[side];
 
-        text.0 = competitor.hit_points.to_string();
+        text.0 = competitor.hit_points().to_string();
     }
 }

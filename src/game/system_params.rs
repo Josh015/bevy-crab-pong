@@ -2,6 +2,7 @@ use bevy::{
     ecs::{query::QueryEntityError, system::SystemParam},
     prelude::*,
 };
+use derive_getters::Getters;
 use std::ops::Add;
 
 use crate::components::{goal::Goal, movement::Heading, side::Side};
@@ -74,11 +75,19 @@ impl Goals<'_, '_> {
 }
 
 /// Data and methods related to goal logic.
+#[derive(Getters)]
 pub struct GoalData {
-    pub level_width: f32,
-    pub forward: Vec3,
-    pub right: Vec3,
-    pub side: Side,
+    #[getter(copy)]
+    level_width: f32,
+
+    #[getter(copy)]
+    forward: Vec3,
+
+    #[getter(copy)]
+    right: Vec3,
+
+    #[getter(copy)]
+    side: Side,
 }
 
 impl GoalData {

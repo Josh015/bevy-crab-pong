@@ -1,6 +1,7 @@
 use std::num::NonZeroUsize;
 
 use bevy::{prelude::*, utils::HashMap};
+use derive_getters::Getters;
 
 use crate::components::side::Side;
 
@@ -30,10 +31,13 @@ impl Plugin for CompetitorsPlugin {
 }
 
 /// A member of a competing team.
-#[derive(Debug)]
+#[derive(Debug, Getters)]
 pub struct TeamMember {
-    pub team: NonZeroUsize,
-    pub hit_points: u8,
+    #[getter(copy)]
+    team: NonZeroUsize,
+
+    #[getter(copy)]
+    hit_points: u8,
 }
 
 /// All the competitors in the current round.

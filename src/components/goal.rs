@@ -49,8 +49,8 @@ fn check_if_a_ball_has_scored_in_a_goal(
 
             if ball_distance <= collider.radius {
                 commands.entity(entity).insert(Fade::new_out());
-                side_scored_events.send(SideScoredEvent(goal.side));
-                info!("Ball({:?}): Scored Side({:?})", entity, goal.side);
+                side_scored_events.send(SideScoredEvent(goal.side()));
+                info!("Ball({:?}): Scored Side({:?})", entity, goal.side());
             }
         }
     }

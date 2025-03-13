@@ -55,9 +55,9 @@ fn pole_and_ball_collisions(
 
             commands
                 .entity(entity)
-                .insert(Heading::reflect(heading, -goal.forward));
+                .insert(Heading::reflect(heading, -goal.forward()));
 
-            info!("Ball({:?}): Collided Pole({:?})", entity, goal.side);
+            info!("Ball({:?}): Collided Pole({:?})", entity, goal.side());
             break;
         }
     }

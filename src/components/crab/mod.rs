@@ -58,7 +58,7 @@ impl CrabCollider {
                 * (ball_delta_x / (0.5 * self.width)).clamp(-1.0, 1.0),
         );
 
-        rotation_away_from_center * goal.forward
+        rotation_away_from_center * goal.forward()
     }
 }
 
@@ -141,7 +141,7 @@ fn crab_and_ball_collisions(
             commands
                 .entity(entity)
                 .insert(Heading::from(new_ball_direction));
-            info!("Ball({:?}): Collided Crab({:?})", entity, goal.side);
+            info!("Ball({:?}): Collided Crab({:?})", entity, goal.side());
             break;
         }
     }

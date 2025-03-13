@@ -11,6 +11,7 @@ rust-version = "1.85.0"
 bevy = { version = "0.15.2", features = ["file_watcher"] }
 bevy_asset_loader = { version = "0.22.0", features = ["3d", "standard_dynamic_assets"] }
 bevy_common_assets = { version = "0.12.0", features = ["yaml"] }
+derive-getters = "0.5.0"
 derive-new = "0.7.0"
 leafwing-input-manager = "0.16.0"
 rand = { version = "0.9.0", features = ["small_rng"] }
