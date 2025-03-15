@@ -3,7 +3,7 @@ use leafwing_input_manager::prelude::*;
 
 use crate::{
     components::{Force, Movement, Side},
-    game::PlayableSet,
+    PlayableSet,
 };
 
 use super::Crab;

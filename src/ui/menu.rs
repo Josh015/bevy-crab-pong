@@ -4,7 +4,7 @@ pub use leafwing_input_manager::prelude::*;
 
 use crate::{
     components::WinningTeam,
-    game::{
+    {
         GameAssets, GameConfig, GameModes, GameState, LoadedSet, PlayableSet,
         SpawnUiMessage,
     },

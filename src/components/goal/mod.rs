@@ -8,7 +8,7 @@ use bevy::prelude::*;
 
 use crate::{
     components::Fade,
-    game::{GoalScoredEvent, Goals, PlayableSet},
+    {GoalScoredEvent, Goals, PlayableSet},
 };
 
 use super::{Ball, CircleCollider, Collider, Crab, Movement};

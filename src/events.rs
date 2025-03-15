@@ -4,11 +4,11 @@ use bevy_ui_anchor::{
 };
 
 use crate::{
+    GOAL_WIDTH,
     components::{
         Collider, Fade, FadeEffect, ForStates, Goal, HitPoints, POLE_DIAMETER,
         POLE_HEIGHT, Pole, RemoveBeforeFadeOut, Team, WinningTeam,
     },
-    game::GOAL_WIDTH,
 };
 
 use super::{CachedAssets, GameAssets, GameState, PlayableSet};

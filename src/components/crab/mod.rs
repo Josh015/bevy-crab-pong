@@ -8,7 +8,7 @@ use bevy::prelude::*;
 
 use crate::{
     components::Heading,
-    game::{BARRIER_RADIUS, GOAL_WIDTH, GoalData, Goals, PausableSet},
+    {BARRIER_RADIUS, GOAL_WIDTH, GoalData, Goals, PausableSet},
 };
 
 use super::{

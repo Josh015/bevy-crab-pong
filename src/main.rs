@@ -1,14 +1,11 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
-pub mod components;
-pub mod game;
-pub mod ui;
-
 use bevy::{
     // core_pipeline::experimental::taa::TemporalAntiAliasPlugin,
     prelude::*,
     window::{PresentMode, WindowResolution},
 };
+use bevy_crab_pong::LibPlugin;
 
 fn main() {
     App::new()
@@ -29,10 +26,6 @@ fn main() {
             // TemporalAntiAliasPlugin,
         ))
         .insert_resource(ClearColor(Color::srgba(0.7, 0.9, 1.0, 1.0)))
-        .add_plugins((
-            components::ComponentsPlugin,
-            game::GamePlugin,
-            ui::UiPlugin,
-        ))
+        .add_plugins(LibPlugin)
         .run();
 }

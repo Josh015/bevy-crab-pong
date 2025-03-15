@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::ops::{Add, Sub};
 
-use crate::game::PausableSet;
+use crate::PausableSet;
 
 pub(super) struct MovementPlugin;
 

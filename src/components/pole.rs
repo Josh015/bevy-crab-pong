@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::{Goals, PausableSet};
+use crate::{Goals, PausableSet};
 
 use super::{Ball, CircleCollider, Collider, Heading, Movement};
 

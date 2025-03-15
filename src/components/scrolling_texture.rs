@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::LoadedSet;
+use crate::LoadedSet;
 
 pub(super) struct ScrollingTexturePlugin;
 

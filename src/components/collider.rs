@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::PausableSet;
+use crate::PausableSet;
 
 use super::{Heading, Movement};
 

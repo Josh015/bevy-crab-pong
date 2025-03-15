@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     components::{Ball, Collider, Force, Movement, StoppingDistance},
-    game::{Goals, PlayableSet},
+    {Goals, PlayableSet},
 };
 
 use super::{Crab, CrabCollider};

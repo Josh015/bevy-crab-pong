@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use bevy::prelude::*;
 use derive_new::new;
 
-use crate::game::PausableSet;
+use crate::PausableSet;
 
 use super::{Collider, Movement};
 

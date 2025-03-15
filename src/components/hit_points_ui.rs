@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     components::{Goal, HitPoints},
-    game::LoadedSet,
+    LoadedSet,
 };
 
 pub(super) struct HitPointsUiPlugin;
