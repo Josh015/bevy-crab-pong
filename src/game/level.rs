@@ -14,7 +14,7 @@ use crate::{
         RemoveBeforeFadeOut, ScrollingTexture, Side, Speed, SwayingCamera,
         Team, UiCamera,
     },
-    ui::HitPointsUi,
+    ui::HitPointsUiSource,
 };
 
 use super::{
@@ -265,7 +265,7 @@ fn spawn_level(
         let (offset, anchorwidth, anchorheight) = hp_ui_configs[&side];
 
         commands.spawn((
-            HitPointsUi,
+            HitPointsUiSource(goal_entity),
             AnchorUiNode {
                 target: AnchorTarget::Entity(goal_entity),
                 offset,

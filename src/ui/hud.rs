@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_ui_anchor::{AnchorTarget, AnchorUiNode};
 
 use crate::{
     components::{Goal, HitPoints},
@@ -14,20 +13,18 @@ impl Plugin for HudPlugin {
     }
 }
 
-/// Marks a [`Text`] entity to display the HP for an associated [`HitPoints`]
+/// Marks a [`Text`] entity to display the value of an associated [`HitPoints`]
 /// entity.
 #[derive(Component, Debug)]
-pub struct HitPointsUi;
+#[require(Text)]
+pub struct HitPointsUiSource(pub Entity);
 
 fn update_hit_points_ui(
     hp_query: Query<&HitPoints, With<Goal>>,
-    mut hp_ui_query: Query<(&mut Text, &AnchorUiNode), With<HitPointsUi>>,
+    mut hp_ui_query: Query<(&mut Text, &HitPointsUiSource)>,
 ) {
-    for (mut text, anchor) in &mut hp_ui_query {
-        let AnchorTarget::Entity(entity) = anchor.target else {
-            continue;
-        };
-        let Ok(hp) = hp_query.get(entity) else {
+    for (mut text, source) in &mut hp_ui_query {
+        let Ok(hp) = hp_query.get(source.0) else {
             continue;
         };
 
