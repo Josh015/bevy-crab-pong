@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::game::{GameState, PlayableSet};
+use crate::game::{GameState, GoalEliminatedEvent, PlayableSet};
 
-use super::{Goal, GoalEliminatedEvent, HitPoints};
+use super::{Goal, HitPoints};
 
 pub(super) struct TeamPlugin;
 

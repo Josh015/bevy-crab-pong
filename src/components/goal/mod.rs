@@ -8,7 +8,7 @@ use bevy::prelude::*;
 
 use crate::{
     components::Fade,
-    game::{Goals, PlayableSet},
+    game::{GoalScoredEvent, Goals, PlayableSet},
 };
 
 use super::{Ball, CircleCollider, Collider, Crab, Movement};
@@ -17,12 +17,10 @@ pub(super) struct GoalPlugin;
 
 impl Plugin for GoalPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((HitPointsPlugin, TeamPlugin))
-            .add_systems(
-                PostUpdate,
-                check_if_a_ball_has_scored_in_a_goal.in_set(PlayableSet),
-            )
-            .add_event::<GoalScoredEvent>();
+        app.add_plugins((HitPointsPlugin, TeamPlugin)).add_systems(
+            PostUpdate,
+            check_if_a_ball_has_scored_in_a_goal.in_set(PlayableSet),
+        );
     }
 }
 
@@ -30,14 +28,6 @@ impl Plugin for GoalPlugin {
 #[derive(Component, Debug, Default)]
 #[require(Transform, Visibility)]
 pub struct Goal;
-
-/// Signals that a [`Goal`] has been scored in by a [`Ball`].
-#[derive(Clone, Debug, Event)]
-pub struct GoalScoredEvent(pub Entity);
-
-/// Signals that a [`Goal`] has been eliminated from the game.
-#[derive(Clone, Debug, Event)]
-pub struct GoalEliminatedEvent(pub Entity);
 
 fn check_if_a_ball_has_scored_in_a_goal(
     mut commands: Commands,

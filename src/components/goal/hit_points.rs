@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::game::PlayableSet;
+use crate::game::{GoalEliminatedEvent, GoalScoredEvent, PlayableSet};
 
-use super::{Goal, GoalEliminatedEvent, GoalScoredEvent};
+use super::Goal;
 
 pub(super) struct HitPointsPlugin;
 
@@ -11,8 +11,7 @@ impl Plugin for HitPointsPlugin {
         app.add_systems(
             PostUpdate,
             decrement_hp_when_goal_gets_scored.in_set(PlayableSet),
-        )
-        .add_event::<GoalEliminatedEvent>();
+        );
     }
 }
 

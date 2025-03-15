@@ -9,17 +9,16 @@ use crate::{
     components::{
         AI, Acceleration, Ball, CRAB_DEPTH, CRAB_WIDTH, CircleCollider,
         Collider, Crab, CrabCollider, Fade, FadeEffect, ForStates, Goal,
-        GoalEliminatedEvent, Heading, HitPoints, InsertAfterFadeIn, MaxSpeed,
-        Movement, POLE_DIAMETER, POLE_HEIGHT, Player, Pole,
-        RemoveBeforeFadeOut, ScrollingTexture, Side, Speed, SwayingCamera,
-        Team, UiCamera,
+        Heading, HitPoints, InsertAfterFadeIn, MaxSpeed, Movement, Player,
+        Pole, RemoveBeforeFadeOut, ScrollingTexture, Side, Speed,
+        SwayingCamera, Team, UiCamera,
     },
     ui::HitPointsUiSource,
 };
 
 use super::{
     CachedAssets, CrabController, GameAssets, GameConfig, GameModes, GameState,
-    PausableSet, PlayableSet,
+    GoalEliminatedEvent, PausableSet, PlayableSet, SpawnPole,
 };
 
 pub const LEVEL_CENTER_POINT: Vec3 = Vec3::ZERO;
@@ -34,89 +33,33 @@ pub(super) struct LevelPlugin;
 
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
-        app.add_observer(spawn_pole_on_a_side)
-            .add_systems(
-                OnExit(GameState::Loading),
-                (spawn_level, reset_team_and_hit_points).chain(),
-            )
-            .add_systems(
-                OnExit(GameState::StartMenu),
-                (spawn_crabs_for_each_side, reset_team_and_hit_points),
-            )
-            .add_systems(
-                Update,
-                spawn_balls_sequentially_up_to_max_count.in_set(PlayableSet),
-            )
-            .add_systems(
-                PostUpdate,
-                spawn_poles_for_eliminated_goals.after(PlayableSet),
-            )
-            .add_systems(
-                Update,
-                despawn_existing_crab_or_pole_per_side.in_set(PausableSet),
-            )
-            .insert_resource(Level { width: GOAL_WIDTH });
+        app.add_systems(
+            OnExit(GameState::Loading),
+            (spawn_level, reset_team_and_hit_points).chain(),
+        )
+        .add_systems(
+            OnExit(GameState::StartMenu),
+            (spawn_crabs_for_each_side, reset_team_and_hit_points),
+        )
+        .add_systems(
+            Update,
+            spawn_balls_sequentially_up_to_max_count.in_set(PlayableSet),
+        )
+        .add_systems(
+            PostUpdate,
+            spawn_poles_for_eliminated_goals.after(PlayableSet),
+        )
+        .add_systems(
+            Update,
+            despawn_existing_crab_or_pole_per_side.in_set(PausableSet),
+        )
+        .insert_resource(Level { width: GOAL_WIDTH });
     }
 }
 
 #[derive(Debug, Resource)]
 pub struct Level {
     pub width: f32,
-}
-
-#[derive(Event)]
-pub struct SpawnPole {
-    pub goal_entity: Entity,
-    pub fade_in: bool,
-}
-
-fn spawn_pole_on_a_side(
-    trigger: Trigger<SpawnPole>,
-    cached_assets: Res<CachedAssets>,
-    mut commands: Commands,
-) {
-    let SpawnPole {
-        goal_entity,
-        fade_in,
-    } = trigger.event();
-
-    let id = commands
-        .entity(*goal_entity)
-        .with_children(|builder| {
-            builder.spawn((
-                Pole,
-                Collider,
-                RemoveBeforeFadeOut::<Collider>::default(),
-                if *fade_in {
-                    Fade::new_in()
-                } else {
-                    Fade::In(Timer::default()) // Skip to end of animation.
-                },
-                FadeEffect::Scale {
-                    max_scale: Vec3::new(
-                        POLE_DIAMETER,
-                        GOAL_WIDTH,
-                        POLE_DIAMETER,
-                    ),
-                    axis_mask: Vec3::new(1.0, 0.0, 1.0),
-                },
-                Mesh3d(cached_assets.pole_mesh.clone()),
-                MeshMaterial3d(cached_assets.pole_material.clone()),
-                Transform::from_matrix(Mat4::from_scale_rotation_translation(
-                    Vec3::splat(f32::EPSILON),
-                    Quat::from_euler(
-                        EulerRot::XYZ,
-                        0.0,
-                        0.0,
-                        std::f32::consts::FRAC_PI_2,
-                    ),
-                    Vec3::new(0.0, POLE_HEIGHT, 0.0),
-                )),
-            ));
-        })
-        .id();
-
-    info!("Pole({id:?}): Spawned");
 }
 
 fn spawn_level(
