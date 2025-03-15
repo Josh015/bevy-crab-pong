@@ -17,7 +17,7 @@ pub(super) struct GoalPlugin;
 
 impl Plugin for GoalPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((HitPointsPlugin, TeamPlugin)).add_systems(
+        app.add_systems(
             PostUpdate,
             check_if_a_ball_has_scored_in_a_goal.in_set(PlayableSet),
         );

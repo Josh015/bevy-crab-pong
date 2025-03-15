@@ -18,7 +18,7 @@ use crate::{
 
 use super::{
     CachedAssets, CrabController, GameAssets, GameConfig, GameModes, GameState,
-    GoalEliminatedEvent, PausableSet, PlayableSet, SpawnPole,
+    PausableSet, PlayableSet, SpawnPole,
 };
 
 pub const LEVEL_CENTER_POINT: Vec3 = Vec3::ZERO;
@@ -44,10 +44,6 @@ impl Plugin for LevelPlugin {
         .add_systems(
             Update,
             spawn_balls_sequentially_up_to_max_count.in_set(PlayableSet),
-        )
-        .add_systems(
-            PostUpdate,
-            spawn_poles_for_eliminated_goals.after(PlayableSet),
         )
         .add_systems(
             Update,
@@ -378,18 +374,6 @@ fn spawn_balls_sequentially_up_to_max_count(
         .id();
 
     info!("Ball({ball:?}): Spawned");
-}
-
-fn spawn_poles_for_eliminated_goals(
-    mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
-    mut commands: Commands,
-) {
-    for GoalEliminatedEvent(goal_entity) in goal_eliminated_events.read() {
-        commands.trigger(SpawnPole {
-            goal_entity: *goal_entity,
-            fade_in: true,
-        });
-    }
 }
 
 fn despawn_existing_crab_or_pole_per_side(

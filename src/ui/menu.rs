@@ -1,13 +1,12 @@
 use bevy::{prelude::*, window::WindowFocused};
-use bevy_ui_anchor::{
-    AnchorTarget, AnchorUiNode, HorizontalAnchor, VerticalAnchor,
-};
+
 pub use leafwing_input_manager::prelude::*;
 
 use crate::{
-    components::{ForStates, WinningTeam},
+    components::WinningTeam,
     game::{
         GameAssets, GameConfig, GameModes, GameState, LoadedSet, PlayableSet,
+        SpawnUiMessage,
     },
 };
 
@@ -18,25 +17,14 @@ impl Plugin for MenuPlugin {
         app.add_plugins(InputManagerPlugin::<MenuAction>::default())
             .init_resource::<ActionState<MenuAction>>()
             .insert_resource(MenuAction::make_input_map())
-            .add_event::<MessageUiEvent>()
-            .add_systems(OnEnter(GameState::StartMenu), spawn_start_menu_ui)
-            .add_systems(OnEnter(GameState::Paused), spawn_pause_ui)
-            .add_systems(
-                Update,
-                (spawn_ui_message, handle_menu_inputs).in_set(LoadedSet),
-            )
+            .add_systems(OnEnter(GameState::StartMenu), show_start_menu_ui)
+            .add_systems(OnEnter(GameState::Paused), show_pause_ui)
+            .add_systems(Update, handle_menu_inputs.in_set(LoadedSet))
             .add_systems(
                 Update,
                 pause_game_when_window_loses_focus.in_set(PlayableSet),
             );
     }
-}
-
-/// An event fired when spawning a message UI.
-#[derive(Debug, Event)]
-pub struct MessageUiEvent {
-    pub message: String,
-    pub game_state: GameState,
 }
 
 // List of user actions associated to menu/ui interaction
@@ -74,11 +62,11 @@ impl MenuAction {
     }
 }
 
-fn spawn_start_menu_ui(
+fn show_start_menu_ui(
+    mut commands: Commands,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
     winning_team: Option<Res<WinningTeam>>,
-    mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
     let mut message = String::from(match winning_team {
@@ -88,52 +76,23 @@ fn spawn_start_menu_ui(
 
     message.push_str(&game_config.new_game_message);
 
-    ui_message_events.send(MessageUiEvent {
+    commands.trigger(SpawnUiMessage {
         message,
         game_state: GameState::StartMenu,
     });
 }
 
-fn spawn_pause_ui(
+fn show_pause_ui(
+    mut commands: Commands,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
-    mut ui_message_events: EventWriter<MessageUiEvent>,
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
 
-    ui_message_events.send(MessageUiEvent {
+    commands.trigger(SpawnUiMessage {
         message: game_config.pause_message.clone(),
         game_state: GameState::Paused,
     });
-}
-
-fn spawn_ui_message(
-    game_assets: Res<GameAssets>,
-    mut commands: Commands,
-    mut message_ui_events: EventReader<MessageUiEvent>,
-) {
-    for MessageUiEvent {
-        message,
-        game_state,
-    } in message_ui_events.read()
-    {
-        commands.spawn((
-            ForStates(vec![*game_state]),
-            AnchorUiNode {
-                target: AnchorTarget::Translation(Vec3::ZERO),
-                offset: None,
-                anchorwidth: HorizontalAnchor::Mid,
-                anchorheight: VerticalAnchor::Mid,
-            },
-            Text(message.clone()),
-            TextFont {
-                font: game_assets.font_menu.clone(),
-                font_size: 25.0,
-                ..default()
-            },
-            TextColor(Srgba::RED.into()),
-        ));
-    }
 }
 
 fn handle_menu_inputs(
