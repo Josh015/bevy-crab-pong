@@ -5,7 +5,7 @@ use bevy::{
 use derive_getters::Getters;
 use std::ops::Add;
 
-use crate::components::{goal::Goal, movement::Heading, side::Side};
+use crate::components::{goal::Goal, movement::Heading};
 
 use super::{
     assets::{GameAssets, GameMode},
@@ -56,20 +56,18 @@ impl GameModes<'_> {
 #[derive(SystemParam)]
 pub struct Goals<'w, 's> {
     level: Res<'w, Level>,
-    goals_query:
-        Query<'w, 's, (&'static Side, &'static GlobalTransform), With<Goal>>,
+    goals_query: Query<'w, 's, &'static GlobalTransform, With<Goal>>,
 }
 
 impl Goals<'_, '_> {
     /// Get the relevant data for the corresponding [Goal] entity.
     pub fn get(&self, entity: Entity) -> Result<GoalData, QueryEntityError> {
-        let (side, global_transform) = self.goals_query.get(entity)?;
+        let global_transform = self.goals_query.get(entity)?;
 
         Ok(GoalData {
             level_width: self.level.width,
             forward: *global_transform.forward(),
             right: *global_transform.right(),
-            side: *side,
         })
     }
 }
@@ -85,9 +83,6 @@ pub struct GoalData {
 
     #[getter(copy)]
     right: Vec3,
-
-    #[getter(copy)]
-    side: Side,
 }
 
 impl GoalData {

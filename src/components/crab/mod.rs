@@ -100,7 +100,7 @@ fn crab_and_ball_collisions(
     mut commands: Commands,
     goals: Goals,
     crabs_query: Query<
-        (&Parent, &Transform, &CrabCollider),
+        (Entity, &Parent, &Transform, &CrabCollider),
         (With<Crab>, With<Collider>),
     >,
     balls_query: Query<
@@ -108,12 +108,12 @@ fn crab_and_ball_collisions(
         (With<Ball>, With<Collider>, With<Movement>),
     >,
 ) {
-    for (parent, crab_transform, crab_collider) in &crabs_query {
+    for (crab_entity, parent, crab_transform, crab_collider) in &crabs_query {
         let Ok(goal) = goals.get(parent.get()) else {
             continue;
         };
 
-        for (entity, global_transform, heading, collider) in &balls_query {
+        for (ball_entity, global_transform, heading, collider) in &balls_query {
             // Check that the ball is facing the goal and close enough to
             // collide.
             if !goal.is_facing(heading) {
@@ -139,9 +139,9 @@ fn crab_and_ball_collisions(
             let new_ball_direction = crab_collider.deflect(&goal, ball_delta_x);
 
             commands
-                .entity(entity)
+                .entity(ball_entity)
                 .insert(Heading::from(new_ball_direction));
-            info!("Ball({:?}): Collided Crab({:?})", entity, goal.side());
+            info!("Ball({ball_entity:?}): Collided Crab({crab_entity:?})");
             break;
         }
     }

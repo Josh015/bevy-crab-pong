@@ -1,10 +1,12 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::side::Side,
+    components::{
+        goal::{Goal, hit_points::HitPoints},
+        side::Side,
+    },
     game::{
         assets::GameAssets,
-        competitors::Competitors,
         state::{GameState, LoadedSet},
     },
 };
@@ -21,7 +23,8 @@ impl Plugin for HudPlugin {
     }
 }
 
-/// Marks a [`Text`] entity to display the HP for an associated [`Side`].
+/// Marks a [`Text`] entity to display the HP for an associated [`HitPoints`]
+/// entity.
 #[derive(Component, Debug)]
 pub struct HitPointsUi;
 
@@ -90,12 +93,15 @@ fn spawn_hud_ui(game_assets: Res<GameAssets>, mut commands: Commands) {
 }
 
 fn update_hit_points_ui(
-    competitors: Res<Competitors>,
+    hp_query: Query<(&HitPoints, &Side), With<Goal>>,
     mut hp_ui_query: Query<(&mut Text, &Side), With<HitPointsUi>>,
 ) {
-    for (mut text, side) in &mut hp_ui_query {
-        let competitor = &competitors.0[side];
-
-        text.0 = competitor.hit_points().to_string();
+    for (mut text, ui_side) in &mut hp_ui_query {
+        for (hp, hp_side) in &hp_query {
+            if hp_side == ui_side {
+                text.0 = hp.0.to_string();
+                break;
+            }
+        }
     }
 }

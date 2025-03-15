@@ -31,18 +31,18 @@ pub struct Pole;
 fn pole_and_ball_collisions(
     mut commands: Commands,
     goals: Goals,
-    poles_query: Query<&Parent, (With<Pole>, With<Collider>)>,
+    poles_query: Query<(Entity, &Parent), (With<Pole>, With<Collider>)>,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading, &CircleCollider),
         (With<Ball>, With<Collider>, With<Movement>),
     >,
 ) {
-    for parent in &poles_query {
+    for (pole_entity, parent) in &poles_query {
         let Ok(goal) = goals.get(parent.get()) else {
             continue;
         };
 
-        for (entity, global_transform, heading, collider) in &balls_query {
+        for (ball_entity, global_transform, heading, collider) in &balls_query {
             if !goal.is_facing(heading) {
                 continue;
             }
@@ -54,10 +54,10 @@ fn pole_and_ball_collisions(
             }
 
             commands
-                .entity(entity)
+                .entity(ball_entity)
                 .insert(Heading::reflect(heading, -goal.forward()));
 
-            info!("Ball({:?}): Collided Pole({:?})", entity, goal.side());
+            info!("Ball({ball_entity:?}): Collided Pole({pole_entity:?})");
             break;
         }
     }

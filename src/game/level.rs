@@ -10,7 +10,11 @@ use crate::{
             CRAB_DEPTH, CRAB_WIDTH, Crab, CrabCollider, ai::AI, player::Player,
         },
         fade::{Fade, FadeEffect, InsertAfterFadeIn, RemoveBeforeFadeOut},
-        goal::Goal,
+        goal::{
+            Goal,
+            hit_points::{HitPoints, HitPointsEliminatedEvent},
+            team::Team,
+        },
         movement::{Acceleration, Heading, MaxSpeed, Movement, Speed},
         pole::{POLE_DIAMETER, POLE_HEIGHT, Pole},
         scrolling_texture::ScrollingTexture,
@@ -25,7 +29,6 @@ use crate::{
 
 use super::{
     assets::CachedAssets,
-    events::SideEliminatedEvent,
     state::{PausableSet, PlayableSet},
     system_params::GameModes,
 };
@@ -42,12 +45,14 @@ pub(super) struct LevelPlugin;
 
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Level { width: GOAL_WIDTH })
-            .add_observer(spawn_pole_on_a_side)
-            .add_systems(OnExit(GameState::Loading), spawn_level)
+        app.add_observer(spawn_pole_on_a_side)
+            .add_systems(
+                OnExit(GameState::Loading),
+                (spawn_level, reset_team_and_hit_points).chain(),
+            )
             .add_systems(
                 OnExit(GameState::StartMenu),
-                spawn_crabs_for_each_side,
+                (spawn_crabs_for_each_side, reset_team_and_hit_points),
             )
             .add_systems(
                 Update,
@@ -55,12 +60,13 @@ impl Plugin for LevelPlugin {
             )
             .add_systems(
                 PostUpdate,
-                spawn_poles_for_eliminated_sides.after(PlayableSet),
+                spawn_poles_for_eliminated_goals.after(PlayableSet),
             )
             .add_systems(
                 Update,
                 despawn_existing_crab_or_pole_per_side.in_set(PausableSet),
-            );
+            )
+            .insert_resource(Level { width: GOAL_WIDTH });
     }
 }
 
@@ -71,7 +77,7 @@ pub struct Level {
 
 #[derive(Event)]
 pub struct SpawnPole {
-    pub side: Side,
+    pub goal_entity: Entity,
     pub fade_in: bool,
 }
 
@@ -79,15 +85,17 @@ fn spawn_pole_on_a_side(
     trigger: Trigger<SpawnPole>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
-    goals_query: Query<(Entity, &Side), With<Goal>>,
+    goals_query: Query<&Side, With<Goal>>,
 ) {
-    let SpawnPole { side, fade_in } = trigger.event();
-    let (goal_entity, _) = goals_query
-        .iter()
-        .find(|(_, goal_side)| **goal_side == *side)
-        .unwrap();
+    let SpawnPole {
+        goal_entity,
+        fade_in,
+    } = trigger.event();
+    let Ok(side) = goals_query.get(*goal_entity) else {
+        return;
+    };
 
-    commands.entity(goal_entity).with_children(|builder| {
+    commands.entity(*goal_entity).with_children(|builder| {
         builder.spawn((
             Pole,
             *side,
@@ -218,11 +226,19 @@ fn spawn_level(
             LEVEL_CENTER_POINT.with_z(0.5 * GOAL_WIDTH),
         ));
 
-        commands.spawn((Goal, side, goal_transform));
+        let goal_entity = commands
+            .spawn((
+                Goal,
+                Team::default(),
+                HitPoints::default(),
+                side,
+                goal_transform,
+            ))
+            .id();
 
         // Pole
         commands.trigger(SpawnPole {
-            side,
+            goal_entity,
             fade_in: false,
         });
 
@@ -246,6 +262,22 @@ fn spawn_level(
                 ),
             )),
         ));
+    }
+}
+
+fn reset_team_and_hit_points(
+    game_modes: GameModes,
+    mut goals_query: Query<(&Side, &mut Team, &mut HitPoints)>,
+) {
+    for (side, competitor) in &game_modes.current().competitors {
+        for (goal_side, mut team, mut hp) in &mut goals_query {
+            if goal_side != side {
+                continue;
+            }
+
+            team.0 = competitor.team.into();
+            hp.0 = competitor.hit_points.into();
+        }
     }
 }
 
@@ -360,16 +392,15 @@ fn spawn_balls_sequentially_up_to_max_count(
     info!("Ball({ball:?}): Spawned");
 }
 
-fn spawn_poles_for_eliminated_sides(
-    mut side_eliminated_events: EventReader<SideEliminatedEvent>,
+fn spawn_poles_for_eliminated_goals(
+    mut hp_eliminated_event: EventReader<HitPointsEliminatedEvent>,
     mut commands: Commands,
 ) {
-    for SideEliminatedEvent(side) in side_eliminated_events.read() {
+    for HitPointsEliminatedEvent(goal_entity) in hp_eliminated_event.read() {
         commands.trigger(SpawnPole {
-            side: *side,
+            goal_entity: *goal_entity,
             fade_in: true,
         });
-        info!("Side({side:?}): Eliminated");
     }
 }
 
