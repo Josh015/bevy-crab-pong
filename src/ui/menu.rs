@@ -1,4 +1,7 @@
 use bevy::{prelude::*, window::WindowFocused};
+use bevy_ui_anchor::{
+    AnchorTarget, AnchorUiNode, HorizontalAnchor, VerticalAnchor,
+};
 pub use leafwing_input_manager::prelude::*;
 
 use crate::{
@@ -22,8 +25,7 @@ impl Plugin for MenuPlugin {
             .add_systems(OnEnter(GameState::Paused), spawn_pause_ui)
             .add_systems(
                 Update,
-                (handle_spawn_ui_message_event, handle_menu_inputs)
-                    .in_set(LoadedSet),
+                (spawn_ui_message, handle_menu_inputs).in_set(LoadedSet),
             )
             .add_systems(
                 Update,
@@ -107,7 +109,7 @@ fn spawn_pause_ui(
     });
 }
 
-fn handle_spawn_ui_message_event(
+fn spawn_ui_message(
     game_assets: Res<GameAssets>,
     mut commands: Commands,
     mut message_ui_events: EventReader<MessageUiEvent>,
@@ -117,42 +119,22 @@ fn handle_spawn_ui_message_event(
         game_state,
     } in message_ui_events.read()
     {
-        commands
-            .spawn((
-                ForStates(vec![*game_state]),
-                Node {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    justify_content: JustifyContent::SpaceBetween,
-                    ..default()
-                },
-            ))
-            .with_children(|builder| {
-                builder
-                    .spawn(Node {
-                        width: Val::Percent(100.0),
-                        height: Val::Percent(100.0),
-                        position_type: PositionType::Absolute,
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        ..default()
-                    })
-                    .with_children(|builder| {
-                        builder.spawn((
-                            Node {
-                                margin: UiRect::all(Val::Px(5.0)),
-                                ..default()
-                            },
-                            Text(message.clone()),
-                            TextFont {
-                                font: game_assets.font_menu.clone(),
-                                font_size: 30.0,
-                                ..default()
-                            },
-                            TextColor(Srgba::RED.into()),
-                        ));
-                    });
-            });
+        commands.spawn((
+            ForStates(vec![*game_state]),
+            AnchorUiNode {
+                target: AnchorTarget::Translation(Vec3::ZERO),
+                offset: None,
+                anchorwidth: HorizontalAnchor::Mid,
+                anchorheight: VerticalAnchor::Mid,
+            },
+            Text(message.clone()),
+            TextFont {
+                font: game_assets.font_menu.clone(),
+                font_size: 25.0,
+                ..default()
+            },
+            TextColor(Srgba::RED.into()),
+        ));
     }
 }
 

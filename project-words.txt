@@ -1,5 +1,7 @@
 !hte
 actionlike
+anchorheight
+anchorwidth
 clippy
 collidable
 consts

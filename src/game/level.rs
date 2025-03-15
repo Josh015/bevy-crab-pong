@@ -1,10 +1,14 @@
-use bevy::{math::Affine2, prelude::*};
+use bevy::{math::Affine2, prelude::*, utils::HashMap};
+use bevy_ui_anchor::{
+    AnchorTarget, AnchorUiNode, HorizontalAnchor, VerticalAnchor,
+};
 use rand::prelude::*;
 use strum::IntoEnumIterator;
 
 use crate::{
     components::{
         ball::Ball,
+        camera::{hud_camera::HudCamera, swaying_camera::SwayingCamera},
         collider::{CircleCollider, Collider},
         crab::{
             CRAB_DEPTH, CRAB_WIDTH, Crab, CrabCollider, ai::AI, player::Player,
@@ -19,12 +23,12 @@ use crate::{
         pole::{POLE_DIAMETER, POLE_HEIGHT, Pole},
         scrolling_texture::ScrollingTexture,
         side::Side,
-        swaying_camera::SwayingCamera,
     },
     game::{
         assets::{CrabController, GameAssets, GameConfig},
         state::{ForStates, GameState},
     },
+    ui::hud::HitPointsUi,
 };
 
 use super::{
@@ -156,6 +160,7 @@ fn spawn_level(
         //     ..default()
         // },
         // ScreenSpaceReflections::default(),
+        HudCamera,
     ));
 
     // Light
@@ -215,6 +220,40 @@ fn spawn_level(
         materials.add(Color::Srgba(Srgba::hex("750000").unwrap()));
 
     let num_sides = Side::iter().len();
+    let hp_ui_configs = HashMap::from([
+        (
+            Side::Bottom,
+            (
+                Some(0.25 * Vec3::Z),
+                HorizontalAnchor::Right,
+                VerticalAnchor::Bottom,
+            ),
+        ),
+        (
+            Side::Right,
+            (
+                Some(0.25 * Vec3::X),
+                HorizontalAnchor::Right,
+                VerticalAnchor::Bottom,
+            ),
+        ),
+        (
+            Side::Top,
+            (
+                Some(0.25 * Vec3::NEG_Z),
+                HorizontalAnchor::Right,
+                VerticalAnchor::Bottom,
+            ),
+        ),
+        (
+            Side::Left,
+            (
+                Some(0.25 * Vec3::NEG_X),
+                HorizontalAnchor::Right,
+                VerticalAnchor::Bottom,
+            ),
+        ),
+    ]);
 
     for (i, side) in Side::iter().enumerate() {
         // Goal
@@ -235,6 +274,25 @@ fn spawn_level(
                 goal_transform,
             ))
             .id();
+
+        let (offset, anchorwidth, anchorheight) = hp_ui_configs[&side];
+
+        commands.spawn((
+            HitPointsUi,
+            AnchorUiNode {
+                target: AnchorTarget::Entity(goal_entity),
+                offset,
+                anchorwidth,
+                anchorheight,
+            },
+            Text("0".to_string()),
+            TextFont {
+                font: game_assets.font_menu.clone(),
+                font_size: 50.0,
+                ..Default::default()
+            },
+            TextColor(Srgba::RED.into()),
+        ));
 
         // Pole
         commands.trigger(SpawnPole {
