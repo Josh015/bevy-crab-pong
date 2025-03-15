@@ -89,47 +89,49 @@ fn spawn_pole_on_a_side(
     trigger: Trigger<SpawnPole>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
-    goals_query: Query<&Side, With<Goal>>,
 ) {
     let SpawnPole {
         goal_entity,
         fade_in,
     } = trigger.event();
-    let Ok(side) = goals_query.get(*goal_entity) else {
-        return;
-    };
 
-    commands.entity(*goal_entity).with_children(|builder| {
-        builder.spawn((
-            Pole,
-            *side,
-            Collider,
-            RemoveBeforeFadeOut::<Collider>::default(),
-            if *fade_in {
-                Fade::new_in()
-            } else {
-                Fade::In(Timer::default()) // Skip to end of animation.
-            },
-            FadeEffect::Scale {
-                max_scale: Vec3::new(POLE_DIAMETER, GOAL_WIDTH, POLE_DIAMETER),
-                axis_mask: Vec3::new(1.0, 0.0, 1.0),
-            },
-            Mesh3d(cached_assets.pole_mesh.clone()),
-            MeshMaterial3d(cached_assets.pole_material.clone()),
-            Transform::from_matrix(Mat4::from_scale_rotation_translation(
-                Vec3::splat(f32::EPSILON),
-                Quat::from_euler(
-                    EulerRot::XYZ,
-                    0.0,
-                    0.0,
-                    std::f32::consts::FRAC_PI_2,
-                ),
-                Vec3::new(0.0, POLE_HEIGHT, 0.0),
-            )),
-        ));
-    });
+    let id = commands
+        .entity(*goal_entity)
+        .with_children(|builder| {
+            builder.spawn((
+                Pole,
+                Collider,
+                RemoveBeforeFadeOut::<Collider>::default(),
+                if *fade_in {
+                    Fade::new_in()
+                } else {
+                    Fade::In(Timer::default()) // Skip to end of animation.
+                },
+                FadeEffect::Scale {
+                    max_scale: Vec3::new(
+                        POLE_DIAMETER,
+                        GOAL_WIDTH,
+                        POLE_DIAMETER,
+                    ),
+                    axis_mask: Vec3::new(1.0, 0.0, 1.0),
+                },
+                Mesh3d(cached_assets.pole_mesh.clone()),
+                MeshMaterial3d(cached_assets.pole_material.clone()),
+                Transform::from_matrix(Mat4::from_scale_rotation_translation(
+                    Vec3::splat(f32::EPSILON),
+                    Quat::from_euler(
+                        EulerRot::XYZ,
+                        0.0,
+                        0.0,
+                        std::f32::consts::FRAC_PI_2,
+                    ),
+                    Vec3::new(0.0, POLE_HEIGHT, 0.0),
+                )),
+            ));
+        })
+        .id();
 
-    info!("Pole({side:?}): Spawned");
+    info!("Pole({id:?}): Spawned");
 }
 
 fn spawn_level(
@@ -464,12 +466,12 @@ fn spawn_poles_for_eliminated_goals(
 
 fn despawn_existing_crab_or_pole_per_side(
     mut commands: Commands,
-    new_query: Query<(Entity, &Side), Or<(Added<Crab>, Added<Pole>)>>,
-    old_query: Query<(Entity, &Side), Or<(With<Crab>, With<Pole>)>>,
+    new_query: Query<(Entity, &Parent), Or<(Added<Crab>, Added<Pole>)>>,
+    old_query: Query<(Entity, &Parent), Or<(With<Crab>, With<Pole>)>>,
 ) {
-    for (new_entity, new_side) in &new_query {
-        for (old_entity, old_side) in &old_query {
-            if old_side == new_side && old_entity != new_entity {
+    for (new_entity, new_parent) in &new_query {
+        for (old_entity, old_parent) in &old_query {
+            if old_parent == new_parent && old_entity != new_entity {
                 commands.entity(old_entity).insert(Fade::new_out());
                 break;
             }
