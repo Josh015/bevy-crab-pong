@@ -37,7 +37,7 @@ pub struct Player;
 fn player_input_map() -> InputMap<CrabAction> {
     use CrabAction::*;
 
-    let mut input_map = InputMap::new([
+    let input_map = InputMap::new([
         (MoveUp, KeyCode::KeyW),
         (MoveUp, KeyCode::ArrowUp),
         (MoveDown, KeyCode::KeyS),
@@ -46,15 +46,14 @@ fn player_input_map() -> InputMap<CrabAction> {
         (MoveLeft, KeyCode::ArrowLeft),
         (MoveRight, KeyCode::KeyD),
         (MoveRight, KeyCode::ArrowRight),
+    ])
+    .with_multiple([
+        (MoveUp, GamepadButton::DPadUp),
+        (MoveDown, GamepadButton::DPadDown),
+        (MoveLeft, GamepadButton::DPadLeft),
+        (MoveRight, GamepadButton::DPadRight),
     ]);
-
     // // TODO: Figure out why gamepad bindings keeps causing a panic!
-    // input_map.insert_multiple([
-    //     (MoveUp, GamepadButton::DPadUp),
-    //     (MoveDown, GamepadButton::DPadDown),
-    //     (MoveLeft, GamepadButton::DPadLeft),
-    //     (MoveRight, GamepadButton::DPadRight),
-    // ]);
     // input_map.insert_axis(
     //     MoveUp,
     //     GamepadControlAxis::RIGHT_Y.with_deadzone_symmetric(0.4),
