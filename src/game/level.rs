@@ -5,15 +5,12 @@ use bevy_ui_anchor::{
 use rand::prelude::*;
 use strum::IntoEnumIterator;
 
-use crate::{
-    components::{
-        AI, Acceleration, Ball, CRAB_DEPTH, CRAB_WIDTH, CircleCollider,
-        Collider, Crab, CrabCollider, Fade, FadeEffect, ForStates, Goal,
-        Heading, HitPoints, InsertAfterFadeIn, MaxSpeed, Movement, Player,
-        Pole, RemoveBeforeFadeOut, ScrollingTexture, Side, Speed,
-        SwayingCamera, Team, UiCamera,
-    },
-    ui::HitPointsUiSource,
+use crate::components::{
+    AI, Acceleration, Ball, CRAB_DEPTH, CRAB_WIDTH, CircleCollider, Collider,
+    Crab, CrabCollider, Fade, FadeEffect, ForStates, Goal, Heading, HitPoints,
+    HitPointsUi, InsertAfterFadeIn, MaxSpeed, Movement, Player, Pole,
+    RemoveBeforeFadeOut, ScrollingTexture, Side, Speed, SwayingCamera, Team,
+    UiCamera,
 };
 
 use super::{
@@ -204,7 +201,7 @@ fn spawn_level(
         let (offset, anchorwidth, anchorheight) = hp_ui_configs[&side];
 
         commands.spawn((
-            HitPointsUiSource(goal_entity),
+            HitPointsUi { goal_entity },
             AnchorUiNode {
                 target: AnchorTarget::Entity(goal_entity),
                 offset,

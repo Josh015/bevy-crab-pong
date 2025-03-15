@@ -1,9 +1,7 @@
 mod debug_mode;
-mod hud;
 mod menu;
 
 pub use debug_mode::*;
-pub use hud::*;
 pub use menu::*;
 
 use bevy::prelude::*;
@@ -12,6 +10,6 @@ pub(super) struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((DebugModePlugin, HudPlugin, MenuPlugin));
+        app.add_plugins((DebugModePlugin, MenuPlugin));
     }
 }

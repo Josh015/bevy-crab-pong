@@ -5,6 +5,7 @@ mod crab;
 mod fade;
 mod for_states;
 mod goal;
+mod hit_points_ui;
 mod movement;
 mod pole;
 mod scrolling_texture;
@@ -17,6 +18,7 @@ pub use crab::*;
 pub use fade::*;
 pub use for_states::*;
 pub use goal::*;
+pub use hit_points_ui::*;
 pub use movement::*;
 pub use pole::*;
 pub use scrolling_texture::*;
@@ -35,6 +37,7 @@ impl Plugin for ComponentsPlugin {
             FadePlugin,
             ForStatesPlugin,
             GoalPlugin,
+            HitPointsUiPlugin,
             MovementPlugin,
             PolePlugin,
             ScrollingTexturePlugin,
