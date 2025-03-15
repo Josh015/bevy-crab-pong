@@ -35,6 +35,10 @@ pub struct Goal;
 #[derive(Clone, Debug, Event)]
 pub struct GoalScoredEvent(pub Entity);
 
+/// Signals that a [`Goal`] has been eliminated from the game.
+#[derive(Clone, Debug, Event)]
+pub struct GoalEliminatedEvent(pub Entity);
+
 fn check_if_a_ball_has_scored_in_a_goal(
     mut commands: Commands,
     mut goal_scored_events: EventWriter<GoalScoredEvent>,

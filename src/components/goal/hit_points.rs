@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::game::state::PlayableSet;
 
-use super::{Goal, GoalScoredEvent};
+use super::{Goal, GoalEliminatedEvent, GoalScoredEvent};
 
 pub(super) struct HitPointsPlugin;
 
@@ -12,7 +12,7 @@ impl Plugin for HitPointsPlugin {
             PostUpdate,
             decrement_hp_when_goal_gets_scored.in_set(PlayableSet),
         )
-        .add_event::<HitPointsEliminatedEvent>();
+        .add_event::<GoalEliminatedEvent>();
     }
 }
 
@@ -21,13 +21,9 @@ impl Plugin for HitPointsPlugin {
 #[require(Goal)]
 pub struct HitPoints(pub u8);
 
-/// Signals that a [`Goal`] has been eliminated from the game.
-#[derive(Clone, Debug, Event)]
-pub struct HitPointsEliminatedEvent(pub Entity);
-
 fn decrement_hp_when_goal_gets_scored(
     mut goal_scored_events: EventReader<GoalScoredEvent>,
-    mut hp_eliminated_event: EventWriter<HitPointsEliminatedEvent>,
+    mut goal_eliminated_events: EventWriter<GoalEliminatedEvent>,
     mut hp_query: Query<&mut HitPoints, With<Goal>>,
 ) {
     // Decrement a goal's HP and potentially eliminate it.
@@ -39,7 +35,7 @@ fn decrement_hp_when_goal_gets_scored(
         hp.0 = hp.0.saturating_sub(1);
 
         if hp.0 == 0 {
-            hp_eliminated_event.send(HitPointsEliminatedEvent(*goal_entity));
+            goal_eliminated_events.send(GoalEliminatedEvent(*goal_entity));
             info!("Goal({goal_entity:?}): Eliminated");
         }
     }

@@ -14,11 +14,7 @@ use crate::{
             CRAB_DEPTH, CRAB_WIDTH, Crab, CrabCollider, ai::AI, player::Player,
         },
         fade::{Fade, FadeEffect, InsertAfterFadeIn, RemoveBeforeFadeOut},
-        goal::{
-            Goal,
-            hit_points::{HitPoints, HitPointsEliminatedEvent},
-            team::Team,
-        },
+        goal::{Goal, GoalEliminatedEvent, hit_points::HitPoints, team::Team},
         movement::{Acceleration, Heading, MaxSpeed, Movement, Speed},
         pole::{POLE_DIAMETER, POLE_HEIGHT, Pole},
         scrolling_texture::ScrollingTexture,
@@ -453,10 +449,10 @@ fn spawn_balls_sequentially_up_to_max_count(
 }
 
 fn spawn_poles_for_eliminated_goals(
-    mut hp_eliminated_event: EventReader<HitPointsEliminatedEvent>,
+    mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
     mut commands: Commands,
 ) {
-    for HitPointsEliminatedEvent(goal_entity) in hp_eliminated_event.read() {
+    for GoalEliminatedEvent(goal_entity) in goal_eliminated_events.read() {
         commands.trigger(SpawnPole {
             goal_entity: *goal_entity,
             fade_in: true,

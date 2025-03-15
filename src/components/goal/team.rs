@@ -2,10 +2,7 @@ use bevy::prelude::*;
 
 use crate::game::state::{GameState, PlayableSet};
 
-use super::{
-    Goal,
-    hit_points::{HitPoints, HitPointsEliminatedEvent},
-};
+use super::{Goal, GoalEliminatedEvent, hit_points::HitPoints};
 
 pub(super) struct TeamPlugin;
 
@@ -26,11 +23,11 @@ pub struct WinningTeam(pub usize);
 
 fn check_for_winning_team(
     mut commands: Commands,
-    mut hp_eliminated_event: EventReader<HitPointsEliminatedEvent>,
+    mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
     mut next_game_state: ResMut<NextState<GameState>>,
     teams_query: Query<(&Team, &HitPoints), With<Goal>>,
 ) {
-    for HitPointsEliminatedEvent(_) in hp_eliminated_event.read() {
+    for GoalEliminatedEvent(_) in goal_eliminated_events.read() {
         let mut winning_team = None;
         let survivor = teams_query.iter().find(|(_, hp)| hp.0 > 0);
 
