@@ -20,6 +20,7 @@ impl Plugin for InputPlugin {
     }
 }
 
+/// [`Player`] input actions that move [`Crab`] entities.
 #[derive(Actionlike, Clone, Copy, Debug, Eq, Hash, PartialEq, Reflect)]
 pub enum CrabAction {
     MoveUp,

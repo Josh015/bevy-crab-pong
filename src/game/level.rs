@@ -9,10 +9,10 @@ use crate::{
     components::{
         AI, Acceleration, Ball, CRAB_DEPTH, CRAB_WIDTH, CircleCollider,
         Collider, Crab, CrabCollider, Fade, FadeEffect, ForStates, Goal,
-        GoalEliminatedEvent, Heading, HitPoints, HudCamera, InsertAfterFadeIn,
-        MaxSpeed, Movement, POLE_DIAMETER, POLE_HEIGHT, Player, Pole,
+        GoalEliminatedEvent, Heading, HitPoints, InsertAfterFadeIn, MaxSpeed,
+        Movement, POLE_DIAMETER, POLE_HEIGHT, Player, Pole,
         RemoveBeforeFadeOut, ScrollingTexture, Side, Speed, SwayingCamera,
-        Team,
+        Team, UiCamera,
     },
     ui::HitPointsUi,
 };
@@ -147,7 +147,7 @@ fn spawn_level(
         //     ..default()
         // },
         // ScreenSpaceReflections::default(),
-        HudCamera,
+        UiCamera,
     ));
 
     // Light
