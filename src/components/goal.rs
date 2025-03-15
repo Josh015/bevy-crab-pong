@@ -1,15 +1,6 @@
-mod hit_points;
-mod team;
-
-pub use hit_points::*;
-pub use team::*;
-
 use bevy::prelude::*;
 
-use crate::{
-    components::Fade,
-    {GoalScoredEvent, Goals, PlayableSet},
-};
+use crate::{GoalScoredEvent, Goals, PlayableSet, components::Fade};
 
 use super::{Ball, CircleCollider, Collider, Crab, Movement};
 
@@ -28,6 +19,20 @@ impl Plugin for GoalPlugin {
 #[derive(Component, Debug, Default)]
 #[require(Transform, Visibility)]
 pub struct Goal;
+
+/// How many balls a [`Goal`] can take before it's eliminated.
+#[derive(Component, Debug, Default)]
+#[require(Goal)]
+pub struct HitPoints(pub u8);
+
+/// Team ID used to check for win conditions based on [`HitPoints`] value.
+#[derive(Component, Debug, Default)]
+#[require(Goal, HitPoints)]
+pub struct Team(pub usize);
+
+/// The team that won the previous round.
+#[derive(Debug, Default, Resource)]
+pub struct WinningTeam(pub usize);
 
 fn check_if_a_ball_has_scored_in_a_goal(
     mut commands: Commands,
