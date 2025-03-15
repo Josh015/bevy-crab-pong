@@ -3,6 +3,7 @@ pub mod camera;
 pub mod collider;
 pub mod crab;
 pub mod fade;
+pub mod for_states;
 pub mod goal;
 pub mod movement;
 pub mod pole;
@@ -20,6 +21,7 @@ impl Plugin for ComponentsPlugin {
             collider::ColliderPlugin,
             crab::CrabPlugin,
             fade::FadePlugin,
+            for_states::ForStatesPlugin,
             goal::GoalPlugin,
             movement::MovementPlugin,
             pole::PolePlugin,

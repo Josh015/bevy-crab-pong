@@ -1,7 +1,5 @@
 use bevy::prelude::*;
-use strum::{EnumIter, IntoEnumIterator};
-
-use crate::components::fade::{Fade, FadeEffect};
+use strum::EnumIter;
 
 pub(super) struct StatePlugin;
 
@@ -42,13 +40,6 @@ impl Plugin for StatePlugin {
                     .after(PausableSet)
                     .run_if(in_state(GameState::Playing)),
             );
-
-        for state in GameState::iter() {
-            app.add_systems(
-                OnEnter(state),
-                despawn_invalid_entities_for_state::<GameState>,
-            );
-        }
     }
 }
 
@@ -64,10 +55,6 @@ pub enum GameState {
     Paused,
 }
 
-/// Tags an entity to only exist in its associated game states.
-#[derive(Clone, Component, Debug)]
-pub struct ForStates<S: States>(pub Vec<S>);
-
 /// Systems that are always running after everything is loaded.
 #[derive(Clone, Debug, Eq, Hash, PartialEq, SystemSet)]
 pub struct LoadedSet;
@@ -79,19 +66,3 @@ pub struct PausableSet;
 /// Systems that only run during gameplay.
 #[derive(Clone, Debug, Eq, Hash, PartialEq, SystemSet)]
 pub struct PlayableSet;
-
-fn despawn_invalid_entities_for_state<S: States>(
-    mut commands: Commands,
-    game_state: Res<State<S>>,
-    query: Query<(Entity, &ForStates<S>, Has<FadeEffect>)>,
-) {
-    for (entity, for_states, has_fade_effect) in &query {
-        if !for_states.0.contains(game_state.get()) {
-            if has_fade_effect {
-                commands.entity(entity).insert(Fade::new_out());
-            } else {
-                commands.entity(entity).despawn_recursive();
-            }
-        }
-    }
-}

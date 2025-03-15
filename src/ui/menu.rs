@@ -5,10 +5,10 @@ use bevy_ui_anchor::{
 pub use leafwing_input_manager::prelude::*;
 
 use crate::{
-    components::goal::team::WinningTeam,
+    components::{for_states::ForStates, goal::team::WinningTeam},
     game::{
         assets::{GameAssets, GameConfig},
-        state::{ForStates, GameState, LoadedSet, PlayableSet},
+        state::{GameState, LoadedSet, PlayableSet},
         system_params::GameModes,
     },
 };

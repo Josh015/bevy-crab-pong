@@ -14,6 +14,7 @@ use crate::{
             CRAB_DEPTH, CRAB_WIDTH, Crab, CrabCollider, ai::AI, player::Player,
         },
         fade::{Fade, FadeEffect, InsertAfterFadeIn, RemoveBeforeFadeOut},
+        for_states::ForStates,
         goal::{Goal, GoalEliminatedEvent, hit_points::HitPoints, team::Team},
         movement::{Acceleration, Heading, MaxSpeed, Movement, Speed},
         pole::{POLE_DIAMETER, POLE_HEIGHT, Pole},
@@ -22,7 +23,7 @@ use crate::{
     },
     game::{
         assets::{CrabController, GameAssets, GameConfig},
-        state::{ForStates, GameState},
+        state::GameState,
     },
     ui::hud::HitPointsUi,
 };
