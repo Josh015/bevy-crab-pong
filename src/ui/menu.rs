@@ -5,11 +5,9 @@ use bevy_ui_anchor::{
 pub use leafwing_input_manager::prelude::*;
 
 use crate::{
-    components::{for_states::ForStates, goal::team::WinningTeam},
+    components::{ForStates, WinningTeam},
     game::{
-        assets::{GameAssets, GameConfig},
-        state::{GameState, LoadedSet, PlayableSet},
-        system_params::GameModes,
+        GameAssets, GameConfig, GameModes, GameState, LoadedSet, PlayableSet,
     },
 };
 

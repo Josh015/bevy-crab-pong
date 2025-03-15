@@ -7,31 +7,19 @@ use strum::IntoEnumIterator;
 
 use crate::{
     components::{
-        ball::Ball,
-        camera::{hud_camera::HudCamera, swaying_camera::SwayingCamera},
-        collider::{CircleCollider, Collider},
-        crab::{
-            CRAB_DEPTH, CRAB_WIDTH, Crab, CrabCollider, ai::AI, player::Player,
-        },
-        fade::{Fade, FadeEffect, InsertAfterFadeIn, RemoveBeforeFadeOut},
-        for_states::ForStates,
-        goal::{Goal, GoalEliminatedEvent, hit_points::HitPoints, team::Team},
-        movement::{Acceleration, Heading, MaxSpeed, Movement, Speed},
-        pole::{POLE_DIAMETER, POLE_HEIGHT, Pole},
-        scrolling_texture::ScrollingTexture,
-        side::Side,
+        AI, Acceleration, Ball, CRAB_DEPTH, CRAB_WIDTH, CircleCollider,
+        Collider, Crab, CrabCollider, Fade, FadeEffect, ForStates, Goal,
+        GoalEliminatedEvent, Heading, HitPoints, HudCamera, InsertAfterFadeIn,
+        MaxSpeed, Movement, POLE_DIAMETER, POLE_HEIGHT, Player, Pole,
+        RemoveBeforeFadeOut, ScrollingTexture, Side, Speed, SwayingCamera,
+        Team,
     },
-    game::{
-        assets::{CrabController, GameAssets, GameConfig},
-        state::GameState,
-    },
-    ui::hud::HitPointsUi,
+    ui::HitPointsUi,
 };
 
 use super::{
-    assets::CachedAssets,
-    state::{PausableSet, PlayableSet},
-    system_params::GameModes,
+    CachedAssets, CrabController, GameAssets, GameConfig, GameModes, GameState,
+    PausableSet, PlayableSet,
 };
 
 pub const LEVEL_CENTER_POINT: Vec3 = Vec3::ZERO;

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::state::LoadedSet;
+use crate::game::LoadedSet;
 
 pub(super) struct SwayingCameraPlugin;
 

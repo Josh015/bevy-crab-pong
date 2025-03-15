@@ -1,23 +1,23 @@
-pub mod hit_points;
-pub mod team;
+mod hit_points;
+mod team;
+
+pub use hit_points::*;
+pub use team::*;
 
 use bevy::prelude::*;
 
-use crate::game::{state::PlayableSet, system_params::Goals};
-
-use super::{
-    ball::Ball,
-    collider::{CircleCollider, Collider},
-    crab::Crab,
-    fade::Fade,
-    movement::Movement,
+use crate::{
+    components::Fade,
+    game::{Goals, PlayableSet},
 };
+
+use super::{Ball, CircleCollider, Collider, Crab, Movement};
 
 pub(super) struct GoalPlugin;
 
 impl Plugin for GoalPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((hit_points::HitPointsPlugin, team::TeamPlugin))
+        app.add_plugins((HitPointsPlugin, TeamPlugin))
             .add_systems(
                 PostUpdate,
                 check_if_a_ball_has_scored_in_a_goal.in_set(PlayableSet),

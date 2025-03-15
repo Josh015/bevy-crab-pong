@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::state::PlayableSet;
+use crate::game::PlayableSet;
 
 use super::{Goal, GoalEliminatedEvent, GoalScoredEvent};
 

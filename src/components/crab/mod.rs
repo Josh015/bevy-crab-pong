@@ -1,19 +1,18 @@
-pub mod ai;
-pub mod player;
+mod ai;
+mod player;
+
+pub use ai::*;
+pub use player::*;
 
 use bevy::prelude::*;
 
 use crate::{
-    components::{
-        ball::Ball,
-        collider::{CircleCollider, Collider},
-        movement::{Force, Heading, Movement, Speed, StoppingDistance},
-    },
-    game::{
-        level::{BARRIER_RADIUS, GOAL_WIDTH},
-        state::PausableSet,
-        system_params::{GoalData, Goals},
-    },
+    components::Heading,
+    game::{BARRIER_RADIUS, GOAL_WIDTH, GoalData, Goals, PausableSet},
+};
+
+use super::{
+    Ball, CircleCollider, Collider, Force, Movement, Speed, StoppingDistance,
 };
 
 pub const CRAB_WIDTH: f32 = 0.2;
@@ -25,7 +24,7 @@ pub(super) struct CrabPlugin;
 
 impl Plugin for CrabPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((ai::AiPlugin, player::InputPlugin))
+        app.add_plugins((AiPlugin, InputPlugin))
             .add_systems(
                 Update,
                 restrict_crab_movement_to_space_within_its_own_goal

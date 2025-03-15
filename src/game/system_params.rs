@@ -5,12 +5,9 @@ use bevy::{
 use derive_getters::Getters;
 use std::ops::Add;
 
-use crate::components::{goal::Goal, movement::Heading};
+use crate::components::{Goal, Heading};
 
-use super::{
-    assets::{GameAssets, GameMode},
-    level::Level,
-};
+use super::{GameAssets, GameMode, Level};
 
 pub(super) struct SystemParamsPlugin;
 

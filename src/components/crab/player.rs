@@ -2,11 +2,8 @@ use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 
 use crate::{
-    components::{
-        movement::{Force, Movement},
-        side::Side,
-    },
-    game::state::PlayableSet,
+    components::{Force, Movement, Side},
+    game::PlayableSet,
 };
 
 use super::Crab;

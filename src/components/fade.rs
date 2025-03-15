@@ -3,9 +3,9 @@ use std::marker::PhantomData;
 use bevy::prelude::*;
 use derive_new::new;
 
-use crate::game::state::PausableSet;
+use crate::game::PausableSet;
 
-use super::{collider::Collider, movement::Movement};
+use super::{Collider, Movement};
 
 pub(super) struct FadePlugin;
 

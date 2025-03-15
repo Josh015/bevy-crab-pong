@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bevy_ui_anchor::{AnchorTarget, AnchorUiNode};
 
 use crate::{
-    components::goal::{Goal, hit_points::HitPoints},
-    game::state::LoadedSet,
+    components::{Goal, HitPoints},
+    game::LoadedSet,
 };
 
 pub(super) struct HudPlugin;

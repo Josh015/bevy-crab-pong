@@ -1,7 +1,12 @@
-pub mod assets;
-pub mod level;
-pub mod state;
-pub mod system_params;
+mod assets;
+mod level;
+mod state;
+mod system_params;
+
+pub use assets::*;
+pub use level::*;
+pub use state::*;
+pub use system_params::*;
 
 use bevy::prelude::*;
 
@@ -10,10 +15,10 @@ pub(super) struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
-            assets::AssetsPlugin,
-            level::LevelPlugin,
-            state::StatePlugin,
-            system_params::SystemParamsPlugin,
+            AssetsPlugin,
+            LevelPlugin,
+            StatePlugin,
+            SystemParamsPlugin,
         ));
     }
 }

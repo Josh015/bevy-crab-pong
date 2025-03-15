@@ -1,13 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{
-    components::{
-        ball::Ball,
-        collider::{CircleCollider, Collider},
-        movement::{Heading, Movement},
-    },
-    game::{state::PausableSet, system_params::Goals},
-};
+use crate::game::{Goals, PausableSet};
+
+use super::{Ball, CircleCollider, Collider, Heading, Movement};
 
 pub const POLE_DIAMETER: f32 = 0.05;
 pub const POLE_HEIGHT: f32 = 0.1;
