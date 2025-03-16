@@ -514,9 +514,9 @@ fn spawn_ui_message(
         Text(message.clone()),
         TextFont {
             font: game_assets.font_menu.clone(),
-            font_size: 25.0,
+            font_size: 23.0,
             ..default()
         },
-        TextColor(Srgba::RED.into()),
+        TextColor(Srgba::BLUE.into()),
     ));
 }

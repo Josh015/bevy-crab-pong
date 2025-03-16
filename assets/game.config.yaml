@@ -1,13 +1,13 @@
 swaying_camera_speed: 0.2
 ocean_scroll_speed: 0.05
 beach_width: 1.0
-barrier_diameter: 0.12
-barrier_height: 0.2
+barrier_diameter: 0.23
+barrier_height: 0.124
 crab_width: 0.2
 crab_depth: 0.1
 crab_height_from_ground: 0.05
 pole_diameter: 0.05
-pole_height_from_ground: 0.1
+pole_height_from_ground: 0.062
 ball_diameter: 0.08
 ball_height_from_ground: 0.05
 pause_message: "PAUSED"
