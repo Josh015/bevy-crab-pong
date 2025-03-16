@@ -32,8 +32,8 @@ impl Plugin for FadePlugin {
 #[require(FadeEffect)]
 #[component(storage = "SparseSet")]
 pub enum Fade {
-    In(#[new(value = "Timer::from_seconds(1.0, TimerMode::Once)")] Timer),
-    Out(#[new(value = "Timer::from_seconds(1.0, TimerMode::Once)")] Timer),
+    In(#[new(value = "Timer::from_seconds(0.5, TimerMode::Once)")] Timer),
+    Out(#[new(value = "Timer::from_seconds(0.5, TimerMode::Once)")] Timer),
 }
 
 /// Specifies an entity's fade effect animation.
