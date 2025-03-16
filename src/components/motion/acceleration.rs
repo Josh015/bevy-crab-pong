@@ -41,10 +41,6 @@ pub struct MaxSpeed(pub f32);
 #[derive(Clone, Component, Debug, Default)]
 pub struct StoppingDistance(pub f32);
 
-pub(super) fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
-    speed.abs().sub(delta_speed).max(0.0).copysign(speed)
-}
-
 fn acceleration(
     time: Res<Time>,
     mut query: Query<
@@ -97,4 +93,8 @@ fn stopping_distance(
             current_speed = decelerate_speed(current_speed, delta_speed);
         }
     }
+}
+
+fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
+    speed.abs().sub(delta_speed).max(0.0).copysign(speed)
 }
