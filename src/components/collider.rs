@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::system_sets::StopWhenPausedSet;
 
-use super::{Direction, Movement};
+use super::{Direction, Motion};
 
 pub(super) struct ColliderPlugin;
 
@@ -39,14 +39,14 @@ fn circle_to_circle_collisions(
             &CircleCollider,
             &GlobalTransform,
             Option<&Direction>,
-            Has<Movement>,
+            Has<Motion>,
         ),
         With<Collider>,
     >,
 ) {
     for [
-        (entity1, circle1, transform1, direction1, has_movement1),
-        (entity2, circle2, transform2, direction2, has_movement2),
+        (entity1, circle1, transform1, direction1, has_motion1),
+        (entity2, circle2, transform2, direction2, has_motion2),
     ] in balls_query.iter_combinations()
     {
         // Check that both circles are close enough to touch.
@@ -61,24 +61,24 @@ fn circle_to_circle_collisions(
         let axis2 = -axis1;
 
         if let Some(direction1) = direction1 {
-            if has_movement1 && direction1.0.dot(axis1) > 0.0 {
+            if has_motion1 && direction1.0.dot(axis1) > 0.0 {
                 commands
                     .entity(entity1)
                     .insert(Direction::reflect(direction1, axis1));
 
-                if has_movement2 {
+                if has_motion2 {
                     commands.entity(entity2).insert(Direction::from(axis1));
                 }
             }
         }
 
         if let Some(direction2) = direction2 {
-            if has_movement2 && direction2.0.dot(axis2) > 0.0 {
+            if has_motion2 && direction2.0.dot(axis2) > 0.0 {
                 commands
                     .entity(entity2)
                     .insert(Direction::reflect(direction2, axis2));
 
-                if has_movement1 {
+                if has_motion1 {
                     commands.entity(entity1).insert(Direction::from(axis2));
                 }
             }

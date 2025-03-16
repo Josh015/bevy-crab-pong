@@ -10,7 +10,7 @@ use crate::{
     components::{
         AI, Acceleration, Ball, CircleCollider, Collider, Crab, CrabCollider,
         DepthCollider, Direction, Fade, FadeEffect, ForStates, Goal, GoalMouth,
-        HitPoints, HitPointsUi, InsertAfterFadeIn, MaxSpeed, Movement, Player,
+        HitPoints, HitPointsUi, InsertAfterFadeIn, MaxSpeed, Motion, Player,
         Pole, RemoveBeforeFadeOut, ScrollingTexture, Side, Speed,
         SwayingCamera, Team, UiCamera,
     },
@@ -314,8 +314,8 @@ fn spawn_crabs_for_each_side(
                     DepthCollider {
                         depth: game_config.crab_depth,
                     },
-                    InsertAfterFadeIn::<Movement>::default(),
-                    RemoveBeforeFadeOut::<Movement>::default(),
+                    InsertAfterFadeIn::<Motion>::default(),
+                    RemoveBeforeFadeOut::<Motion>::default(),
                     RemoveBeforeFadeOut::<Collider>::default(),
                     Fade::new_in(),
                     FadeEffect::Scale {
@@ -371,7 +371,7 @@ fn spawn_balls_sequentially_up_to_max_count(
     mut materials: ResMut<Assets<StandardMaterial>>,
     cached_assets: Res<CachedAssets>,
     game_modes: GameModes,
-    non_moving_balls_query: Query<Entity, (With<Ball>, Without<Movement>)>,
+    non_moving_balls_query: Query<Entity, (With<Ball>, Without<Motion>)>,
     balls_query: Query<Entity, With<Ball>>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
@@ -402,7 +402,7 @@ fn spawn_balls_sequentially_up_to_max_count(
                 radius: game_mode.ball_scale * game_config.ball_diameter * 0.5,
             },
             Fade::new_in(),
-            InsertAfterFadeIn::<Movement>::default(),
+            InsertAfterFadeIn::<Motion>::default(),
             InsertAfterFadeIn::<Collider>::default(),
             RemoveBeforeFadeOut::<Collider>::default(),
             ForStates(vec![GameState::Playing, GameState::Paused]),

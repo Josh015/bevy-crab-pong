@@ -11,9 +11,7 @@ use crate::{
     system_sets::StopWhenPausedSet,
 };
 
-use super::{
-    Ball, CircleCollider, Collider, DepthCollider, Direction, Movement,
-};
+use super::{Ball, CircleCollider, Collider, DepthCollider, Direction, Motion};
 
 pub(super) struct CrabPlugin;
 
@@ -59,7 +57,7 @@ fn crab_and_ball_collisions(
     >,
     balls_query: Query<
         (Entity, &GlobalTransform, &Direction, &CircleCollider),
-        (With<Ball>, With<Collider>, With<Movement>),
+        (With<Ball>, With<Collider>, With<Motion>),
     >,
 ) {
     for (

@@ -2,9 +2,7 @@ use bevy::prelude::*;
 
 use crate::system_sets::StopWhenPausedSet;
 
-use super::{
-    Crab, CrabCollider, Force, Goal, Movement, Speed, StoppingDistance,
-};
+use super::{Crab, CrabCollider, Force, Goal, Motion, Speed, StoppingDistance};
 
 pub(super) struct GoalMouthPlugin;
 
@@ -12,7 +10,7 @@ impl Plugin for GoalMouthPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            restrict_crab_movement_to_goal_mouth.after(StopWhenPausedSet),
+            restrict_crab_movement_to_goal_mouth.in_set(StopWhenPausedSet),
         );
     }
 }
@@ -35,7 +33,7 @@ fn restrict_crab_movement_to_goal_mouth(
             &mut Speed,
             &mut StoppingDistance,
         ),
-        (With<Crab>, With<Movement>),
+        (With<Crab>, With<Motion>),
     >,
     goals_query: Query<&GoalMouth, With<Goal>>,
 ) {

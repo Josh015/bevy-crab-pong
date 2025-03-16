@@ -5,7 +5,7 @@ use derive_new::new;
 
 use crate::system_sets::StopWhenPausedSet;
 
-use super::{Collider, Movement};
+use super::{Collider, Motion};
 
 pub(super) struct FadePlugin;
 
@@ -22,8 +22,8 @@ impl Plugin for FadePlugin {
         app.add_systems(
             Update,
             (
-                insert_component_after_fading_in::<Movement>,
-                remove_component_before_fading_out::<Movement>,
+                insert_component_after_fading_in::<Motion>,
+                remove_component_before_fading_out::<Motion>,
                 insert_component_after_fading_in::<Collider>,
                 remove_component_before_fading_out::<Collider>,
             )

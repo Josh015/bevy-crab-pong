@@ -6,7 +6,7 @@ mod fade;
 mod for_states;
 mod goal;
 mod hit_points_ui;
-mod movement;
+mod motion;
 mod pole;
 mod scrolling_texture;
 mod side;
@@ -19,7 +19,7 @@ pub use fade::*;
 pub use for_states::*;
 pub use goal::*;
 pub use hit_points_ui::*;
-pub use movement::*;
+pub use motion::*;
 pub use pole::*;
 pub use scrolling_texture::*;
 pub use side::*;
@@ -38,7 +38,7 @@ impl Plugin for ComponentsPlugin {
             ForStatesPlugin,
             GoalPlugin,
             HitPointsUiPlugin,
-            MovementPlugin,
+            MotionPlugin,
             PolePlugin,
             ScrollingTexturePlugin,
         ));

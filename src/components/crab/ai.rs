@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{Ball, Collider, Force, Movement, StoppingDistance},
+    components::{Ball, Collider, Force, Motion, StoppingDistance},
     system_params::Goals,
     system_sets::ActiveDuringGameplaySet,
 };
@@ -43,11 +43,11 @@ fn make_ai_crabs_target_and_move_toward_the_ball_closest_to_their_goal(
             &StoppingDistance,
             &CrabCollider,
         ),
-        (With<AI>, With<Crab>, With<Movement>),
+        (With<AI>, With<Crab>, With<Motion>),
     >,
     balls_query: Query<
         (Entity, &GlobalTransform),
-        (With<Ball>, With<Movement>, With<Collider>),
+        (With<Ball>, With<Motion>, With<Collider>),
     >,
 ) {
     for (crab_entity, parent, transform, stopping_distance, collider) in

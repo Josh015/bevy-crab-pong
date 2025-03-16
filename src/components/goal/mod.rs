@@ -14,7 +14,7 @@ use crate::{
 };
 
 use super::{
-    Ball, CircleCollider, Collider, Crab, CrabCollider, Force, Movement, Speed,
+    Ball, CircleCollider, Collider, Crab, CrabCollider, Force, Motion, Speed,
     StoppingDistance,
 };
 
@@ -50,10 +50,10 @@ fn check_if_a_ball_has_scored_in_a_goal(
     mut commands: Commands,
     mut goal_scored_events: EventWriter<GoalScoredEvent>,
     goals: Goals,
-    crabs_query: Query<&Parent, (With<Crab>, With<Movement>, With<Collider>)>,
+    crabs_query: Query<&Parent, (With<Crab>, With<Motion>, With<Collider>)>,
     balls_query: Query<
         (Entity, &GlobalTransform, &CircleCollider),
-        (With<Ball>, With<Movement>, With<Collider>),
+        (With<Ball>, With<Motion>, With<Collider>),
     >,
 ) {
     // If a ball passes a side's alive crab then despawn it and raise an event.

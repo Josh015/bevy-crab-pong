@@ -3,22 +3,25 @@ use std::ops::{Add, Sub};
 
 use crate::system_sets::StopWhenPausedSet;
 
-pub(super) struct MovementPlugin;
+use super::{Direction, Motion, Speed};
 
-impl Plugin for MovementPlugin {
+pub(super) struct AccelerationPlugin;
+
+impl Plugin for AccelerationPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (acceleration, deceleration, velocity, stopping_distance)
+            (acceleration, deceleration, stopping_distance)
                 .chain()
                 .in_set(StopWhenPausedSet),
         );
     }
 }
 
-/// Marks an entity as able to move.
-#[derive(Component, Default)]
-pub struct Movement;
+/// The `max_speed / seconds_to_reach_max_speed`.
+#[derive(Clone, Component, Debug, Default)]
+#[require(Direction, MaxSpeed, StoppingDistance)]
+pub struct Acceleration(pub f32);
 
 /// Whether the entity has positive or negative force acting on it.
 #[derive(Clone, Component, Copy, Debug, Eq, Hash, PartialEq)]
@@ -28,56 +31,25 @@ pub enum Force {
     Negative,
 }
 
-/// The direction in which the entity is moving.
-#[derive(Clone, Component, Debug)]
-#[require(Speed)]
-pub struct Direction(pub Dir3);
-
-impl Default for Direction {
-    fn default() -> Self {
-        Self(Dir3::NEG_Z)
-    }
-}
-
-impl From<Vec3> for Direction {
-    fn from(value: Vec3) -> Self {
-        Direction(Dir3::new_unchecked(value.normalize()))
-    }
-}
-
-impl Direction {
-    pub fn reflect(direction: &Direction, axis: Vec3) -> Self {
-        let i = *direction.0;
-        let n = axis;
-        let r = i - (2.0 * (i.dot(n) * n));
-
-        Direction::from(r)
-    }
-}
-
-/// The current speed of this entity.
-#[derive(Clone, Component, Debug, Default)]
-pub struct Speed(pub f32);
-
 /// The maximum speed this entity can reach after accelerating.
 #[derive(Clone, Component, Debug, Default)]
+#[require(Speed)]
 pub struct MaxSpeed(pub f32);
-
-/// The `max_speed / seconds_to_reach_max_speed`.
-#[derive(Clone, Component, Debug, Default)]
-#[require(Direction, MaxSpeed, StoppingDistance)]
-pub struct Acceleration(pub f32);
 
 /// Distance from an entity's current position to where it will come to a full
 /// stop if it begins decelerating immediately.
 #[derive(Clone, Component, Debug, Default)]
 pub struct StoppingDistance(pub f32);
 
+pub(super) fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
+    speed.abs().sub(delta_speed).max(0.0).copysign(speed)
+}
+
 fn acceleration(
     time: Res<Time>,
     mut query: Query<
         (&Acceleration, &mut Speed, &Force, &MaxSpeed),
-        With<Movement>,
+        With<Motion>,
     >,
 ) {
     for (acceleration, mut speed, force, max_speed) in &mut query {
@@ -98,7 +70,7 @@ fn deceleration(
     time: Res<Time>,
     mut query: Query<
         (&Acceleration, &mut Speed),
-        (With<Movement>, Without<Force>),
+        (With<Motion>, Without<Force>),
     >,
 ) {
     for (acceleration, mut speed) in &mut query {
@@ -107,19 +79,10 @@ fn deceleration(
     }
 }
 
-fn velocity(
-    time: Res<Time>,
-    mut query: Query<(&Speed, &Direction, &mut Transform), With<Movement>>,
-) {
-    for (speed, direction, mut transform) in &mut query {
-        transform.translation += direction.0 * (speed.0 * time.delta_secs());
-    }
-}
-
 fn stopping_distance(
     mut query: Query<
         (&mut StoppingDistance, &Acceleration, &Speed),
-        With<Movement>,
+        With<Motion>,
     >,
 ) {
     for (mut stopping_distance, acceleration, speed) in &mut query {
@@ -134,8 +97,4 @@ fn stopping_distance(
             current_speed = decelerate_speed(current_speed, delta_speed);
         }
     }
-}
-
-fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
-    speed.abs().sub(delta_speed).max(0.0).copysign(speed)
 }

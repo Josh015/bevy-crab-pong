@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     components::{
         AI, Ball, Collider, Crab, CrabCollider, Direction,
-        IDEAL_HIT_AREA_PERCENTAGE, Movement, StoppingDistance, Target,
+        IDEAL_HIT_AREA_PERCENTAGE, Motion, StoppingDistance, Target,
     },
     system_params::Goals,
     system_sets::ActiveAfterLoadingSet,
@@ -24,10 +24,8 @@ impl Plugin for DebugModePlugin {
             .add_systems(
                 PostUpdate,
                 (
-                    ball_movement_direction_gizmos.run_if(
-                        |debug_mode: Res<DebugMode>| {
-                            debug_mode.has_ball_movement
-                        },
+                    ball_motion_direction_gizmos.run_if(
+                        |debug_mode: Res<DebugMode>| debug_mode.has_ball_motion,
                     ),
                     crab_stop_position_gizmos.run_if(
                         |debug_mode: Res<DebugMode>| {
@@ -59,7 +57,7 @@ impl Plugin for DebugModePlugin {
 /// Toggles displaying various debugging gizmos.
 #[derive(Debug, Default, Resource)]
 pub struct DebugMode {
-    pub has_ball_movement: bool,
+    pub has_ball_motion: bool,
     pub has_crab_stop_positions: bool,
     pub has_crab_ai_ball_targeting: bool,
     pub has_crab_ai_ideal_ball_hit_area: bool,
@@ -71,15 +69,15 @@ fn handle_debug_mode_keyboard_toggles(
     mut debug_mode: ResMut<DebugMode>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Digit1) {
-        let toggle = !debug_mode.has_ball_movement;
+        let toggle = !debug_mode.has_ball_motion;
 
-        debug_mode.has_ball_movement = toggle;
+        debug_mode.has_ball_motion = toggle;
         debug_mode.has_crab_stop_positions = toggle;
         debug_mode.has_crab_ai_ball_targeting = toggle;
         debug_mode.has_crab_ai_ideal_ball_hit_area = toggle;
         debug_mode.has_crab_collider_ball_deflection_direction = toggle;
     } else if keyboard_input.just_pressed(KeyCode::Digit2) {
-        debug_mode.has_ball_movement = !debug_mode.has_ball_movement;
+        debug_mode.has_ball_motion = !debug_mode.has_ball_motion;
     } else if keyboard_input.just_pressed(KeyCode::Digit3) {
         debug_mode.has_crab_stop_positions =
             !debug_mode.has_crab_stop_positions;
@@ -95,10 +93,10 @@ fn handle_debug_mode_keyboard_toggles(
     }
 }
 
-fn ball_movement_direction_gizmos(
+fn ball_motion_direction_gizmos(
     balls_query: Query<
         (&GlobalTransform, &Direction),
-        (With<Ball>, With<Movement>),
+        (With<Ball>, With<Motion>),
     >,
     mut gizmos: Gizmos,
 ) {
@@ -114,7 +112,7 @@ fn ball_movement_direction_gizmos(
 fn crab_stop_position_gizmos(
     crabs_query: Query<
         (&GlobalTransform, &Direction, &StoppingDistance),
-        (With<Crab>, With<Movement>),
+        (With<Crab>, With<Motion>),
     >,
     mut gizmos: Gizmos,
 ) {
@@ -136,11 +134,11 @@ fn crab_stop_position_gizmos(
 fn crab_ai_ball_targeting_gizmos(
     crabs_query: Query<
         (&GlobalTransform, &Target),
-        (With<AI>, With<Crab>, With<Movement>),
+        (With<AI>, With<Crab>, With<Motion>),
     >,
     balls_query: Query<
         &GlobalTransform,
-        (With<Ball>, With<Movement>, With<Collider>),
+        (With<Ball>, With<Motion>, With<Collider>),
     >,
     mut gizmos: Gizmos,
 ) {
@@ -158,7 +156,7 @@ fn crab_ai_ball_targeting_gizmos(
 fn crab_ai_ideal_ball_hit_area_gizmos(
     crabs_query: Query<
         (&GlobalTransform, &CrabCollider),
-        (With<AI>, With<Crab>, With<Movement>),
+        (With<AI>, With<Crab>, With<Motion>),
     >,
     mut gizmos: Gizmos,
 ) {
@@ -179,7 +177,7 @@ fn crab_collider_ball_deflection_direction_gizmos(
     >,
     balls_query: Query<
         (&GlobalTransform, &Direction),
-        (With<Ball>, With<Movement>, With<Collider>),
+        (With<Ball>, With<Motion>, With<Collider>),
     >,
     mut gizmos: Gizmos,
 ) {

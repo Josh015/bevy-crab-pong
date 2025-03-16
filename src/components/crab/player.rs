@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 
 use crate::{
-    components::{Force, Movement, Side},
+    components::{Force, Motion, Side},
     system_sets::ActiveDuringGameplaySet,
 };
 
@@ -78,7 +78,7 @@ fn move_crabs_based_on_user_input(
     mut commands: Commands,
     crabs_query: Query<
         (Entity, &Side, &ActionState<CrabAction>),
-        (With<Crab>, With<Movement>),
+        (With<Crab>, With<Motion>),
     >,
 ) {
     use CrabAction::*;
