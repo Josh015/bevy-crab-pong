@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::prelude::*;
+use crate::{system_params::Goals, system_sets::PausableSet};
+
+use super::{Ball, CircleCollider, Collider, Heading, Movement};
 
 pub const POLE_DIAMETER: f32 = 0.05;
 pub const POLE_HEIGHT: f32 = 0.1;

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::ops::{Add, Sub};
 
-use crate::prelude::*;
+use crate::system_sets::PausableSet;
 
 pub(super) struct MovementPlugin;
 

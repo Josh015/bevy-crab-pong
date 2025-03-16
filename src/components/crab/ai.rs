@@ -1,6 +1,12 @@
 use bevy::prelude::*;
 
-use crate::prelude::*;
+use crate::{
+    components::{Ball, Collider, Force, Movement, StoppingDistance},
+    system_params::Goals,
+    system_sets::PlayableSet,
+};
+
+use super::{Crab, CrabCollider};
 
 pub const IDEAL_HIT_AREA_PERCENTAGE: f32 = 0.70;
 

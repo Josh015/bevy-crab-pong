@@ -1,11 +1,19 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
+mod assets;
+mod components;
+mod events;
+mod spawners;
+mod states;
+mod system_params;
+mod system_sets;
+mod ui;
+
 use bevy::{
     // core_pipeline::experimental::taa::TemporalAntiAliasPlugin,
     prelude::*,
     window::{PresentMode, WindowResolution},
 };
-use bevy_crab_pong::*;
 
 fn main() {
     App::new()
@@ -25,7 +33,16 @@ fn main() {
                 }),
             // TemporalAntiAliasPlugin,
         ))
+        .add_plugins((
+            assets::AssetsPlugin,
+            components::ComponentsPlugin,
+            events::EventsPlugin,
+            spawners::SpawnersPlugin,
+            states::StatesPlugin,
+            system_params::SystemParamsPlugin,
+            system_sets::SystemSetsPlugin,
+            ui::UiPlugin,
+        ))
         .insert_resource(ClearColor(Color::srgba(0.7, 0.9, 1.0, 1.0)))
-        .add_plugins(LibPlugin)
         .run();
 }

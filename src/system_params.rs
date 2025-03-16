@@ -5,7 +5,11 @@ use bevy::{
 use derive_getters::Getters;
 use std::ops::Add;
 
-use crate::prelude::*;
+use crate::{
+    assets::{GameAssets, GameMode},
+    components::{Goal, Heading},
+    spawners::Level,
+};
 
 pub(super) struct SystemParamsPlugin;
 

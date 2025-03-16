@@ -5,7 +5,19 @@ use bevy_ui_anchor::{
 use rand::prelude::*;
 use strum::IntoEnumIterator;
 
-use crate::prelude::*;
+use crate::{
+    assets::{CachedAssets, CrabController, GameAssets, GameConfig},
+    components::{
+        AI, Acceleration, Ball, CRAB_DEPTH, CRAB_WIDTH, CircleCollider,
+        Collider, Crab, CrabCollider, Fade, FadeEffect, ForStates, Goal,
+        Heading, HitPoints, HitPointsUi, InsertAfterFadeIn, MaxSpeed, Movement,
+        POLE_DIAMETER, POLE_HEIGHT, Player, Pole, RemoveBeforeFadeOut,
+        ScrollingTexture, Side, Speed, SwayingCamera, Team, UiCamera,
+    },
+    states::GameState,
+    system_params::GameModes,
+    system_sets::PlayableSet,
+};
 
 pub const LEVEL_CENTER_POINT: Vec3 = Vec3::ZERO;
 pub const BARRIER_DIAMETER: f32 = 0.12;

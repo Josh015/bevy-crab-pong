@@ -1,6 +1,11 @@
 use bevy::prelude::*;
 
-use crate::prelude::*;
+use crate::{
+    components::Fade, events::GoalScoredEvent, system_params::Goals,
+    system_sets::PlayableSet,
+};
+
+use super::{Ball, CircleCollider, Collider, Crab, Movement};
 
 pub(super) struct GoalPlugin;
 
