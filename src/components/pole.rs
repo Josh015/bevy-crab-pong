@@ -2,7 +2,9 @@ use bevy::prelude::*;
 
 use crate::{system_params::Goals, system_sets::StopWhenPausedSet};
 
-use super::{Ball, CircleCollider, Collider, DepthCollider, Heading, Movement};
+use super::{
+    Ball, CircleCollider, Collider, DepthCollider, Direction, Movement,
+};
 
 pub(super) struct PolePlugin;
 
@@ -27,7 +29,7 @@ fn pole_and_ball_collisions(
         (With<Pole>, With<Collider>),
     >,
     balls_query: Query<
-        (Entity, &GlobalTransform, &Heading, &CircleCollider),
+        (Entity, &GlobalTransform, &Direction, &CircleCollider),
         (With<Ball>, With<Collider>, With<Movement>),
     >,
 ) {
@@ -36,8 +38,9 @@ fn pole_and_ball_collisions(
             continue;
         };
 
-        for (ball_entity, global_transform, heading, collider) in &balls_query {
-            if !goal.is_facing(heading) {
+        for (ball_entity, global_transform, direction, collider) in &balls_query
+        {
+            if !goal.is_facing(direction) {
                 continue;
             }
 
@@ -49,7 +52,7 @@ fn pole_and_ball_collisions(
 
             commands
                 .entity(ball_entity)
-                .insert(Heading::reflect(heading, -goal.forward()));
+                .insert(Direction::reflect(direction, -goal.forward()));
 
             info!("Ball({ball_entity:?}): Collided Pole({pole_entity:?})");
             break;

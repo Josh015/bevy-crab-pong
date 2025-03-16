@@ -9,7 +9,7 @@ use crate::{
     assets::{CachedAssets, CrabController, GameAssets, GameConfig},
     components::{
         AI, Acceleration, Ball, CircleCollider, Collider, Crab, CrabCollider,
-        DepthCollider, Fade, FadeEffect, ForStates, Goal, GoalMouth, Heading,
+        DepthCollider, Direction, Fade, FadeEffect, ForStates, Goal, GoalMouth,
         HitPoints, HitPointsUi, InsertAfterFadeIn, MaxSpeed, Movement, Player,
         Pole, RemoveBeforeFadeOut, ScrollingTexture, Side, Speed,
         SwayingCamera, Team, UiCamera,
@@ -326,7 +326,7 @@ fn spawn_crabs_for_each_side(
                         ),
                         axis_mask: Vec3::ONE,
                     },
-                    Heading(Dir3::X),
+                    Direction(Dir3::X),
                     MaxSpeed(crab_config.max_speed),
                     Acceleration(
                         crab_config.max_speed
@@ -406,7 +406,9 @@ fn spawn_balls_sequentially_up_to_max_count(
             InsertAfterFadeIn::<Collider>::default(),
             RemoveBeforeFadeOut::<Collider>::default(),
             ForStates(vec![GameState::Playing, GameState::Paused]),
-            Heading(Dir3::new_unchecked(Vec3::new(angle_cos, 0.0, angle_sin))),
+            Direction(Dir3::new_unchecked(Vec3::new(
+                angle_cos, 0.0, angle_sin,
+            ))),
             Speed(game_mode.ball_speed),
             Mesh3d(cached_assets.ball_mesh.clone()),
             MeshMaterial3d(materials.add(StandardMaterial {

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     components::{
-        AI, Ball, Collider, Crab, CrabCollider, Heading,
+        AI, Ball, Collider, Crab, CrabCollider, Direction,
         IDEAL_HIT_AREA_PERCENTAGE, Movement, StoppingDistance, Target,
     },
     system_params::Goals,
@@ -97,15 +97,15 @@ fn handle_debug_mode_keyboard_toggles(
 
 fn ball_movement_direction_gizmos(
     balls_query: Query<
-        (&GlobalTransform, &Heading),
+        (&GlobalTransform, &Direction),
         (With<Ball>, With<Movement>),
     >,
     mut gizmos: Gizmos,
 ) {
-    for (global_transform, heading) in &balls_query {
+    for (global_transform, direction) in &balls_query {
         gizmos.line(
             global_transform.translation(),
-            global_transform.translation() + heading.0 * DEBUGGING_RAY_LENGTH,
+            global_transform.translation() + direction.0 * DEBUGGING_RAY_LENGTH,
             Srgba::RED,
         )
     }
@@ -113,17 +113,17 @@ fn ball_movement_direction_gizmos(
 
 fn crab_stop_position_gizmos(
     crabs_query: Query<
-        (&GlobalTransform, &Heading, &StoppingDistance),
+        (&GlobalTransform, &Direction, &StoppingDistance),
         (With<Crab>, With<Movement>),
     >,
     mut gizmos: Gizmos,
 ) {
-    for (global_transform, heading, stopping_distance) in &crabs_query {
+    for (global_transform, direction, stopping_distance) in &crabs_query {
         let mut stop_position_transform = global_transform.compute_transform();
-        let global_heading = stop_position_transform.rotation * heading.0;
+        let global_direction = stop_position_transform.rotation * direction.0;
 
         stop_position_transform.translation +=
-            global_heading * stopping_distance.0;
+            global_direction * stopping_distance.0;
         gizmos.line(
             global_transform.translation(),
             stop_position_transform.translation,
@@ -178,7 +178,7 @@ fn crab_collider_ball_deflection_direction_gizmos(
         (With<Crab>, With<Collider>),
     >,
     balls_query: Query<
-        (&GlobalTransform, &Heading),
+        (&GlobalTransform, &Direction),
         (With<Ball>, With<Movement>, With<Collider>),
     >,
     mut gizmos: Gizmos,
@@ -190,8 +190,8 @@ fn crab_collider_ball_deflection_direction_gizmos(
             continue;
         };
 
-        for (global_transform, heading) in &balls_query {
-            if !goal.is_facing(heading) {
+        for (global_transform, direction) in &balls_query {
+            if !goal.is_facing(direction) {
                 continue;
             }
 

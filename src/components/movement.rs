@@ -31,27 +31,27 @@ pub enum Force {
 /// The direction in which the entity is moving.
 #[derive(Clone, Component, Debug)]
 #[require(Speed)]
-pub struct Heading(pub Dir3);
+pub struct Direction(pub Dir3);
 
-impl Default for Heading {
+impl Default for Direction {
     fn default() -> Self {
         Self(Dir3::NEG_Z)
     }
 }
 
-impl From<Vec3> for Heading {
+impl From<Vec3> for Direction {
     fn from(value: Vec3) -> Self {
-        Heading(Dir3::new_unchecked(value.normalize()))
+        Direction(Dir3::new_unchecked(value.normalize()))
     }
 }
 
-impl Heading {
-    pub fn reflect(heading: &Heading, axis: Vec3) -> Self {
-        let i = *heading.0;
+impl Direction {
+    pub fn reflect(direction: &Direction, axis: Vec3) -> Self {
+        let i = *direction.0;
         let n = axis;
         let r = i - (2.0 * (i.dot(n) * n));
 
-        Heading::from(r)
+        Direction::from(r)
     }
 }
 
@@ -65,7 +65,7 @@ pub struct MaxSpeed(pub f32);
 
 /// The `max_speed / seconds_to_reach_max_speed`.
 #[derive(Clone, Component, Debug, Default)]
-#[require(Heading, MaxSpeed, StoppingDistance)]
+#[require(Direction, MaxSpeed, StoppingDistance)]
 pub struct Acceleration(pub f32);
 
 /// Distance from an entity's current position to where it will come to a full
@@ -109,10 +109,10 @@ fn deceleration(
 
 fn velocity(
     time: Res<Time>,
-    mut query: Query<(&Speed, &Heading, &mut Transform), With<Movement>>,
+    mut query: Query<(&Speed, &Direction, &mut Transform), With<Movement>>,
 ) {
-    for (speed, heading, mut transform) in &mut query {
-        transform.translation += heading.0 * (speed.0 * time.delta_secs());
+    for (speed, direction, mut transform) in &mut query {
+        transform.translation += direction.0 * (speed.0 * time.delta_secs());
     }
 }
 

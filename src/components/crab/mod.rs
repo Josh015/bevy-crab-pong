@@ -11,7 +11,9 @@ use crate::{
     system_sets::StopWhenPausedSet,
 };
 
-use super::{Ball, CircleCollider, Collider, DepthCollider, Heading, Movement};
+use super::{
+    Ball, CircleCollider, Collider, DepthCollider, Direction, Movement,
+};
 
 pub(super) struct CrabPlugin;
 
@@ -56,7 +58,7 @@ fn crab_and_ball_collisions(
         (With<Crab>, With<Collider>),
     >,
     balls_query: Query<
-        (Entity, &GlobalTransform, &Heading, &CircleCollider),
+        (Entity, &GlobalTransform, &Direction, &CircleCollider),
         (With<Ball>, With<Collider>, With<Movement>),
     >,
 ) {
@@ -72,10 +74,11 @@ fn crab_and_ball_collisions(
             continue;
         };
 
-        for (ball_entity, global_transform, heading, collider) in &balls_query {
+        for (ball_entity, global_transform, direction, collider) in &balls_query
+        {
             // Check that the ball is facing the goal and close enough to
             // collide.
-            if !goal.is_facing(heading) {
+            if !goal.is_facing(direction) {
                 continue;
             }
 
@@ -101,7 +104,7 @@ fn crab_and_ball_collisions(
 
             commands
                 .entity(ball_entity)
-                .insert(Heading::from(new_ball_direction));
+                .insert(Direction::from(new_ball_direction));
             info!("Ball({ball_entity:?}): Collided Crab({crab_entity:?})");
             break;
         }

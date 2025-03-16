@@ -7,7 +7,7 @@ use std::ops::Add;
 
 use crate::{
     assets::{GameAssets, GameMode},
-    components::{Goal, Heading},
+    components::{Direction, Goal},
     spawners::Beach,
 };
 
@@ -99,7 +99,7 @@ impl GoalData {
     }
 
     /// Check if an entity is facing the goal.
-    pub fn is_facing(&self, heading: &Heading) -> bool {
-        heading.0.dot(self.forward) <= 0.0
+    pub fn is_facing(&self, direction: &Direction) -> bool {
+        direction.0.dot(self.forward) <= 0.0
     }
 }

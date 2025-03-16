@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::system_sets::StopWhenPausedSet;
 
-use super::{Heading, Movement};
+use super::{Direction, Movement};
 
 pub(super) struct ColliderPlugin;
 
@@ -38,15 +38,15 @@ fn circle_to_circle_collisions(
             Entity,
             &CircleCollider,
             &GlobalTransform,
-            Option<&Heading>,
+            Option<&Direction>,
             Has<Movement>,
         ),
         With<Collider>,
     >,
 ) {
     for [
-        (entity1, circle1, transform1, heading1, has_movement1),
-        (entity2, circle2, transform2, heading2, has_movement2),
+        (entity1, circle1, transform1, direction1, has_movement1),
+        (entity2, circle2, transform2, direction2, has_movement2),
     ] in balls_query.iter_combinations()
     {
         // Check that both circles are close enough to touch.
@@ -60,26 +60,26 @@ fn circle_to_circle_collisions(
         let axis1 = Vec3::new(delta.x, 0.0, delta.z).normalize();
         let axis2 = -axis1;
 
-        if let Some(heading1) = heading1 {
-            if has_movement1 && heading1.0.dot(axis1) > 0.0 {
+        if let Some(direction1) = direction1 {
+            if has_movement1 && direction1.0.dot(axis1) > 0.0 {
                 commands
                     .entity(entity1)
-                    .insert(Heading::reflect(heading1, axis1));
+                    .insert(Direction::reflect(direction1, axis1));
 
                 if has_movement2 {
-                    commands.entity(entity2).insert(Heading::from(axis1));
+                    commands.entity(entity2).insert(Direction::from(axis1));
                 }
             }
         }
 
-        if let Some(heading2) = heading2 {
-            if has_movement2 && heading2.0.dot(axis2) > 0.0 {
+        if let Some(direction2) = direction2 {
+            if has_movement2 && direction2.0.dot(axis2) > 0.0 {
                 commands
                     .entity(entity2)
-                    .insert(Heading::reflect(heading2, axis2));
+                    .insert(Direction::reflect(direction2, axis2));
 
                 if has_movement1 {
-                    commands.entity(entity1).insert(Heading::from(axis2));
+                    commands.entity(entity1).insert(Direction::from(axis2));
                 }
             }
         }
