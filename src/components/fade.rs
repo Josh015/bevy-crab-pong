@@ -99,8 +99,9 @@ fn animate_fade_effect(
                 max_scale,
                 axis_mask,
             } => {
-                transform.scale =
-                    (max_scale * axis_mask) * weight + (Vec3::ONE - axis_mask);
+                transform.scale = max_scale
+                    * (Vec3::ONE
+                        + (Vec3::splat(weight) - Vec3::ONE) * axis_mask);
             },
             FadeEffect::Opacity => {
                 let material = materials.get_mut(material).unwrap();

@@ -8,11 +8,11 @@ use strum::IntoEnumIterator;
 use crate::{
     assets::{CachedAssets, CrabController, GameAssets, GameConfig},
     components::{
-        AI, Acceleration, Ball, CRAB_DEPTH, CRAB_WIDTH, CircleCollider,
-        Collider, Crab, CrabCollider, Fade, FadeEffect, ForStates, Goal,
-        Heading, HitPoints, HitPointsUi, InsertAfterFadeIn, MaxSpeed, Movement,
-        POLE_DIAMETER, POLE_HEIGHT, Player, Pole, RemoveBeforeFadeOut,
-        ScrollingTexture, Side, Speed, SwayingCamera, Team, UiCamera,
+        AI, Acceleration, Ball, CircleCollider, Collider, Crab, CrabCollider,
+        DepthCollider, Fade, FadeEffect, ForStates, Goal, GoalBounds, Heading,
+        HitPoints, HitPointsUi, InsertAfterFadeIn, MaxSpeed, Movement, Player,
+        Pole, RemoveBeforeFadeOut, ScrollingTexture, Side, Speed,
+        SwayingCamera, Team, UiCamera,
     },
     states::GameState,
     system_params::GameModes,
@@ -20,12 +20,7 @@ use crate::{
 };
 
 pub const LEVEL_CENTER_POINT: Vec3 = Vec3::ZERO;
-pub const BARRIER_DIAMETER: f32 = 0.12;
-pub const BARRIER_RADIUS: f32 = 0.5 * BARRIER_DIAMETER;
-pub const BARRIER_HEIGHT: f32 = 0.2;
-pub const BALL_HEIGHT_FROM_GROUND: f32 = 0.05;
-pub const GOAL_WIDTH: f32 = 1.0;
-pub const CRAB_START_POSITION: Vec3 = Vec3::new(0.0, 0.05, 0.0);
+pub const GOAL_ENTITY_LOCAL_START_POSITION: Vec3 = Vec3::ZERO;
 
 pub(super) struct SpawnersPlugin;
 
@@ -45,13 +40,12 @@ impl Plugin for SpawnersPlugin {
                 .in_set(ActiveDuringGameplaySet),
         )
         .add_observer(spawn_pole_in_a_goal)
-        .add_observer(spawn_ui_message)
-        .insert_resource(Level { width: GOAL_WIDTH });
+        .add_observer(spawn_ui_message);
     }
 }
 
 #[derive(Debug, Resource)]
-pub struct Level {
+pub struct Beach {
     pub width: f32,
 }
 
@@ -78,13 +72,17 @@ fn spawn_level(
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
 
+    commands.insert_resource(Beach {
+        width: game_config.beach_width,
+    });
+
     // Cameras
     commands.spawn((
         SwayingCamera {
             target: LEVEL_CENTER_POINT,
             starting_position: Vec3::new(0., 2., 1.5),
             up_direction: Vec3::Y,
-            range: GOAL_WIDTH * 0.5,
+            range: game_config.beach_width * 0.5,
             speed: game_config.swaying_camera_speed,
         },
         Camera3d::default(),
@@ -142,7 +140,7 @@ fn spawn_level(
         Mesh3d(meshes.add(Plane3d::default().mesh().size(1.0, 1.0))),
         MeshMaterial3d(materials.add(game_assets.image_sand.clone())),
         Transform::from_matrix(Mat4::from_scale_rotation_translation(
-            Vec3::splat(GOAL_WIDTH),
+            Vec3::splat(game_config.beach_width),
             Quat::IDENTITY,
             LEVEL_CENTER_POINT,
         )),
@@ -199,12 +197,16 @@ fn spawn_level(
             std::f32::consts::TAU * (i as f32 / num_sides as f32),
         ))
         .mul_transform(Transform::from_translation(
-            LEVEL_CENTER_POINT.with_z(0.5 * GOAL_WIDTH),
+            LEVEL_CENTER_POINT.with_z(0.5 * game_config.beach_width),
         ));
+        let goal_bounds = (0.5 * game_config.beach_width)
+            - (0.5 * game_config.barrier_diameter)
+            - (0.5 * game_config.crab_width);
 
         let goal_entity = commands
             .spawn((
                 Goal,
+                GoalBounds::new(-goal_bounds, goal_bounds),
                 Team::default(),
                 HitPoints::default(),
                 side,
@@ -241,19 +243,23 @@ fn spawn_level(
         commands.spawn((
             Collider,
             CircleCollider {
-                radius: BARRIER_RADIUS,
+                radius: 0.5 * game_config.barrier_diameter,
             },
             Mesh3d(cylinder.clone()),
             MeshMaterial3d(barrier_material.clone()),
             goal_transform.mul_transform(Transform::from_matrix(
                 Mat4::from_scale_rotation_translation(
                     Vec3::new(
-                        BARRIER_DIAMETER,
-                        BARRIER_HEIGHT,
-                        BARRIER_DIAMETER,
+                        game_config.barrier_diameter,
+                        game_config.barrier_height,
+                        game_config.barrier_diameter,
                     ),
                     Quat::IDENTITY,
-                    Vec3::new(0.5 * GOAL_WIDTH, 0.5 * BARRIER_HEIGHT, 0.0),
+                    Vec3::new(
+                        0.5 * game_config.beach_width,
+                        0.5 * game_config.barrier_height,
+                        0.0,
+                    ),
                 ),
             )),
         ));
@@ -280,10 +286,13 @@ fn spawn_crabs_for_each_side(
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     cached_assets: Res<CachedAssets>,
-    game_assets: Res<GameAssets>,
     game_modes: GameModes,
     goals_query: Query<(Entity, &Side, Option<&Children>), With<Goal>>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
 ) {
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
+
     for (goal_entity, side, children) in &goals_query {
         if let Some(children) = children {
             for child in children {
@@ -298,16 +307,22 @@ fn spawn_crabs_for_each_side(
             .with_children(|builder| {
                 let mut crab = builder.spawn((
                     Crab,
-                    CrabCollider { width: CRAB_WIDTH },
-                    *side,
                     Collider,
+                    CrabCollider {
+                        width: game_config.crab_width,
+                    },
+                    DepthCollider {
+                        depth: game_config.crab_depth,
+                    },
                     InsertAfterFadeIn::<Movement>::default(),
                     RemoveBeforeFadeOut::<Movement>::default(),
                     RemoveBeforeFadeOut::<Collider>::default(),
                     Fade::new_in(),
                     FadeEffect::Scale {
                         max_scale: Vec3::new(
-                            CRAB_WIDTH, CRAB_DEPTH, CRAB_DEPTH,
+                            game_config.crab_width,
+                            game_config.crab_depth,
+                            game_config.crab_depth,
                         ),
                         axis_mask: Vec3::ONE,
                     },
@@ -330,7 +345,8 @@ fn spawn_crabs_for_each_side(
                         Mat4::from_scale_rotation_translation(
                             Vec3::splat(f32::EPSILON),
                             Quat::IDENTITY,
-                            CRAB_START_POSITION,
+                            GOAL_ENTITY_LOCAL_START_POSITION
+                                .with_y(game_config.crab_height_from_ground),
                         ),
                     ),
                 ));
@@ -340,6 +356,9 @@ fn spawn_crabs_for_each_side(
                 } else {
                     crab.insert(Player);
                 }
+
+                // TODO: Remove.
+                crab.insert(*side);
             })
             .id();
 
@@ -354,6 +373,8 @@ fn spawn_balls_sequentially_up_to_max_count(
     game_modes: GameModes,
     non_moving_balls_query: Query<Entity, (With<Ball>, Without<Movement>)>,
     balls_query: Query<Entity, With<Ball>>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
 ) {
     // Wait for previously spawned ball to finish appearing.
     if non_moving_balls_query.iter().len() >= 1 {
@@ -369,16 +390,16 @@ fn spawn_balls_sequentially_up_to_max_count(
     }
 
     // Spawn a ball in a random direction from the center of the spawner.
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
     let mut rng = SmallRng::from_os_rng();
     let angle = rng.random_range(0.0..std::f32::consts::TAU);
     let (angle_sin, angle_cos) = angle.sin_cos();
-    let position = LEVEL_CENTER_POINT.clone().with_y(BALL_HEIGHT_FROM_GROUND);
 
     let ball = commands
         .spawn((
             Ball,
             CircleCollider {
-                radius: game_mode.ball_size * 0.5,
+                radius: game_mode.ball_scale * game_config.ball_diameter * 0.5,
             },
             Fade::new_in(),
             InsertAfterFadeIn::<Movement>::default(),
@@ -394,9 +415,11 @@ fn spawn_balls_sequentially_up_to_max_count(
                 ..default()
             })),
             Transform::from_matrix(Mat4::from_scale_rotation_translation(
-                Vec3::splat(game_mode.ball_size),
+                Vec3::splat(game_mode.ball_scale * game_config.ball_diameter),
                 Quat::IDENTITY,
-                position,
+                LEVEL_CENTER_POINT.with_y(
+                    game_mode.ball_scale * game_config.ball_height_from_ground,
+                ),
             )),
         ))
         .id();
@@ -409,6 +432,8 @@ fn spawn_pole_in_a_goal(
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
     goals_query: Query<Option<&Children>, With<Goal>>,
+    game_assets: Res<GameAssets>,
+    game_configs: Res<Assets<GameConfig>>,
 ) {
     let SpawnPole {
         goal_entity,
@@ -421,12 +446,16 @@ fn spawn_pole_in_a_goal(
         }
     }
 
+    let game_config = game_configs.get(&game_assets.game_config).unwrap();
     let id = commands
         .entity(*goal_entity)
         .with_children(|builder| {
             builder.spawn((
                 Pole,
                 Collider,
+                DepthCollider {
+                    depth: game_config.pole_diameter,
+                },
                 RemoveBeforeFadeOut::<Collider>::default(),
                 if *fade_in {
                     Fade::new_in()
@@ -435,9 +464,9 @@ fn spawn_pole_in_a_goal(
                 },
                 FadeEffect::Scale {
                     max_scale: Vec3::new(
-                        POLE_DIAMETER,
-                        GOAL_WIDTH,
-                        POLE_DIAMETER,
+                        game_config.pole_diameter,
+                        game_config.beach_width,
+                        game_config.pole_diameter,
                     ),
                     axis_mask: Vec3::new(1.0, 0.0, 1.0),
                 },
@@ -451,7 +480,8 @@ fn spawn_pole_in_a_goal(
                         0.0,
                         std::f32::consts::FRAC_PI_2,
                     ),
-                    Vec3::new(0.0, POLE_HEIGHT, 0.0),
+                    GOAL_ENTITY_LOCAL_START_POSITION
+                        .with_y(game_config.pole_height_from_ground),
                 )),
             ));
         })
@@ -473,7 +503,7 @@ fn spawn_ui_message(
     commands.spawn((
         ForStates(vec![*game_state]),
         AnchorUiNode {
-            target: AnchorTarget::Translation(Vec3::ZERO),
+            target: AnchorTarget::Translation(LEVEL_CENTER_POINT),
             offset: None,
             anchorwidth: HorizontalAnchor::Mid,
             anchorheight: VerticalAnchor::Mid,

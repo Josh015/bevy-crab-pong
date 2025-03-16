@@ -1,6 +1,6 @@
 name: Stress Test
 ball_count: 60
-ball_size: 0.04
+ball_scale: 0.5
 ball_speed: 0.5
 competitors:
   Bottom:

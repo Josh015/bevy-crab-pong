@@ -8,7 +8,7 @@ use std::ops::Add;
 use crate::{
     assets::{GameAssets, GameMode},
     components::{Goal, Heading},
-    spawners::Level,
+    spawners::Beach,
 };
 
 pub(super) struct SystemParamsPlugin;
@@ -56,7 +56,7 @@ impl GameModes<'_> {
 /// Allows system to do work related to [Goal] entities.
 #[derive(SystemParam)]
 pub struct Goals<'w, 's> {
-    level: Res<'w, Level>,
+    beach: Res<'w, Beach>,
     goals_query: Query<'w, 's, &'static GlobalTransform, With<Goal>>,
 }
 
@@ -66,7 +66,7 @@ impl Goals<'_, '_> {
         let global_transform = self.goals_query.get(entity)?;
 
         Ok(GoalData {
-            level_width: self.level.width,
+            beach_width: self.beach.width,
             forward: *global_transform.forward(),
             right: *global_transform.right(),
         })
@@ -77,7 +77,7 @@ impl Goals<'_, '_> {
 #[derive(Getters)]
 pub struct GoalData {
     #[getter(copy)]
-    level_width: f32,
+    beach_width: f32,
 
     #[getter(copy)]
     forward: Vec3,
@@ -94,7 +94,7 @@ impl GoalData {
 
     /// Get the perpendicular distance from the goal to the entity.
     pub fn distance_to(&self, global_transform: &GlobalTransform) -> f32 {
-        (0.5 * self.level_width)
+        (0.5 * self.beach_width)
             + global_transform.translation().dot(self.forward)
     }
 

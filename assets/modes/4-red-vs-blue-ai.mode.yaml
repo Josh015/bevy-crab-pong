@@ -1,6 +1,6 @@
 name: Red vs Blue (AI)
 ball_count: 3
-ball_size: 0.08
+ball_scale: 1.0
 ball_speed: 0.5
 competitors:
   Bottom:

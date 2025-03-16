@@ -1,11 +1,21 @@
+swaying_camera_speed: 0.2
+ocean_scroll_speed: 0.05
+beach_width: 1.0
+barrier_diameter: 0.12
+barrier_height: 0.2
+crab_width: 0.2
+crab_depth: 0.1
+crab_height_from_ground: 0.05
+pole_diameter: 0.05
+pole_height_from_ground: 0.1
+ball_diameter: 0.08
+ball_height_from_ground: 0.05
 pause_message: "PAUSED"
 new_game_message: "
   ENTER for a new game.\n
   ESC to quit.\n
   WASD / ARROWS to move the crab.\n
   1-6 to enable debugging gizmos."
-swaying_camera_speed: 0.2
-ocean_scroll_speed: 0.05
 team_win_messages:
   - "It's a draw!\n"
   - "You win!\n"

@@ -2,11 +2,7 @@ use bevy::prelude::*;
 
 use crate::{system_params::Goals, system_sets::StopWhenPausedSet};
 
-use super::{Ball, CircleCollider, Collider, Heading, Movement};
-
-pub const POLE_DIAMETER: f32 = 0.05;
-pub const POLE_HEIGHT: f32 = 0.1;
-pub const POLE_RADIUS: f32 = 0.5 * POLE_DIAMETER;
+use super::{Ball, CircleCollider, Collider, DepthCollider, Heading, Movement};
 
 pub(super) struct PolePlugin;
 
@@ -26,13 +22,16 @@ pub struct Pole;
 fn pole_and_ball_collisions(
     mut commands: Commands,
     goals: Goals,
-    poles_query: Query<(Entity, &Parent), (With<Pole>, With<Collider>)>,
+    poles_query: Query<
+        (Entity, &Parent, &DepthCollider),
+        (With<Pole>, With<Collider>),
+    >,
     balls_query: Query<
         (Entity, &GlobalTransform, &Heading, &CircleCollider),
         (With<Ball>, With<Collider>, With<Movement>),
     >,
 ) {
-    for (pole_entity, parent) in &poles_query {
+    for (pole_entity, parent, depth_collider) in &poles_query {
         let Ok(goal) = goals.get(parent.get()) else {
             continue;
         };
@@ -44,7 +43,7 @@ fn pole_and_ball_collisions(
 
             let ball_distance = goal.distance_to(global_transform);
 
-            if ball_distance > collider.radius + POLE_RADIUS {
+            if ball_distance > collider.radius + 0.5 * depth_collider.depth {
                 continue;
             }
 

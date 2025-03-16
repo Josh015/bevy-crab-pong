@@ -25,6 +25,12 @@ pub struct CircleCollider {
     pub radius: f32,
 }
 
+/// Adds thickness to a entity in a goal.
+#[derive(Component, Debug)]
+pub struct DepthCollider {
+    pub depth: f32,
+}
+
 fn circle_to_circle_collisions(
     mut commands: Commands,
     balls_query: Query<

@@ -27,10 +27,20 @@ impl Plugin for AssetsPlugin {
 /// Game settings read from a config file.
 #[derive(Asset, Debug, Deserialize, Resource, TypePath)]
 pub struct GameConfig {
-    pub pause_message: String,
-    pub new_game_message: String,
     pub swaying_camera_speed: f32,
     pub ocean_scroll_speed: f32,
+    pub beach_width: f32,
+    pub barrier_diameter: f32,
+    pub barrier_height: f32,
+    pub crab_width: f32,
+    pub crab_depth: f32,
+    pub crab_height_from_ground: f32,
+    pub pole_diameter: f32,
+    pub pole_height_from_ground: f32,
+    pub ball_diameter: f32,
+    pub ball_height_from_ground: f32,
+    pub new_game_message: String,
+    pub pause_message: String,
     pub team_win_messages: Vec<String>,
 }
 
@@ -38,7 +48,7 @@ pub struct GameConfig {
 pub struct GameMode {
     pub name: String,
     pub ball_count: NonZeroU8,
-    pub ball_size: f32,
+    pub ball_scale: f32,
     pub ball_speed: f32,
     pub competitors: HashMap<Side, CompetitorConfig>,
 }
