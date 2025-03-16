@@ -1,13 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    components::{
-        AI, Ball, Collider, Crab, CrabCollider, Heading,
-        IDEAL_HIT_AREA_PERCENTAGE, Movement, StoppingDistance, Target,
-    },
-    system_params::Goals,
-    system_sets::LoadedSet,
-};
+use crate::prelude::*;
 
 pub const DEBUGGING_RAY_LENGTH: f32 = 20.0;
 

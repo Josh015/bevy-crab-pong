@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 
-use crate::system_sets::PausableSet;
-
-use super::{Heading, Movement};
+use crate::prelude::*;
 
 pub(super) struct ColliderPlugin;
 

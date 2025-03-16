@@ -1,9 +1,7 @@
 use bevy::prelude::*;
 use strum::IntoEnumIterator;
 
-use crate::states::GameState;
-
-use super::{Fade, FadeEffect};
+use crate::prelude::*;
 
 pub(super) struct ForStatesPlugin;
 

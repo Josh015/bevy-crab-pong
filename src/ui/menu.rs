@@ -1,14 +1,7 @@
 use bevy::{prelude::*, window::WindowFocused};
 use leafwing_input_manager::prelude::*;
 
-use crate::{
-    assets::{GameAssets, GameConfig},
-    components::WinningTeam,
-    spawners::SpawnUiMessage,
-    states::GameState,
-    system_params::GameModes,
-    system_sets::{LoadedSet, PlayableSet},
-};
+use crate::prelude::*;
 
 pub(super) struct MenuPlugin;
 

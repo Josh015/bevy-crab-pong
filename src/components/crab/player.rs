@@ -1,12 +1,7 @@
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 
-use crate::{
-    components::{Force, Movement, Side},
-    system_sets::PlayableSet,
-};
-
-use super::Crab;
+use crate::prelude::*;
 
 pub(super) struct InputPlugin;
 

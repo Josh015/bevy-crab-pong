@@ -7,7 +7,14 @@ mod system_params;
 mod system_sets;
 mod ui;
 
-use bevy::prelude::*;
+pub mod prelude {
+    pub use crate::{
+        assets::*, components::*, events::*, spawners::*, states::*,
+        system_params::*, system_sets::*, ui::*,
+    };
+}
+
+pub use bevy::prelude::*;
 
 pub struct LibPlugin;
 

@@ -1,11 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    components::{Goal, HitPoints, Team, WinningTeam},
-    spawners::SpawnPole,
-    states::GameState,
-    system_sets::PlayableSet,
-};
+use crate::prelude::*;
 
 pub(super) struct EventsPlugin;
 

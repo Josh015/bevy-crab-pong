@@ -6,16 +6,7 @@ pub use player::*;
 
 use bevy::prelude::*;
 
-use crate::{
-    spawners::{BARRIER_RADIUS, GOAL_WIDTH},
-    system_params::{GoalData, Goals},
-    system_sets::PausableSet,
-};
-
-use super::{
-    Ball, CircleCollider, Collider, Force, Heading, Movement, Speed,
-    StoppingDistance,
-};
+use crate::prelude::*;
 
 pub const CRAB_WIDTH: f32 = 0.2;
 pub const CRAB_DEPTH: f32 = 0.1;
