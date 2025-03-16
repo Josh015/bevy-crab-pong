@@ -72,11 +72,7 @@ fn spawn_level(
 ) {
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
 
-    commands.insert_resource(Beach {
-        width: game_config.beach_width,
-    });
-
-    // Cameras
+    // Camera
     commands.spawn((
         SwayingCamera {
             target: LEVEL_CENTER_POINT,
@@ -136,6 +132,10 @@ fn spawn_level(
     ));
 
     // Beach
+    commands.insert_resource(Beach {
+        width: game_config.beach_width,
+    });
+
     commands.spawn((
         Mesh3d(meshes.add(Plane3d::default().mesh().size(1.0, 1.0))),
         MeshMaterial3d(materials.add(game_assets.image_sand.clone())),
