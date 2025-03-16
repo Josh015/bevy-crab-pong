@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{GoalScoredEvent, Goals, PlayableSet, components::Fade};
+use crate::{
+    components::Fade, events::GoalScoredEvent, system_params::Goals,
+    system_sets::PlayableSet,
+};
 
 use super::{Ball, CircleCollider, Collider, Crab, Movement};
 

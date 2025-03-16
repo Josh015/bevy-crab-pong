@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::GameState;
+use crate::states::GameState;
 
 pub(super) struct SystemSetsPlugin;
 

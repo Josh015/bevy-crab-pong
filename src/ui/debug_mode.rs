@@ -5,7 +5,8 @@ use crate::{
         AI, Ball, Collider, Crab, CrabCollider, Heading,
         IDEAL_HIT_AREA_PERCENTAGE, Movement, StoppingDistance, Target,
     },
-    {Goals, LoadedSet},
+    system_params::Goals,
+    system_sets::LoadedSet,
 };
 
 pub const DEBUGGING_RAY_LENGTH: f32 = 20.0;

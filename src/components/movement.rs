@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::ops::{Add, Sub};
 
-use crate::PausableSet;
+use crate::system_sets::PausableSet;
 
 pub(super) struct MovementPlugin;
 
@@ -34,7 +34,9 @@ pub enum Force {
 pub struct Heading(pub Dir3);
 
 impl Default for Heading {
-    fn default() -> Self { Self(Dir3::NEG_Z) }
+    fn default() -> Self {
+        Self(Dir3::NEG_Z)
+    }
 }
 
 impl From<Vec3> for Heading {

@@ -5,14 +5,18 @@ use bevy::{
 use derive_getters::Getters;
 use std::ops::Add;
 
-use crate::components::{Goal, Heading};
-
-use super::{GameAssets, GameMode, Level};
+use crate::{
+    assets::{GameAssets, GameMode},
+    components::{Goal, Heading},
+    spawners::Level,
+};
 
 pub(super) struct SystemParamsPlugin;
 
 impl Plugin for SystemParamsPlugin {
-    fn build(&self, app: &mut App) { app.init_resource::<SelectedGameMode>(); }
+    fn build(&self, app: &mut App) {
+        app.init_resource::<SelectedGameMode>();
+    }
 }
 
 #[derive(Debug, Default, Resource)]

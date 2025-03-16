@@ -6,12 +6,17 @@ use rand::prelude::*;
 use strum::IntoEnumIterator;
 
 use crate::{
-    AI, Acceleration, Ball, CRAB_DEPTH, CRAB_WIDTH, CachedAssets,
-    CircleCollider, Collider, Crab, CrabCollider, CrabController, Fade,
-    FadeEffect, ForStates, GameAssets, GameConfig, GameModes, GameState, Goal,
-    Heading, HitPoints, HitPointsUi, InsertAfterFadeIn, MaxSpeed, Movement,
-    POLE_DIAMETER, POLE_HEIGHT, PlayableSet, Player, Pole, RemoveBeforeFadeOut,
-    ScrollingTexture, Side, Speed, SwayingCamera, Team, UiCamera,
+    assets::{CachedAssets, CrabController, GameAssets, GameConfig},
+    components::{
+        AI, Acceleration, Ball, CRAB_DEPTH, CRAB_WIDTH, CircleCollider,
+        Collider, Crab, CrabCollider, Fade, FadeEffect, ForStates, Goal,
+        Heading, HitPoints, HitPointsUi, InsertAfterFadeIn, MaxSpeed, Movement,
+        POLE_DIAMETER, POLE_HEIGHT, Player, Pole, RemoveBeforeFadeOut,
+        ScrollingTexture, Side, Speed, SwayingCamera, Team, UiCamera,
+    },
+    states::GameState,
+    system_params::GameModes,
+    system_sets::PlayableSet,
 };
 
 pub const LEVEL_CENTER_POINT: Vec3 = Vec3::ZERO;

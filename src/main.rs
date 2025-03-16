@@ -5,7 +5,6 @@ use bevy::{
     prelude::*,
     window::{PresentMode, WindowResolution},
 };
-use bevy_crab_pong::LibPlugin;
 
 fn main() {
     App::new()
@@ -26,6 +25,6 @@ fn main() {
             // TemporalAntiAliasPlugin,
         ))
         .insert_resource(ClearColor(Color::srgba(0.7, 0.9, 1.0, 1.0)))
-        .add_plugins(LibPlugin)
+        .add_plugins(bevy_crab_pong::LibPlugin)
         .run();
 }

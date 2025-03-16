@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{
-    components::{Goal, HitPoints},
-    LoadedSet,
-};
+use crate::system_sets::LoadedSet;
+
+use super::{Goal, HitPoints};
 
 pub(super) struct HitPointsUiPlugin;
 

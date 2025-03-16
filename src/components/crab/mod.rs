@@ -7,12 +7,14 @@ pub use player::*;
 use bevy::prelude::*;
 
 use crate::{
-    components::Heading,
-    {BARRIER_RADIUS, GOAL_WIDTH, GoalData, Goals, PausableSet},
+    spawners::{BARRIER_RADIUS, GOAL_WIDTH},
+    system_params::{GoalData, Goals},
+    system_sets::PausableSet,
 };
 
 use super::{
-    Ball, CircleCollider, Collider, Force, Movement, Speed, StoppingDistance,
+    Ball, CircleCollider, Collider, Force, Heading, Movement, Speed,
+    StoppingDistance,
 };
 
 pub const CRAB_WIDTH: f32 = 0.2;

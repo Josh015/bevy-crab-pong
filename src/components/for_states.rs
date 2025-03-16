@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use strum::IntoEnumIterator;
 
-use crate::GameState;
+use crate::states::GameState;
 
 use super::{Fade, FadeEffect};
 
