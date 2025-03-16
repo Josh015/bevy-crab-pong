@@ -22,8 +22,7 @@ impl Plugin for GoalPlugin {
             .add_event::<GoalScoredEvent>()
             .add_systems(
                 Update,
-                restrict_crab_movement_to_space_within_its_own_goal
-                    .after(StopWhenPausedSet),
+                restrict_crab_movement_to_goal_mouth.after(StopWhenPausedSet),
             )
             .add_systems(
                 PostUpdate,
@@ -68,7 +67,7 @@ struct GoalScoredEvent(pub Entity);
 #[derive(Clone, Debug, Event)]
 struct GoalEliminatedEvent(pub Entity);
 
-fn restrict_crab_movement_to_space_within_its_own_goal(
+fn restrict_crab_movement_to_goal_mouth(
     mut commands: Commands,
     mut crabs_query: Query<
         (
