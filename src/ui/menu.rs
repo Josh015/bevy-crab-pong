@@ -3,6 +3,7 @@ use leafwing_input_manager::prelude::*;
 
 use crate::{
     assets::{GameAssets, GameConfig},
+    components::Player,
     spawners::SpawnUiMessage,
     states::GameState,
     system_params::GameModes,
@@ -24,7 +25,7 @@ impl Plugin for MenuPlugin {
             )
             .add_systems(
                 Update,
-                pause_game_when_window_loses_focus
+                pause_player_controlled_game_when_window_loses_focus
                     .in_set(ActiveDuringGameplaySet),
             );
     }
@@ -146,12 +147,13 @@ fn handle_menu_inputs(
     }
 }
 
-fn pause_game_when_window_loses_focus(
+fn pause_player_controlled_game_when_window_loses_focus(
     mut window_focused_events: EventReader<WindowFocused>,
     mut next_game_state: ResMut<NextState<GameState>>,
+    players_query: Query<Entity, With<Player>>,
 ) {
     for event in window_focused_events.read() {
-        if !event.focused {
+        if !event.focused && !players_query.is_empty() {
             next_game_state.set(GameState::Paused);
             info!("Paused");
         }
