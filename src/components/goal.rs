@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     components::Fade, events::GoalScoredEvent, system_params::Goals,
-    system_sets::PlayableSet,
+    system_sets::ActiveDuringGameplaySet,
 };
 
 use super::{Ball, CircleCollider, Collider, Crab, Movement};
@@ -13,7 +13,8 @@ impl Plugin for GoalPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             PostUpdate,
-            check_if_a_ball_has_scored_in_a_goal.in_set(PlayableSet),
+            check_if_a_ball_has_scored_in_a_goal
+                .in_set(ActiveDuringGameplaySet),
         );
     }
 }

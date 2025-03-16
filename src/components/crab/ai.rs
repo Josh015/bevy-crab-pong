@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     components::{Ball, Collider, Force, Movement, StoppingDistance},
     system_params::Goals,
-    system_sets::PlayableSet,
+    system_sets::ActiveDuringGameplaySet,
 };
 
 use super::{Crab, CrabCollider};
@@ -17,7 +17,7 @@ impl Plugin for AiPlugin {
         app.add_systems(
             Update,
             make_ai_crabs_target_and_move_toward_the_ball_closest_to_their_goal
-                .in_set(PlayableSet),
+                .in_set(ActiveDuringGameplaySet),
         );
     }
 }

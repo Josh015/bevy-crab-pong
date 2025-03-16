@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::system_sets::LoadedSet;
+use crate::system_sets::ActiveAfterLoadingSet;
 
 use super::{Goal, HitPoints};
 
@@ -8,7 +8,10 @@ pub(super) struct HitPointsUiPlugin;
 
 impl Plugin for HitPointsUiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, update_hit_points_ui.chain().in_set(LoadedSet));
+        app.add_systems(
+            Update,
+            update_hit_points_ui.chain().in_set(ActiveAfterLoadingSet),
+        );
     }
 }
 

@@ -1,12 +1,15 @@
 use bevy::prelude::*;
 
-use crate::system_sets::LoadedSet;
+use crate::system_sets::ActiveAfterLoadingSet;
 
 pub(super) struct ScrollingTexturePlugin;
 
 impl Plugin for ScrollingTexturePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, scrolling_texture_effect.in_set(LoadedSet));
+        app.add_systems(
+            Update,
+            scrolling_texture_effect.in_set(ActiveAfterLoadingSet),
+        );
     }
 }
 

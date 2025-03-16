@@ -16,7 +16,7 @@ use crate::{
     },
     states::GameState,
     system_params::GameModes,
-    system_sets::PlayableSet,
+    system_sets::ActiveDuringGameplaySet,
 };
 
 pub const LEVEL_CENTER_POINT: Vec3 = Vec3::ZERO;
@@ -41,7 +41,8 @@ impl Plugin for SpawnersPlugin {
         )
         .add_systems(
             Update,
-            spawn_balls_sequentially_up_to_max_count.in_set(PlayableSet),
+            spawn_balls_sequentially_up_to_max_count
+                .in_set(ActiveDuringGameplaySet),
         )
         .add_observer(spawn_pole_in_a_goal)
         .add_observer(spawn_ui_message)

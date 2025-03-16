@@ -6,7 +6,7 @@ use crate::{
         IDEAL_HIT_AREA_PERCENTAGE, Movement, StoppingDistance, Target,
     },
     system_params::Goals,
-    system_sets::LoadedSet,
+    system_sets::ActiveAfterLoadingSet,
 };
 
 pub const DEBUGGING_RAY_LENGTH: f32 = 20.0;
@@ -18,7 +18,8 @@ impl Plugin for DebugModePlugin {
         app.init_resource::<DebugMode>()
             .add_systems(
                 Update,
-                handle_debug_mode_keyboard_toggles.in_set(LoadedSet),
+                handle_debug_mode_keyboard_toggles
+                    .in_set(ActiveAfterLoadingSet),
             )
             .add_systems(
                 PostUpdate,
@@ -50,7 +51,7 @@ impl Plugin for DebugModePlugin {
                         },
                     ),
                 )
-                    .after(LoadedSet),
+                    .after(ActiveAfterLoadingSet),
             );
     }
 }

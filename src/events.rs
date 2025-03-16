@@ -4,7 +4,7 @@ use crate::{
     components::{Goal, HitPoints, Team, WinningTeam},
     spawners::SpawnPole,
     states::GameState,
-    system_sets::PlayableSet,
+    system_sets::ActiveDuringGameplaySet,
 };
 
 pub(super) struct EventsPlugin;
@@ -21,7 +21,7 @@ impl Plugin for EventsPlugin {
                     check_for_winning_team,
                 )
                     .chain()
-                    .in_set(PlayableSet),
+                    .in_set(ActiveDuringGameplaySet),
             );
     }
 }

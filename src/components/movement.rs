@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::ops::{Add, Sub};
 
-use crate::system_sets::PausableSet;
+use crate::system_sets::StopWhenPausedSet;
 
 pub(super) struct MovementPlugin;
 
@@ -11,7 +11,7 @@ impl Plugin for MovementPlugin {
             Update,
             (acceleration, deceleration, velocity, stopping_distance)
                 .chain()
-                .in_set(PausableSet),
+                .in_set(StopWhenPausedSet),
         );
     }
 }

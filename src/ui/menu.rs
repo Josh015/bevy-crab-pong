@@ -7,7 +7,7 @@ use crate::{
     spawners::SpawnUiMessage,
     states::GameState,
     system_params::GameModes,
-    system_sets::{LoadedSet, PlayableSet},
+    system_sets::{ActiveAfterLoadingSet, ActiveDuringGameplaySet},
 };
 
 pub(super) struct MenuPlugin;
@@ -19,10 +19,14 @@ impl Plugin for MenuPlugin {
             .insert_resource(MenuAction::make_input_map())
             .add_systems(OnEnter(GameState::StartMenu), show_start_menu_ui)
             .add_systems(OnEnter(GameState::Paused), show_pause_ui)
-            .add_systems(Update, handle_menu_inputs.in_set(LoadedSet))
             .add_systems(
                 Update,
-                pause_game_when_window_loses_focus.in_set(PlayableSet),
+                handle_menu_inputs.in_set(ActiveAfterLoadingSet),
+            )
+            .add_systems(
+                Update,
+                pause_game_when_window_loses_focus
+                    .in_set(ActiveDuringGameplaySet),
             );
     }
 }

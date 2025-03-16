@@ -9,7 +9,7 @@ use bevy::prelude::*;
 use crate::{
     spawners::{BARRIER_RADIUS, GOAL_WIDTH},
     system_params::{GoalData, Goals},
-    system_sets::PausableSet,
+    system_sets::StopWhenPausedSet,
 };
 
 use super::{
@@ -30,11 +30,11 @@ impl Plugin for CrabPlugin {
             .add_systems(
                 Update,
                 restrict_crab_movement_to_space_within_its_own_goal
-                    .after(PausableSet),
+                    .after(StopWhenPausedSet),
             )
             .add_systems(
                 PostUpdate,
-                crab_and_ball_collisions.in_set(PausableSet),
+                crab_and_ball_collisions.in_set(StopWhenPausedSet),
             );
     }
 }

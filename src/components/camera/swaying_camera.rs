@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::system_sets::LoadedSet;
+use crate::system_sets::ActiveAfterLoadingSet;
 
 pub(super) struct SwayingCameraPlugin;
 
@@ -8,7 +8,8 @@ impl Plugin for SwayingCameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            make_camera_slowly_sway_back_and_forth.in_set(LoadedSet),
+            make_camera_slowly_sway_back_and_forth
+                .in_set(ActiveAfterLoadingSet),
         );
     }
 }

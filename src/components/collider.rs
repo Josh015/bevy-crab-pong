@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::system_sets::PausableSet;
+use crate::system_sets::StopWhenPausedSet;
 
 use super::{Heading, Movement};
 
@@ -10,7 +10,7 @@ impl Plugin for ColliderPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             PostUpdate,
-            circle_to_circle_collisions.in_set(PausableSet),
+            circle_to_circle_collisions.in_set(StopWhenPausedSet),
         );
     }
 }

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{system_params::Goals, system_sets::PausableSet};
+use crate::{system_params::Goals, system_sets::StopWhenPausedSet};
 
 use super::{Ball, CircleCollider, Collider, Heading, Movement};
 
@@ -14,7 +14,7 @@ impl Plugin for PolePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             PostUpdate,
-            pole_and_ball_collisions.in_set(PausableSet),
+            pole_and_ball_collisions.in_set(StopWhenPausedSet),
         );
     }
 }

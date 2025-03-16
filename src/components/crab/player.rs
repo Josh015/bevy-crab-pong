@@ -3,7 +3,7 @@ use leafwing_input_manager::prelude::*;
 
 use crate::{
     components::{Force, Movement, Side},
-    system_sets::PlayableSet,
+    system_sets::ActiveDuringGameplaySet,
 };
 
 use super::Crab;
@@ -15,7 +15,7 @@ impl Plugin for InputPlugin {
         app.add_plugins(InputManagerPlugin::<CrabAction>::default())
             .add_systems(
                 Update,
-                move_crabs_based_on_user_input.in_set(PlayableSet),
+                move_crabs_based_on_user_input.in_set(ActiveDuringGameplaySet),
             );
     }
 }

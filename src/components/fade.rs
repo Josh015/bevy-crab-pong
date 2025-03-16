@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use bevy::prelude::*;
 use derive_new::new;
 
-use crate::system_sets::PausableSet;
+use crate::system_sets::StopWhenPausedSet;
 
 use super::{Collider, Movement};
 
@@ -11,11 +11,14 @@ pub(super) struct FadePlugin;
 
 impl Plugin for FadePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PostUpdate, animate_fade_effect.in_set(PausableSet))
-            .add_systems(
-                Last,
-                clean_up_components_or_entities_after_they_finish_fading,
-            );
+        app.add_systems(
+            PostUpdate,
+            animate_fade_effect.in_set(StopWhenPausedSet),
+        )
+        .add_systems(
+            Last,
+            clean_up_components_or_entities_after_they_finish_fading,
+        );
         app.add_systems(
             Update,
             (
@@ -24,7 +27,7 @@ impl Plugin for FadePlugin {
                 insert_component_after_fading_in::<Collider>,
                 remove_component_before_fading_out::<Collider>,
             )
-                .in_set(PausableSet),
+                .in_set(StopWhenPausedSet),
         );
     }
 }
