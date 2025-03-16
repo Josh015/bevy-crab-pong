@@ -1,4 +1,8 @@
-use std::marker::PhantomData;
+mod insert_after_fade_in;
+mod remove_before_fade_out;
+
+pub use insert_after_fade_in::*;
+pub use remove_before_fade_out::*;
 
 use bevy::prelude::*;
 use derive_new::new;
@@ -11,24 +15,15 @@ pub(super) struct FadePlugin;
 
 impl Plugin for FadePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            PostUpdate,
-            animate_fade_effect.in_set(StopWhenPausedSet),
-        )
-        .add_systems(
-            Last,
-            clean_up_components_or_entities_after_they_finish_fading,
-        );
-        app.add_systems(
-            Update,
-            (
-                insert_component_after_fading_in::<Motion>,
-                remove_component_before_fading_out::<Motion>,
-                insert_component_after_fading_in::<Collider>,
-                remove_component_before_fading_out::<Collider>,
+        app.add_plugins((InsertAfterFadeInPlugin, RemoveBeforeFadeOutPlugin))
+            .add_systems(
+                PostUpdate,
+                animate_fade_effect.in_set(StopWhenPausedSet),
             )
-                .in_set(StopWhenPausedSet),
-        );
+            .add_systems(
+                Last,
+                clean_up_components_or_entities_after_they_finish_fading,
+            );
     }
 }
 
@@ -63,14 +58,6 @@ pub enum FadeEffect {
         axis_mask: Vec3,
     },
 }
-
-/// Inserts a component after a fade-in finishes.
-#[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
-pub struct InsertAfterFadeIn<B: Bundle + Default>(PhantomData<B>);
-
-// Removes a component before a fade-out starts.
-#[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
-pub struct RemoveBeforeFadeOut<B: Bundle>(PhantomData<B>);
 
 fn animate_fade_effect(
     time: Res<Time>,
@@ -136,30 +123,6 @@ fn clean_up_components_or_entities_after_they_finish_fading(
                     info!("Entity({entity:?}): Despawned");
                 }
             },
-        }
-    }
-}
-
-fn insert_component_after_fading_in<B: Bundle + Default>(
-    mut commands: Commands,
-    mut removed: RemovedComponents<Fade>,
-    query: Query<Entity, With<InsertAfterFadeIn<B>>>,
-) {
-    // No need to exclude Fade::Out since the entity is already despawned.
-    for entity in removed.read() {
-        if query.contains(entity) {
-            commands.entity(entity).insert(B::default());
-        }
-    }
-}
-
-fn remove_component_before_fading_out<B: Bundle>(
-    mut commands: Commands,
-    query: Query<(Entity, &Fade), (With<RemoveBeforeFadeOut<B>>, Added<Fade>)>,
-) {
-    for (entity, fade) in &query {
-        if matches!(fade, Fade::Out(_)) {
-            commands.entity(entity).remove::<B>();
         }
     }
 }
