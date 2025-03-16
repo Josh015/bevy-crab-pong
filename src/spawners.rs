@@ -118,14 +118,14 @@ fn spawn_level(
         ScrollingTexture {
             velocity: Vec2::Y * game_config.ocean_scroll_speed,
         },
-        Mesh3d(meshes.add(Plane3d::default().mesh().size(1.0, 1.0))),
+        Mesh3d(meshes.add(Plane3d::default().mesh().size(2.0, 2.0))),
         MeshMaterial3d(materials.add(StandardMaterial {
             base_color: Color::srgba(1.0, 1.0, 1.0, 0.9),
             base_color_texture: Some(game_assets.image_water.clone()),
             alpha_mode: AlphaMode::Blend,
             // perceptual_roughness: 0.0,
             // reflectance: 1.0,
-            uv_transform: Affine2::from_scale(Vec2::new(5., 5.)),
+            uv_transform: Affine2::from_scale(Vec2::new(10., 10.)),
             ..default()
         })),
         Transform::from_matrix(Mat4::from_scale_rotation_translation(
