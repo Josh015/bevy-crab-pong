@@ -9,7 +9,7 @@ use crate::{
     assets::{CachedAssets, CrabController, GameAssets, GameConfig},
     components::{
         AI, Acceleration, Ball, CircleCollider, Collider, Crab, CrabCollider,
-        DepthCollider, Fade, FadeEffect, ForStates, Goal, GoalBounds, Heading,
+        DepthCollider, Fade, FadeEffect, ForStates, Goal, GoalMouth, Heading,
         HitPoints, HitPointsUi, InsertAfterFadeIn, MaxSpeed, Movement, Player,
         Pole, RemoveBeforeFadeOut, ScrollingTexture, Side, Speed,
         SwayingCamera, Team, UiCamera,
@@ -199,14 +199,14 @@ fn spawn_level(
         .mul_transform(Transform::from_translation(
             LEVEL_CENTER_POINT.with_z(0.5 * game_config.beach_width),
         ));
-        let goal_bounds = (0.5 * game_config.beach_width)
-            - (0.5 * game_config.barrier_diameter)
-            - (0.5 * game_config.crab_width);
 
         let goal_entity = commands
             .spawn((
                 Goal,
-                GoalBounds::new(-goal_bounds, goal_bounds),
+                GoalMouth {
+                    width: game_config.beach_width
+                        - game_config.barrier_diameter,
+                },
                 Team::default(),
                 HitPoints::default(),
                 side,

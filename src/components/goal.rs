@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use derive_new::new;
 
 use crate::{
     components::Fade,
@@ -11,7 +10,7 @@ use crate::{
 };
 
 use super::{
-    Ball, CircleCollider, Collider, Crab, Force, Movement, Speed,
+    Ball, CircleCollider, Collider, Crab, CrabCollider, Force, Movement, Speed,
     StoppingDistance,
 };
 
@@ -44,23 +43,22 @@ impl Plugin for GoalPlugin {
 #[require(Transform, Visibility)]
 pub struct Goal;
 
-/// Specifies the maximum movement area of a [`Goal`] for its child entities.
-#[derive(Component, Debug, Default, new)]
-#[require(Goal)]
-pub struct GoalBounds {
-    min: f32,
-    max: f32,
-}
-
-/// How many balls a [`Goal`] can take before it's eliminated.
+/// Width of the [`Goal`] mouth.
 #[derive(Component, Debug, Default)]
 #[require(Goal)]
-pub struct HitPoints(pub u8);
+pub struct GoalMouth {
+    pub width: f32,
+}
 
 /// Team ID used to check for win conditions based on [`HitPoints`] value.
 #[derive(Component, Debug, Default)]
 #[require(Goal, HitPoints)]
 pub struct Team(pub usize);
+
+/// How many balls a [`Goal`] can take before it's eliminated.
+#[derive(Component, Debug, Default)]
+#[require(Goal)]
+pub struct HitPoints(pub u8);
 
 /// Signal when a [`Goal`] entity has been scored by a ball.
 #[derive(Clone, Debug, Event)]
@@ -76,29 +74,33 @@ fn restrict_crab_movement_to_space_within_its_own_goal(
         (
             Entity,
             &Parent,
+            &CrabCollider,
             &mut Transform,
             &mut Speed,
             &mut StoppingDistance,
         ),
         (With<Crab>, With<Movement>),
     >,
-    goals_query: Query<&GoalBounds, With<Goal>>,
+    goals_query: Query<&GoalMouth, With<Goal>>,
 ) {
-    for (entity, parent, mut transform, mut speed, mut stopping_distance) in
-        &mut crabs_query
+    for (
+        entity,
+        parent,
+        crab_collider,
+        mut transform,
+        mut speed,
+        mut stopping_distance,
+    ) in &mut crabs_query
     {
-        let Ok(goal_bounds) = goals_query.get(parent.get()) else {
+        let Ok(goal_mouth) = goals_query.get(parent.get()) else {
             continue;
         };
+        let crab_max_x = 0.5 * (goal_mouth.width - crab_collider.width);
 
         // Limit crab movement to the bounds of its own goal.
-        if !(goal_bounds.min..=goal_bounds.max)
-            .contains(&transform.translation.x)
-        {
-            transform.translation.x = transform
-                .translation
-                .x
-                .clamp(goal_bounds.min, goal_bounds.max);
+        if !(-crab_max_x..=crab_max_x).contains(&transform.translation.x) {
+            transform.translation.x =
+                transform.translation.x.clamp(-crab_max_x, crab_max_x);
             speed.0 = 0.0;
             commands.entity(entity).remove::<Force>();
         }
@@ -106,8 +108,8 @@ fn restrict_crab_movement_to_space_within_its_own_goal(
         // Also limit stopping distance to the bounds of the goal.
         let stopped_position = transform.translation.x + stopping_distance.0;
 
-        if !(goal_bounds.min..=goal_bounds.max).contains(&stopped_position) {
-            stopping_distance.0 = stopped_position.signum() * goal_bounds.max
+        if !(-crab_max_x..=crab_max_x).contains(&stopped_position) {
+            stopping_distance.0 = stopped_position.signum() * crab_max_x
                 - transform.translation.x;
         }
     }
