@@ -23,14 +23,6 @@ impl Plugin for AccelerationPlugin {
 #[require(Direction, MaxSpeed, StoppingDistance)]
 pub struct Acceleration(pub f32);
 
-/// Whether the entity has positive or negative force acting on it.
-#[derive(Clone, Component, Copy, Debug, Eq, Hash, PartialEq)]
-#[component(storage = "SparseSet")]
-pub enum Force {
-    Positive,
-    Negative,
-}
-
 /// The maximum speed this entity can reach after accelerating.
 #[derive(Clone, Component, Debug, Default)]
 #[require(Speed)]
@@ -41,14 +33,22 @@ pub struct MaxSpeed(pub f32);
 #[derive(Clone, Component, Debug, Default)]
 pub struct StoppingDistance(pub f32);
 
+/// Whether the entity has positive or negative force acting on it.
+#[derive(Clone, Component, Copy, Debug, Eq, Hash, PartialEq)]
+#[component(storage = "SparseSet")]
+pub enum Force {
+    Positive,
+    Negative,
+}
+
 fn acceleration(
     time: Res<Time>,
     mut query: Query<
-        (&Acceleration, &mut Speed, &Force, &MaxSpeed),
+        (&mut Speed, &Acceleration, &MaxSpeed, &Force),
         With<Motion>,
     >,
 ) {
-    for (acceleration, mut speed, force, max_speed) in &mut query {
+    for (mut speed, acceleration, max_speed, force) in &mut query {
         let delta_speed = acceleration.0 * time.delta_secs();
 
         speed.0 = speed
@@ -65,11 +65,11 @@ fn acceleration(
 fn deceleration(
     time: Res<Time>,
     mut query: Query<
-        (&Acceleration, &mut Speed),
+        (&mut Speed, &Acceleration),
         (With<Motion>, Without<Force>),
     >,
 ) {
-    for (acceleration, mut speed) in &mut query {
+    for (mut speed, acceleration) in &mut query {
         let delta_speed = acceleration.0 * time.delta_secs();
         speed.0 = decelerate_speed(speed.0, delta_speed);
     }
@@ -77,18 +77,18 @@ fn deceleration(
 
 fn stopping_distance(
     mut query: Query<
-        (&mut StoppingDistance, &Acceleration, &Speed),
+        (&mut StoppingDistance, &Speed, &Acceleration),
         With<Motion>,
     >,
 ) {
-    for (mut stopping_distance, acceleration, speed) in &mut query {
+    for (mut stopping_distance, speed, acceleration) in &mut query {
         const DELTA_SECONDS: f32 = 0.01;
         let delta_speed = acceleration.0 * DELTA_SECONDS;
         let mut current_speed = speed.0;
 
-        stopping_distance.0 = 0f32;
+        stopping_distance.0 = 0.;
 
-        while current_speed.abs() > 0.0 {
+        while current_speed.abs() > 0. {
             stopping_distance.0 += current_speed * DELTA_SECONDS;
             current_speed = decelerate_speed(current_speed, delta_speed);
         }
@@ -96,5 +96,5 @@ fn stopping_distance(
 }
 
 fn decelerate_speed(speed: f32, delta_speed: f32) -> f32 {
-    speed.abs().sub(delta_speed).max(0.0).copysign(speed)
+    speed.abs().sub(delta_speed).max(0.).copysign(speed)
 }
