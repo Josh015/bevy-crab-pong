@@ -2,7 +2,6 @@
 
 mod assets;
 mod components;
-mod events;
 mod spawners;
 mod states;
 mod system_params;
@@ -36,7 +35,6 @@ fn main() {
         .add_plugins((
             assets::AssetsPlugin,
             components::ComponentsPlugin,
-            events::EventsPlugin,
             spawners::SpawnersPlugin,
             states::StatesPlugin,
             system_params::SystemParamsPlugin,

@@ -3,7 +3,6 @@ use leafwing_input_manager::prelude::*;
 
 use crate::{
     assets::{GameAssets, GameConfig},
-    events::WinningTeam,
     spawners::SpawnUiMessage,
     states::GameState,
     system_params::GameModes,
@@ -30,6 +29,10 @@ impl Plugin for MenuPlugin {
             );
     }
 }
+
+/// The team that won the previous round.
+#[derive(Debug, Default, Resource)]
+pub struct WinningTeam(pub usize);
 
 // List of user actions associated to menu/ui interaction
 #[derive(Actionlike, Clone, Copy, Debug, Eq, Hash, PartialEq, Reflect)]
