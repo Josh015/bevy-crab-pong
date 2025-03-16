@@ -214,6 +214,13 @@ fn spawn_level(
             ))
             .id();
 
+        // Pole
+        commands.trigger(SpawnPole {
+            goal_entity,
+            fade_in: false,
+        });
+
+        // HP
         let (offset, anchorwidth, anchorheight) = hp_ui_configs[&side];
 
         commands.spawn((
@@ -232,12 +239,6 @@ fn spawn_level(
             },
             TextColor(Srgba::RED.into()),
         ));
-
-        // Pole
-        commands.trigger(SpawnPole {
-            goal_entity,
-            fade_in: false,
-        });
 
         // Corner Barriers
         commands.spawn((
