@@ -34,10 +34,6 @@ pub struct HitPoints(pub u8);
 #[require(Goal, HitPoints)]
 pub struct Team(pub usize);
 
-/// The team that won the previous round.
-#[derive(Debug, Default, Resource)]
-pub struct WinningTeam(pub usize);
-
 fn check_if_a_ball_has_scored_in_a_goal(
     mut commands: Commands,
     mut goal_scored_events: EventWriter<GoalScoredEvent>,

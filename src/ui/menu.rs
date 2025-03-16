@@ -3,7 +3,7 @@ use leafwing_input_manager::prelude::*;
 
 use crate::{
     assets::{GameAssets, GameConfig},
-    components::WinningTeam,
+    events::WinningTeam,
     spawners::SpawnUiMessage,
     states::GameState,
     system_params::GameModes,

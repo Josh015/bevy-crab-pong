@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{Goal, HitPoints, Team, WinningTeam},
+    components::{Goal, HitPoints, Team},
     spawners::SpawnPole,
     states::GameState,
     system_sets::ActiveDuringGameplaySet,
@@ -16,9 +16,8 @@ impl Plugin for EventsPlugin {
             .add_systems(
                 PostUpdate,
                 (
-                    decrement_hp_when_goal_gets_scored,
-                    block_eliminated_goals,
-                    check_for_winning_team,
+                    decrement_hp_and_check_for_eliminated_goals,
+                    block_eliminated_goals_and_check_for_winning_team,
                 )
                     .chain()
                     .in_set(ActiveDuringGameplaySet),
@@ -34,7 +33,11 @@ pub struct GoalScoredEvent(pub Entity);
 #[derive(Clone, Debug, Event)]
 pub struct GoalEliminatedEvent(pub Entity);
 
-fn decrement_hp_when_goal_gets_scored(
+/// The team that won the previous round.
+#[derive(Debug, Default, Resource)]
+pub struct WinningTeam(pub usize);
+
+fn decrement_hp_and_check_for_eliminated_goals(
     mut goal_scored_events: EventReader<GoalScoredEvent>,
     mut goal_eliminated_events: EventWriter<GoalEliminatedEvent>,
     mut hp_query: Query<&mut HitPoints, With<Goal>>,
@@ -54,25 +57,20 @@ fn decrement_hp_when_goal_gets_scored(
     }
 }
 
-fn block_eliminated_goals(
-    mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
-    mut commands: Commands,
-) {
-    for GoalEliminatedEvent(goal_entity) in goal_eliminated_events.read() {
-        commands.trigger(SpawnPole {
-            goal_entity: *goal_entity,
-            fade_in: true,
-        });
-    }
-}
-
-fn check_for_winning_team(
+fn block_eliminated_goals_and_check_for_winning_team(
     mut commands: Commands,
     mut goal_eliminated_events: EventReader<GoalEliminatedEvent>,
     mut next_game_state: ResMut<NextState<GameState>>,
     teams_query: Query<(&Team, &HitPoints), With<Goal>>,
 ) {
-    for GoalEliminatedEvent(_) in goal_eliminated_events.read() {
+    for GoalEliminatedEvent(goal_entity) in goal_eliminated_events.read() {
+        // Block eliminated goals.
+        commands.trigger(SpawnPole {
+            goal_entity: *goal_entity,
+            fade_in: true,
+        });
+
+        // Check for a winning team.
         let mut winning_team = None;
         let survivor = teams_query.iter().find(|(_, hp)| hp.0 > 0);
 
