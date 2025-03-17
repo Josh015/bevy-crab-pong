@@ -1,7 +1,7 @@
 mod insert_after_fade_in;
 mod remove_before_fade_out;
 
-use std::{f32::EPSILON, time::Duration};
+use std::time::Duration;
 
 pub use insert_after_fade_in::*;
 pub use remove_before_fade_out::*;
@@ -107,8 +107,7 @@ fn start_fading(
             material.base_color.set_alpha(start);
         },
         FadeEffect::ScaleAxisMask(axis_mask) => {
-            let masked_start = transform.scale
-                + (Vec3::splat(EPSILON) - transform.scale) * axis_mask;
+            let masked_start = transform.scale * (Vec3::ONE - axis_mask);
             let (start, end) = match *fade {
                 Fade::In => (masked_start, transform.scale),
                 Fade::Out => (transform.scale, masked_start),
