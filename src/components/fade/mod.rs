@@ -165,19 +165,21 @@ fn clean_up_components_or_entities_after_they_finish_fading(
     query: Query<(Entity, &Fade, &FadeTimer)>,
 ) {
     for (entity, fade, fade_timer) in &query {
-        if fade_timer.0.finished() {
-            match fade {
-                Fade::In => {
-                    commands
-                        .entity(entity)
-                        .remove::<(Fade, FadeTimer, FadeTransition)>();
-                    info!("Entity({entity:?}): Started Moving");
-                },
-                Fade::Out => {
-                    commands.entity(entity).despawn_recursive();
-                    info!("Entity({entity:?}): Despawned");
-                },
-            }
+        if !fade_timer.0.finished() {
+            continue;
+        }
+
+        match fade {
+            Fade::In => {
+                commands
+                    .entity(entity)
+                    .remove::<(Fade, FadeTimer, FadeTransition)>();
+                info!("Entity({entity:?}): Started Moving");
+            },
+            Fade::Out => {
+                commands.entity(entity).despawn_recursive();
+                info!("Entity({entity:?}): Despawned");
+            },
         }
     }
 }
