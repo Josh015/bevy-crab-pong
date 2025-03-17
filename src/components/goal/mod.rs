@@ -9,7 +9,9 @@ pub use team::*;
 use bevy::prelude::*;
 
 use crate::{
-    components::Fade, spawners::SpawnPole, system_params::Goals,
+    components::{Fade, StartFading},
+    spawners::SpawnPole,
+    system_params::Goals,
     system_sets::ActiveDuringGameplaySet,
 };
 
@@ -67,7 +69,7 @@ fn check_if_a_ball_has_scored_in_a_goal(
             let ball_distance = goal.distance_to(global_transform);
 
             if ball_distance <= collider.radius {
-                commands.entity(ball_entity).insert(Fade::new_out());
+                commands.trigger(StartFading(Fade::Out, ball_entity));
                 goal_scored_events.send(GoalScoredEvent(goal_entity));
                 info!("Ball({ball_entity:?}): Scored Goal({goal_entity:?})");
             }

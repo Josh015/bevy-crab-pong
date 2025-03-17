@@ -3,7 +3,7 @@ use strum::IntoEnumIterator;
 
 use crate::states::GameState;
 
-use super::{Fade, FadeEffect};
+use super::{Fade, FadeEffect, StartFading};
 
 pub(super) struct ForStatesPlugin;
 
@@ -30,7 +30,7 @@ fn despawn_invalid_entities_for_state<S: States>(
     for (entity, for_states, has_fade_effect) in &query {
         if !for_states.0.contains(game_state.get()) {
             if has_fade_effect {
-                commands.entity(entity).insert(Fade::new_out());
+                commands.trigger(StartFading(Fade::Out, entity));
             } else {
                 commands.entity(entity).despawn_recursive();
             }

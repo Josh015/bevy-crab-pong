@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::{math::Affine2, prelude::*, utils::HashMap};
 use bevy_ui_anchor::{
     AnchorTarget, AnchorUiNode, HorizontalAnchor, VerticalAnchor,
@@ -9,10 +11,10 @@ use crate::{
     assets::{CachedAssets, CrabController, GameAssets, GameConfig},
     components::{
         AI, Acceleration, Ball, CircleCollider, Collider, Crab, CrabCollider,
-        DepthCollider, Direction, Fade, FadeEffect, ForStates, Goal, GoalMouth,
-        HitPoints, HitPointsUi, InsertAfterFadeIn, MaxSpeed, Motion, Player,
-        Pole, RemoveBeforeFadeOut, ScrollingTexture, Side, Speed,
-        SwayingCamera, Team, UiCamera,
+        DepthCollider, Direction, Fade, FadeDuration, FadeEffect, ForStates,
+        Goal, GoalMouth, HitPoints, HitPointsUi, InsertAfterFadeIn, MaxSpeed,
+        Motion, Player, Pole, RemoveBeforeFadeOut, ScrollingTexture, Side,
+        Speed, StartFading, SwayingCamera, Team, UiCamera,
     },
     states::GameState,
     system_params::GameModes,
@@ -297,73 +299,62 @@ fn spawn_crabs_for_each_side(
     for (goal_entity, side, children) in &goals_query {
         if let Some(children) = children {
             for child in children {
-                commands.entity(*child).insert(Fade::new_out());
+                commands.trigger(StartFading(Fade::Out, *child));
             }
         }
 
         let crab_config = &game_modes.current().competitors[side];
+        let mut crab_commands = commands.spawn((
+            Crab,
+            Collider,
+            CrabCollider {
+                width: game_config.crab_width,
+            },
+            DepthCollider {
+                depth: game_config.crab_depth,
+            },
+            FadeEffect::ScaleAxisMask(Vec3::ONE),
+            FadeDuration(Duration::from_secs_f32(
+                game_config.crab_fade_time_in_secs,
+            )),
+            InsertAfterFadeIn::<Motion>::default(),
+            RemoveBeforeFadeOut::<Motion>::default(),
+            RemoveBeforeFadeOut::<Collider>::default(),
+            Direction(Dir3::X),
+            MaxSpeed(crab_config.max_speed),
+            Acceleration(
+                crab_config.max_speed / crab_config.seconds_to_max_speed,
+            ),
+            Mesh3d(cached_assets.crab_mesh.clone()),
+            MeshMaterial3d(materials.add(StandardMaterial {
+                base_color_texture: Some(game_assets.image_crab.clone()),
+                base_color: Srgba::hex(&crab_config.color).unwrap().into(),
+                ..default()
+            })),
+            Transform::from_matrix(Mat4::from_scale_rotation_translation(
+                Vec3::new(
+                    game_config.crab_width,
+                    game_config.crab_depth,
+                    game_config.crab_depth,
+                ),
+                Quat::IDENTITY,
+                GOAL_ENTITY_LOCAL_START_POSITION
+                    .with_y(game_config.crab_height_from_ground),
+            )),
+        ));
 
-        let id = commands
-            .entity(goal_entity)
-            .with_children(|builder| {
-                let mut crab = builder.spawn((
-                    Crab,
-                    Collider,
-                    CrabCollider {
-                        width: game_config.crab_width,
-                    },
-                    DepthCollider {
-                        depth: game_config.crab_depth,
-                    },
-                    InsertAfterFadeIn::<Motion>::default(),
-                    RemoveBeforeFadeOut::<Motion>::default(),
-                    RemoveBeforeFadeOut::<Collider>::default(),
-                    Fade::new_in(),
-                    FadeEffect::Scale {
-                        max_scale: Vec3::new(
-                            game_config.crab_width,
-                            game_config.crab_depth,
-                            game_config.crab_depth,
-                        ),
-                        axis_mask: Vec3::ONE,
-                    },
-                    Direction(Dir3::X),
-                    MaxSpeed(crab_config.max_speed),
-                    Acceleration(
-                        crab_config.max_speed
-                            / crab_config.seconds_to_max_speed,
-                    ),
-                    Mesh3d(cached_assets.crab_mesh.clone()),
-                    MeshMaterial3d(materials.add(StandardMaterial {
-                        base_color_texture: Some(
-                            game_assets.image_crab.clone(),
-                        ),
-                        base_color:
-                            Srgba::hex(&crab_config.color).unwrap().into(),
-                        ..default()
-                    })),
-                    Transform::from_matrix(
-                        Mat4::from_scale_rotation_translation(
-                            Vec3::splat(f32::EPSILON),
-                            Quat::IDENTITY,
-                            GOAL_ENTITY_LOCAL_START_POSITION
-                                .with_y(game_config.crab_height_from_ground),
-                        ),
-                    ),
-                ));
+        crab_commands.insert(*side);
 
-                if crab_config.controller == CrabController::AI {
-                    crab.insert(AI);
-                } else {
-                    crab.insert(Player);
-                }
+        if crab_config.controller == CrabController::AI {
+            crab_commands.insert(AI);
+        } else {
+            crab_commands.insert(Player);
+        }
 
-                // TODO: Remove.
-                crab.insert(*side);
-            })
-            .id();
-
-        info!("Crab({id:?}): Spawned");
+        let crab_entity = crab_commands.id();
+        commands.entity(goal_entity).add_child(crab_entity);
+        commands.trigger(StartFading(Fade::In, crab_entity));
+        info!("Crab({crab_entity:?}): Spawned");
     }
 }
 
@@ -372,11 +363,17 @@ fn spawn_balls_sequentially_up_to_max_count(
     mut materials: ResMut<Assets<StandardMaterial>>,
     cached_assets: Res<CachedAssets>,
     game_modes: GameModes,
+    moving_crabs_query: Query<Entity, With<Motion>>,
     non_moving_balls_query: Query<Entity, (With<Ball>, Without<Motion>)>,
     balls_query: Query<Entity, With<Ball>>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
 ) {
+    // Wait for crabs to finish spawning.
+    if moving_crabs_query.iter().len() == 0 {
+        return;
+    }
+
     // Wait for previously spawned ball to finish appearing.
     if non_moving_balls_query.iter().len() >= 1 {
         return;
@@ -395,14 +392,16 @@ fn spawn_balls_sequentially_up_to_max_count(
     let mut rng = SmallRng::from_os_rng();
     let angle = rng.random_range(0.0..std::f32::consts::TAU);
     let (angle_sin, angle_cos) = angle.sin_cos();
-
-    let ball = commands
+    let ball_entity = commands
         .spawn((
             Ball,
             CircleCollider {
                 radius: game_mode.ball_scale * game_config.ball_diameter * 0.5,
             },
-            Fade::new_in(),
+            FadeEffect::Opacity,
+            FadeDuration(Duration::from_secs_f32(
+                game_config.ball_fade_time_in_secs,
+            )),
             InsertAfterFadeIn::<Motion>::default(),
             InsertAfterFadeIn::<Collider>::default(),
             RemoveBeforeFadeOut::<Collider>::default(),
@@ -412,11 +411,7 @@ fn spawn_balls_sequentially_up_to_max_count(
             ))),
             Speed(game_mode.ball_speed),
             Mesh3d(cached_assets.ball_mesh.clone()),
-            MeshMaterial3d(materials.add(StandardMaterial {
-                alpha_mode: AlphaMode::Blend,
-                base_color: Color::srgba(1.0, 1.0, 1.0, 0.0),
-                ..default()
-            })),
+            MeshMaterial3d(materials.add(Color::WHITE)),
             Transform::from_matrix(Mat4::from_scale_rotation_translation(
                 Vec3::splat(game_mode.ball_scale * game_config.ball_diameter),
                 Quat::IDENTITY,
@@ -427,7 +422,8 @@ fn spawn_balls_sequentially_up_to_max_count(
         ))
         .id();
 
-    info!("Ball({ball:?}): Spawned");
+    commands.trigger(StartFading(Fade::In, ball_entity));
+    info!("Ball({ball_entity:?}): Spawned");
 }
 
 fn spawn_pole_in_a_goal(
@@ -445,52 +441,50 @@ fn spawn_pole_in_a_goal(
 
     if let Ok(Some(children)) = goals_query.get(*goal_entity) {
         for child in children {
-            commands.entity(*child).insert(Fade::new_out());
+            commands.trigger(StartFading(Fade::Out, *child));
         }
     }
 
     let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let id = commands
-        .entity(*goal_entity)
-        .with_children(|builder| {
-            builder.spawn((
-                Pole,
-                Collider,
-                DepthCollider {
-                    depth: game_config.pole_diameter,
-                },
-                RemoveBeforeFadeOut::<Collider>::default(),
-                if *fade_in {
-                    Fade::new_in()
-                } else {
-                    Fade::In(Timer::default()) // Skip to end of animation.
-                },
-                FadeEffect::Scale {
-                    max_scale: Vec3::new(
-                        game_config.pole_diameter,
-                        game_config.beach_width,
-                        game_config.pole_diameter,
-                    ),
-                    axis_mask: Vec3::new(1.0, 0.0, 1.0),
-                },
-                Mesh3d(cached_assets.pole_mesh.clone()),
-                MeshMaterial3d(cached_assets.pole_material.clone()),
-                Transform::from_matrix(Mat4::from_scale_rotation_translation(
-                    Vec3::splat(f32::EPSILON),
-                    Quat::from_euler(
-                        EulerRot::XYZ,
-                        0.0,
-                        0.0,
-                        std::f32::consts::FRAC_PI_2,
-                    ),
-                    GOAL_ENTITY_LOCAL_START_POSITION
-                        .with_y(game_config.pole_height_from_ground),
-                )),
-            ));
-        })
+    let pole_entity = commands
+        .spawn((
+            Pole,
+            Collider,
+            DepthCollider {
+                depth: game_config.pole_diameter,
+            },
+            FadeEffect::ScaleAxisMask(Vec3::X + Vec3::Z),
+            FadeDuration(Duration::from_secs_f32(
+                game_config.pole_fade_time_in_secs,
+            )),
+            RemoveBeforeFadeOut::<Collider>::default(),
+            Mesh3d(cached_assets.pole_mesh.clone()),
+            MeshMaterial3d(cached_assets.pole_material.clone()),
+            Transform::from_matrix(Mat4::from_scale_rotation_translation(
+                Vec3::new(
+                    game_config.pole_diameter,
+                    game_config.beach_width,
+                    game_config.pole_diameter,
+                ),
+                Quat::from_euler(
+                    EulerRot::XYZ,
+                    0.0,
+                    0.0,
+                    std::f32::consts::FRAC_PI_2,
+                ),
+                GOAL_ENTITY_LOCAL_START_POSITION
+                    .with_y(game_config.pole_height_from_ground),
+            )),
+        ))
         .id();
 
-    info!("Pole({id:?}): Spawned");
+    commands.entity(*goal_entity).add_child(pole_entity);
+
+    if *fade_in {
+        commands.trigger(StartFading(Fade::In, pole_entity));
+    }
+
+    info!("Pole({pole_entity:?}): Spawned");
 }
 
 fn spawn_ui_message(

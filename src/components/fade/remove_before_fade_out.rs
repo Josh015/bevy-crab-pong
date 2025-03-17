@@ -30,7 +30,7 @@ fn remove_component_before_fading_out<B: Bundle>(
     query: Query<(Entity, &Fade), (With<RemoveBeforeFadeOut<B>>, Added<Fade>)>,
 ) {
     for (entity, fade) in &query {
-        if matches!(fade, Fade::Out(_)) {
+        if *fade == Fade::Out {
             commands.entity(entity).remove::<B>();
         }
     }

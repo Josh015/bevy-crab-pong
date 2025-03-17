@@ -1,11 +1,12 @@
 mod insert_after_fade_in;
 mod remove_before_fade_out;
 
+use std::{f32::EPSILON, time::Duration};
+
 pub use insert_after_fade_in::*;
 pub use remove_before_fade_out::*;
 
 use bevy::prelude::*;
-use derive_new::new;
 
 use crate::system_sets::StopWhenPausedSet;
 
@@ -16,9 +17,10 @@ pub(super) struct FadePlugin;
 impl Plugin for FadePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((InsertAfterFadeInPlugin, RemoveBeforeFadeOutPlugin))
+            .add_observer(start_fading)
             .add_systems(
                 PostUpdate,
-                animate_fade_effect.in_set(StopWhenPausedSet),
+                fade_transition_over_time.in_set(StopWhenPausedSet),
             )
             .add_systems(
                 Last,
@@ -27,14 +29,21 @@ impl Plugin for FadePlugin {
     }
 }
 
-/// Makes an entity fade in/out and delay activation/despawning respectively.
-#[derive(Clone, Component, Debug, Eq, new, PartialEq)]
-#[require(FadeEffect)]
-#[component(storage = "SparseSet")]
+/// An event fired to make an entity start fading.
+#[derive(Debug, Event)]
+pub struct StartFading(pub Fade, pub Entity);
+
+/// Which direction the entity
+#[derive(Clone, Component, Copy, Debug, Default, Eq, PartialEq)]
 pub enum Fade {
-    In(#[new(value = "Timer::from_seconds(0.5, TimerMode::Once)")] Timer),
-    Out(#[new(value = "Timer::from_seconds(0.5, TimerMode::Once)")] Timer),
+    #[default]
+    In,
+    Out,
 }
+
+/// Specifies how long an entity takes to fade.
+#[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
+pub struct FadeDuration(pub Duration);
 
 /// Specifies an entity's fade effect animation.
 #[derive(Clone, Component, Copy, Debug, Default, PartialEq)]
@@ -46,60 +55,107 @@ pub enum FadeEffect {
     #[default]
     Opacity,
 
-    /// Uses scale to grow/shrink an entity.
+    /// Uses scale to grow/shrink an entity with axis masked using 0/1.
     ///
-    /// Will take control of the entity's [`Transform`] `scale`. It must start
-    /// with a non-zero scale, or the entity won't appear at all.
-    Scale {
-        /// The maximum scale to start/end with when fading out/in.
-        max_scale: Vec3,
-
-        /// Use either 0/1 to remove/mark an axis for the scale effect.
-        axis_mask: Vec3,
-    },
+    /// Will take control of the entity's [`Transform`] `scale`.
+    ScaleAxisMask(Vec3),
 }
 
-fn animate_fade_effect(
+#[derive(Clone, Component, Debug, Default, PartialEq)]
+struct FadeTimer(Timer);
+
+#[derive(Clone, Component, Copy, Debug, PartialEq)]
+enum FadeTransition {
+    Opacity(f32, f32, AlphaMode),
+    Scale(Vec3, Vec3),
+}
+
+fn start_fading(
+    trigger: Trigger<StartFading>,
+    mut commands: Commands,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut query: Query<(
+        &FadeEffect,
+        &FadeDuration,
+        &mut Transform,
+        &MeshMaterial3d<StandardMaterial>,
+    )>,
+) {
+    let StartFading(fade, entity) = trigger.event();
+    let Ok((fade_effect, fade_duration, mut transform, material)) =
+        query.get_mut(*entity)
+    else {
+        return;
+    };
+
+    match fade_effect {
+        FadeEffect::Opacity => {
+            let material = materials.get_mut(material).unwrap();
+            let (start, end, alpha_mode) = match *fade {
+                Fade::In => {
+                    (0.0, material.base_color.alpha(), material.alpha_mode)
+                },
+                Fade::Out => {
+                    (material.base_color.alpha(), 0.0, AlphaMode::Blend)
+                },
+            };
+
+            commands
+                .entity(*entity)
+                .insert(FadeTransition::Opacity(start, end, alpha_mode));
+            material.alpha_mode = AlphaMode::Blend;
+            material.base_color.set_alpha(start);
+        },
+        FadeEffect::ScaleAxisMask(axis_mask) => {
+            let masked_start = transform.scale
+                + (Vec3::splat(EPSILON) - transform.scale) * axis_mask;
+            let (start, end) = match *fade {
+                Fade::In => (masked_start, transform.scale),
+                Fade::Out => (transform.scale, masked_start),
+            };
+
+            commands
+                .entity(*entity)
+                .insert(FadeTransition::Scale(start, end));
+            transform.scale = start;
+        },
+    }
+
+    commands.entity(*entity).insert((
+        *fade,
+        FadeTimer(Timer::new(fade_duration.0, TimerMode::Once)),
+    ));
+    info!("Entity({entity:?}): Start Fading");
+}
+
+fn fade_transition_over_time(
     time: Res<Time>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<(
-        &mut Fade,
+        &mut FadeTimer,
+        &FadeTransition,
         &mut Transform,
         &MeshMaterial3d<StandardMaterial>,
-        &FadeEffect,
     )>,
 ) {
-    for (mut fade, mut transform, material, effect) in &mut query {
-        let weight = match *fade {
-            Fade::In(ref mut timer) => {
-                timer.tick(time.delta());
-                timer.fraction()
-            },
-            Fade::Out(ref mut timer) => {
-                timer.tick(time.delta());
-                1.0 - timer.fraction()
-            },
-        };
+    for (mut fade_timer, fade_transition, mut transform, material) in &mut query
+    {
+        fade_timer.0.tick(time.delta());
 
-        match *effect {
-            FadeEffect::Scale {
-                max_scale,
-                axis_mask,
-            } => {
-                transform.scale = max_scale
-                    * (Vec3::ONE
-                        + (Vec3::splat(weight) - Vec3::ONE) * axis_mask);
+        let weight = fade_timer.0.fraction();
+
+        match *fade_transition {
+            FadeTransition::Scale(start, end) => {
+                transform.scale = start.lerp(end, weight);
             },
-            FadeEffect::Opacity => {
+            FadeTransition::Opacity(start, end, alpha_mode) => {
                 let material = materials.get_mut(material).unwrap();
 
-                material.base_color = material.base_color.with_alpha(weight);
+                material.base_color.set_alpha(start.lerp(end, weight));
 
-                material.alpha_mode = if weight < 1.0 {
-                    AlphaMode::Blend
-                } else {
-                    AlphaMode::Opaque
-                };
+                if weight >= 1.0 {
+                    material.alpha_mode = alpha_mode;
+                }
             },
         }
     }
@@ -107,22 +163,22 @@ fn animate_fade_effect(
 
 fn clean_up_components_or_entities_after_they_finish_fading(
     mut commands: Commands,
-    query: Query<(Entity, &Fade)>,
+    query: Query<(Entity, &Fade, &FadeTimer)>,
 ) {
-    for (entity, fade) in &query {
-        match fade {
-            Fade::In(timer) => {
-                if timer.finished() {
-                    commands.entity(entity).remove::<Fade>();
+    for (entity, fade, fade_timer) in &query {
+        if fade_timer.0.finished() {
+            match fade {
+                Fade::In => {
+                    commands
+                        .entity(entity)
+                        .remove::<(Fade, FadeTimer, FadeTransition)>();
                     info!("Entity({entity:?}): Started Moving");
-                }
-            },
-            Fade::Out(timer) => {
-                if timer.finished() {
+                },
+                Fade::Out => {
                     commands.entity(entity).despawn_recursive();
                     info!("Entity({entity:?}): Despawned");
-                }
-            },
+                },
+            }
         }
     }
 }
