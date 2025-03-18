@@ -75,12 +75,12 @@ fn show_start_menu_ui(
     winning_team: Option<Res<WinningTeam>>,
 ) {
     let winning_team_messages = [
-        t!("ui.start_menu.winning_team_messages.draw"),
-        t!("ui.start_menu.winning_team_messages.player_won"),
-        t!("ui.start_menu.winning_team_messages.player_lost"),
-        t!("ui.start_menu.winning_team_messages.reds_won"),
-        t!("ui.start_menu.winning_team_messages.greens_won"),
-        t!("ui.start_menu.winning_team_messages.blues_won"),
+        t!("ui.start_menu.winning_team.draw"),
+        t!("ui.start_menu.winning_team.player"),
+        t!("ui.start_menu.winning_team.ai"),
+        t!("ui.start_menu.winning_team.reds"),
+        t!("ui.start_menu.winning_team.greens"),
+        t!("ui.start_menu.winning_team.blues"),
     ];
     let mut message = String::from(match winning_team {
         Some(winning_team) => winning_team_messages[winning_team.0].to_string(),

@@ -13,20 +13,20 @@ ui.start_menu.new_game:
     WASD / ARROWS to move the crab.\n
     1-6 to enable debugging gizmos."
 
-ui.start_menu.winning_team_messages.draw:
+ui.start_menu.winning_team.draw:
   en: "It's a draw!\n"
 
-ui.start_menu.winning_team_messages.player_won:
+ui.start_menu.winning_team.player:
   en: "You win!\n"
 
-ui.start_menu.winning_team_messages.player_lost:
+ui.start_menu.winning_team.ai:
   en: "You lose.\n"
 
-ui.start_menu.winning_team_messages.reds_won:
+ui.start_menu.winning_team.reds:
   en: "Reds win!\n"
 
-ui.start_menu.winning_team_messages.greens_won:
+ui.start_menu.winning_team.greens:
   en: "Greens win!\n"
 
-ui.start_menu.winning_team_messages.blues_won:
+ui.start_menu.winning_team.blues:
   en: "Blues win!\n"
