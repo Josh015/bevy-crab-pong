@@ -74,20 +74,20 @@ fn show_start_menu_ui(
     mut commands: Commands,
     winning_team: Option<Res<WinningTeam>>,
 ) {
-    let win_messages = [
-        t!("ui.start_menu.team_win_messages.draw"),
-        t!("ui.start_menu.team_win_messages.player_won"),
-        t!("ui.start_menu.team_win_messages.player_lost"),
-        t!("ui.start_menu.team_win_messages.reds_won"),
-        t!("ui.start_menu.team_win_messages.greens_won"),
-        t!("ui.start_menu.team_win_messages.blues_won"),
+    let winning_team_messages = [
+        t!("ui.start_menu.winning_team_messages.draw"),
+        t!("ui.start_menu.winning_team_messages.player_won"),
+        t!("ui.start_menu.winning_team_messages.player_lost"),
+        t!("ui.start_menu.winning_team_messages.reds_won"),
+        t!("ui.start_menu.winning_team_messages.greens_won"),
+        t!("ui.start_menu.winning_team_messages.blues_won"),
     ];
     let mut message = String::from(match winning_team {
-        Some(winning_team) => win_messages[winning_team.0].to_string(),
+        Some(winning_team) => winning_team_messages[winning_team.0].to_string(),
         _ => "".to_string(),
     });
 
-    message.push_str(&t!("ui.start_menu.new_game_message"));
+    message.push_str(&t!("ui.start_menu.new_game"));
 
     commands.trigger(SpawnUiMessage {
         message,
@@ -97,7 +97,7 @@ fn show_start_menu_ui(
 
 fn show_pause_ui(mut commands: Commands) {
     commands.trigger(SpawnUiMessage {
-        message: t!("ui.gameplay.pause_message").to_string(),
+        message: t!("ui.pause_menu.paused").to_string(),
         game_state: GameState::Paused,
     });
 }
