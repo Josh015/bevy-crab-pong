@@ -19,11 +19,11 @@ use strum::IntoEnumIterator;
 use crate::{
     assets::{CachedAssets, CrabController, GameAssets, GameConfig},
     components::{
-        AI, Acceleration, Ball, CircleCollider, Collider, Crab, CrabCollider,
-        DepthCollider, Direction, Fade, FadeDuration, FadeEffect, ForStates,
-        Goal, GoalMouth, HitPoints, HitPointsUi, InsertAfterFadeIn, MaxSpeed,
-        Motion, Player, Pole, RemoveBeforeFadeOut, ScrollingTexture, Side,
-        Speed, StartFading, SwayingCamera, Team, UiCamera,
+        AI, Acceleration, AnchoredUiCamera, Ball, CircleCollider, Collider,
+        Crab, CrabCollider, DepthCollider, Direction, Fade, FadeDuration,
+        FadeEffect, ForStates, Goal, GoalMouth, HitPoints, HitPointsUi,
+        InsertAfterFadeIn, MaxSpeed, Motion, Player, Pole, RemoveBeforeFadeOut,
+        ScrollingTexture, Side, Speed, StartFading, SwayingCamera, Team,
     },
     states::GameState,
     system_params::GameModes,
@@ -94,7 +94,7 @@ fn spawn_level(
             ..default()
         },
         IsDefaultUiCamera,
-        UiCamera,
+        AnchoredUiCamera,
         SwayingCamera {
             target: LEVEL_CENTER_POINT,
             starting_position: Vec3::new(0., 2., 1.5),
