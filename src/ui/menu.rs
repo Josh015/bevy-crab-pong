@@ -1,8 +1,8 @@
 use bevy::{prelude::*, window::WindowFocused};
 use leafwing_input_manager::prelude::*;
+use rust_i18n::t;
 
 use crate::{
-    assets::{GameAssets, GameConfig},
     components::Player,
     spawners::SpawnUiMessage,
     states::GameState,
@@ -72,17 +72,22 @@ impl MenuAction {
 
 fn show_start_menu_ui(
     mut commands: Commands,
-    game_assets: Res<GameAssets>,
-    game_configs: Res<Assets<GameConfig>>,
     winning_team: Option<Res<WinningTeam>>,
 ) {
-    let game_config = game_configs.get(&game_assets.game_config).unwrap();
+    let win_messages = [
+        t!("ui.start_menu.team_win_messages.draw"),
+        t!("ui.start_menu.team_win_messages.player_won"),
+        t!("ui.start_menu.team_win_messages.player_lost"),
+        t!("ui.start_menu.team_win_messages.reds_won"),
+        t!("ui.start_menu.team_win_messages.greens_won"),
+        t!("ui.start_menu.team_win_messages.blues_won"),
+    ];
     let mut message = String::from(match winning_team {
-        Some(winning_team) => &game_config.team_win_messages[winning_team.0],
-        _ => "",
+        Some(winning_team) => win_messages[winning_team.0].to_string(),
+        _ => "".to_string(),
     });
 
-    message.push_str(&game_config.new_game_message);
+    message.push_str(&t!("ui.start_menu.new_game_message"));
 
     commands.trigger(SpawnUiMessage {
         message,
@@ -90,15 +95,9 @@ fn show_start_menu_ui(
     });
 }
 
-fn show_pause_ui(
-    mut commands: Commands,
-    game_assets: Res<GameAssets>,
-    game_configs: Res<Assets<GameConfig>>,
-) {
-    let game_config = game_configs.get(&game_assets.game_config).unwrap();
-
+fn show_pause_ui(mut commands: Commands) {
     commands.trigger(SpawnUiMessage {
-        message: game_config.pause_message.clone(),
+        message: t!("ui.gameplay.pause_message").to_string(),
         game_state: GameState::Paused,
     });
 }

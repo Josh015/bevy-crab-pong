@@ -1,0 +1,32 @@
+_version: 2
+
+ui.window.title:
+  en: "Bevy Crab Pong"
+
+ui.gameplay.pause_message:
+  en: "PAUSED"
+
+ui.start_menu.new_game_message:
+  en: "
+    ENTER for a new game.\n
+    ESC to quit.\n
+    WASD / ARROWS to move the crab.\n
+    1-6 to enable debugging gizmos."
+
+ui.start_menu.team_win_messages.draw:
+  en: "It's a draw!\n"
+
+ui.start_menu.team_win_messages.player_won:
+  en: "You win!\n"
+
+ui.start_menu.team_win_messages.player_lost:
+  en: "You lose.\n"
+
+ui.start_menu.team_win_messages.reds_won:
+  en: "Reds win!\n"
+
+ui.start_menu.team_win_messages.greens_won:
+  en: "Greens win!\n"
+
+ui.start_menu.team_win_messages.blues_won:
+  en: "Blues win!\n"

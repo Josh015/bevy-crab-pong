@@ -14,6 +14,9 @@ use bevy::{
     prelude::*,
     window::{PresentMode, WindowResolution},
 };
+use rust_i18n::*;
+
+i18n!("locales", fallback = "en");
 
 fn main() {
     App::new()
@@ -22,7 +25,7 @@ fn main() {
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        title: "Bevy Crab Pong".to_owned(),
+                        title: t!("ui.window.title").to_string(),
                         present_mode: PresentMode::AutoVsync,
                         position: WindowPosition::Centered(
                             MonitorSelection::Primary,

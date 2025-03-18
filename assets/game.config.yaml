@@ -13,16 +13,3 @@ pole_height_from_ground: 0.07
 ball_fade_time_in_secs: 0.5
 ball_diameter: 0.08
 ball_height_from_ground: 0.05
-pause_message: "PAUSED"
-new_game_message: "
-  ENTER for a new game.\n
-  ESC to quit.\n
-  WASD / ARROWS to move the crab.\n
-  1-6 to enable debugging gizmos."
-team_win_messages:
-  - "It's a draw!\n"
-  - "You win!\n"
-  - "You lose.\n"
-  - "Reds win!\n"
-  - "Greens win!\n"
-  - "Blues win!\n"
