@@ -3,7 +3,6 @@ use leafwing_input_manager::prelude::*;
 use rust_i18n::t;
 
 use crate::{
-    assets::{GameAssets, GameConfig},
     components::Player,
     spawners::SpawnUiMessage,
     states::GameState,
@@ -74,18 +73,19 @@ impl MenuAction {
 fn show_start_menu_ui(
     mut commands: Commands,
     winning_team: Option<Res<WinningTeam>>,
-    game_assets: Res<GameAssets>,
-    game_configs: Res<Assets<GameConfig>>,
 ) {
-    let game_config = game_configs.get(&game_assets.game_config).unwrap();
-    let mut message = match winning_team {
-        Some(winning_team) => {
-            let winning_message =
-                game_config.winning_team_messages[winning_team.0].as_str();
-            t!(winning_message).to_string()
-        },
+    let winning_team_messages = [
+        t!("ui.start_menu.winning_team.draw"),
+        t!("ui.start_menu.winning_team.player"),
+        t!("ui.start_menu.winning_team.ai"),
+        t!("ui.start_menu.winning_team.reds"),
+        t!("ui.start_menu.winning_team.greens"),
+        t!("ui.start_menu.winning_team.blues"),
+    ];
+    let mut message = String::from(match winning_team {
+        Some(winning_team) => winning_team_messages[winning_team.0].to_string(),
         _ => "".to_string(),
-    };
+    });
 
     message.push_str(&t!("ui.start_menu.new_game"));
 

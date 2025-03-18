@@ -42,7 +42,6 @@ pub struct GameConfig {
     pub ball_fade_time_in_secs: f32,
     pub ball_diameter: f32,
     pub ball_height_from_ground: f32,
-    pub winning_team_messages: Vec<String>,
 }
 
 #[derive(Asset, Debug, Deserialize, Resource, TypePath)]

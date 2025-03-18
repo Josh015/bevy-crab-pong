@@ -13,10 +13,3 @@ pole_height_from_ground: 0.07
 ball_fade_time_in_secs: 0.5
 ball_diameter: 0.08
 ball_height_from_ground: 0.05
-winning_team_messages:
-  - ui.start_menu.winning_team.draw
-  - ui.start_menu.winning_team.player
-  - ui.start_menu.winning_team.ai
-  - ui.start_menu.winning_team.reds
-  - ui.start_menu.winning_team.greens
-  - ui.start_menu.winning_team.blues
