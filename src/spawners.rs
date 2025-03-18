@@ -85,6 +85,16 @@ fn spawn_level(
 
     // Camera
     commands.spawn((
+        Camera3d::default(),
+        Msaa::Off,
+        TemporalAntiAliasing::default(),
+        ScreenSpaceReflections::default(),
+        ScreenSpaceAmbientOcclusion {
+            quality_level: ScreenSpaceAmbientOcclusionQualityLevel::High,
+            ..default()
+        },
+        IsDefaultUiCamera,
+        UiCamera,
         SwayingCamera {
             target: LEVEL_CENTER_POINT,
             starting_position: Vec3::new(0., 2., 1.5),
@@ -92,17 +102,6 @@ fn spawn_level(
             range: game_config.beach_width * 0.5,
             speed: game_config.swaying_camera_speed,
         },
-        Camera3d::default(),
-        IsDefaultUiCamera,
-        // Msaa::Sample8,
-        Msaa::Off,
-        TemporalAntiAliasing::default(),
-        ScreenSpaceAmbientOcclusion {
-            quality_level: ScreenSpaceAmbientOcclusionQualityLevel::High,
-            ..default()
-        },
-        ScreenSpaceReflections::default(),
-        UiCamera,
     ));
 
     // Light
