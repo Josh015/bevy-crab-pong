@@ -1,6 +1,15 @@
 use std::time::Duration;
 
-use bevy::{math::Affine2, prelude::*, utils::HashMap};
+use bevy::{
+    core_pipeline::experimental::taa::TemporalAntiAliasing,
+    math::Affine2,
+    pbr::{
+        ScreenSpaceAmbientOcclusion, ScreenSpaceAmbientOcclusionQualityLevel,
+        ScreenSpaceReflections,
+    },
+    prelude::*,
+    utils::HashMap,
+};
 use bevy_ui_anchor::{
     AnchorTarget, AnchorUiNode, HorizontalAnchor, VerticalAnchor,
 };
@@ -85,14 +94,14 @@ fn spawn_level(
         },
         Camera3d::default(),
         IsDefaultUiCamera,
-        Msaa::Sample8,
-        // Msaa::Off,
-        // TemporalAntiAliasing::default(),
-        // ScreenSpaceAmbientOcclusion {
-        //     quality_level: ScreenSpaceAmbientOcclusionQualityLevel::High,
-        //     ..default()
-        // },
-        // ScreenSpaceReflections::default(),
+        // Msaa::Sample8,
+        Msaa::Off,
+        TemporalAntiAliasing::default(),
+        ScreenSpaceAmbientOcclusion {
+            quality_level: ScreenSpaceAmbientOcclusionQualityLevel::High,
+            ..default()
+        },
+        ScreenSpaceReflections::default(),
         UiCamera,
     ));
 
@@ -118,11 +127,10 @@ fn spawn_level(
         },
         Mesh3d(meshes.add(Plane3d::default().mesh().size(2.0, 2.0))),
         MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::srgba(1.0, 1.0, 1.0, 0.9),
+            base_color: Color::WHITE,
             base_color_texture: Some(game_assets.image_water.clone()),
-            alpha_mode: AlphaMode::Blend,
-            // perceptual_roughness: 0.0,
-            // reflectance: 1.0,
+            reflectance: 0.2,
+            perceptual_roughness: 0.0,
             uv_transform: Affine2::from_scale(Vec2::new(10., 10.)),
             ..default()
         })),
@@ -140,7 +148,12 @@ fn spawn_level(
 
     commands.spawn((
         Mesh3d(meshes.add(Plane3d::default().mesh().size(1.0, 1.0))),
-        MeshMaterial3d(materials.add(game_assets.image_sand.clone())),
+        MeshMaterial3d(materials.add(StandardMaterial {
+            base_color_texture: Some(game_assets.image_sand.clone()),
+            reflectance: 0.2,
+            perceptual_roughness: 0.3,
+            ..default()
+        })),
         Transform::from_matrix(Mat4::from_scale_rotation_translation(
             Vec3::splat(game_config.beach_width),
             Quat::IDENTITY,
@@ -327,8 +340,10 @@ fn spawn_crabs_for_each_side(
             ),
             Mesh3d(cached_assets.crab_mesh.clone()),
             MeshMaterial3d(materials.add(StandardMaterial {
-                base_color_texture: Some(game_assets.image_crab.clone()),
                 base_color: Srgba::hex(&crab_config.color).unwrap().into(),
+                base_color_texture: Some(game_assets.image_crab.clone()),
+                reflectance: 0.2,
+                perceptual_roughness: 0.2,
                 ..default()
             })),
             Transform::from_matrix(Mat4::from_scale_rotation_translation(

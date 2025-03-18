@@ -9,13 +9,15 @@ mod system_sets;
 mod ui;
 
 use bevy::{
-    // core_pipeline::experimental::taa::TemporalAntiAliasPlugin,
+    core_pipeline::experimental::taa::TemporalAntiAliasPlugin,
+    pbr::DefaultOpaqueRendererMethod,
     prelude::*,
     window::{PresentMode, WindowResolution},
 };
 
 fn main() {
     App::new()
+        .insert_resource(DefaultOpaqueRendererMethod::deferred())
         .add_plugins((
             DefaultPlugins
                 .set(WindowPlugin {
@@ -30,7 +32,9 @@ fn main() {
                 .set(AssetPlugin {
                     ..Default::default()
                 }),
-            // TemporalAntiAliasPlugin,
+            TemporalAntiAliasPlugin,
+            // ScreenSpaceAmbientOcclusionPlugin,
+            // ScreenSpaceReflectionsPlugin,
         ))
         .add_plugins((
             assets::AssetsPlugin,
