@@ -54,7 +54,9 @@ impl MenuAction {
             (Accept, KeyCode::Enter),
             (PauseUnpause, KeyCode::Space),
             (ReturnToStartMenu, KeyCode::Backspace),
+            (PrevGameMode, KeyCode::KeyA),
             (PrevGameMode, KeyCode::ArrowLeft),
+            (NextGameMode, KeyCode::KeyD),
             (NextGameMode, KeyCode::ArrowRight),
             (Exit, KeyCode::Escape),
         ]);
