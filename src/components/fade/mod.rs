@@ -124,7 +124,7 @@ fn start_fading(
         *fade,
         FadeTimer(Timer::new(fade_duration.0, TimerMode::Once)),
     ));
-    info!("Entity({entity:?}): Start Fading");
+    info!("Entity({entity:?}): Started Fading {fade:?}");
 }
 
 fn fade_transition_over_time(
