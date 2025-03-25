@@ -11,7 +11,9 @@ use crate::{
     system_sets::StopWhenPausedSet,
 };
 
-use super::{Ball, CircleCollider, Collider, DepthCollider, Direction, Motion};
+use super::{
+    Ball, CircleCollider, Collider, DepthCollider, Direction, Motion, Side,
+};
 
 pub(super) struct CrabPlugin;
 
@@ -52,7 +54,7 @@ fn crab_and_ball_collisions(
     mut commands: Commands,
     goals: Goals,
     crabs_query: Query<
-        (Entity, &Parent, &Transform, &CrabCollider, &DepthCollider),
+        (&Parent, &Side, &Transform, &CrabCollider, &DepthCollider),
         (With<Crab>, With<Collider>),
     >,
     balls_query: Query<
@@ -60,13 +62,8 @@ fn crab_and_ball_collisions(
         (With<Ball>, With<Collider>, With<Motion>),
     >,
 ) {
-    for (
-        crab_entity,
-        parent,
-        crab_transform,
-        crab_collider,
-        crab_depth_collider,
-    ) in &crabs_query
+    for (parent, side, crab_transform, crab_collider, crab_depth_collider) in
+        &crabs_query
     {
         let Ok(goal) = goals.get(parent.get()) else {
             continue;
@@ -103,7 +100,7 @@ fn crab_and_ball_collisions(
             commands
                 .entity(ball_entity)
                 .insert(Direction::from(new_ball_direction));
-            info!("Ball({ball_entity:?}): Collided Crab({crab_entity:?})");
+            info!("Crab({side:?}): Deflected Ball({ball_entity:?})");
             break;
         }
     }

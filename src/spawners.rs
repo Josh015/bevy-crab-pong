@@ -368,7 +368,7 @@ fn spawn_crabs_for_each_side(
         let crab_entity = crab_commands.id();
         commands.entity(goal_entity).add_child(crab_entity);
         commands.trigger(StartFading(Fade::In, crab_entity));
-        info!("Crab({crab_entity:?}): Spawned");
+        info!("Crab({side:?}): Spawned");
     }
 }
 
@@ -444,7 +444,7 @@ fn spawn_pole_in_a_goal(
     trigger: Trigger<SpawnPole>,
     cached_assets: Res<CachedAssets>,
     mut commands: Commands,
-    goals_query: Query<Option<&Children>, With<Goal>>,
+    goals_query: Query<(&Side, Option<&Children>), With<Goal>>,
     game_assets: Res<GameAssets>,
     game_configs: Res<Assets<GameConfig>>,
 ) {
@@ -452,8 +452,11 @@ fn spawn_pole_in_a_goal(
         goal_entity,
         fade_in,
     } = trigger.event();
+    let Ok((side, children)) = goals_query.get(*goal_entity) else {
+        return;
+    };
 
-    if let Ok(Some(children)) = goals_query.get(*goal_entity) {
+    if let Some(children) = children {
         for child in children {
             commands.trigger(StartFading(Fade::Out, *child));
         }
@@ -489,6 +492,7 @@ fn spawn_pole_in_a_goal(
                 GOAL_ENTITY_LOCAL_START_POSITION
                     .with_y(game_config.pole_height_from_ground),
             )),
+            *side,
         ))
         .id();
 
@@ -498,7 +502,7 @@ fn spawn_pole_in_a_goal(
         commands.trigger(StartFading(Fade::In, pole_entity));
     }
 
-    info!("Pole({pole_entity:?}): Spawned");
+    info!("Pole({side:?}): Spawned");
 }
 
 fn spawn_ui_message(

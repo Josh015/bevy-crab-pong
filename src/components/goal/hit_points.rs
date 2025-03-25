@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::system_sets::ActiveDuringGameplaySet;
+use crate::{components::Side, system_sets::ActiveDuringGameplaySet};
 
 use super::{Goal, GoalEliminatedEvent, GoalScoredEvent};
 
@@ -23,10 +23,10 @@ pub struct HitPoints(pub u8);
 fn decrement_hp_and_eliminate_goals(
     mut goal_scored_events: EventReader<GoalScoredEvent>,
     mut goal_eliminated_events: EventWriter<GoalEliminatedEvent>,
-    mut hp_query: Query<&mut HitPoints, With<Goal>>,
+    mut hp_query: Query<(&Side, &mut HitPoints), With<Goal>>,
 ) {
     for GoalScoredEvent(goal_entity) in goal_scored_events.read() {
-        let Ok(mut hp) = hp_query.get_mut(*goal_entity) else {
+        let Ok((side, mut hp)) = hp_query.get_mut(*goal_entity) else {
             continue;
         };
 
@@ -34,7 +34,7 @@ fn decrement_hp_and_eliminate_goals(
 
         if hp.0 == 0 {
             goal_eliminated_events.send(GoalEliminatedEvent(*goal_entity));
-            info!("Goal({goal_entity:?}): Eliminated");
+            info!("Goal({side:?}): Eliminated");
         }
     }
 }

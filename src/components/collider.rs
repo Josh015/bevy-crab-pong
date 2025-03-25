@@ -69,7 +69,7 @@ fn circle_to_circle_collisions(
                 if has_motion2 {
                     commands.entity(entity2).insert(Direction::from(axis1));
                 }
-                info!("Circle({entity1:?}): Collided Circle({entity2:?})");
+                info!("Circle({entity1:?}): Deflected Circle({entity2:?})");
             }
         }
 
@@ -82,7 +82,7 @@ fn circle_to_circle_collisions(
                 if has_motion1 {
                     commands.entity(entity1).insert(Direction::from(axis2));
                 }
-                info!("Circle({entity2:?}): Collided Circle({entity1:?})");
+                info!("Circle({entity2:?}): Deflected Circle({entity1:?})");
             }
         }
     }

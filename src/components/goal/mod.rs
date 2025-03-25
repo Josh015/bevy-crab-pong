@@ -16,8 +16,8 @@ use crate::{
 };
 
 use super::{
-    Ball, CircleCollider, Collider, Crab, CrabCollider, Force, Motion, Speed,
-    StoppingDistance,
+    Ball, CircleCollider, Collider, Crab, CrabCollider, Force, Motion, Side,
+    Speed, StoppingDistance,
 };
 
 pub(super) struct GoalPlugin;
@@ -52,14 +52,17 @@ fn check_if_a_ball_has_scored_in_a_goal(
     mut commands: Commands,
     mut goal_scored_events: EventWriter<GoalScoredEvent>,
     goals: Goals,
-    crabs_query: Query<&Parent, (With<Crab>, With<Motion>, With<Collider>)>,
+    crabs_query: Query<
+        (&Parent, &Side),
+        (With<Crab>, With<Motion>, With<Collider>),
+    >,
     balls_query: Query<
         (Entity, &GlobalTransform, &CircleCollider),
         (With<Ball>, With<Motion>, With<Collider>),
     >,
 ) {
     // If a ball passes a side's alive crab then despawn it and raise an event.
-    for parent in &crabs_query {
+    for (parent, side) in &crabs_query {
         let goal_entity = parent.get();
         let Ok(goal) = goals.get(goal_entity) else {
             continue;
@@ -71,7 +74,7 @@ fn check_if_a_ball_has_scored_in_a_goal(
             if ball_distance <= collider.radius {
                 commands.trigger(StartFading(Fade::Out, ball_entity));
                 goal_scored_events.send(GoalScoredEvent(goal_entity));
-                info!("Ball({ball_entity:?}): Scored Goal({goal_entity:?})");
+                info!("Goal({side:?}): Scored by Ball({ball_entity:?})");
             }
         }
     }
